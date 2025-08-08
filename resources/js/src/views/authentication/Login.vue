@@ -1,68 +1,213 @@
 <template>
-  <div class="login_screen">
-      <!-- <img src="../assest/img/logo.png" class="login-logo" alt="Macxgain"> -->
-    <div class="login_form">
-      
-      <h3>LOG IN</h3>
-      <p>Enter your credentials to access your account.</p>
-      <form @submit.prevent="login">
-        <div class="form-group mb-3">
-          <label for="">Email</label>
-          <input type="email" v-model="formData.email" required placeholder="Enter Email ID" class="form-control" />
-        </div>
-        <div class="form-group mb-2">
-          <label for="">Password</label>
-          <div class="position_password">
-            <input :type="formData.showPassword ? 'text' : 'password'" v-model="formData.password" required
-              placeholder="Password" class="form-control" />
-            <i @click="formData.showPassword = !formData.showPassword" class="password_toggle"
-              :class="formData.showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-          </div>
-
-        </div>
-        <!--<div class="remember_forgot_password">
-          <div>
-            <b-form-checkbox id="remember-me" v-model="formData.status" name="checkbox-1">
-              Remember Me
-            </b-form-checkbox>
-          </div>
-          <div>
-            <router-link to="/forgot-password">Forgot Password?</router-link>
-          </div>
-        </div>-->
-        <b-overlay :show="formData.loader" rounded="lg" opacity="0.9" class="loader_section" no-wrap>
-          <template #overlay>
-            <span class="loadersdots"></span>
-          </template>
-
-          <b-button type="submit" class="w-100">Login</b-button>
-        </b-overlay>
-        <p v-if="formData.errorMessage" class="error">{{ formData.errorMessage }}</p>
-      </form>
+  <div class="login-container">
+    <!-- Background with gradient -->
+    <div class="login-background">
+      <div class="background-pattern"></div>
     </div>
-    <div class="login_slider">
+
+    <!-- Main login card -->
+    <div class="login-card">
+      <!-- Logo and header -->
+      <div class="login-header">
+        <div class="logo-container">
+          <div class="logo-image">
+            <img src="../assest/img/logo.png" alt="Macxgain Logo" />
+          </div>
+          <h1 class="logo-text">Macxgain</h1>
+          <p class="tagline">Smart Trading Solutions</p>
+        </div>
+        <h2 class="welcome-text">Welcome Back</h2>
+        <p class="subtitle">Sign in to your account to continue</p>
+      </div>
+
+      <!-- Login form -->
+      <form @submit.prevent="login" class="login-form">
+        <!-- Email field -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            <i class="fas fa-user"></i>
+            Username
+          </label>
+          <div class="input-container">
+            <input
+              id="email"
+              type="email"
+              v-model="formData.email"
+              required
+              placeholder="Enter your email"
+              class="form-input"
+              :class="{ 'error': formData.errorMessage && !formData.email }"
+            />
+            <i class="fas fa-user input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Password field -->
+        <div class="form-group">
+          <label for="password" class="form-label">
+            <i class="fas fa-lock"></i>
+            Password
+          </label>
+          <div class="input-container">
+            <input
+              id="password"
+              :type="formData.showPassword ? 'text' : 'password'"
+              v-model="formData.password"
+              required
+              placeholder="Enter your password"
+              class="form-input"
+              :class="{ 'error': formData.errorMessage && !formData.password }"
+            />
+            <i class="fas fa-lock input-icon"></i>
+            <button
+              type="button"
+              @click="formData.showPassword = !formData.showPassword"
+              class="password-toggle"
+              :class="{ 'active': formData.showPassword }"
+            >
+              <i :class="formData.showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember me and forgot password -->
+        <div class="form-options">
+          <label class="checkbox-container">
+            <input
+              type="checkbox"
+              v-model="formData.status"
+              class="checkbox-input"
+            />
+            <span class="checkmark"></span>
+            Remember me
+          </label>
+          <router-link to="/forgot-password" class="forgot-link">
+            Forgot Password?
+          </router-link>
+        </div>
+
+        <!-- Error message -->
+        <div v-if="formData.errorMessage" class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ formData.errorMessage }}
+        </div>
+
+        <!-- Submit button -->
+        <button
+          type="submit"
+          class="login-button"
+          :disabled="formData.loader"
+        >
+          <span v-if="!formData.loader">
+            <i class="fas fa-sign-in-alt"></i>
+            Sign In
+          </span>
+          <span v-else class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            Signing In...
+          </span>
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <p>Don't have an account? <a href="#" class="signup-link">Contact Admin</a></p>
+      </div>
+    </div>
+
+    <!-- Trading Background Elements -->
+    <div class="trading-background">
+      <!-- Animated Stock Charts -->
+      <div class="stock-chart chart-1">
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+      </div>
+      
+      <div class="stock-chart chart-2">
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+      </div>
+      
+      <div class="stock-chart chart-3">
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+      </div>
+
+      <!-- Trading Indicators -->
+      <div class="trading-indicators">
+        <div class="indicator indicator-1">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="indicator indicator-2">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="indicator indicator-3">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <!-- Price Tickers -->
+      <div class="price-tickers">
+        <div class="ticker ticker-1">
+          <span class="symbol">AAPL</span>
+          <span class="price up">$185.42</span>
+          <span class="change">+2.34%</span>
+        </div>
+        <div class="ticker ticker-2">
+          <span class="symbol">TSLA</span>
+          <span class="price down">$245.67</span>
+          <span class="change">-1.23%</span>
+        </div>
+        <div class="ticker ticker-3">
+          <span class="symbol">NVDA</span>
+          <span class="price up">$892.15</span>
+          <span class="change">+3.45%</span>
+        </div>
+      </div>
+
+      <!-- Floating Numbers -->
+      <div class="floating-numbers">
+        <div class="number">+2.34%</div>
+        <div class="number">-1.23%</div>
+        <div class="number">+3.45%</div>
+        <div class="number">+1.67%</div>
+        <div class="number">-0.89%</div>
+        <div class="number">+4.12%</div>
+      </div>
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref } from "vue";
 import mitt from 'mitt'; 
 import axios from '@axios';
 import { useRouter } from 'vue-router';
-import { Navigation, Pagination, Scrollbar, A11y, Autoplay } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/scrollbar';
-import 'swiper/css/autoplay';
-
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
-
-
-// Comman variables
+// Form data
 const formData = ref({
   email: '',
   password: '',
@@ -73,11 +218,9 @@ const formData = ref({
 });
 
 const router = useRouter();
-
 const emitter = mitt();
 
-// -------------------------------------------------- //
-
+// Retrieve stored credentials
 const retrieveStoredCredentials = () => {
   const storedCredentials = localStorage.getItem('user_credentials');
   if (storedCredentials) {
@@ -87,77 +230,918 @@ const retrieveStoredCredentials = () => {
   }
 }
 
+// Check for stored remember me status
 const storedStatus = localStorage.getItem('rememberMeStatus');
 formData.value.status = storedStatus === 'true';
 if (formData.value.status) {
   retrieveStoredCredentials();
 }
 
-const removeError = (field) => {
-  if (this.errors[field]) {
-    delete this.errors[field];
-  }
-}
-const hasErrors = (fieldName) => {
-  return this.errors && this.errors[fieldName];
-}
-const getErrors = (fieldName) => {
-  return this.errors[fieldName] ? this.errors[fieldName][0] : '';
-}
-
+// Login function
 const login = () => {
   formData.value.loader = true;
+  formData.value.errorMessage = '';
+  
   localStorage.setItem('rememberMeStatus', formData.value.status);
+  
   if (!formData.value.email || !formData.value.password) {
-    formData.value.errorMessage = 'Both fields are required';
+    formData.value.errorMessage = 'Please fill in all required fields';
+    formData.value.loader = false;
     return;
   }
 
   axios
-    .post('/login', { email: formData.value.email, password: formData.value.password })
+    .post('/login', { 
+      email: formData.value.email, 
+      password: formData.value.password 
+    })
     .then(response => {
-      const token = response.data.access_token;  // Assume the token is returned as access_token
+      const token = response.data.access_token;
 
-      // Store the JWT token in localStorage
+      // Store the JWT token
       localStorage.setItem('access_token', token);
 
+      // Store credentials if remember me is checked
       if (formData.value.status) {
-        const credentials = { email: formData.value.email, password: formData.value.password };
+        const credentials = { 
+          email: formData.value.email, 
+          password: formData.value.password 
+        };
         localStorage.setItem('user_credentials', JSON.stringify(credentials));
       }
-      // Success alert
-      toast("Login Successful!", {
-        autoClose: 5000,
-        type: 'success'
+
+      // Success toast
+      toast.success("Login successful! Redirecting...", {
+        autoClose: 2000,
+        position: "top-right"
       });
 
-      // Redirect to the dashboard after a delay
+      // Redirect to dashboard
       setTimeout(() => {
-        router.push('/landing-page');
+        router.push('/admin/dashboard');
         formData.value.loader = false;
-      }, 2000);
+      }, 1500);
+      
       emitter.emit('login');
     })
     .catch((error) => {
-      if (error.response && error.response.status == 422) {
-        this.errors = error.response.data.error;
-      }
-      else if (error.response && error.response.status === 401) {
-        formData.value.errorMessage = error.response.data.error || 'Invalid credentials';
+      formData.value.loader = false;
+      
+      if (error.response && error.response.status === 422) {
+        formData.value.errorMessage = 'Please check your input and try again';
+      } else if (error.response && error.response.status === 401) {
+        formData.value.errorMessage = error.response.data.error || 'Invalid email or password';
       } else {
-        formData.value.errorMessage = 'An unexpected error occurred. Please try again later.';
+        formData.value.errorMessage = 'Connection error. Please try again.';
       }
-
     });
 }
-
-
 </script>
 
 <style scoped>
-.login-logo {
-  width: 150px; /* or 120px if large logo is preferred */
-  height: auto;
+/* Main container */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 20px;
 }
 
+/* Background with pattern */
+.login-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  z-index: 1;
+}
+
+.background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(0,212,170,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(0,212,170,0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 49%, rgba(0,212,170,0.05) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(0,212,170,0.05) 50%, transparent 51%);
+  background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Login card */
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2;
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Header */
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo-image {
+  width: 60px;
+  height: 60px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+  background: white;
+  padding: 8px;
+}
+
+.logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.logo-text {
+  font-size: 28px;
+  font-weight: 700;
+  color: #00d4aa;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
+}
+
+.tagline {
+  color: #00d4aa;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 5px 0 0 0;
+  opacity: 0.8;
+}
+
+.welcome-text {
+  font-size: 24px;
+  font-weight: 600;
+  color: #00d4aa;
+  margin: 0 0 8px 0;
+  text-shadow: 0 0 8px rgba(0, 212, 170, 0.2);
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Form */
+.login-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+
+.form-label i {
+  margin-right: 8px;
+  color: #00d4aa;
+}
+
+.input-container {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px 20px 16px 50px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #00d4aa;
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+}
+
+.form-input.error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 16px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #00d4aa;
+}
+
+.password-toggle.active {
+  color: #00d4aa;
+}
+
+/* Form options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+  user-select: none;
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  height: 18px;
+  width: 18px;
+  background-color: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  margin-right: 8px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checkbox-input:checked ~ .checkmark {
+  background-color: #00d4aa;
+  border-color: #00d4aa;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.forgot-link {
+  color: #00d4aa;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+  color: #00b894;
+  text-decoration: underline;
+}
+
+/* Error message */
+.error-message {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.error-message i {
+  margin-right: 8px;
+}
+
+/* Login button */
+.login-button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00d4aa, #00b894);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 212, 170, 0.4);
+}
+
+.login-button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  color: #718096;
+  font-size: 14px;
+}
+
+.signup-link {
+  color: #00d4aa;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+/* Trading Background Elements */
+.trading-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Stock Charts */
+.stock-chart {
+  position: absolute;
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  opacity: 0.3;
+}
+
+.chart-1 {
+  top: 15%;
+  left: 5%;
+  animation: slideRight 8s linear infinite;
+}
+
+.chart-2 {
+  top: 45%;
+  right: 10%;
+  animation: slideLeft 10s linear infinite;
+}
+
+.chart-3 {
+  bottom: 25%;
+  left: 15%;
+  animation: slideUp 12s linear infinite;
+}
+
+.candlestick {
+  width: 4px;
+  background: #00d4aa;
+  border-radius: 1px;
+  position: relative;
+}
+
+.candlestick.up {
+  background: #00d4aa;
+  height: 20px;
+}
+
+.candlestick.down {
+  background: #ff6b6b;
+  height: 15px;
+}
+
+.candlestick::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: inherit;
+  transform: translateX(-50%);
+}
+
+/* Trading Indicators */
+.trading-indicators {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.indicator {
+  position: absolute;
+  opacity: 0.4;
+}
+
+.indicator-1 {
+  top: 30%;
+  left: 20%;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.indicator-2 {
+  top: 60%;
+  right: 25%;
+  animation: pulse 3s ease-in-out infinite 1s;
+}
+
+.indicator-3 {
+  bottom: 40%;
+  left: 30%;
+  animation: pulse 3s ease-in-out infinite 2s;
+}
+
+.indicator .line {
+  width: 40px;
+  height: 2px;
+  background: #00d4aa;
+  border-radius: 1px;
+}
+
+.indicator .dot {
+  width: 6px;
+  height: 6px;
+  background: #00d4aa;
+  border-radius: 50%;
+  position: absolute;
+  right: 0;
+  top: -2px;
+}
+
+/* Price Tickers */
+.price-tickers {
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  opacity: 0.6;
+}
+
+.ticker {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  animation: fadeInOut 4s ease-in-out infinite;
+}
+
+.ticker-1 { animation-delay: 0s; }
+.ticker-2 { animation-delay: 1.5s; }
+.ticker-3 { animation-delay: 3s; }
+
+.ticker .symbol {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.ticker .price {
+  color: #ffffff;
+}
+
+.ticker .price.up {
+  color: #00d4aa;
+}
+
+.ticker .price.down {
+  color: #ff6b6b;
+}
+
+.ticker .change {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.ticker .change:not(:empty)::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 4px;
+}
+
+.ticker .change:contains('+')::before {
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 5px solid #00d4aa;
+}
+
+.ticker .change:contains('-')::before {
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 5px solid #ff6b6b;
+}
+
+/* Floating Numbers */
+.floating-numbers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.number {
+  position: absolute;
+  color: #00d4aa;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.7;
+  animation: floatUp 6s linear infinite;
+}
+
+.number:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.number:nth-child(2) {
+  top: 40%;
+  right: 15%;
+  animation-delay: 1s;
+  color: #ff6b6b;
+}
+
+.number:nth-child(3) {
+  top: 60%;
+  left: 20%;
+  animation-delay: 2s;
+}
+
+.number:nth-child(4) {
+  bottom: 30%;
+  right: 10%;
+  animation-delay: 3s;
+}
+
+.number:nth-child(5) {
+  bottom: 50%;
+  left: 25%;
+  animation-delay: 4s;
+  color: #ff6b6b;
+}
+
+.number:nth-child(6) {
+  top: 80%;
+  right: 20%;
+  animation-delay: 5s;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRight {
+  0% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px));
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(calc(-100vw - 100px));
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  20% {
+    opacity: 0.7;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 15px;
+  }
+  
+  .login-card {
+    padding: 30px 25px;
+    max-width: 100%;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+  }
+  
+  .welcome-text {
+    font-size: 20px;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .stock-chart {
+    opacity: 0.2;
+  }
+  
+  .trading-indicators {
+    opacity: 0.3;
+  }
+  
+  .price-tickers {
+    opacity: 0.4;
+    right: 2%;
+    top: 5%;
+  }
+  
+  .floating-numbers {
+    opacity: 0.5;
+  }
+  
+  .ticker {
+    padding: 6px 8px;
+    font-size: 10px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 25px 20px;
+  }
+  
+  .logo-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .logo-image {
+    margin-right: 0;
+  }
+  
+  .form-input {
+    padding: 14px 18px 14px 45px;
+    font-size: 15px;
+  }
+  
+  .input-icon {
+    left: 15px;
+    font-size: 15px;
+  }
+  
+  .password-toggle {
+    right: 15px;
+    font-size: 15px;
+  }
+  
+  /* Mobile-optimized trading elements */
+  .candlestick {
+    width: 3px;
+  }
+  
+  .candlestick.up {
+    height: 15px;
+  }
+  
+  .candlestick.down {
+    height: 12px;
+  }
+  
+  .indicator .line {
+    width: 30px;
+  }
+  
+  .number {
+    font-size: 12px;
+  }
+  
+  .chart-1 {
+    top: 10%;
+    left: 2%;
+  }
+  
+  .chart-2 {
+    top: 35%;
+    right: 5%;
+  }
+  
+  .chart-3 {
+    bottom: 15%;
+    left: 8%;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .login-card {
+    background: rgba(26, 32, 44, 0.95);
+    color: white;
+  }
+  
+  .logo-text,
+  .welcome-text {
+    color: white;
+  }
+  
+  .subtitle {
+    color: #a0aec0;
+  }
+  
+  .form-label {
+    color: #e2e8f0;
+  }
+  
+  .form-input {
+    background: rgba(45, 55, 72, 0.8);
+    border-color: #4a5568;
+    color: white;
+  }
+  
+  .form-input:focus {
+    border-color: #667eea;
+  }
+  
+  .checkmark {
+    background-color: rgba(45, 55, 72, 0.8);
+    border-color: #4a5568;
+  }
+  
+  .error-message {
+    background: rgba(197, 48, 48, 0.2);
+    border-color: rgba(197, 48, 48, 0.3);
+  }
+}
 </style>

@@ -8,7 +8,7 @@
           <template #option="{ profile_name, profile_image }">
             <span class="table_img_cell">
               <span class="table_img">
-                <img src="`../assest/img/tableprofileimg.png`" alt="profile">
+                <img src="../assest/img/tableprofileimg.png" alt="profile">
               </span> {{ profile_name }}
             </span>
           </template>

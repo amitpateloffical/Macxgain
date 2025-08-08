@@ -6,9 +6,9 @@
         <v-select v-if="customersData.tabledata.length" :options="filterFieldsData.filterSelectField"
           label="profile_name" class="v_select_profile">
           <template #option="{ profile_name, profile_image }">
-            <span class="table_img_cell">
+                          <span class="table_img_cell">
               <span class="table_img">
-                <img src="`../assest/img/tableprofileimg.png`" alt="profile">
+                <img src="../assest/img/tableprofileimg.png" alt="profile">
               </span> {{ profile_name }}
             </span>
           </template>
@@ -177,7 +177,7 @@
                 <template #option="{ profile_name, profile_image }">
                   <span class="table_img_cell">
                     <span class="table_img">
-                      <img src="`../assest/img/tableprofileimg.png`" alt="profile">
+                      <img src="../assest/img/tableprofileimg.png" alt="profile">
                     </span> {{ profile_name }}
                   </span>
                 </template>
