@@ -9,6 +9,12 @@ const routes = [
     component: () => import("../views/authentication/Login.vue"),
   },
   {
+    path: "/admin/register",
+    name: "admin-register",
+    meta: { layout: 'full' },
+    component: () => import("../views/authentication/Register.vue"),
+  },
+  {
     path: '/landing-page', // Landing Page Route (hidden redirect)    name: "LandingPage",
     meta: { layout: 'full' },
     component: () => import("../views/FrontEndSide/Home/LandingPage.vue"),

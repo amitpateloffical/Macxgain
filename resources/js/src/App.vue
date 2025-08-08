@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue'
+import { watch, computed, onMounted } from 'vue'
 import Header from "./views/Layout/Header.vue";
 import Footer from "./views/Layout/Footer.vue";
 import Sidebar from "./views/Layout/Sidebar.vue";
@@ -25,6 +25,11 @@ const route = useRouter();
 
 const layout = computed(() => {  
   return route.currentRoute.value.meta.layout === 'full' ? 'FullLayout' : 'DefaultLayout';
+})
+
+// Set default title
+onMounted(() => {
+  document.title = 'Macxgain - Best Trading App – Trade Smarter, Faster, Safer';
 })
 
 
