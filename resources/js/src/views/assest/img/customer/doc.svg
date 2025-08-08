@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="fi_2504717" clip-path="url(#clip0_3128_85086)">
+<path id="Vector" d="M27.5871 8.7625V29.9375C27.5871 31.075 26.6621 32 25.5246 32H6.47461C5.33711 32 4.41211 31.075 4.41211 29.9375V2.0625C4.41211 0.925 5.33711 0 6.47461 0H18.8246L27.5871 8.7625Z" fill="#518FF5"/>
+<g id="Group">
+<path id="Vector_2" d="M10.0752 16.0684H21.9252V17.3871H10.0752V16.0684Z" fill="white"/>
+<path id="Vector_3" d="M10.0752 19.0059H21.9252V20.3246H10.0752V19.0059Z" fill="white"/>
+<path id="Vector_4" d="M10.0752 21.9492H21.9252V23.268H10.0752V21.9492Z" fill="white"/>
+<path id="Vector_5" d="M10.0752 24.8867H18.5064V26.2055H10.0752V24.8867Z" fill="white"/>
+</g>
+<path id="Vector_6" opacity="0.19" d="M20.0186 8.43125L27.5873 14.5625V8.8L23.2998 6.3125L20.0186 8.43125Z" fill="black"/>
+<path id="Vector_7" d="M27.5877 8.7625H20.8877C19.7502 8.7625 18.8252 7.8375 18.8252 6.7V0L27.5877 8.7625Z" fill="#A6C5FA"/>
+</g>
+<defs>
+<clipPath id="clip0_3128_85086">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,23 @@
+.dashboard {
+    padding: 20px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    width: 100%;
+  }
+  .required:after {
+    content: "*";
+    color: #000;
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+
+}
+
+.requireds:before {
+    content: " *";
+    color: red;
+    font-weight: 100;
+    font-weight: bold;
+}
