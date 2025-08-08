@@ -6,7 +6,6 @@
         <Sidebar v-if="layout !== 'FullLayout'" />
         <div class="main_content_screen">
           <router-view />
-          <Footer />
         </div>
       </div>      
     </div>
@@ -17,7 +16,6 @@
 <script setup>
 import { watch, computed, onMounted } from 'vue'
 import Header from "./views/Layout/Header.vue";
-import Footer from "./views/Layout/Footer.vue";
 import Sidebar from "./views/Layout/Sidebar.vue";
 import { useRouter } from 'vue-router';
 

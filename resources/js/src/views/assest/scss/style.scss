@@ -1554,6 +1554,7 @@ table{
 
 // footer //
 .footer_screen{
+    display: none; /* Hide the white footer */
     border-top: 1px solid #ddd;
     position: fixed;
     bottom: 0;

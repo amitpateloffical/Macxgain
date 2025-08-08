@@ -56,45 +56,53 @@
       </div>
     </header>
 
-    <!-- Market Overview Section -->
-    <section class="market-overview">
+    <!-- Market Categories Tabs -->
+    <section class="market-tabs">
+      <div class="container">
+        <div class="tabs-container">
+          <button 
+            v-for="tab in marketTabs" 
+            :key="tab.id"
+            :class="['tab-btn', { active: activeTab === tab.id }]"
+            @click="activeTab = tab.id"
+          >
+            <i :class="tab.icon"></i>
+            {{ tab.name }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Indices Section -->
+    <section v-if="activeTab === 'indices'" class="market-section">
       <div class="container">
         <div class="section-header">
-          <h2>Market Overview</h2>
-          <div class="market-filters">
-            <button 
-              v-for="filter in marketFilters" 
-              :key="filter.id"
-              :class="['filter-btn', { active: activeFilter === filter.id }]"
-              @click="activeFilter = filter.id"
-            >
-              {{ filter.name }}
-            </button>
-          </div>
+          <h2>Major Indices</h2>
+          <div class="section-subtitle">Global market benchmarks</div>
         </div>
         
-        <div class="market-grid">
-          <div v-for="market in filteredMarkets" :key="market.symbol" class="market-card">
-            <div class="market-header">
-              <div class="market-info">
-                <h3>{{ market.name }}</h3>
-                <span class="symbol">{{ market.symbol }}</span>
+        <div class="indices-grid">
+          <div v-for="index in indices" :key="index.symbol" class="index-card">
+            <div class="index-header">
+              <div class="index-info">
+                <h3>{{ index.name }}</h3>
+                <span class="symbol">{{ index.symbol }}</span>
               </div>
-              <div class="market-change" :class="{ up: market.change >= 0, down: market.change < 0 }">
-                <span class="change-value">{{ market.change >= 0 ? '+' : '' }}{{ market.change.toFixed(2) }}%</span>
-                <span class="change-arrow">{{ market.change >= 0 ? '↗' : '↘' }}</span>
+              <div class="index-change" :class="{ up: index.change >= 0, down: index.change < 0 }">
+                <span class="change-value">{{ index.change >= 0 ? '+' : '' }}{{ index.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ index.change >= 0 ? '↗' : '↘' }}</span>
               </div>
             </div>
             
-            <div class="market-price">
-              <span class="price-value">${{ market.price.toFixed(2) }}</span>
-              <span class="price-change">{{ market.change >= 0 ? '+' : '' }}{{ market.priceChange.toFixed(2) }}</span>
+            <div class="index-price">
+              <span class="price-value">{{ index.price.toFixed(2) }}</span>
+              <span class="price-change">{{ index.change >= 0 ? '+' : '' }}{{ index.priceChange.toFixed(2) }}</span>
             </div>
             
-            <div class="market-chart">
+            <div class="index-chart">
               <div class="mini-chart">
                 <div 
-                  v-for="(point, index) in market.chartData" 
+                  v-for="(point, index) in index.chartData" 
                   :key="index"
                   class="chart-bar"
                   :style="{ height: point + '%' }"
@@ -102,23 +110,315 @@
                 ></div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- India Section -->
+    <section v-if="activeTab === 'india'" class="market-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Major Indices</h2>
+          <div class="section-subtitle">Indian market benchmarks</div>
+        </div>
+        
+        <div class="indices-grid">
+          <div v-for="index in indiaIndices" :key="index.symbol" class="index-card">
+            <div class="index-header">
+              <div class="index-info">
+                <div class="index-logo">
+                  <span class="logo-text">{{ index.logo }}</span>
+                </div>
+                <div>
+                  <h3>{{ index.name }}</h3>
+                  <span class="symbol">{{ index.symbol }}</span>
+                </div>
+              </div>
+              <div class="index-change" :class="{ up: index.change >= 0, down: index.change < 0 }">
+                <span class="change-value">{{ index.change >= 0 ? '+' : '' }}{{ index.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ index.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
             
-            <div class="market-stats">
+            <div class="index-price">
+              <span class="price-value">{{ index.price.toFixed(2) }} INR</span>
+              <span class="price-change">{{ index.change >= 0 ? '+' : '' }}{{ index.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="index-chart">
+              <div class="mini-chart">
+                <div 
+                  v-for="(point, index) in index.chartData" 
+                  :key="index"
+                  class="chart-bar"
+                  :style="{ height: point + '%' }"
+                  :class="{ up: point > 50, down: point <= 50 }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indian Stocks Section -->
+        <div class="section-header" style="margin-top: 3rem;">
+          <h2>Indian Stocks</h2>
+          <div class="section-subtitle">Community trends</div>
+        </div>
+        
+        <div class="indian-stocks-scroll">
+          <div v-for="stock in indianStocks" :key="stock.symbol" class="indian-stock-card">
+            <div class="stock-logo">
+              <span class="logo-text">{{ stock.logo }}</span>
+            </div>
+            <div class="stock-info">
+              <div class="stock-symbol">{{ stock.symbol }}</div>
+              <div class="stock-name">{{ stock.name }}</div>
+            </div>
+            <div class="stock-price-info">
+              <div class="stock-price">{{ stock.price.toFixed(2) }} INR</div>
+              <div class="stock-change" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market Overview Section -->
+        <div class="market-overview">
+          <div class="overview-section">
+            <h3>Highest Volume Stocks</h3>
+            <div class="overview-list">
+              <div v-for="stock in highestVolumeStocks" :key="stock.symbol" class="overview-item">
+                <div class="stock-logo-small">
+                  <span class="logo-text">{{ stock.logo }}</span>
+                </div>
+                <div class="stock-details">
+                  <div class="stock-name">{{ stock.name }}</div>
+                  <div class="stock-symbol-small">{{ stock.symbol }}</div>
+                </div>
+                <div class="stock-price-details">
+                  <div class="stock-price-small">{{ stock.price.toFixed(2) }} INR</div>
+                  <div class="stock-change-small" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                    {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="see-all-link">See all most actively traded stocks ></div>
+          </div>
+
+          <div class="overview-section">
+            <h3>Most Volatile Stocks</h3>
+            <div class="overview-list">
+              <div v-for="stock in mostVolatileStocks" :key="stock.symbol" class="overview-item">
+                <div class="stock-logo-small">
+                  <span class="logo-text">{{ stock.logo }}</span>
+                </div>
+                <div class="stock-details">
+                  <div class="stock-name">{{ stock.name }}</div>
+                  <div class="stock-symbol-small">{{ stock.symbol }}</div>
+                </div>
+                <div class="stock-price-details">
+                  <div class="stock-price-small">{{ stock.price.toFixed(2) }} INR</div>
+                  <div class="stock-change-small" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                    {{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="see-all-link">See all stocks with biggest price changes ></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- US Stocks Section -->
+    <section v-if="activeTab === 'stocks'" class="market-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>US Stocks</h2>
+          <div class="stock-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Gainers</button>
+            <button class="filter-btn">Losers</button>
+            <button class="filter-btn">Volume</button>
+          </div>
+        </div>
+        
+        <div class="stocks-grid">
+          <div v-for="stock in stocks" :key="stock.symbol" class="stock-card">
+            <div class="stock-header">
+              <div class="stock-info">
+                <h3>{{ stock.name }}</h3>
+                <span class="symbol">{{ stock.symbol }}</span>
+              </div>
+              <div class="stock-change" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                <span class="change-value">{{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ stock.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="stock-price">
+              <span class="price-value">${{ stock.price.toFixed(2) }}</span>
+              <span class="price-change">{{ stock.change >= 0 ? '+' : '' }}{{ stock.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="stock-stats">
               <div class="stat">
-                <span class="stat-label">Open</span>
-                <span class="stat-value">${{ market.open.toFixed(2) }}</span>
+                <span class="stat-label">Market Cap</span>
+                <span class="stat-value">{{ stock.marketCap }}</span>
               </div>
               <div class="stat">
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">{{ stock.volume }}M</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Crypto Section -->
+    <section v-if="activeTab === 'crypto'" class="market-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Cryptocurrency</h2>
+          <div class="crypto-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Gainers</button>
+            <button class="filter-btn">Losers</button>
+            <button class="filter-btn">Market Cap</button>
+          </div>
+        </div>
+        
+        <div class="crypto-grid">
+          <div v-for="crypto in cryptos" :key="crypto.symbol" class="crypto-card">
+            <div class="crypto-header">
+              <div class="crypto-info">
+                <div class="crypto-icon">
+                  <i :class="crypto.icon"></i>
+                </div>
+                <div>
+                  <h3>{{ crypto.name }}</h3>
+                  <span class="symbol">{{ crypto.symbol }}</span>
+                </div>
+              </div>
+              <div class="crypto-change" :class="{ up: crypto.change >= 0, down: crypto.change < 0 }">
+                <span class="change-value">{{ crypto.change >= 0 ? '+' : '' }}{{ crypto.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ crypto.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="crypto-price">
+              <span class="price-value">${{ crypto.price.toFixed(2) }}</span>
+              <span class="price-change">{{ crypto.change >= 0 ? '+' : '' }}{{ crypto.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="crypto-stats">
+              <div class="stat">
+                <span class="stat-label">Market Cap</span>
+                <span class="stat-value">{{ crypto.marketCap }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">24h Vol</span>
+                <span class="stat-value">{{ crypto.volume24h }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Forex Section -->
+    <section v-if="activeTab === 'forex'" class="market-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Forex & Currencies</h2>
+          <div class="forex-filters">
+            <button class="filter-btn active">Majors</button>
+            <button class="filter-btn">Minors</button>
+            <button class="filter-btn">Exotics</button>
+          </div>
+        </div>
+        
+        <div class="forex-grid">
+          <div v-for="forex in forexPairs" :key="forex.symbol" class="forex-card">
+            <div class="forex-header">
+              <div class="forex-info">
+                <h3>{{ forex.name }}</h3>
+                <span class="symbol">{{ forex.symbol }}</span>
+              </div>
+              <div class="forex-change" :class="{ up: forex.change >= 0, down: forex.change < 0 }">
+                <span class="change-value">{{ forex.change >= 0 ? '+' : '' }}{{ forex.change.toFixed(4) }}%</span>
+                <span class="change-arrow">{{ forex.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="forex-price">
+              <span class="price-value">{{ forex.price.toFixed(5) }}</span>
+              <span class="price-change">{{ forex.change >= 0 ? '+' : '' }}{{ forex.priceChange.toFixed(5) }}</span>
+            </div>
+            
+            <div class="forex-stats">
+              <div class="stat">
                 <span class="stat-label">High</span>
-                <span class="stat-value">${{ market.high.toFixed(2) }}</span>
+                <span class="stat-value">{{ forex.high.toFixed(5) }}</span>
               </div>
               <div class="stat">
                 <span class="stat-label">Low</span>
-                <span class="stat-value">${{ market.low.toFixed(2) }}</span>
+                <span class="stat-value">{{ forex.low.toFixed(5) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Commodities Section -->
+    <section v-if="activeTab === 'commodities'" class="market-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Commodities & Futures</h2>
+          <div class="commodity-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Energy</button>
+            <button class="filter-btn">Metals</button>
+            <button class="filter-btn">Agriculture</button>
+          </div>
+        </div>
+        
+        <div class="commodities-grid">
+          <div v-for="commodity in commodities" :key="commodity.symbol" class="commodity-card">
+            <div class="commodity-header">
+              <div class="commodity-info">
+                <div class="commodity-icon">
+                  <i :class="commodity.icon"></i>
+                </div>
+                <div>
+                  <h3>{{ commodity.name }}</h3>
+                  <span class="symbol">{{ commodity.symbol }}</span>
+                </div>
+              </div>
+              <div class="commodity-change" :class="{ up: commodity.change >= 0, down: commodity.change < 0 }">
+                <span class="change-value">{{ commodity.change >= 0 ? '+' : '' }}{{ commodity.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ commodity.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="commodity-price">
+              <span class="price-value">${{ commodity.price.toFixed(2) }}</span>
+              <span class="price-change">{{ commodity.change >= 0 ? '+' : '' }}{{ commodity.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="commodity-stats">
+              <div class="stat">
+                <span class="stat-label">Open</span>
+                <span class="stat-value">${{ commodity.open.toFixed(2) }}</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Vol</span>
-                <span class="stat-value">{{ market.volume }}M</span>
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">{{ commodity.volume }}K</span>
               </div>
             </div>
           </div>
@@ -282,101 +582,526 @@ const goBack = () => {
   router.back()
 }
 
-// Market filters
-const activeFilter = ref('all')
-const marketFilters = ref([
-  { id: 'all', name: 'All Markets' },
-  { id: 'stocks', name: 'Stocks' },
-  { id: 'crypto', name: 'Crypto' },
-  { id: 'forex', name: 'Forex' },
-  { id: 'commodities', name: 'Commodities' }
+// Market tabs
+const activeTab = ref('indices')
+const marketTabs = ref([
+  { id: 'indices', name: 'Indices', icon: 'fas fa-chart-line' },
+  { id: 'india', name: 'India', icon: 'fas fa-flag' },
+  { id: 'stocks', name: 'Stocks', icon: 'fas fa-building' },
+  { id: 'crypto', name: 'Crypto', icon: 'fab fa-bitcoin' },
+  { id: 'forex', name: 'Forex', icon: 'fas fa-globe' },
+  { id: 'commodities', name: 'Commodities', icon: 'fas fa-gem' }
 ])
 
-// Market data
-const markets = ref([
+// Indices data
+const indices = ref([
   {
-    id: 1,
+    name: 'S&P 500',
+    symbol: 'SPX',
+    price: 4489.30,
+    priceChange: 10.40,
+    change: 0.23,
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'Nasdaq 100',
+    symbol: 'NDX',
+    price: 14679.60,
+    priceChange: -105.50,
+    change: -0.71,
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  },
+  {
+    name: 'Dow Jones',
+    symbol: 'DJI',
+    price: 37432.50,
+    priceChange: 85.20,
+    change: 0.23,
+    chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  },
+  {
+    name: 'FTSE 100',
+    symbol: 'UKX',
+    price: 7689.40,
+    priceChange: -12.30,
+    change: -0.16,
+    chartData: [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68]
+  },
+  {
+    name: 'DAX',
+    symbol: 'DAX',
+    price: 16542.80,
+    priceChange: 45.60,
+    change: 0.28,
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'Nikkei 225',
+    symbol: 'NI225',
+    price: 33464.20,
+    priceChange: 125.40,
+    change: 0.38,
+    chartData: [65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55, 52]
+  }
+])
+
+// Indian Indices data
+const indiaIndices = ref([
+  {
+    name: 'Nifty 50 Index',
+    symbol: 'NIFTY 50',
+    logo: '50',
+    price: 24363.30,
+    priceChange: -234.50,
+    change: -0.95,
+    chartData: [45, 52, 48, 55, 62, 58, 65, 70, 68, 75, 72, 78, 82, 85, 88, 92, 89, 94, 91, 95]
+  },
+  {
+    name: 'S&P BSE SENSEX Index',
+    symbol: 'SENSEX',
+    logo: 'BSE',
+    price: 79857.79,
+    priceChange: -765.20,
+    change: -0.95,
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'S&P BSE LargeCap Index',
+    symbol: 'BSE LargeCap',
+    logo: 'BSE',
+    price: 9370.95,
+    priceChange: -98.50,
+    change: -1.04,
+    chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  },
+  {
+    name: 'S&P BSE MidCap Index',
+    symbol: 'BSE MidCap',
+    logo: 'BSE',
+    price: 44570.89,
+    priceChange: -705.30,
+    change: -1.56,
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  }
+])
+
+// Indian Stocks data
+const indianStocks = ref([
+  {
+    name: 'ADANI ENTERPRISES LTD',
+    symbol: 'ADANIENT',
+    logo: 'A',
+    price: 2178.10,
+    change: -3.19
+  },
+  {
+    name: 'ADANI PORT & SEZ LTD',
+    symbol: 'ADANIPORTS',
+    logo: 'AP',
+    price: 1325.00,
+    change: -1.52
+  },
+  {
+    name: 'BHARTI AIRTEL LTD',
+    symbol: 'BHARTIARTL',
+    logo: 'BA',
+    price: 1858.60,
+    change: -3.33
+  },
+  {
+    name: 'AMBUJA CEMENTS LTD',
+    symbol: 'AMBUJACEM',
+    logo: 'AC',
+    price: 580.00,
+    change: -2.08
+  },
+  {
+    name: 'APOLLO HOSPITALS ENT...',
+    symbol: 'APOLLOHOSP',
+    logo: 'AH',
+    price: 7084.50,
+    change: -1.19
+  },
+  {
+    name: 'RELIANCE INDUSTRIES',
+    symbol: 'RELIANCE',
+    logo: 'R',
+    price: 2850.75,
+    change: 1.25
+  },
+  {
+    name: 'TCS',
+    symbol: 'TCS',
+    logo: 'T',
+    price: 3850.20,
+    change: -0.85
+  },
+  {
+    name: 'INFOSYS LTD',
+    symbol: 'INFY',
+    logo: 'I',
+    price: 1423.10,
+    change: -0.96
+  }
+])
+
+// Highest Volume Stocks
+const highestVolumeStocks = ref([
+  {
+    name: 'BHARTI AIRTEL L...',
+    symbol: 'BHARTIARTL',
+    logo: 'BA',
+    price: 1858.60,
+    change: -3.33
+  },
+  {
+    name: 'KALYAN JEWELLE...',
+    symbol: 'KALYANKJIL',
+    logo: 'KJ',
+    price: 528.10,
+    change: -10.64
+  },
+  {
+    name: 'INFOSYS LTD',
+    symbol: 'INFY',
+    logo: 'I',
+    price: 1423.10,
+    change: -0.96
+  },
+  {
+    name: 'NATIONAL SEC... D',
+    symbol: 'NSDL',
+    logo: 'NS',
+    price: 1300.30,
+    change: 15.77
+  },
+  {
+    name: 'BSE LTD',
+    symbol: 'BSE',
+    logo: 'B',
+    price: 2392.90,
+    change: -2.02
+  },
+  {
+    name: 'CUMMINS INDIA...',
+    symbol: 'CUMMINSIND',
+    logo: 'C',
+    price: 3806.90,
+    change: 3.62
+  }
+])
+
+// Most Volatile Stocks
+const mostVolatileStocks = ref([
+  {
+    name: 'MOS UTILITY LTD',
+    symbol: 'MOS',
+    logo: 'M',
+    price: 49.50,
+    change: -80.05
+  },
+  {
+    name: 'NATURA HUE CHE... D',
+    symbol: 'NATHUEC',
+    logo: 'NH',
+    price: 9.18,
+    change: -13.40
+  },
+  {
+    name: 'MIRC ELECTRONIC...',
+    symbol: 'MIRCELECTR',
+    logo: 'ME',
+    price: 20.37,
+    change: 19.61
+  },
+  {
+    name: 'NESTLE INDIA LTD',
+    symbol: 'NESTLEIND',
+    logo: 'N',
+    price: 1096.50,
+    change: -1.86
+  },
+  {
+    name: 'PG ELECTROPLAS...',
+    symbol: 'PGEL',
+    logo: 'PG',
+    price: 588.80,
+    change: -20.09
+  },
+  {
+    name: 'MADHUVEER CO... D',
+    symbol: 'MADHUVEER',
+    logo: 'MC',
+    price: 160.50,
+    change: -13.24
+  }
+])
+
+// US Stocks data
+const stocks = ref([
+  {
     name: 'Apple Inc.',
     symbol: 'AAPL',
     price: 185.42,
     priceChange: 4.15,
     change: 2.29,
-    open: 181.27,
-    high: 186.50,
-    low: 180.80,
+    marketCap: '2.9T',
     volume: 45.2,
-    category: 'stocks',
     chartData: [45, 52, 48, 55, 62, 58, 65, 70, 68, 75, 72, 78, 82, 85, 88, 92, 89, 94, 91, 95]
   },
   {
-    id: 2,
-    name: 'Tesla Inc.',
-    symbol: 'TSLA',
-    price: 248.50,
-    priceChange: -3.02,
-    change: -1.20,
-    open: 251.52,
-    high: 253.80,
-    low: 247.20,
-    volume: 32.8,
-    category: 'stocks',
-    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
-  },
-  {
-    id: 3,
     name: 'NVIDIA Corp.',
     symbol: 'NVDA',
     price: 485.09,
     priceChange: 17.85,
     change: 3.82,
-    open: 467.24,
-    high: 488.50,
-    low: 465.80,
+    marketCap: '1.2T',
     volume: 28.5,
-    category: 'stocks',
     chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
   },
   {
-    id: 4,
+    name: 'Microsoft Corp.',
+    symbol: 'MSFT',
+    price: 378.85,
+    priceChange: 2.45,
+    change: 0.65,
+    marketCap: '2.8T',
+    volume: 32.1,
+    chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  },
+  {
+    name: 'Tesla Inc.',
+    symbol: 'TSLA',
+    price: 248.50,
+    priceChange: -3.02,
+    change: -1.20,
+    marketCap: '789B',
+    volume: 32.8,
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  },
+  {
+    name: 'Amazon.com',
+    symbol: 'AMZN',
+    price: 151.20,
+    priceChange: 1.85,
+    change: 1.24,
+    marketCap: '1.6T',
+    volume: 38.7,
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'Alphabet Inc.',
+    symbol: 'GOOGL',
+    price: 142.65,
+    priceChange: 0.95,
+    change: 0.67,
+    marketCap: '1.8T',
+    volume: 25.3,
+    chartData: [65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55, 52]
+  }
+])
+
+// Cryptocurrency data
+const cryptos = ref([
+  {
     name: 'Bitcoin',
-    symbol: 'BTCUSD',
+    symbol: 'BTC',
     price: 43250.50,
     priceChange: 1250.30,
     change: 2.98,
-    open: 42000.20,
-    high: 43500.00,
-    low: 41800.50,
-    volume: 15.8,
-    category: 'crypto',
+    marketCap: '847.2B',
+    volume24h: '28.5B',
+    icon: 'fab fa-bitcoin',
     chartData: [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68]
   },
   {
-    id: 5,
     name: 'Ethereum',
-    symbol: 'ETHUSD',
+    symbol: 'ETH',
     price: 2650.75,
     priceChange: -45.25,
     change: -1.68,
-    open: 2696.00,
-    high: 2710.50,
-    low: 2640.20,
-    volume: 12.3,
-    category: 'crypto',
+    marketCap: '318.7B',
+    volume24h: '15.2B',
+    icon: 'fab fa-ethereum',
     chartData: [70, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12, 10]
   },
   {
-    id: 6,
+    name: 'Binance Coin',
+    symbol: 'BNB',
+    price: 312.40,
+    priceChange: 8.75,
+    change: 2.88,
+    marketCap: '48.2B',
+    volume24h: '2.1B',
+    icon: 'fas fa-coins',
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'Solana',
+    symbol: 'SOL',
+    price: 98.25,
+    priceChange: 3.45,
+    change: 3.64,
+    marketCap: '42.8B',
+    volume24h: '3.8B',
+    icon: 'fas fa-sun',
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'Cardano',
+    symbol: 'ADA',
+    price: 0.485,
+    priceChange: -0.025,
+    change: -4.90,
+    marketCap: '17.2B',
+    volume24h: '1.2B',
+    icon: 'fas fa-cube',
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  },
+  {
+    name: 'XRP',
+    symbol: 'XRP',
+    price: 0.542,
+    priceChange: 0.012,
+    change: 2.27,
+    marketCap: '29.4B',
+    volume24h: '2.8B',
+    icon: 'fas fa-bolt',
+    chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  }
+])
+
+// Forex pairs data
+const forexPairs = ref([
+  {
     name: 'EUR/USD',
     symbol: 'EURUSD',
     price: 1.0856,
     priceChange: 0.0023,
     change: 0.21,
-    open: 1.0833,
     high: 1.0870,
     low: 1.0820,
-    volume: 8.9,
-    category: 'forex',
     chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  },
+  {
+    name: 'GBP/USD',
+    symbol: 'GBPUSD',
+    price: 1.2654,
+    priceChange: -0.0032,
+    change: -0.25,
+    high: 1.2680,
+    low: 1.2620,
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  },
+  {
+    name: 'USD/JPY',
+    symbol: 'USDJPY',
+    price: 148.25,
+    priceChange: 0.45,
+    change: 0.30,
+    high: 148.50,
+    low: 147.80,
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'USD/CHF',
+    symbol: 'USDCHF',
+    price: 0.8542,
+    priceChange: -0.0018,
+    change: -0.21,
+    high: 0.8560,
+    low: 0.8520,
+    chartData: [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68]
+  },
+  {
+    name: 'AUD/USD',
+    symbol: 'AUDUSD',
+    price: 0.6724,
+    priceChange: 0.0012,
+    change: 0.18,
+    high: 0.6740,
+    low: 0.6700,
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'USD/CAD',
+    symbol: 'USDCAD',
+    price: 1.3548,
+    priceChange: -0.0025,
+    change: -0.18,
+    high: 1.3570,
+    low: 1.3520,
+    chartData: [65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55, 52]
+  }
+])
+
+// Commodities data
+const commodities = ref([
+  {
+    name: 'Gold Futures',
+    symbol: 'GC',
+    price: 2045.80,
+    priceChange: 12.50,
+    change: 0.61,
+    open: 2033.30,
+    volume: 125.4,
+    icon: 'fas fa-gem',
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'Silver Futures',
+    symbol: 'SI',
+    price: 23.45,
+    priceChange: 0.25,
+    change: 1.08,
+    open: 23.20,
+    volume: 85.2,
+    icon: 'fas fa-ring',
+    chartData: [50, 52, 55, 58, 62, 65, 68, 72, 75, 78, 82, 85, 88, 92, 95, 92, 88, 85, 82, 78]
+  },
+  {
+    name: 'Crude Oil',
+    symbol: 'CL',
+    price: 78.25,
+    priceChange: -1.20,
+    change: -1.51,
+    open: 79.45,
+    volume: 245.8,
+    icon: 'fas fa-fire',
+    chartData: [75, 72, 68, 65, 62, 58, 55, 52, 48, 45, 42, 38, 35, 32, 28, 25, 22, 18, 15, 12]
+  },
+  {
+    name: 'Copper Futures',
+    symbol: 'HG',
+    price: 3.85,
+    priceChange: 0.08,
+    change: 2.12,
+    open: 3.77,
+    volume: 45.6,
+    icon: 'fas fa-industry',
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'Natural Gas',
+    symbol: 'NG',
+    price: 2.85,
+    priceChange: -0.12,
+    change: -4.04,
+    open: 2.97,
+    volume: 125.3,
+    icon: 'fas fa-fire-flame-simple',
+    chartData: [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68]
+  },
+  {
+    name: 'Wheat Futures',
+    symbol: 'ZW',
+    price: 5.85,
+    priceChange: 0.15,
+    change: 2.63,
+    open: 5.70,
+    volume: 35.2,
+    icon: 'fas fa-seedling',
+    chartData: [65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55, 52]
   }
 ])
 
@@ -448,17 +1173,81 @@ let updateInterval
 
 onMounted(() => {
   updateInterval = setInterval(() => {
-    markets.value.forEach(market => {
-      // Simulate price changes
-      const change = (Math.random() - 0.5) * 2
-      market.price += change
-      market.priceChange += change
-      market.change = (market.priceChange / (market.price - market.priceChange)) * 100
-      
-      // Update chart data
-      market.chartData = market.chartData.map(() => Math.random() * 100)
+    // Update indices
+    indices.value.forEach(index => {
+      const change = (Math.random() - 0.5) * 0.5
+      index.price += change
+      index.priceChange += change
+      index.change = (index.priceChange / (index.price - index.priceChange)) * 100
+      index.chartData = index.chartData.map(() => Math.random() * 100)
     })
-  }, 5000) // Update every 5 seconds
+    
+    // Update Indian indices
+    indiaIndices.value.forEach(index => {
+      const change = (Math.random() - 0.5) * 10
+      index.price += change
+      index.priceChange += change
+      index.change = (index.priceChange / (index.price - index.priceChange)) * 100
+      index.chartData = index.chartData.map(() => Math.random() * 100)
+    })
+    
+    // Update Indian stocks
+    indianStocks.value.forEach(stock => {
+      const change = (Math.random() - 0.5) * 5
+      stock.price += change
+      stock.change += (Math.random() - 0.5) * 0.5
+    })
+    
+    // Update highest volume stocks
+    highestVolumeStocks.value.forEach(stock => {
+      const change = (Math.random() - 0.5) * 3
+      stock.price += change
+      stock.change += (Math.random() - 0.5) * 0.3
+    })
+    
+    // Update most volatile stocks
+    mostVolatileStocks.value.forEach(stock => {
+      const change = (Math.random() - 0.5) * 2
+      stock.price += change
+      stock.change += (Math.random() - 0.5) * 1
+    })
+    
+    // Update stocks
+    stocks.value.forEach(stock => {
+      const change = (Math.random() - 0.5) * 1
+      stock.price += change
+      stock.priceChange += change
+      stock.change = (stock.priceChange / (stock.price - stock.priceChange)) * 100
+      stock.chartData = stock.chartData.map(() => Math.random() * 100)
+    })
+    
+    // Update cryptos
+    cryptos.value.forEach(crypto => {
+      const change = (Math.random() - 0.5) * 50
+      crypto.price += change
+      crypto.priceChange += change
+      crypto.change = (crypto.priceChange / (crypto.price - crypto.priceChange)) * 100
+      crypto.chartData = crypto.chartData.map(() => Math.random() * 100)
+    })
+    
+    // Update forex
+    forexPairs.value.forEach(forex => {
+      const change = (Math.random() - 0.5) * 0.0001
+      forex.price += change
+      forex.priceChange += change
+      forex.change = (forex.priceChange / (forex.price - forex.priceChange)) * 100
+      forex.chartData = forex.chartData.map(() => Math.random() * 100)
+    })
+    
+    // Update commodities
+    commodities.value.forEach(commodity => {
+      const change = (Math.random() - 0.5) * 0.5
+      commodity.price += change
+      commodity.priceChange += change
+      commodity.change = (commodity.priceChange / (commodity.price - commodity.priceChange)) * 100
+      commodity.chartData = commodity.chartData.map(() => Math.random() * 100)
+    })
+  }, 3000) // Update every 3 seconds for more dynamic feel
 })
 
 onUnmounted(() => {
@@ -705,15 +1494,72 @@ onUnmounted(() => {
   border-color: #00ff88;
 }
 
-/* Market Grid */
-.market-grid {
+/* Market Tabs */
+.market-tabs {
+  position: relative;
+  z-index: 10;
+  background: rgba(10, 10, 26, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0 2rem;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.tab-btn.active {
+  background: #00ff88;
+  color: #0a0a1a;
+  border-color: #00ff88;
+}
+
+.tab-btn i {
+  font-size: 1rem;
+}
+
+/* Market Sections */
+.market-section {
+  padding: 3rem 0;
+}
+
+.section-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Indices Grid */
+.indices-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 3rem;
 }
 
-.market-card {
+.index-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -722,56 +1568,561 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
 }
 
-.market-card:hover {
+.index-card:hover {
   border-color: rgba(0, 255, 136, 0.3);
   transform: translateY(-2px);
 }
 
-.market-header {
+.index-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
 }
 
-.market-info h3 {
+.index-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.index-logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0a0a1a;
+  font-size: 0.9rem;
+}
+
+.logo-text {
+  font-weight: bold;
+  color: #0a0a1a;
+}
+
+.index-info h3 {
   font-size: 1.2rem;
   font-weight: bold;
   margin: 0 0 0.25rem 0;
   color: white;
 }
 
-.symbol {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-}
-
-.market-change {
+.index-change {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   font-weight: bold;
 }
 
-.market-change.up {
+.index-change.up {
   color: #00ff88;
 }
 
-.market-change.down {
+.index-change.down {
   color: #ff4757;
 }
 
-.change-arrow {
-  font-size: 1.2rem;
-}
-
-.market-price {
+.index-price {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
+.index-chart {
+  margin-bottom: 1rem;
+}
+
+/* Indian Stocks Section */
+.indian-stocks-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.indian-stocks-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.indian-stock-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-width: 280px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.indian-stock-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.stock-logo {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0a0a1a;
+  font-size: 1rem;
+}
+
+.stock-info {
+  flex: 1;
+}
+
+.stock-symbol {
+  font-weight: bold;
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.stock-name {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.stock-price-info {
+  text-align: right;
+}
+
+.stock-price {
+  font-weight: bold;
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.stock-change {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.stock-change.up {
+  color: #00ff88;
+}
+
+.stock-change.down {
+  color: #ff4757;
+}
+
+/* Market Overview */
+.market-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.overview-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.overview-section h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 1rem 0;
+}
+
+.overview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.overview-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.overview-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stock-logo-small {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0a0a1a;
+  font-size: 0.8rem;
+}
+
+.stock-details {
+  flex: 1;
+}
+
+.stock-name {
+  font-weight: bold;
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.stock-symbol-small {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.stock-price-details {
+  text-align: right;
+}
+
+.stock-price-small {
+  font-weight: bold;
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.stock-change-small {
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.stock-change-small.up {
+  color: #00ff88;
+}
+
+.stock-change-small.down {
+  color: #ff4757;
+}
+
+.see-all-link {
+  color: #00ff88;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 1rem;
+  display: block;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.see-all-link:hover {
+  color: #00d4aa;
+}
+
+/* Stocks Grid */
+.stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.stock-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.stock-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.stock-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.stock-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+}
+
+.stock-change.up {
+  color: #00ff88;
+}
+
+.stock-change.down {
+  color: #ff4757;
+}
+
+.stock-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stock-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Crypto Grid */
+.crypto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.crypto-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.crypto-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.crypto-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.crypto-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 255, 136, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #00ff88;
+}
+
+.crypto-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.crypto-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+}
+
+.crypto-change.up {
+  color: #00ff88;
+}
+
+.crypto-change.down {
+  color: #ff4757;
+}
+
+.crypto-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.crypto-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Forex Grid */
+.forex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.forex-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.forex-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.forex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.forex-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.forex-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+}
+
+.forex-change.up {
+  color: #00ff88;
+}
+
+.forex-change.down {
+  color: #ff4757;
+}
+
+.forex-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.forex-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Commodities Grid */
+.commodities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.commodity-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.commodity-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.commodity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.commodity-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.commodity-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 255, 136, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #00ff88;
+}
+
+.commodity-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+  color: white;
+}
+
+.commodity-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+}
+
+.commodity-change.up {
+  color: #00ff88;
+}
+
+.commodity-change.down {
+  color: #ff4757;
+}
+
+.commodity-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.commodity-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Common Styles */
 .price-value {
   font-size: 1.5rem;
   font-weight: bold;
@@ -783,8 +2134,34 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.market-chart {
-  margin-bottom: 1rem;
+.change-value {
+  font-size: 1rem;
+}
+
+.change-arrow {
+  font-size: 1.2rem;
+}
+
+.symbol {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.stat-value {
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .mini-chart {
@@ -807,29 +2184,6 @@ onUnmounted(() => {
 
 .chart-bar.down {
   background: #ff4757;
-}
-
-.market-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-.stat {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-}
-
-.stat-value {
-  color: white;
-  font-weight: 500;
-  font-size: 0.9rem;
 }
 
 /* Live Charts Section */
