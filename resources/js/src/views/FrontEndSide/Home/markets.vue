@@ -39,17 +39,17 @@
     <!-- Header -->
     <header class="markets-header">
       <div class="header-container">
-        <button class="back-button" @click="goBack">
+        <button class="back-button fade-in-left" @click="goBack">
           <i class="fas fa-arrow-left"></i>
           Back to Home
         </button>
         
-        <div class="header-content">
+        <div class="header-content fade-in-up">
           <h1>Global Markets</h1>
           <p>Real-time market data and live charts</p>
         </div>
         
-        <div class="market-status">
+        <div class="market-status fade-in-right">
           <div class="status-indicator live"></div>
           <span>Live Data</span>
         </div>
@@ -59,7 +59,7 @@
     <!-- Market Categories Tabs -->
     <section class="market-tabs">
       <div class="container">
-        <div class="tabs-container">
+        <div class="tabs-container fade-in-up">
           <button 
             v-for="tab in marketTabs" 
             :key="tab.id"
@@ -76,13 +76,13 @@
     <!-- Indices Section -->
     <section v-if="activeTab === 'indices'" class="market-section">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>Major Indices</h2>
           <div class="section-subtitle">Global market benchmarks</div>
         </div>
         
         <div class="indices-grid">
-          <div v-for="index in indices" :key="index.symbol" class="index-card">
+          <div v-for="(index, idx) in indices" :key="index.symbol" :class="['index-card', idx % 2 === 0 ? 'fade-in-left' : 'fade-in-right']">
             <div class="index-header">
               <div class="index-info">
                 <h3>{{ index.name }}</h3>
@@ -161,13 +161,13 @@
         </div>
 
         <!-- Indian Stocks Section -->
-        <div class="section-header" style="margin-top: 3rem;">
+        <div class="section-header fade-in-up" style="margin-top: 3rem;">
           <h2>Indian Stocks</h2>
           <div class="section-subtitle">Community trends</div>
         </div>
         
         <div class="indian-stocks-scroll">
-          <div v-for="stock in indianStocks" :key="stock.symbol" class="indian-stock-card">
+          <div v-for="(stock, idx) in indianStocks" :key="stock.symbol" :class="['indian-stock-card', idx % 2 === 0 ? 'fade-in-left' : 'fade-in-right']">
             <div class="stock-logo">
               <span class="logo-text">{{ stock.logo }}</span>
             </div>
@@ -186,7 +186,7 @@
 
         <!-- Market Overview Section -->
         <div class="market-overview">
-          <div class="overview-section">
+          <div class="overview-section fade-in-left">
             <h3>Highest Volume Stocks</h3>
             <div class="overview-list">
               <div v-for="stock in highestVolumeStocks" :key="stock.symbol" class="overview-item">
@@ -208,7 +208,7 @@
             <div class="see-all-link">See all most actively traded stocks ></div>
           </div>
 
-          <div class="overview-section">
+          <div class="overview-section fade-in-right">
             <h3>Most Volatile Stocks</h3>
             <div class="overview-list">
               <div v-for="stock in mostVolatileStocks" :key="stock.symbol" class="overview-item">
@@ -581,6 +581,33 @@ const router = useRouter()
 const goBack = () => {
   router.back()
 }
+
+// Scroll animations
+const initScrollAnimations = () => {
+  const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -100px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateX(0) translateY(0) scale(1)';
+        }, 100);
+      }
+    });
+  }, observerOptions);
+
+  const animatedElements = document.querySelectorAll('.fade-in-left, .fade-in-right, .fade-in-up, .fade-in-down, .scale-in, .slide-in');
+  animatedElements.forEach(el => {
+    observer.observe(el);
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-100px) translateY(50px) scale(0.8)';
+  });
+};
 
 // Market tabs
 const activeTab = ref('indices')
@@ -1172,6 +1199,8 @@ const filteredMarkets = computed(() => {
 let updateInterval
 
 onMounted(() => {
+  initScrollAnimations();
+  
   updateInterval = setInterval(() => {
     // Update indices
     indices.value.forEach(index => {
@@ -2539,6 +2568,63 @@ onUnmounted(() => {
 .indicator-value.neutral {
   color: rgba(255, 255, 255, 0.7);
 }
+
+/* Enhanced Scroll Animations - Markets Page */
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(80px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-down {
+  opacity: 0;
+  transform: translateY(-80px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.scale-in {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-in {
+  opacity: 0;
+  transform: translateX(-150px) translateY(30px);
+  transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-in {
+  opacity: 1 !important;
+  transform: translateX(0) translateY(0) scale(1) !important;
+}
+
+/* Stagger animations for markets page */
+.indices-grid .index-card:nth-child(1) { transition-delay: 0.2s; }
+.indices-grid .index-card:nth-child(2) { transition-delay: 0.4s; }
+.indices-grid .index-card:nth-child(3) { transition-delay: 0.6s; }
+.indices-grid .index-card:nth-child(4) { transition-delay: 0.8s; }
+.indices-grid .index-card:nth-child(5) { transition-delay: 1.0s; }
+.indices-grid .index-card:nth-child(6) { transition-delay: 1.2s; }
+
+.indian-stocks-scroll .indian-stock-card:nth-child(1) { transition-delay: 0.2s; }
+.indian-stocks-scroll .indian-stock-card:nth-child(2) { transition-delay: 0.4s; }
+.indian-stocks-scroll .indian-stock-card:nth-child(3) { transition-delay: 0.6s; }
+.indian-stocks-scroll .indian-stock-card:nth-child(4) { transition-delay: 0.8s; }
+.indian-stocks-scroll .indian-stock-card:nth-child(5) { transition-delay: 1.0s; }
+.indian-stocks-scroll .indian-stock-card:nth-child(6) { transition-delay: 1.2s; }
 
 /* Responsive Design */
 @media (max-width: 768px) {

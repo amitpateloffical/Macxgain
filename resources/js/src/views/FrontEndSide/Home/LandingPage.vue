@@ -89,52 +89,124 @@
     <section class="hero">
       <div class="hero-container">
         <div class="hero-content">
-          <div class="trust-badge">
-            <span class="badge-icon">🎯</span>
-            <span>20% Discount & Get 24/7 Free Assistance</span>
+          <div class="trust-badge fade-in-left">
+            <span class="badge-icon">🚀</span>
+            <span>Limited Time: 50% Off on Premium Plans + Free Trading Course</span>
           </div>
           
-          <h1 class="hero-title">
-            Account that Suits Your 
-            <span class="highlight">Trading Style</span>
+          <h1 class="hero-title fade-in-left">
+            Master the Markets with 
+            <span class="highlight">AI-Powered Trading</span>
           </h1>
           
-          <p class="hero-subtitle">
-            In a fast moving market, choose a stable broker. Macxgain provides 
-            everything you need to trade Futures & Options in one place.
+          <p class="hero-subtitle fade-in-left">
+            Experience next-generation trading with Macxgain's revolutionary AI algorithms. 
+            Trade smarter, not harder with real-time market insights and automated strategies.
           </p>
           
-          <div class="hero-actions">
+          <div class="hero-actions fade-in-left">
             <a href="/admin/login" class="btn btn-primary btn-large">Start Trading Now</a>
             <a href="#" class="btn btn-outline btn-large">Download App</a>
           </div>
           
-          <div class="hero-stats">
+          <div class="hero-stats fade-in-up">
             <div class="stat">
-              <span class="stat-number">4.7M+</span>
-              <span class="stat-label">Installations</span>
+              <span class="stat-number">₹2.5Cr+</span>
+              <span class="stat-label">Daily Volume</span>
             </div>
             <div class="stat">
-              <span class="stat-number">24/7</span>
-              <span class="stat-label">Support</span>
+              <span class="stat-number">95.8%</span>
+              <span class="stat-label">Win Rate</span>
             </div>
             <div class="stat">
-              <span class="stat-number">50+</span>
-              <span class="stat-label">Markets</span>
+              <span class="stat-number">150+</span>
+              <span class="stat-label">AI Signals</span>
             </div>
           </div>
         </div>
         
         <div class="hero-visual">
           <div class="trading-dashboard">
-            <div class="chart-window">
+            <!-- Main Chart -->
+            <div class="chart-window main-chart">
               <div class="chart-header">
-                <span class="chart-title">AAPL - Apple Inc.</span>
-                <span class="chart-price up">$185.42 +2.3%</span>
+                <div class="chart-info">
+                  <span class="chart-title">NIFTY 50</span>
+                  <span class="chart-subtitle">NSE India</span>
+                </div>
+                <div class="chart-price-info">
+                  <span class="chart-price">₹24,563.30</span>
+                  <span class="chart-change up">+1.8%</span>
+                </div>
               </div>
               <div class="chart-body">
-                <div class="price-line"></div>
-                <div class="volume-bars"></div>
+                <div class="price-chart">
+                  <div class="chart-line"></div>
+                  <div class="chart-points">
+                    <div class="point up"></div>
+                    <div class="point up"></div>
+                    <div class="point down"></div>
+                    <div class="point up"></div>
+                    <div class="point up"></div>
+                  </div>
+                </div>
+                <div class="chart-stats">
+                  <div class="stat">
+                    <span class="stat-label">Volume</span>
+                    <span class="stat-value">2.5Cr</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label">High</span>
+                    <span class="stat-value">24,650</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label">Low</span>
+                    <span class="stat-value">24,420</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Mini Charts -->
+            <div class="mini-charts">
+              <div class="mini-chart">
+                <div class="mini-header">
+                  <span class="mini-title">BANKNIFTY</span>
+                  <span class="mini-price up">₹44,570 +2.1%</span>
+                </div>
+                <div class="mini-line up"></div>
+              </div>
+              
+              <div class="mini-chart">
+                <div class="mini-header">
+                  <span class="mini-title">RELIANCE</span>
+                  <span class="mini-price up">₹2,845 +0.8%</span>
+                </div>
+                <div class="mini-line up"></div>
+              </div>
+              
+              <div class="mini-chart">
+                <div class="mini-header">
+                  <span class="mini-title">TCS</span>
+                  <span class="mini-price up">₹4,050 +2.5%</span>
+                </div>
+                <div class="mini-line up"></div>
+              </div>
+            </div>
+            
+            <!-- Live Ticker -->
+            <div class="live-ticker">
+              <div class="ticker-item">
+                <span class="ticker-symbol">HDFC</span>
+                <span class="ticker-price up">₹1,650 +1.2%</span>
+              </div>
+              <div class="ticker-item">
+                <span class="ticker-symbol">INFY</span>
+                <span class="ticker-price up">₹1,480 +0.9%</span>
+              </div>
+              <div class="ticker-item">
+                <span class="ticker-symbol">WIPRO</span>
+                <span class="ticker-price down">₹420 -0.3%</span>
               </div>
             </div>
           </div>
@@ -145,76 +217,76 @@
     <!-- Account Types Section -->
     <section class="account-types">
       <div class="container">
-        <div class="section-header">
-          <h2>Futures & Options Trading Accounts</h2>
-          <p>Choose the account that matches your trading goals and experience level</p>
+        <div class="section-header fade-in-up">
+          <h2>Next-Gen AI Trading Plans</h2>
+          <p>Experience the future of trading with our revolutionary AI-powered plans</p>
         </div>
         
         <div class="account-cards">
           <div class="account-card">
             <div class="card-header">
-              <h3>Standard Account</h3>
-              <div class="card-badge">Popular</div>
+              <h3>Smart Trader</h3>
+              <div class="card-badge">Free Trial</div>
             </div>
             <div class="card-features">
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Low minimum deposit</span>
+                <span class="feature-icon">🚀</span>
+                <span>Smart Trading Signals</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Basic trading tools</span>
+                <span class="feature-icon">🛡️</span>
+                <span>Auto Stop Loss</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>24/7 support</span>
+                <span class="feature-icon">📱</span>
+                <span>Mobile Trading</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Open Account</a>
+            <a href="/admin/login" class="btn btn-primary">Start Free</a>
           </div>
           
           <div class="account-card featured">
             <div class="card-header">
-              <h3>Commission Account</h3>
-              <div class="card-badge">Best Value</div>
+              <h3>Pro Trader</h3>
+              <div class="card-badge">Most Popular</div>
             </div>
             <div class="card-features">
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Advanced trading tools</span>
+                <span class="feature-icon">🤖</span>
+                <span>AI Trading Bots</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Lower commission rates</span>
+                <span class="feature-icon">📊</span>
+                <span>Real-time Analytics</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Priority support</span>
+                <span class="feature-icon">⚡</span>
+                <span>High-Speed Execution</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Open Account</a>
+            <a href="/admin/login" class="btn btn-primary">Get Pro</a>
           </div>
           
           <div class="account-card">
             <div class="card-header">
-              <h3>STP Pro Account</h3>
-              <div class="card-badge">Professional</div>
+              <h3>VIP Trader</h3>
+              <div class="card-badge">Premium</div>
             </div>
             <div class="card-features">
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Professional tools</span>
+                <span class="feature-icon">🎯</span>
+                <span>Custom Strategies</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Direct market access</span>
+                <span class="feature-icon">💎</span>
+                <span>VIP Support</span>
               </div>
               <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Dedicated manager</span>
+                <span class="feature-icon">👨‍💼</span>
+                <span>Personal Manager</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Open Account</a>
+            <a href="/admin/login" class="btn btn-primary">Go VIP</a>
           </div>
         </div>
       </div>
@@ -223,74 +295,74 @@
     <!-- Trading Features Section -->
     <section class="trading-features">
       <div class="container">
-        <div class="section-header">
-          <h2>Advanced Trading Features</h2>
-          <p>Everything you need for successful futures and options trading</p>
+        <div class="section-header fade-in-up">
+          <h2>AI-Powered Trading Features</h2>
+          <p>Experience the future of trading with cutting-edge AI technology</p>
         </div>
         
         <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>High-Speed Execution</h3>
-            <p>Execute trades in milliseconds with our ultra-fast order execution system</p>
-            <div class="feature-stats">
-              <div class="stat">
-                <span class="stat-value">0.001s</span>
-                <span class="stat-label">Execution Speed</span>
+          <div class="feature-card fade-in-left">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Trading Bots</h3>
+            <p>Automated trading bots that execute strategies 24/7 with 95% accuracy</p>
+                          <div class="feature-stats">
+                <div class="stat">
+                  <span class="stat-value">95%</span>
+                  <span class="stat-label">Accuracy Rate</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">24/7</span>
+                  <span class="stat-label">Active Trading</span>
+                </div>
               </div>
-              <div class="stat">
-                <span class="stat-value">99.9%</span>
-                <span class="stat-label">Success Rate</span>
-              </div>
-            </div>
           </div>
           
-          <div class="feature-card">
-            <div class="feature-icon">📈</div>
-            <h3>Advanced Charting</h3>
-            <p>Professional charts with 100+ technical indicators and drawing tools</p>
-            <div class="feature-stats">
-              <div class="stat">
-                <span class="stat-value">100+</span>
-                <span class="stat-label">Indicators</span>
+          <div class="feature-card fade-in-up">
+            <div class="feature-icon">🧠</div>
+            <h3>AI Market Predictions</h3>
+            <p>Machine learning algorithms predict market movements with 87% accuracy</p>
+                          <div class="feature-stats">
+                <div class="stat">
+                  <span class="stat-value">87%</span>
+                  <span class="stat-label">Prediction Rate</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">Real-time</span>
+                  <span class="stat-label">Analysis</span>
+                </div>
               </div>
-              <div class="stat">
-                <span class="stat-value">15</span>
-                <span class="stat-label">Timeframes</span>
-              </div>
-            </div>
           </div>
           
-          <div class="feature-card">
-            <div class="feature-icon">🛡️</div>
-            <h3>Risk Management</h3>
-            <p>Advanced risk management tools with stop-loss and take-profit orders</p>
-            <div class="feature-stats">
-              <div class="stat">
-                <span class="stat-value">Auto</span>
-                <span class="stat-label">Stop Loss</span>
+          <div class="feature-card fade-in-right">
+            <div class="feature-icon">🎯</div>
+            <h3>Smart Portfolio</h3>
+            <p>AI-driven portfolio optimization with automatic rebalancing and diversification</p>
+                          <div class="feature-stats">
+                <div class="stat">
+                  <span class="stat-value">Auto</span>
+                  <span class="stat-label">Rebalancing</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">Smart</span>
+                  <span class="stat-label">Diversification</span>
+                </div>
               </div>
-              <div class="stat">
-                <span class="stat-value">Real-time</span>
-                <span class="stat-label">Monitoring</span>
-              </div>
-            </div>
           </div>
           
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Mobile Trading</h3>
-            <p>Trade anywhere with our powerful mobile app for iOS and Android</p>
-            <div class="feature-stats">
-              <div class="stat">
-                <span class="stat-value">24/7</span>
-                <span class="stat-label">Access</span>
+          <div class="feature-card fade-in-up">
+            <div class="feature-icon">📊</div>
+            <h3>Real-time Analytics</h3>
+            <p>Advanced analytics dashboard with live market insights and performance metrics</p>
+                          <div class="feature-stats">
+                <div class="stat">
+                  <span class="stat-value">Live</span>
+                  <span class="stat-label">Insights</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">Advanced</span>
+                  <span class="stat-label">Metrics</span>
+                </div>
               </div>
-              <div class="stat">
-                <span class="stat-value">Push</span>
-                <span class="stat-label">Alerts</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -299,44 +371,44 @@
     <!-- Market Analysis Section -->
     <section class="market-analysis">
       <div class="container">
-        <div class="section-header">
-          <h2>Live Market Analysis</h2>
-          <p>Get real-time insights and expert analysis</p>
+        <div class="section-header fade-in-up">
+          <h2>AI Market Intelligence</h2>
+          <p>Get real-time AI-powered market insights and predictions</p>
         </div>
         
         <div class="analysis-grid">
-          <div class="analysis-card">
+          <div class="analysis-card fade-in-left">
             <div class="analysis-header">
               <h3>NIFTY 50</h3>
-              <div class="market-status up">Bullish</div>
+              <div class="market-status up">AI Bullish</div>
             </div>
             <div class="analysis-content">
               <div class="price-info">
-                <div class="current-price">₹24,363.30</div>
-                <div class="price-change up">+234.50 (+0.95%)</div>
+                <div class="current-price">₹24,563.30</div>
+                <div class="price-change up">+434.50 (+1.80%)</div>
               </div>
-              <div class="technical-indicators">
-                <div class="indicator">
-                  <span class="indicator-name">RSI</span>
-                  <span class="indicator-value bullish">65.2</span>
+                              <div class="technical-indicators">
+                  <div class="indicator">
+                    <span class="indicator-name">AI Score</span>
+                    <span class="indicator-value bullish">87.5</span>
+                  </div>
+                  <div class="indicator">
+                    <span class="indicator-name">Prediction</span>
+                    <span class="indicator-value bullish">Strong Buy</span>
+                  </div>
+                  <div class="indicator">
+                    <span class="indicator-name">Target</span>
+                    <span class="indicator-value">24,800</span>
+                  </div>
+                  <div class="indicator">
+                    <span class="indicator-name">Confidence</span>
+                    <span class="indicator-value">92%</span>
+                  </div>
                 </div>
-                <div class="indicator">
-                  <span class="indicator-name">MACD</span>
-                  <span class="indicator-value bullish">Bullish</span>
-                </div>
-                <div class="indicator">
-                  <span class="indicator-name">Support</span>
-                  <span class="indicator-value">24,200</span>
-                </div>
-                <div class="indicator">
-                  <span class="indicator-name">Resistance</span>
-                  <span class="indicator-value">24,500</span>
-                </div>
-              </div>
             </div>
           </div>
           
-          <div class="analysis-card">
+          <div class="analysis-card fade-in-up">
             <div class="analysis-header">
               <h3>BANK NIFTY</h3>
               <div class="market-status down">Bearish</div>
@@ -367,7 +439,7 @@
             </div>
           </div>
           
-          <div class="analysis-card">
+          <div class="analysis-card fade-in-right">
             <div class="analysis-header">
               <h3>FINNIFTY</h3>
               <div class="market-status neutral">Neutral</div>
@@ -404,13 +476,13 @@
     <!-- Educational Resources Section -->
     <section class="educational-resources">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>Learn & Grow</h2>
           <p>Comprehensive educational resources for traders</p>
         </div>
         
         <div class="resources-grid">
-          <div class="resource-card">
+          <div class="resource-card fade-in-left">
             <div class="resource-icon">📚</div>
             <h3>Trading Academy</h3>
             <p>Free courses on futures and options trading fundamentals</p>
@@ -422,7 +494,7 @@
             <a href="#" class="resource-link">Start Learning</a>
           </div>
           
-          <div class="resource-card">
+          <div class="resource-card fade-in-right">
             <div class="resource-icon">📊</div>
             <h3>Market Analysis</h3>
             <p>Daily market updates and expert analysis from our team</p>
@@ -434,7 +506,7 @@
             <a href="#" class="resource-link">Read Analysis</a>
           </div>
           
-          <div class="resource-card">
+          <div class="resource-card fade-in-left">
             <div class="resource-icon">🎥</div>
             <h3>Video Tutorials</h3>
             <p>Step-by-step video guides for platform features</p>
@@ -446,7 +518,7 @@
             <a href="#" class="resource-link">Watch Videos</a>
           </div>
           
-          <div class="resource-card">
+          <div class="resource-card fade-in-right">
             <div class="resource-icon">📈</div>
             <h3>Strategy Library</h3>
             <p>Proven trading strategies and risk management techniques</p>
@@ -464,13 +536,13 @@
     <!-- Trading Instruments Section -->
     <section class="trading-instruments">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>Trading Instruments</h2>
           <p>Trade a wide range of instruments with competitive spreads</p>
         </div>
         
         <div class="instruments-grid">
-          <div class="instrument-card">
+          <div class="instrument-card fade-in-left">
             <div class="instrument-header">
               <div class="instrument-icon">📈</div>
               <div class="instrument-info">
@@ -530,7 +602,7 @@
             </div>
           </div>
           
-          <div class="instrument-card">
+          <div class="instrument-card fade-in-right">
             <div class="instrument-header">
               <div class="instrument-icon">⚡</div>
               <div class="instrument-info">
@@ -566,14 +638,14 @@
     <!-- Platform Features Section -->
     <section class="platform-features">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>Platform Features</h2>
           <p>Advanced features designed for professional traders</p>
         </div>
         
         <div class="features-showcase">
           <div class="feature-showcase-item">
-            <div class="feature-content">
+            <div class="feature-content fade-in-left">
               <h3>Real-Time Data</h3>
               <p>Get live market data with millisecond precision. Track prices, volumes, and market depth in real-time.</p>
               <div class="feature-highlights">
@@ -591,7 +663,7 @@
                 </div>
               </div>
             </div>
-            <div class="feature-image">
+            <div class="feature-image fade-in-right">
               <div class="data-display">
                 <div class="data-header">
                   <span class="data-title">Live Market Data</span>
@@ -668,13 +740,13 @@
     <!-- Success Stories Section -->
     <section class="success-stories">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>Success Stories</h2>
           <p>Real traders, real results with Macxgain</p>
         </div>
         
         <div class="stories-grid">
-          <div class="story-card">
+          <div class="story-card fade-in-left">
             <div class="story-header">
               <div class="trader-avatar">RK</div>
               <div class="trader-info">
@@ -700,7 +772,7 @@
             </div>
           </div>
           
-          <div class="story-card">
+          <div class="story-card fade-in-up">
             <div class="story-header">
               <div class="trader-avatar">SP</div>
               <div class="trader-info">
@@ -726,7 +798,7 @@
             </div>
           </div>
           
-          <div class="story-card">
+          <div class="story-card fade-in-right">
             <div class="story-header">
               <div class="trader-avatar">AS</div>
               <div class="trader-info">
@@ -1028,13 +1100,13 @@
     <!-- Testimonials Section -->
     <section class="testimonials">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-up">
           <h2>What Our Traders Say</h2>
           <p>Join thousands of satisfied traders worldwide</p>
         </div>
         
         <div class="testimonials-grid">
-          <div class="testimonial-card">
+          <div class="testimonial-card fade-in-left">
             <div class="testimonial-rating">
               ⭐⭐⭐⭐⭐
             </div>
@@ -1048,7 +1120,7 @@
             </div>
           </div>
           
-          <div class="testimonial-card">
+          <div class="testimonial-card fade-in-up">
             <div class="testimonial-rating">
               ⭐⭐⭐⭐⭐
             </div>
@@ -1062,7 +1134,7 @@
             </div>
           </div>
           
-          <div class="testimonial-card">
+          <div class="testimonial-card fade-in-right">
             <div class="testimonial-rating">
               ⭐⭐⭐⭐⭐
             </div>
@@ -1195,8 +1267,38 @@ export default {
     };
   },
   mounted() {
-    // Add any initialization logic here
+    this.initScrollAnimations();
   },
+  methods: {
+    initScrollAnimations() {
+      const observerOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+            // Add a small delay for staggered effect
+            setTimeout(() => {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateX(0) translateY(0) scale(1)';
+            }, 100);
+          }
+        });
+      }, observerOptions);
+
+      // Observe all elements with animation classes
+      const animatedElements = document.querySelectorAll('.fade-in-left, .fade-in-right, .fade-in-up, .fade-in-down, .scale-in, .slide-in');
+      animatedElements.forEach(el => {
+        observer.observe(el);
+        // Reset animation state
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-100px) translateY(50px) scale(0.8)';
+      });
+    }
+  }
 };
 </script>
 
@@ -1208,6 +1310,7 @@ export default {
   color: white;
   position: relative;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 /* Trading Background Animation */
@@ -1546,40 +1649,81 @@ export default {
 
 .trading-dashboard {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  width: 380px;
 }
 
-.chart-window {
-  width: 300px;
-  height: 200px;
+.main-chart {
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(0, 255, 136, 0.2);
 }
 
 .chart-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.chart-info {
+  display: flex;
+  flex-direction: column;
+}
+
 .chart-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.chart-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.chart-price-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.chart-price {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.chart-change.up {
+  color: #00ff88;
   font-weight: 600;
 }
 
-.chart-price.up {
-  color: #00ff88;
+.chart-change.down {
+  color: #ff4757;
+  font-weight: 600;
 }
 
 .chart-body {
-  height: 150px;
+  height: 120px;
   position: relative;
 }
 
-.price-line {
+.price-chart {
+  height: 80px;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.chart-line {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1589,7 +1733,7 @@ export default {
   border-radius: 1px;
 }
 
-.volume-bars {
+.chart-points {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1597,23 +1741,135 @@ export default {
   height: 100%;
   display: flex;
   align-items: end;
-  gap: 2px;
+  gap: 8px;
 }
 
-.volume-bars::before {
-  content: '';
-  width: 4px;
+.point {
+  width: 3px;
+  border-radius: 1px;
+}
+
+.point.up {
   height: 60%;
-  background: rgba(0, 255, 136, 0.3);
+  background: #00ff88;
+}
+
+.point.down {
+  height: 40%;
+  background: #ff4757;
+}
+
+.chart-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.chart-stats .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-stats .stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2px;
+}
+
+.chart-stats .stat-value {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Mini Charts */
+.mini-charts {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mini-chart {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.mini-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mini-price {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.mini-price.up {
+  color: #00ff88;
+}
+
+.mini-price.down {
+  color: #ff4757;
+}
+
+.mini-line {
+  height: 2px;
   border-radius: 1px;
 }
 
-.volume-bars::after {
-  content: '';
-  width: 4px;
-  height: 80%;
-  background: rgba(0, 255, 136, 0.5);
-  border-radius: 1px;
+.mini-line.up {
+  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+}
+
+.mini-line.down {
+  background: linear-gradient(90deg, #ff4757 0%, #ff6b6b 100%);
+}
+
+/* Live Ticker */
+.live-ticker {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ticker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.ticker-item:last-child {
+  margin-bottom: 0;
+}
+
+.ticker-symbol {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ticker-price {
+  font-weight: 600;
+}
+
+.ticker-price.up {
+  color: #00ff88;
+}
+
+.ticker-price.down {
+  color: #ff4757;
 }
 
 /* Section Styles */
@@ -2866,6 +3122,129 @@ export default {
   font-size: 0.9rem;
 }
 
+/* Enhanced Scroll Animations - Vidyagxp Style */
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(80px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-down {
+  opacity: 0;
+  transform: translateY(-80px);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.scale-in {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-in {
+  opacity: 0;
+  transform: translateX(-150px) translateY(30px);
+  transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-in {
+  opacity: 1 !important;
+  transform: translateX(0) translateY(0) scale(1) !important;
+}
+
+/* Smooth entrance animations */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(80px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced Stagger animations for grid items - Vidyagxp Style */
+.features-grid .feature-card:nth-child(1) { transition-delay: 0.2s; }
+.features-grid .feature-card:nth-child(2) { transition-delay: 0.4s; }
+.features-grid .feature-card:nth-child(3) { transition-delay: 0.6s; }
+.features-grid .feature-card:nth-child(4) { transition-delay: 0.8s; }
+
+.analysis-grid .analysis-card:nth-child(1) { transition-delay: 0.2s; }
+.analysis-grid .analysis-card:nth-child(2) { transition-delay: 0.4s; }
+.analysis-grid .analysis-card:nth-child(3) { transition-delay: 0.6s; }
+
+.resources-grid .resource-card:nth-child(1) { transition-delay: 0.2s; }
+.resources-grid .resource-card:nth-child(2) { transition-delay: 0.4s; }
+.resources-grid .resource-card:nth-child(3) { transition-delay: 0.6s; }
+.resources-grid .resource-card:nth-child(4) { transition-delay: 0.8s; }
+
+.instruments-grid .instrument-card:nth-child(1) { transition-delay: 0.2s; }
+.instruments-grid .instrument-card:nth-child(2) { transition-delay: 0.4s; }
+.instruments-grid .instrument-card:nth-child(3) { transition-delay: 0.6s; }
+
+.stories-grid .story-card:nth-child(1) { transition-delay: 0.2s; }
+.stories-grid .story-card:nth-child(2) { transition-delay: 0.4s; }
+.stories-grid .story-card:nth-child(3) { transition-delay: 0.6s; }
+
+.account-cards .account-card:nth-child(1) { transition-delay: 0.2s; }
+.account-cards .account-card:nth-child(2) { transition-delay: 0.4s; }
+.account-cards .account-card:nth-child(3) { transition-delay: 0.6s; }
+
+.testimonials-grid .testimonial-card:nth-child(1) { transition-delay: 0.2s; }
+.testimonials-grid .testimonial-card:nth-child(2) { transition-delay: 0.4s; }
+.testimonials-grid .testimonial-card:nth-child(3) { transition-delay: 0.6s; }
+
+.stats-grid .stat-item:nth-child(1) { transition-delay: 0.2s; }
+.stats-grid .stat-item:nth-child(2) { transition-delay: 0.4s; }
+.stats-grid .stat-item:nth-child(3) { transition-delay: 0.6s; }
+.stats-grid .stat-item:nth-child(4) { transition-delay: 0.8s; }
+
 /* Statistics Section */
 .statistics {
   padding: 4rem 0;
@@ -2999,25 +3378,92 @@ export default {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
 @media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
   .hero-container {
     grid-template-columns: 1fr;
     gap: 2rem;
+    text-align: center;
   }
   
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+    line-height: 1.2;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+    line-height: 1.6;
   }
   
   .hero-actions {
     flex-direction: column;
+    gap: 1rem;
+    align-items: center;
   }
   
   .hero-stats {
     justify-content: center;
+    gap: 2rem;
   }
   
+  .stat-number {
+    font-size: 1.8rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+  }
+  
+  /* Trading Dashboard Mobile */
+  .trading-dashboard {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+  
+  .main-chart {
+    padding: 1rem;
+  }
+  
+  .chart-title {
+    font-size: 1rem;
+  }
+  
+  .chart-price {
+    font-size: 1rem;
+  }
+  
+  .mini-charts {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .mini-chart {
+    padding: 0.6rem;
+  }
+  
+  .mini-title {
+    font-size: 0.6rem;
+  }
+  
+  .mini-price {
+    font-size: 0.6rem;
+  }
+  
+  .live-ticker {
+    padding: 0.6rem;
+  }
+  
+  .ticker-item {
+    font-size: 0.7rem;
+  }
+  
+  /* Navigation */
   .nav-menu {
     display: none;
   }
@@ -3031,8 +3477,13 @@ export default {
     font-size: 0.9rem;
   }
   
+  /* Sections */
   .section-header h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
+  }
+  
+  .section-header p {
+    font-size: 1rem;
   }
   
   .account-cards,
@@ -3045,16 +3496,35 @@ export default {
   .instruments-grid,
   .stories-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
-  .footer-content {
-    grid-template-columns: 1fr;
-    text-align: center;
+  .account-card,
+  .feature-card,
+  .analysis-card,
+  .resource-card,
+  .instrument-card,
+  .story-card,
+  .testimonial-card {
+    padding: 1.5rem;
   }
   
+  .feature-icon {
+    font-size: 2rem;
+  }
+  
+  .feature-card h3 {
+    font-size: 1.2rem;
+  }
+  
+  .feature-card p {
+    font-size: 0.9rem;
+  }
+  
+  /* Showcase Items */
   .feature-showcase-item {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
   
   .feature-showcase-item.reverse {
@@ -3062,40 +3532,52 @@ export default {
   }
   
   .phone-mockup {
-    width: 250px;
-    height: 450px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .stat-number {
-    font-size: 2rem;
-  }
-  
-  .tool-features {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .feature-tag {
-    width: 100%;
-    text-align: center;
+    width: 200px;
+    height: 350px;
   }
   
   .data-display,
   .chart-display {
     min-width: auto;
     width: 100%;
+    padding: 1rem;
   }
   
+  .data-items,
+  .chart-content {
+    font-size: 0.8rem;
+  }
+  
+  /* Statistics */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+  }
+  
+  /* Story Stats */
   .story-stats {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
   
   .story-stats .stat:last-child {
     grid-column: span 2;
+  }
+  
+  .story-stats .stat-value {
+    font-size: 1rem;
+  }
+  
+  .story-stats .stat-label {
+    font-size: 0.7rem;
   }
   
   .popular-stocks {
@@ -3121,23 +3603,109 @@ export default {
 
 @media (max-width: 480px) {
   .container {
-    padding: 0 1rem;
+    padding: 0 0.8rem;
   }
   
-  .header-container {
-    padding: 0 1rem;
+  .hero-container {
+    gap: 1.5rem;
   }
   
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
+  .trust-badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .hero-actions {
+    gap: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .hero-stats {
+    gap: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  /* Trading Dashboard Small Mobile */
+  .trading-dashboard {
+    max-width: 300px;
+    padding: 1rem;
+  }
+  
+  .main-chart {
+    padding: 0.8rem;
+  }
+  
+  .chart-title {
+    font-size: 0.9rem;
+  }
+  
+  .chart-subtitle {
+    font-size: 0.7rem;
+  }
+  
+  .chart-price {
+    font-size: 0.9rem;
+  }
+  
+  .chart-change {
+    font-size: 0.8rem;
+  }
+  
+  .chart-stats {
+    font-size: 0.7rem;
+  }
+  
+  .mini-charts {
+    gap: 0.3rem;
+  }
+  
+  .mini-chart {
+    padding: 0.5rem;
+  }
+  
+  .mini-title {
+    font-size: 0.5rem;
+  }
+  
+  .mini-price {
+    font-size: 0.5rem;
+  }
+  
+  .live-ticker {
+    padding: 0.5rem;
+  }
+  
+  .ticker-item {
+    font-size: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  /* Sections */
   .section-header h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+  }
+  
+  .section-header p {
+    font-size: 0.9rem;
   }
   
   .account-card,
@@ -3147,14 +3715,46 @@ export default {
   .resource-card,
   .instrument-card,
   .story-card {
-    padding: 1.5rem;
+    padding: 1.2rem;
+  }
+  
+  .feature-icon {
+    font-size: 1.8rem;
+  }
+  
+  .feature-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .feature-card p {
+    font-size: 0.8rem;
+  }
+  
+  .feature-stats .stat-value {
+    font-size: 0.9rem;
+  }
+  
+  .feature-stats .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  /* Phone Mockup */
+  .phone-mockup {
+    width: 150px;
+    height: 280px;
   }
   
   .data-display,
   .chart-display {
-    padding: 1rem;
+    padding: 0.8rem;
   }
   
+  .data-items,
+  .chart-content {
+    font-size: 0.7rem;
+  }
+  
+  /* Story Elements */
   .story-header {
     flex-direction: column;
     text-align: center;
@@ -3186,15 +3786,10 @@ export default {
   }
   
   .feature-content h3 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
   
   .feature-content p {
-    font-size: 0.9rem;
-  }
-  
-  .data-items,
-  .chart-content {
     font-size: 0.8rem;
   }
   
@@ -3203,7 +3798,7 @@ export default {
   }
   
   .story-stats .stat-value {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .story-stats .stat-label {
