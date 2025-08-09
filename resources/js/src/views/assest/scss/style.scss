@@ -1955,3 +1955,55 @@ table{
     }
     
 }
+
+// Security Styles - Controlled by environment variables
+.security-disabled-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.security-disabled-drag {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+}
+
+.security-disabled-context {
+    pointer-events: none;
+}
+
+// Override for interactive elements when drag is disabled
+.security-disabled-drag button,
+.security-disabled-drag input,
+.security-disabled-drag select,
+.security-disabled-drag textarea,
+.security-disabled-drag a,
+.security-disabled-drag .btn,
+.security-disabled-drag .form-control {
+    pointer-events: auto;
+}
+
+// Developer tools warning overlay (if needed)
+.security-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
