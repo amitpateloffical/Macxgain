@@ -1,20 +1,257 @@
 <template>
-  <div class="register-page">
-    <!-- Trading Background Animation -->
+  <div class="register-container">
+    <!-- Background with gradient -->
+    <div class="register-background">
+      <div class="background-pattern"></div>
+    </div>
+
+    <!-- Main register card -->
+    <div class="register-card">
+      <!-- Logo and header -->
+      <div class="register-header">
+        <div class="logo-container">
+          <div class="logo-image">
+            <img src="../assest/img/logo.png" alt="Macxgain Logo" class="logo" />
+          </div>
+          <h1 class="brand-name">Macxgain</h1>
+          <p class="tagline">Smart Trading Solutions</p>
+        </div>
+        <h2 class="welcome-text">Create Account</h2>
+        <p class="subtitle">Join thousands of successful traders</p>
+      </div>
+
+      <!-- Register form -->
+      <form @submit.prevent="handleRegister" class="register-form">
+        <!-- Name fields in row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName" class="form-label">
+              <i class="fas fa-user"></i>
+              First Name
+            </label>
+            <div class="input-container">
+              <input
+                id="firstName"
+                type="text"
+                v-model="form.firstName"
+                required
+                placeholder="First name"
+                class="form-input"
+                :class="{ 'error': errorMessage && !form.firstName }"
+              />
+              <i class="fas fa-user input-icon"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName" class="form-label">
+              <i class="fas fa-user"></i>
+              Last Name
+            </label>
+            <div class="input-container">
+              <input
+                id="lastName"
+                type="text"
+                v-model="form.lastName"
+                required
+                placeholder="Last name"
+                class="form-input"
+                :class="{ 'error': errorMessage && !form.lastName }"
+              />
+              <i class="fas fa-user input-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email field -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            <i class="fas fa-envelope"></i>
+            Email Address
+          </label>
+          <div class="input-container">
+            <input
+              id="email"
+              type="email"
+              v-model="form.email"
+              required
+              placeholder="Enter your email"
+              class="form-input"
+              :class="{ 'error': errorMessage && !form.email }"
+            />
+            <i class="fas fa-envelope input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Phone field -->
+        <div class="form-group">
+          <label for="phone" class="form-label">
+            <i class="fas fa-phone"></i>
+            Phone Number
+          </label>
+          <div class="input-container">
+            <input
+              id="phone"
+              type="tel"
+              v-model="form.phone"
+              required
+              placeholder="Enter your phone"
+              class="form-input"
+              :class="{ 'error': errorMessage && !form.phone }"
+            />
+            <i class="fas fa-phone input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Password field -->
+        <div class="form-group">
+          <label for="password" class="form-label">
+            <i class="fas fa-lock"></i>
+            Password
+          </label>
+          <div class="input-container">
+            <input
+              id="password"
+              :type="showPassword ? 'text' : 'password'"
+              v-model="form.password"
+              required
+              placeholder="Create password"
+              class="form-input"
+              :class="{ 'error': errorMessage && !form.password }"
+            />
+            <i class="fas fa-lock input-icon"></i>
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="password-toggle"
+              :class="{ 'active': showPassword }"
+            >
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password field -->
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">
+            <i class="fas fa-lock"></i>
+            Confirm Password
+          </label>
+          <div class="input-container">
+            <input
+              id="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              v-model="form.confirmPassword"
+              required
+              placeholder="Confirm password"
+              class="form-input"
+              :class="{ 'error': errorMessage && !form.confirmPassword }"
+            />
+            <i class="fas fa-lock input-icon"></i>
+            <button
+              type="button"
+              @click="showConfirmPassword = !showConfirmPassword"
+              class="password-toggle"
+              :class="{ 'active': showConfirmPassword }"
+            >
+              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terms and conditions -->
+        <div class="form-options">
+          <label class="checkbox-container">
+            <input
+              type="checkbox"
+              v-model="form.acceptTerms"
+              class="checkbox-input"
+              required
+            />
+            <span class="checkmark"></span>
+            I agree to the <router-link to="#" class="terms-link">Terms & Conditions</router-link>
+          </label>
+        </div>
+
+        <!-- Error message -->
+        <div v-if="errorMessage" class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Submit button -->
+        <button
+          type="submit"
+          class="register-button"
+          :disabled="isLoading"
+        >
+          <span v-if="!isLoading">
+            <i class="fas fa-user-plus"></i>
+            Create Account
+          </span>
+          <span v-else class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            Creating Account...
+          </span>
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="register-footer">
+        <p>Already have an account? <router-link to="/login" class="login-link">Sign In</router-link></p>
+      </div>
+    </div>
+
+    <!-- Trading Background Elements -->
     <div class="trading-background">
+      <!-- Animated Stock Charts -->
       <div class="stock-chart chart-1">
         <div class="candlestick up"></div>
         <div class="candlestick down"></div>
         <div class="candlestick up"></div>
         <div class="candlestick up"></div>
         <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
       </div>
+      
       <div class="stock-chart chart-2">
         <div class="candlestick down"></div>
         <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
         <div class="candlestick up"></div>
         <div class="candlestick down"></div>
         <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+      </div>
+      
+      <div class="stock-chart chart-3">
+        <div class="candlestick up"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+        <div class="candlestick down"></div>
+        <div class="candlestick up"></div>
+      </div>
+
+      <!-- Trading Indicators -->
+      <div class="trading-indicators">
+        <div class="indicator">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="indicator">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="indicator">
+          <div class="line"></div>
+          <div class="dot"></div>
+        </div>
       </div>
       
       <div class="price-tickers">
@@ -34,542 +271,202 @@
           <span class="change up">+3.8%</span>
         </div>
       </div>
-    </div>
-
-    <!-- Register Container -->
-    <div class="register-container">
-      <div class="register-background">
-        <div class="register-card">
-          <!-- Header -->
-          <div class="register-header">
-            <div class="logo-container">
-              <img src="../assest/img/logo.png" alt="Macxgain Logo" class="logo-image" />
-              <div class="logo-text">
-                <h2>Macxgain</h2>
-                <p>Smart Trading Solutions</p>
-              </div>
-            </div>
-            <div class="welcome-text">
-              <h1>Create Your Trading Account</h1>
-              <p>Join thousands of successful traders and start your journey today</p>
-            </div>
-          </div>
-
-          <!-- Register Form -->
-          <form @submit.prevent="handleRegister" class="register-form">
-            <!-- Account Type Selection -->
-            <div class="form-group">
-              <label class="form-label">Account Type</label>
-              <div class="account-type-selector">
-                <div 
-                  class="account-type-option" 
-                  :class="{ active: selectedAccountType === 'standard' }"
-                  @click="selectedAccountType = 'standard'"
-                >
-                  <div class="option-icon">📊</div>
-                  <div class="option-content">
-                    <h4>Standard Account</h4>
-                    <p>Perfect for beginners</p>
-                  </div>
-                </div>
-                <div 
-                  class="account-type-option" 
-                  :class="{ active: selectedAccountType === 'commission' }"
-                  @click="selectedAccountType = 'commission'"
-                >
-                  <div class="option-icon">💼</div>
-                  <div class="option-content">
-                    <h4>Commission Account</h4>
-                    <p>Best for active traders</p>
-                  </div>
-                </div>
-                <div 
-                  class="account-type-option" 
-                  :class="{ active: selectedAccountType === 'pro' }"
-                  @click="selectedAccountType = 'pro'"
-                >
-                  <div class="option-icon">🏆</div>
-                  <div class="option-content">
-                    <h4>STP Pro Account</h4>
-                    <p>For professionals</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Personal Information -->
-            <div class="form-section">
-              <h3 class="section-title">Personal Information</h3>
-              
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">First Name</label>
-                  <div class="input-container">
-                    <i class="input-icon fas fa-user"></i>
-                    <input 
-                      type="text" 
-                      v-model="form.firstName"
-                      class="form-input" 
-                      placeholder="Enter your first name"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label">Last Name</label>
-                  <div class="input-container">
-                    <i class="input-icon fas fa-user"></i>
-                    <input 
-                      type="text" 
-                      v-model="form.lastName"
-                      class="form-input" 
-                      placeholder="Enter your last name"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <div class="input-container">
-                  <i class="input-icon fas fa-envelope"></i>
-                  <input 
-                    type="email" 
-                    v-model="form.email"
-                    class="form-input" 
-                    placeholder="Enter your email address"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Phone Number</label>
-                <div class="input-container">
-                  <i class="input-icon fas fa-phone"></i>
-                  <input 
-                    type="tel" 
-                    v-model="form.phone"
-                    class="form-input" 
-                    placeholder="Enter your phone number"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Security Information -->
-            <div class="form-section">
-              <h3 class="section-title">Security Information</h3>
-              
-              <div class="form-group">
-                <label class="form-label">Username</label>
-                <div class="input-container">
-                  <i class="input-icon fas fa-user-circle"></i>
-                  <input 
-                    type="text" 
-                    v-model="form.username"
-                    class="form-input" 
-                    placeholder="Choose a username"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Password</label>
-                <div class="input-container">
-                  <i class="input-icon fas fa-lock"></i>
-                  <input 
-                    :type="showPassword ? 'text' : 'password'" 
-                    v-model="form.password"
-                    class="form-input" 
-                    placeholder="Create a strong password"
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showPassword = !showPassword"
-                  >
-                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Confirm Password</label>
-                <div class="input-container">
-                  <i class="input-icon fas fa-lock"></i>
-                  <input 
-                    :type="showConfirmPassword ? 'text' : 'password'" 
-                    v-model="form.confirmPassword"
-                    class="form-input" 
-                    placeholder="Confirm your password"
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  >
-                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Terms and Conditions -->
-            <div class="form-group">
-              <div class="checkbox-container">
-                <input 
-                  type="checkbox" 
-                  id="terms" 
-                  v-model="form.acceptTerms"
-                  class="checkbox-input"
-                  required
-                />
-                <label for="terms" class="checkmark"></label>
-                <span class="checkbox-text">
-                  I agree to the <a href="#" class="link">Terms & Conditions</a> and 
-                  <a href="#" class="link">Privacy Policy</a>
-                </span>
-              </div>
-            </div>
-
-            <!-- Error Message -->
-            <div v-if="errorMessage" class="error-message">
-              <i class="fas fa-exclamation-circle"></i>
-              {{ errorMessage }}
-            </div>
-
-            <!-- Register Button -->
-            <button type="submit" class="register-button" :disabled="isLoading">
-              <span v-if="!isLoading">Create Trading Account</span>
-              <div v-else class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Creating Account...</span>
-              </div>
-            </button>
-          </form>
-
-          <!-- Login Link -->
-          <div class="register-footer">
-            <p>Already have an account? <a href="/admin/login" class="login-link">Login Now</a></p>
-          </div>
-        </div>
+      
+      <div class="floating-numbers">
+        <div class="number">+15.2%</div>
+        <div class="number">$2.4M</div>
+        <div class="number">+8.7%</div>
+        <div class="number">$1.8M</div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "Register",
-  data() {
-    return {
-      selectedAccountType: 'standard',
-      showPassword: false,
-      showConfirmPassword: false,
-      isLoading: false,
-      errorMessage: '',
-      form: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-        acceptTerms: false
-      }
-    };
-  },
-  methods: {
-    async handleRegister() {
-      this.errorMessage = '';
-      
-      if (!this.validateForm()) {
-        return;
-      }
-      
-      this.isLoading = true;
-      
-      try {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.$toast.success('Account created successfully! Welcome to Macxgain.');
-        setTimeout(() => {
-          this.$router.push('/admin/login');
-        }, 1500);
-      } catch (error) {
-        this.errorMessage = 'Registration failed. Please try again.';
-        this.$toast.error('Registration failed. Please try again.');
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    validateForm() {
-      if (this.form.password !== this.form.confirmPassword) {
-        this.errorMessage = 'Passwords do not match.';
-        return false;
-      }
-      
-      if (!this.form.acceptTerms) {
-        this.errorMessage = 'Please accept the Terms & Conditions.';
-        return false;
-      }
-      
-      return true;
-    }
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
+
+const router = useRouter()
+
+// Form data
+const form = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  password: '',
+  confirmPassword: '',
+  acceptTerms: false
+})
+
+// Component state
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+// Form validation
+const validateForm = () => {
+  if (form.value.password !== form.value.confirmPassword) {
+    errorMessage.value = 'Passwords do not match.'
+    return false
   }
-};
+  
+  if (!form.value.acceptTerms) {
+    errorMessage.value = 'Please accept the Terms & Conditions.'
+    return false
+  }
+  
+  if (form.value.password.length < 6) {
+    errorMessage.value = 'Password must be at least 6 characters long.'
+    return false
+  }
+  
+  return true
+}
+
+// Register function
+const handleRegister = async () => {
+  errorMessage.value = ''
+  
+  if (!validateForm()) {
+    return
+  }
+  
+  isLoading.value = true
+  
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    toast.success('Account created successfully! Welcome to Macxgain.', {
+      autoClose: 2000,
+      position: "top-right"
+    })
+    
+    // Redirect to login page
+    setTimeout(() => {
+      router.push('/login')
+    }, 1500)
+    
+  } catch (error) {
+    errorMessage.value = 'Registration failed. Please try again.'
+    toast.error('Registration failed. Please try again.', {
+      autoClose: 3000,
+      position: "top-right"
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
-/* Register Page Styles */
-.register-page {
+/* Main container - matches login page */
+.register-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 20px;
 }
 
-/* Trading Background Animation */
-.trading-background {
-  position: fixed;
+/* Background with pattern - matches login page */
+.register-background {
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   z-index: 1;
 }
 
-.stock-chart {
+.background-pattern {
   position: absolute;
-  display: flex;
-  gap: 2px;
-  opacity: 0.1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 255, 136, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
 }
 
-.chart-1 {
-  top: 15%;
-  left: 5%;
-  animation: slideRight 20s linear infinite;
-}
-
-.chart-2 {
-  top: 45%;
-  right: 10%;
-  animation: slideLeft 25s linear infinite;
-}
-
-.candlestick {
-  width: 4px;
-  background: #00ff88;
-  border-radius: 1px;
-}
-
-.candlestick.up {
-  height: 20px;
-  background: #00ff88;
-}
-
-.candlestick.down {
-  height: 15px;
-  background: #ff4757;
-}
-
-.price-tickers {
-  position: absolute;
-  top: 10%;
-  right: 5%;
-  opacity: 0.2;
-}
-
-.ticker {
-  background: rgba(0, 255, 136, 0.1);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-  display: flex;
-  gap: 8px;
-  font-size: 12px;
-  animation: slideLeft 15s linear infinite;
-}
-
-.ticker .symbol {
-  font-weight: bold;
-}
-
-.ticker .price.up {
-  color: #00ff88;
-}
-
-.ticker .price.down {
-  color: #ff4757;
-}
-
-.ticker .change.up {
-  color: #00ff88;
-}
-
-.ticker .change.down {
-  color: #ff4757;
-}
-
-/* Animations */
-@keyframes slideRight {
-  0% { transform: translateX(-100px); opacity: 0; }
-  10% { opacity: 0.1; }
-  90% { opacity: 0.1; }
-  100% { transform: translateX(calc(100vw + 100px)); opacity: 0; }
-}
-
-@keyframes slideLeft {
-  0% { transform: translateX(100px); opacity: 0; }
-  10% { opacity: 0.1; }
-  90% { opacity: 0.1; }
-  100% { transform: translateX(calc(-100vw - 100px)); opacity: 0; }
-}
-
-/* Register Container */
-.register-container {
+/* Main register card - matches login page */
+.register-card {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 600px;
-}
-
-.register-background {
+  max-width: 450px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 3rem;
+  padding: 2.5rem;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 
-.register-card {
-  width: 100%;
-}
-
-/* Header */
+/* Header - matches login page */
 .register-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 12px;
+  margin-bottom: 1.5rem;
 }
 
-.logo-image {
-  width: 60px;
+.logo {
+  width: 50px;
   height: auto;
 }
 
-.logo-text h2 {
-  color: #00ff88;
-  font-size: 2rem;
+.brand-name {
+  font-size: 1.8rem;
   font-weight: bold;
+  color: #00d4aa;
   margin: 0;
 }
 
-.logo-text p {
+.tagline {
   color: rgba(255, 255, 255, 0.7);
-  margin: 0;
   font-size: 0.9rem;
+  margin: 0.25rem 0 0 0;
 }
 
-.welcome-text h1 {
-  font-size: 2.2rem;
+.welcome-text {
+  font-size: 1.8rem;
   font-weight: bold;
   color: white;
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 0;
 }
 
-.welcome-text p {
+.subtitle {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 0;
 }
 
-/* Account Type Selector */
-.account-type-selector {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.account-type-option {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.account-type-option:hover {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: rgba(0, 255, 136, 0.05);
-}
-
-.account-type-option.active {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.1);
-}
-
-.option-icon {
-  font-size: 2rem;
-}
-
-.option-content h4 {
-  color: white;
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-}
-
-.option-content p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-/* Form Sections */
-.form-section {
-  margin-bottom: 2.5rem;
-}
-
-.section-title {
-  color: #00ff88;
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5rem;
+/* Form styling - matches login page */
+.register-form {
+  width: 100%;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .form-group {
@@ -577,11 +474,13 @@ export default {
 }
 
 .form-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: white;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  font-size: 14px;
 }
 
 .input-container {
@@ -590,13 +489,14 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 16px 16px 16px 48px;
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 12px;
   color: white;
-  font-size: 1rem;
+  font-size: 16px;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-input::placeholder {
@@ -605,122 +505,179 @@ export default {
 
 .form-input:focus {
   outline: none;
-  border-color: #00ff88;
+  border-color: #00d4aa;
   background: rgba(255, 255, 255, 0.08);
+}
+
+.form-input.error {
+  border-color: #e53e3e;
+  background: rgba(229, 62, 62, 0.1);
 }
 
 .input-icon {
   position: absolute;
-  left: 1rem;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .password-toggle {
   position: absolute;
-  right: 1rem;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   transition: color 0.3s ease;
+  padding: 4px;
 }
 
 .password-toggle:hover {
-  color: #00ff88;
-}
-
-/* Checkbox */
-.checkbox-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.checkbox-input {
-  display: none;
-}
-
-.checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-.checkbox-input:checked + .checkmark {
-  background: #00ff88;
-  border-color: #00ff88;
-}
-
-.checkbox-input:checked + .checkmark::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #0a0a1a;
-  font-weight: bold;
-  font-size: 0.8rem;
-}
-
-.checkbox-text {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.link {
-  color: #00ff88;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.link:hover {
   color: #00d4aa;
 }
 
-/* Error Message */
-.error-message {
-  background: rgba(255, 71, 87, 0.1);
-  border: 1px solid rgba(255, 71, 87, 0.3);
-  color: #ff4757;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.password-toggle.active {
+  color: #00d4aa;
 }
 
-/* Register Button */
+/* Form options - matches login page */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.checkbox-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  height: 18px;
+  width: 18px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin-right: 12px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checkbox-container:hover .checkmark {
+  border-color: #00d4aa;
+}
+
+.checkbox-input:checked ~ .checkmark {
+  background-color: #00d4aa;
+  border-color: #00d4aa;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.terms-link {
+  color: #00d4aa;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.terms-link:hover {
+  color: #00b894;
+  text-decoration: underline;
+}
+
+/* Error message - matches login page */
+.error-message {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.error-message i {
+  margin-right: 8px;
+}
+
+/* Register button - matches login page */
 .register-button {
   width: 100%;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0a0a1a;
+  padding: 16px;
+  background: linear-gradient(135deg, #00d4aa, #00b894);
+  color: white;
   border: none;
   border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
   margin-bottom: 1.5rem;
+}
+
+.register-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
 }
 
 .register-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 212, 170, 0.4);
+}
+
+.register-button:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .register-button:disabled {
@@ -731,111 +688,35 @@ export default {
 .loading-spinner {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
-/* Footer */
+/* Footer - matches login page */
 .register-footer {
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: #718096;
+  font-size: 14px;
 }
 
 .login-link {
-  color: #00ff88;
+  color: #00d4aa;
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.3s ease;
 }
 
 .login-link:hover {
-  color: #00d4aa;
+  text-decoration: underline;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .register-page {
-    padding: 1rem;
-  }
-  
-  .register-background {
-    padding: 2rem;
-  }
-  
-  .welcome-text h1 {
-    font-size: 1.8rem;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .account-type-selector {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .register-background {
-    padding: 1.5rem;
-  }
-  
-  .welcome-text h1 {
-    font-size: 1.5rem;
-  }
-  
-  .welcome-text p {
-    font-size: 1rem;
-  }
-  
-  .logo-text h2 {
-    font-size: 1.5rem;
-  }
-  
-  .form-input {
-    padding: 0.875rem 0.875rem 0.875rem 2.5rem;
-    font-size: 0.95rem;
-  }
-  
-  .input-icon {
-    left: 0.875rem;
-    font-size: 0.9rem;
-  }
-  
-  .password-toggle {
-    right: 0.875rem;
-    font-size: 0.9rem;
-  }
-  
-  .register-button {
-    padding: 1rem;
-    font-size: 1rem;
-  }
-}
-</style>
-
-<style scoped>
-/* Register Page Styles */
-.register-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Trading Background Animation */
+/* Trading Background Elements - matches login page */
 .trading-background {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
 .stock-chart {
@@ -846,37 +727,37 @@ export default {
 }
 
 .chart-1 {
-  top: 15%;
-  left: 5%;
-  animation: slideRight 20s linear infinite;
+  top: 20%;
+  left: 10%;
+  animation: slideRight 25s linear infinite;
 }
 
 .chart-2 {
-  top: 45%;
-  right: 10%;
-  animation: slideLeft 25s linear infinite;
+  top: 60%;
+  right: 15%;
+  animation: slideLeft 30s linear infinite;
 }
 
 .chart-3 {
   bottom: 20%;
-  left: 15%;
-  animation: slideRight 30s linear infinite;
+  left: 20%;
+  animation: slideRight 35s linear infinite;
 }
 
 .candlestick {
   width: 4px;
-  background: #00ff88;
   border-radius: 1px;
+  animation: pulse 3s ease-in-out infinite;
 }
 
 .candlestick.up {
   height: 20px;
-  background: #00ff88;
+  background: #00d4aa;
 }
 
 .candlestick.down {
   height: 15px;
-  background: #ff4757;
+  background: #e53e3e;
 }
 
 .trading-indicators {
@@ -895,68 +776,69 @@ export default {
 .indicator .line {
   width: 40px;
   height: 2px;
-  background: #00ff88;
+  background: #00d4aa;
   margin-right: 8px;
 }
 
 .indicator .dot {
   width: 6px;
   height: 6px;
-  background: #00ff88;
+  background: #00d4aa;
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
 
 .price-tickers {
   position: absolute;
-  top: 10%;
+  top: 15%;
   right: 5%;
-  opacity: 0.2;
+  opacity: 0.15;
 }
 
 .ticker {
-  background: rgba(0, 255, 136, 0.1);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  background: rgba(0, 212, 170, 0.1);
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 6px;
   display: flex;
-  gap: 8px;
-  font-size: 12px;
-  animation: slideLeft 15s linear infinite;
+  gap: 6px;
+  font-size: 11px;
+  animation: slideLeft 20s linear infinite;
 }
 
 .ticker .symbol {
   font-weight: bold;
+  color: #00d4aa;
 }
 
 .ticker .price.up {
-  color: #00ff88;
+  color: #00d4aa;
 }
 
 .ticker .price.down {
-  color: #ff4757;
+  color: #e53e3e;
 }
 
 .ticker .change.up {
-  color: #00ff88;
+  color: #00d4aa;
 }
 
 .ticker .change.down {
-  color: #ff4757;
+  color: #e53e3e;
 }
 
 .floating-numbers {
   position: absolute;
-  top: 60%;
-  left: 10%;
-  opacity: 0.15;
+  top: 50%;
+  left: 5%;
+  opacity: 0.1;
 }
 
 .number {
-  font-size: 14px;
-  color: #00ff88;
-  margin-bottom: 10px;
-  animation: floatUp 8s ease-in-out infinite;
+  font-size: 12px;
+  color: #00d4aa;
+  margin-bottom: 8px;
+  animation: floatUp 6s ease-in-out infinite;
 }
 
 /* Animations */
@@ -981,404 +863,72 @@ export default {
 
 @keyframes floatUp {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-/* Register Container */
-.register-container {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 600px;
-}
-
-.register-background {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 3rem;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-}
-
-.register-card {
-  width: 100%;
-}
-
-/* Header */
-.register-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.logo-image {
-  width: 60px;
-  height: auto;
-}
-
-.logo-text h2 {
-  color: #00ff88;
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-.logo-text p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-.welcome-text h1 {
-  font-size: 2.2rem;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.welcome-text p {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-/* Account Type Selector */
-.account-type-selector {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.account-type-option {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.account-type-option:hover {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: rgba(0, 255, 136, 0.05);
-}
-
-.account-type-option.active {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.1);
-}
-
-.option-icon {
-  font-size: 2rem;
-}
-
-.option-content h4 {
-  color: white;
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-}
-
-.option-content p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-/* Form Sections */
-.form-section {
-  margin-bottom: 2.5rem;
-}
-
-.section-title {
-  color: #00ff88;
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  color: white;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.input-container {
-  position: relative;
-}
-
-.form-input {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #00ff88;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-  color: #00ff88;
-}
-
-/* Password Strength */
-.password-strength {
-  margin-top: 0.5rem;
-}
-
-.strength-bar {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 0.25rem;
-}
-
-.strength-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ff4757 0%, #ffa502 50%, #00ff88 100%);
-  transition: width 0.3s ease;
-}
-
-.strength-text {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* Checkbox */
-.checkbox-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.checkbox-input {
-  display: none;
-}
-
-.checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-.checkbox-input:checked + .checkmark {
-  background: #00ff88;
-  border-color: #00ff88;
-}
-
-.checkbox-input:checked + .checkmark::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #0a0a1a;
-  font-weight: bold;
-  font-size: 0.8rem;
-}
-
-.checkbox-text {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.link {
-  color: #00ff88;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.link:hover {
-  color: #00d4aa;
-}
-
-/* Error Message */
-.error-message {
-  background: rgba(255, 71, 87, 0.1);
-  border: 1px solid rgba(255, 71, 87, 0.3);
-  color: #ff4757;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Register Button */
-.register-button {
-  width: 100%;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0a0a1a;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 1.5rem;
-}
-
-.register-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
-}
-
-.register-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-/* Footer */
-.register-footer {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.login-link {
-  color: #00ff88;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.login-link:hover {
-  color: #00d4aa;
+  50% { transform: translateY(-15px); }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .register-page {
-    padding: 1rem;
+  .register-container {
+    padding: 15px;
   }
   
-  .register-background {
+  .register-card {
     padding: 2rem;
+    max-width: 400px;
   }
   
-  .welcome-text h1 {
-    font-size: 1.8rem;
+  .welcome-text {
+    font-size: 1.5rem;
   }
   
   .form-row {
     grid-template-columns: 1fr;
+    gap: 0;
   }
   
-  .account-type-selector {
-    grid-template-columns: 1fr;
+  .brand-name {
+    font-size: 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .register-background {
+  .register-card {
     padding: 1.5rem;
+    border-radius: 15px;
   }
   
-  .welcome-text h1 {
-    font-size: 1.5rem;
+  .welcome-text {
+    font-size: 1.3rem;
   }
   
-  .welcome-text p {
-    font-size: 1rem;
-  }
-  
-  .logo-text h2 {
-    font-size: 1.5rem;
+  .subtitle {
+    font-size: 0.9rem;
   }
   
   .form-input {
-    padding: 0.875rem 0.875rem 0.875rem 2.5rem;
-    font-size: 0.95rem;
+    padding: 14px 14px 14px 44px;
+    font-size: 15px;
   }
   
   .input-icon {
-    left: 0.875rem;
-    font-size: 0.9rem;
+    left: 14px;
+    font-size: 14px;
   }
   
   .password-toggle {
-    right: 0.875rem;
-    font-size: 0.9rem;
+    right: 14px;
+    font-size: 14px;
   }
   
   .register-button {
-    padding: 1rem;
-    font-size: 1rem;
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
 </style>

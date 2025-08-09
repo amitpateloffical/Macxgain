@@ -71,16 +71,13 @@
         
         <nav class="nav-menu">
           <a href="#" class="nav-link">Home</a>
-          <a href="#" class="nav-link">About Us</a>
           <a href="/markets" class="nav-link">Markets</a>
-          <a href="#" class="nav-link">Tools</a>
-          <a href="#" class="nav-link">Blogs</a>
           <a href="#" class="nav-link">Download APK</a>
         </nav>
         
         <div class="auth-buttons">
-          <a href="/admin/login" class="btn btn-outline">Login</a>
-          <a href="/admin/register" class="btn btn-primary">Register</a>
+          <a href="/login" class="btn btn-outline">Login</a>
+          <a href="/register" class="btn btn-primary">Register</a>
         </div>
       </div>
     </header>
@@ -105,7 +102,7 @@
           </p>
           
           <div class="hero-actions fade-in-left">
-            <a href="/admin/login" class="btn btn-primary btn-large">Start Trading Now</a>
+            <a href="/login" class="btn btn-primary btn-large">Start Trading Now</a>
             <a href="#" class="btn btn-outline btn-large">Download App</a>
           </div>
           
@@ -242,7 +239,7 @@
                 <span>Mobile Trading</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Start Free</a>
+            <a href="/login" class="btn btn-primary">Start Free</a>
           </div>
           
           <div class="account-card featured">
@@ -264,7 +261,7 @@
                 <span>High-Speed Execution</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Get Pro</a>
+            <a href="/login" class="btn btn-primary">Get Pro</a>
           </div>
           
           <div class="account-card">
@@ -286,7 +283,7 @@
                 <span>Personal Manager</span>
               </div>
             </div>
-            <a href="/admin/login" class="btn btn-primary">Go VIP</a>
+            <a href="/login" class="btn btn-primary">Go VIP</a>
           </div>
         </div>
       </div>
@@ -1226,7 +1223,6 @@
           <div class="footer-section">
             <h4>Quick Links</h4>
             <ul>
-              <li><a href="#">About Us</a></li>
               <li><a href="#">Careers</a></li>
               <li><a href="#">Meet Our Team</a></li>
               <li><a href="#">Process</a></li>

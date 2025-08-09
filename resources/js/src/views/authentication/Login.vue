@@ -111,7 +111,7 @@
 
       <!-- Footer -->
       <div class="login-footer">
-        <p>Don't have an account? <a href="#" class="signup-link">Contact Admin</a></p>
+        <p>Don't have an account? <router-link to="/register" class="signup-link">Register here</router-link></p>
       </div>
     </div>
 

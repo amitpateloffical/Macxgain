@@ -36,7 +36,28 @@
       </div>
     </div>
 
-    <!-- Header -->
+    <!-- Navigation Header -->
+    <header class="main-header">
+      <div class="header-container">
+        <div class="logo-section">
+          <img src="../logo.png" alt="Macxgain Logo" class="logo" />
+          <h1 class="brand-name">Macxgain</h1>
+        </div>
+        
+        <nav class="nav-menu">
+          <router-link to="/" class="nav-link">Home</router-link>
+          <router-link to="/markets" class="nav-link active">Markets</router-link>
+          <a href="#" class="nav-link">Download APK</a>
+        </nav>
+        
+        <div class="auth-buttons">
+          <a href="/login" class="btn btn-outline">Login</a>
+          <a href="/register" class="btn btn-primary">Register</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Markets Header -->
     <header class="markets-header">
       <div class="header-container">
         <button class="back-button fade-in-left" @click="goBack">
@@ -579,7 +600,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const goBack = () => {
-  router.back()
+  router.push('/')
 }
 
 // Scroll animations
@@ -1395,7 +1416,100 @@ onUnmounted(() => {
   100% { transform: translateX(calc(-100vw - 100px)); opacity: 0; }
 }
 
-/* Header */
+/* Main Navigation Header Styles */
+.main-header {
+  position: relative;
+  z-index: 15;
+  background: rgba(10, 10, 26, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+}
+
+.main-header .header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-header .logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-header .logo {
+  width: 40px;
+  height: auto;
+}
+
+.main-header .brand-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00ff88;
+  margin: 0;
+}
+
+.main-header .nav-menu {
+  display: flex;
+  gap: 2rem;
+}
+
+.main-header .nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.main-header .nav-link:hover {
+  color: #00ff88;
+}
+
+.main-header .nav-link.active {
+  color: #00ff88;
+}
+
+.main-header .auth-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.main-header .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.main-header .btn-outline {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.main-header .btn-outline:hover {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.main-header .btn-primary {
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  color: #0a0a1a;
+}
+
+.main-header .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+}
+
+/* Markets Header */
 .markets-header {
   position: relative;
   z-index: 10;
@@ -1426,6 +1540,10 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 44px; /* Minimum touch target size */
 }
 
 .back-button:hover {
@@ -1538,6 +1656,14 @@ onUnmounted(() => {
   gap: 0.5rem;
   overflow-x: auto;
   padding: 0 2rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
@@ -1553,6 +1679,10 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   font-weight: 500;
   white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 44px; /* Minimum touch target size */
 }
 
 .tab-btn:hover {
@@ -1595,6 +1725,10 @@ onUnmounted(() => {
   padding: 1.5rem;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .index-card:hover {
@@ -1674,6 +1808,9 @@ onUnmounted(() => {
   padding: 1rem 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
 }
 
 .indian-stocks-scroll::-webkit-scrollbar {
@@ -1691,6 +1828,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  scroll-snap-align: start;
 }
 
 .indian-stock-card:hover {
@@ -2627,20 +2769,117 @@ onUnmounted(() => {
 .indian-stocks-scroll .indian-stock-card:nth-child(6) { transition-delay: 1.2s; }
 
 /* Responsive Design */
+
+/* Tablet and smaller screens */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+  
+  .indices-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  
+  .header-content h1 {
+    font-size: 2.2rem;
+  }
+}
+
+/* Mobile landscape and smaller tablets */
 @media (max-width: 768px) {
-  .header-container {
+  /* Main Header Responsive */
+  .main-header .header-container {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
   
-  .header-content h1 {
-    font-size: 2rem;
+  .main-header .nav-menu {
+    gap: 1rem;
   }
   
+  .main-header .auth-buttons {
+    gap: 0.5rem;
+  }
+  
+  .main-header .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .main-header .brand-name {
+    font-size: 1.3rem;
+  }
+  
+  /* Markets Page Specific */
+  .header-container {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 0 1rem;
+  }
+  
+  .back-button {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .header-content {
+    order: 1;
+  }
+  
+  .market-status {
+    order: 2;
+    align-self: center;
+  }
+  
+  .header-content h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .header-content p {
+    font-size: 0.9rem;
+  }
+  
+  /* Market Tabs */
+  .market-tabs .container {
+    padding: 0;
+  }
+  
+  .tabs-container {
+    padding: 0 1rem;
+    gap: 0.25rem;
+  }
+  
+  .tab-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    min-width: auto;
+  }
+  
+  .tab-btn i {
+    font-size: 0.9rem;
+  }
+  
+  /* Section Headers */
   .section-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  /* Grids */
+  .indices-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .market-grid {
@@ -2657,29 +2896,260 @@ onUnmounted(() => {
   
   .widget-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .analysis-indicators {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  /* Cards */
+  .index-card {
+    padding: 1.25rem;
+  }
+  
+  .index-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .index-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .index-info h3 {
+    font-size: 1.1rem;
+  }
+  
+  .symbol {
+    font-size: 0.8rem;
+  }
+  
+  /* Indian Stocks Scroll */
+  .indian-stocks-scroll {
+    margin: 0 -1rem;
+    padding: 1rem;
+  }
+  
+  .indian-stock-card {
+    min-width: 250px;
+    padding: 1rem;
+  }
+  
+  /* Market Categories */
+  .category-card {
+    padding: 1.25rem;
+  }
+  
+  /* Trading Background */
+  .trading-background {
+    display: none; /* Hide complex animations on mobile */
+  }
+  
+  /* Price Tickers */
+  .price-tickers {
+    display: none; /* Hide on mobile for better performance */
   }
 }
 
+/* Mobile portrait */
 @media (max-width: 480px) {
+  /* Main Header Mobile */
+  .main-header .header-container {
+    padding: 0 1rem;
+  }
+  
+  .main-header .nav-menu {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .main-header .auth-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  
+  .main-header .btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .main-header .brand-name {
+    font-size: 1.2rem;
+  }
+  
+  /* Markets Page Mobile */
   .container {
     padding: 0 1rem;
   }
   
   .header-container {
     padding: 0 1rem;
+    gap: 1rem;
   }
   
-  .market-card {
+  .back-button {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .header-content h1 {
+    font-size: 1.75rem;
+  }
+  
+  .market-tabs {
+    padding: 0.75rem 0;
+  }
+  
+  .tabs-container {
+    padding: 0 1rem;
+    gap: 0.125rem;
+  }
+  
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+  
+  .tab-btn i {
+    display: none; /* Hide icons on very small screens */
+  }
+  
+  .market-section {
+    padding: 2rem 0;
+  }
+  
+  .section-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .index-card {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .index-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .index-info h3 {
+    font-size: 1rem;
+  }
+  
+  .index-price .price-value {
+    font-size: 1.4rem;
+  }
+  
+  .indian-stock-card {
+    min-width: 220px;
+    padding: 0.875rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .indian-stock-logo {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .stock-info h3 {
+    font-size: 0.95rem;
+  }
+  
+  .stock-price {
+    font-size: 1.1rem;
+  }
+  
+  .category-card {
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .category-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .widget-container {
     padding: 1rem;
   }
   
-  .chart-container {
-    margin: 0 -1rem;
-    border-radius: 0;
+  .widget-container h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .data-row {
+    padding: 0.5rem 0;
+  }
+  
+  .indicator {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+  
+  .header-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .tab-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .index-card {
+    padding: 0.875rem;
+  }
+  
+  .indian-stock-card {
+    min-width: 200px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .market-section {
+    padding: 1.5rem 0;
+  }
+  
+  .header-container {
+    flex-direction: row;
+    padding: 1rem;
+  }
+  
+  .header-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .trading-background {
+    display: block;
+    opacity: 0.3;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .index-logo,
+  .indian-stock-logo,
+  .category-icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 </style>

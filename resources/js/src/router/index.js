@@ -1,23 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
-  { path: '/:pathMatch(.*)*', redirect: '/landing-page' } ,// Redirect unknown routes
   {
-    path: "/admin/login",
-    name: "admin-login",
+    path: "/",
+    name: "LandingPage",
+    meta: { layout: 'full' },
+    component: () => import("../views/FrontEndSide/Home/LandingPage.vue"),
+  },
+  {
+    path: "/login",
+    name: "login",
     meta: { layout: 'full' },
     component: () => import("../views/authentication/Login.vue"),
   },
   {
-    path: "/admin/register",
-    name: "admin-register",
+    path: "/register",
+    name: "register",
     meta: { layout: 'full' },
     component: () => import("../views/authentication/Register.vue"),
-  },
-  {
-    path: '/landing-page', // Landing Page Route (hidden redirect)    name: "LandingPage",
-    meta: { layout: 'full' },
-    component: () => import("../views/FrontEndSide/Home/LandingPage.vue"),
   },
 
   {
@@ -182,7 +182,8 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../views/outlook/outlook.vue"),
   },
-  
+  // Catch-all route - must be last
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
 const router = createRouter({
