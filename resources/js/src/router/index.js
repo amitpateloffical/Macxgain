@@ -95,6 +95,20 @@ const routes = [
     meta: { requiresAuth:true},
     component: () => import("../views/profile/UserProfileTabs.vue"),
   },
+    {
+    path: "/AddMoney",
+    name: "add_money",
+    meta: { requiresAuth:true},
+    component: () => import("../views/AddMoney/AddMoney.vue"),
+  },
+
+      {
+    path: "/MoneyRequest",
+    name: "money_request",
+    meta: { requiresAuth:true},
+    component: () => import("../views/AddMoney/MoneyRequest.vue"),
+  },
+
   {
     path: "/email-logs",
     name: "email-logs",

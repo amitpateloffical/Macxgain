@@ -20,6 +20,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GraphController;
 use App\Http\Controllers\AdminSide\CategoryController;
 use App\Http\Controllers\AdminSide\ProductController;
+use App\Http\Controllers\MoneyRequestController;
+use App\Http\Controllers\UserController;
+
+
 
 
 
@@ -103,6 +107,16 @@ Route::post('/update/{id}', [CustomerController::class, 'update']);
 //Macxgain
 Route::get('/getCategoryOption', [CategoryController::class, 'getCategoryOption']);
 Route::resource('/products', ProductController::class);
+
+
+// new chalu 
+
+   Route::post('/money-request', [MoneyRequestController::class, 'store']);
+    Route::get('/money-requests', [MoneyRequestController::class, 'index']);
+Route::match(['patch', 'put'], '/money-requests/{id}/status', [MoneyRequestController::class, 'updateStatus']);
+    Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);
+
+
 
 
 

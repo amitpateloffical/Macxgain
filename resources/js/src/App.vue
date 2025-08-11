@@ -3,7 +3,7 @@
     <div class="app">
       <Header v-if="layout !== 'FullLayout'" />
       <div class="main_screen_sidebar_devider">
-        <Sidebar v-if="layout !== 'FullLayout'" />
+        <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
         <div class="main_content_screen">
           <router-view />
         </div>
