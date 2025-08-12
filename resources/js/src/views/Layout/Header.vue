@@ -19,8 +19,8 @@
           <img src="../assest/img/tableprofileimg.png" alt="profile" />
         </div>
         <div class="header_profile_name_role">
-          <p>Kamlesh Patel</p>
-          <span>Super Admin</span>
+          <p>{{ storedUser.name }}</p>
+          <span>{{ storedUser.is_role == 1 ? "Super Admin" : "User" }}</span>
         </div>
         <i class="fa-solid fa-ellipsis"></i>
       </div>
@@ -34,8 +34,9 @@
           alt="Profile"
           class="sidebar-profile-pic"
         />
-        <h3>Kamlesh Patel</h3>
-        <span> 💰 999</span>
+        <h3>{{ storedUser.name }}</h3>
+        <span>💰 {{ storedUser.total_balance }}</span>
+
         <button class="close-btn" @click="toggleSidebar">&times;</button>
       </div>
 
@@ -60,7 +61,7 @@
         </li>
         <li>
           <router-link
-            :to="{ name: 'add_money' }"
+            :to="{ name: 'profile' }"
             class="sidebar-link"
             @click="toggleSidebar"
           >
@@ -68,28 +69,19 @@
           </router-link>
         </li>
 
-          <li>
-          <router-link
+        <li @click="handleLogout">
+  <b-link class="sidebar-link" 
             :to="{ name: 'login' }"
-            class="sidebar-link"
-           
-          >
-           Log out
-          </router-link>
-        </li>
+
+            @click="toggleSidebar"
+  >
+    🚪 Log out
+  </b-link>
+</li>
+
       </ul>
 
       <!-- Request Add Money Form -->
-      <div v-if="showRequestForm" class="request-form">
-        <h4>Request Add Money</h4>
-        <input
-          type="text"
-          v-model="transactionId"
-          placeholder="Transaction ID"
-        />
-        <input type="file" @change="handleFileUpload" />
-        <button @click="submitRequest">Send Request</button>
-      </div>
     </div>
 
     <!-- Overlay -->
@@ -99,55 +91,27 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import axios from "axios";
+
+
 
 const sidebarOpen = ref(false);
 const showRequestForm = ref(false);
 const transactionId = ref("");
 const file = ref(null);
+const storedUser = JSON.parse(localStorage.getItem("userData"));
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
   showRequestForm.value = false;
 };
 
-const openRequestForm = () => {
-  showRequestForm.value = true;
-};
 
-const addMoney = () => {
-  alert("Add Money Clicked");
-};
-
-const updateProfile = () => {
-  alert("Update Profile Clicked");
-};
-
-const handleFileUpload = (e) => {
-  file.value = e.target.files[0];
-};
-
-const submitRequest = () => {
-  if (!transactionId.value || !file.value) {
-    alert("Please enter transaction ID and attach a file.");
-    return;
-  }
-  // Send to backend via API (you need to implement backend part)
-  console.log("Transaction ID:", transactionId.value);
-  console.log("File:", file.value);
-
-  // Example DB log:
-  // {
-  //   user: "Kamlesh Patel",
-  //   type: "Money Request",
-  //   transId: transactionId.value,
-  //   screenshot: file.value.name,
-  //   date: new Date()
-  // }
-
-  alert("Request submitted to Admin.");
-  showRequestForm.value = false;
-  transactionId.value = "";
-  file.value = null;
+const handleLogout = () => {
+     localStorage.removeItem('userData');
+    localStorage.removeItem('access_token');
 };
 </script>
 
@@ -276,6 +240,37 @@ const submitRequest = () => {
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
+/* Modern link styles */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.sidebar-link:hover {
+  background: #f5f7fa;
+  transform: translateX(4px);
+}
+
+.sidebar-link i {
+  font-size: 1.2rem;
+  color: #4a89dc;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-link {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {

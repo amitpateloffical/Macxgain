@@ -258,8 +258,11 @@ const login = () => {
     .then(response => {
       const token = response.data.access_token;
 
-      // Store the JWT token
-      localStorage.setItem('access_token', token);
+     const userData = response.data.user; // ✅ correct key
+
+    // Store token and user data
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('userData', JSON.stringify(userData));
 
       // Store credentials if remember me is checked
       if (formData.value.status) {

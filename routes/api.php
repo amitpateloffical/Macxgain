@@ -112,9 +112,11 @@ Route::resource('/products', ProductController::class);
 
 // new chalu 
 
-   Route::post('/money-request', [MoneyRequestController::class, 'store']);
+    Route::post('/money-requests', [MoneyRequestController::class, 'store']);
     Route::get('/money-requests', [MoneyRequestController::class, 'index']);
-Route::match(['patch', 'put'], '/money-requests/{id}/status', [MoneyRequestController::class, 'updateStatus']);
+    Route::put('/money-requests/{id}', [MoneyRequestController::class, 'updateStatus']);
+    Route::match(['patch', 'put'], '/money-requests/{id}/status', [MoneyRequestController::class, 'updateStatus']);
+    Route::get('/money-requests/{id}', [MoneyRequestController::class, 'show']);
     Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);
 
 

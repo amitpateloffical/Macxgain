@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\WalletTransaction;
+
 
 class User extends Authenticatable
 {
@@ -46,4 +48,14 @@ class User extends Authenticatable
             // 'password' => 'hashed',
         ];
     }
+    protected $appends = ['total_balance'];
+
+
+public function getTotalBalanceAttribute()
+{
+    return WalletTransaction::where('user_id', $this->id)
+        ->orderBy('id', 'desc')
+        ->value('running_balance') ?? 0;
+}
+
 }

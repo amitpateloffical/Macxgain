@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Carbon;
 use Log;
 use Auth;
+use App\Models\WalletTransaction;
+
 
 class LoginController extends Controller
 {
@@ -52,6 +54,7 @@ class LoginController extends Controller
         
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->user_password = $request->password;
+       
         $ipAddress = $request->ip();
         $userAgent = $request->header('User-Agent');
         LoginLog::create([

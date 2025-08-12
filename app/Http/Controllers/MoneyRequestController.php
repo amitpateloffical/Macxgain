@@ -19,7 +19,7 @@ class MoneyRequestController extends Controller
             'amount' => 'required|numeric|min:1',
             'description' => 'nullable|string',
             'image' => 'required|image|max:2048',
-            'request_create_for' => 'required|exists:users,id',
+            // 'request_create_for' => 'required|exists:users,id',
         ]);
 
         $imagePath = $request->file('image')->store('money_requests', 'public');
@@ -30,7 +30,7 @@ class MoneyRequestController extends Controller
             'description' => $request->description,
             'image_path' => $imagePath,
             'request_by' => Auth::guard('api')->user()->id,
-            'request_create_for' => $request->request_create_for,
+            'request_create_for' => 1,
             'status' => 'pending',
         ]);
 
@@ -76,7 +76,7 @@ class MoneyRequestController extends Controller
         $sortBy = (!empty($sortBy)) ? $sortBy : 'created_at';
 
         $sortDesc = $request->get('sortDesc', true) ? 'desc' : 'asc';
-        $query->orderBy($sortBy, $sortDesc);
+        $query->orderBy($sortBy??'id', $sortDesc);
 
 
         // Pagination
@@ -105,7 +105,7 @@ class MoneyRequestController extends Controller
 
     public function update(Request $request, $id)
     {
-        $moneyRequest = MoneyRequest::findOrFail($id);
+        $moneyRequest = MoneyRequest::find($id);
         
         // Only creator can update their own request
         if (Auth::guard('api')->user()->id != $moneyRequest->request_by) {
