@@ -281,7 +281,11 @@ const login = () => {
 
       // Redirect to dashboard
       setTimeout(() => {
-        router.push('/admin/dashboard');
+        if(userData.is_admin==1){
+          router.push('/admin/dashboard');
+        }else{
+          router.push('/user/dashboard');
+        }
         formData.value.loader = false;
       }, 1500);
       

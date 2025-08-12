@@ -1,9 +1,9 @@
 <template>
   <div class="header_screen">
-    <div class="logo-section">
-      <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
-      <h1 class="brand-name">Macxgain</h1>
-    </div>
+  <div class="logo-section" @click="goToDashboard" style="cursor: pointer;">
+    <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
+    <h1 class="brand-name">Macxgain</h1>
+  </div>
 
     <div class="header_menu">
       <ul>
@@ -94,6 +94,12 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import axios from "axios";
+
+const router = useRouter();
+
+const goToDashboard = () => {
+  router.push('/user/dashboard');
+}
 
 
 
