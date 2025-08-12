@@ -73,6 +73,7 @@ Route::post('/resetPassword', [ResetPasswordController::class, 'reset'])->name('
 Route::get('/userprofile', [UserProfileController::class, 'getUserProfile']);
 Route::post('/update-profile/{id}', [UserProfileController::class, 'updateUserProfile']);
 Route::post('/change-password', [UserProfileController::class, 'changePassword']);
+Route::post('/register', [UserProfileController::class, 'register']);
 Route::get('/email-logs', [EmailLogsController::class, 'index']);
 Route::get('/login-logs', [EmailLogsController::class, 'getLoginLogs']);
 Route::get('/getData', [ChartController::class, 'getData']);

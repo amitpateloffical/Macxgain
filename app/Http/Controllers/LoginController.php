@@ -38,9 +38,18 @@ class LoginController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
         $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
+        
+        if ($request->password != $user->password) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+        
+        if ($user->status === 'I') {
+            return response()->json(['error' => 'User is inactive'], 403); // 403 Forbidden or another code you prefer
+        }
+        
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->user_password = $request->password;
         $ipAddress = $request->ip();

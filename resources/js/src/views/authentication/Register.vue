@@ -23,40 +23,21 @@
       <!-- Register form -->
       <form @submit.prevent="handleRegister" class="register-form">
         <!-- Name fields in row -->
-        <div class="form-row">
+        <div class="form-group">
           <div class="form-group">
-            <label for="firstName" class="form-label">
+            <label for="name" class="form-label">
               <i class="fas fa-user"></i>
-              First Name
+              Full Name
             </label>
             <div class="input-container">
               <input
-                id="firstName"
+                id="name"
                 type="text"
-                v-model="form.firstName"
+                v-model="form.name"
                 required
-                placeholder="First name"
+                placeholder="Full name"
                 class="form-input"
-                :class="{ 'error': errorMessage && !form.firstName }"
-              />
-              <i class="fas fa-user input-icon"></i>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="lastName" class="form-label">
-              <i class="fas fa-user"></i>
-              Last Name
-            </label>
-            <div class="input-container">
-              <input
-                id="lastName"
-                type="text"
-                v-model="form.lastName"
-                required
-                placeholder="Last name"
-                class="form-input"
-                :class="{ 'error': errorMessage && !form.lastName }"
+                :class="{ 'error': errorMessage && !form.name }"
               />
               <i class="fas fa-user input-icon"></i>
             </div>
@@ -286,13 +267,13 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import axios from "@axios";
 
 const router = useRouter()
 
 // Form data
 const form = ref({
-  firstName: '',
-  lastName: '',
+  name: '',
   email: '',
   phone: '',
   password: '',
@@ -313,10 +294,10 @@ const validateForm = () => {
     return false
   }
   
-  if (!form.value.acceptTerms) {
-    errorMessage.value = 'Please accept the Terms & Conditions.'
-    return false
-  }
+  // if (!form.value.acceptTerms) {
+  //   errorMessage.value = 'Please accept the Terms & Conditions.'
+  //   return false
+  // }
   
   if (form.value.password.length < 6) {
     errorMessage.value = 'Password must be at least 6 characters long.'
@@ -335,10 +316,13 @@ const handleRegister = async () => {
   }
   
   isLoading.value = true
-  
+  console.log(111111111111);
   try {
+  console.log(111111111111222222222,form,form.value);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // await new Promise(resolve => setTimeout(resolve, 2000))
+        const response = await axios.post('/register', form.value)
+        //  axios.post('/register', form.value);
     
     toast.success('Account created successfully! Welcome to Macxgain.', {
       autoClose: 2000,

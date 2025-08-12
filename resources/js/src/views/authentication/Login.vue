@@ -291,6 +291,8 @@ const login = () => {
         formData.value.errorMessage = 'Please check your input and try again';
       } else if (error.response && error.response.status === 401) {
         formData.value.errorMessage = error.response.data.error || 'Invalid email or password';
+      } else if (error.response && error.response.status === 403) {
+        formData.value.errorMessage = error.response.data.error || 'User is inactive';
       } else {
         formData.value.errorMessage = 'Connection error. Please try again.';
       }

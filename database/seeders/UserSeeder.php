@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         $user->email = 'admin@test.com';
         $user->mobile_code = '91';
         $user->phone = '9876543210';
-        $user->password='$2y$10$Tgj3K14samGowb4KVUeEeug9sAvj4eewOsuBnmPiUKwOSsYkI7mju';
+        $user->password='password';
         $user->created_at= now();
         $user->updated_at= now();
         $user->save();

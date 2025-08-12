@@ -75,6 +75,19 @@ class UserProfileController extends Controller
         $user->save();
         return response()->json(['message' => 'Profile updated successfully', 'data' => $user]);
     }
+
+    public function register(Request $request)
+    {
+        $user = new User ();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->mobile_code = '91';
+        $user->status = 'I';
+        $user->phone = $request->phone;
+        $user->password = $request->password;
+        $user->save();
+        return response()->json(['message' => 'Profile updated successfully', 'data' => $user]);
+    }
     public function changePassword(Request $request)
 {
     $user = Auth::guard('api')->user();
