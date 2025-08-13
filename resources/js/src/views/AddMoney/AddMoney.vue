@@ -6,7 +6,7 @@
       <div class="qr-container">
         <img src="./image.png" alt="Payment QR Code" class="qr-code" />
         <p class="qr-instruction">Scan & Pay Using PhonePe App</p>
-        <p class="qr-account">preetam patel</p>
+        <p class="qr-account">ADMIN</p>
       </div>
       
       <div class="payment-options">
@@ -33,7 +33,7 @@ const addMoney = () => {
 }
 
 const copyUpiId = () => {
-  const upiId = 'preetam.patel@ybl' // Replace with actual UPI ID
+  const upiId = 'admin.admin@ybl' // Replace with actual UPI ID
   navigator.clipboard.writeText(upiId)
   alert('UPI ID copied to clipboard!')
 }

@@ -1,11 +1,18 @@
 <template>
   <div class="header_screen">
-  <div class="logo-section" @click="goToDashboard" style="cursor: pointer;">
-    <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
-    <h1 class="brand-name">Macxgain</h1>
-  </div>
+    <!-- Logo -->
+    <div
+  class="logo-section"
+  @click="storedUser.is_admin ? router.push('/admin/dashboard') : router.push('/user/dashboard')"
+>
+  <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
+  <h1 class="brand-name">Macxgain</h1>
+</div>
 
+
+    <!-- Header Menu -->
     <div class="header_menu">
+      <!-- Calendar & Notifications -->
       <ul>
         <li>
           <b-link><i class="fa-regular fa-calendar-check"></i></b-link>
@@ -14,74 +21,48 @@
           <b-link><i class="fa-regular fa-bell"></i></b-link>
         </li>
       </ul>
+
+      <!-- Profile Dropdown (Sidebar Toggle) -->
       <div class="profile_dropdown" @click="toggleSidebar">
         <div class="header_profile_pic">
           <img src="../assest/img/tableprofileimg.png" alt="profile" />
         </div>
         <div class="header_profile_name_role">
-          <p>{{ storedUser.name }}</p>
-          <span>{{ storedUser.is_role == 1 ? "Super Admin" : "User" }}</span>
+          <p class="name">{{ storedUser.name }}</p>
+          <span class="role">{{ storedUser.is_admin == 1 ? "Admin" : "User" }}</span>
         </div>
         <i class="fa-solid fa-ellipsis"></i>
       </div>
+
+      <!-- Logout Button -->
+      <button class="logout_btn" @click="handleLogout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
     </div>
 
     <!-- Sidebar -->
     <div :class="['sidebar', { open: sidebarOpen }]">
       <div class="sidebar-header">
-        <img
-          src="../assest/img/tableprofileimg.png"
-          alt="Profile"
-          class="sidebar-profile-pic"
-        />
+        <img src="../assest/img/tableprofileimg.png" alt="Profile" class="sidebar-profile-pic" />
         <h3>{{ storedUser.name }}</h3>
-        <span>💰 {{ storedUser.total_balance }}</span>
-
+        <span class="balance">💰 {{ storedUser.total_balance }}</span>
         <button class="close-btn" @click="toggleSidebar">&times;</button>
       </div>
 
       <ul class="sidebar-menu">
         <li>
-          <router-link
-            :to="{ name: 'add_money' }"
-            class="sidebar-link"
-            @click="toggleSidebar"
-          >
-            💰 Add Money
-          </router-link>
+          <router-link :to="{ name: 'add_money' }" class="sidebar-link" @click="toggleSidebar">💰 Add Money</router-link>
         </li>
         <li>
-          <router-link
-            :to="{ name: 'money_request' }"
-            class="sidebar-link"
-            @click="toggleSidebar"
-          >
-            📝 Request Add Money
-          </router-link>
+          <router-link :to="{ name: 'money_request' }" class="sidebar-link" @click="toggleSidebar">📝 Request Add Money</router-link>
         </li>
         <li>
-          <router-link
-            :to="{ name: 'profile' }"
-            class="sidebar-link"
-            @click="toggleSidebar"
-          >
-            ⚙️ Update Profile
-          </router-link>
+          <router-link :to="{ name: 'profile' }" class="sidebar-link" @click="toggleSidebar">⚙️ Update Profile</router-link>
         </li>
-
         <li @click="handleLogout">
-  <b-link class="sidebar-link" 
-            :to="{ name: 'login' }"
-
-            @click="toggleSidebar"
-  >
-    🚪 Log out
-  </b-link>
-</li>
-
+          <b-link class="sidebar-link" :to="{ name: 'login' }" @click="toggleSidebar">🚪 Log out</b-link>
+        </li>
       </ul>
-
-      <!-- Request Add Money Form -->
     </div>
 
     <!-- Overlay -->
@@ -92,32 +73,25 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
-import axios from "axios";
 
 const router = useRouter();
+const storedUser = JSON.parse(localStorage.getItem("userData"));
+const sidebarOpen = ref(false);
 
 const goToDashboard = () => {
-  router.push('/user/dashboard');
-}
-
-
-
-const sidebarOpen = ref(false);
-const showRequestForm = ref(false);
-const transactionId = ref("");
-const file = ref(null);
-const storedUser = JSON.parse(localStorage.getItem("userData"));
-
+  if(storedUser.value.is_admin){
+    router.push("/admin/dashboard");
+  }else{
+    router.push("/user/dashboard");
+  }
+};
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
-  showRequestForm.value = false;
 };
-
-
 const handleLogout = () => {
-     localStorage.removeItem('userData');
-    localStorage.removeItem('access_token');
+  localStorage.removeItem("userData");
+  localStorage.removeItem("access_token");
+  router.push("/login");
 };
 </script>
 
@@ -126,55 +100,107 @@ const handleLogout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #4a89dc;
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #0d0d1a, #101022);
   color: white;
-  position: relative;
+  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
 }
+
 .logo {
-  height: 50px;
+  height: 42px;
 }
 .logo-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  cursor: pointer;
 }
+.brand-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00ff80;
+}
+
 .header_menu {
   display: flex;
   align-items: center;
+  gap: 20px;
 }
 .header_menu ul {
   list-style: none;
   display: flex;
-  gap: 20px;
+  gap: 15px;
   margin: 0;
 }
+.header_menu i {
+  font-size: 1.2rem;
+  color: #00ff80;
+  transition: color 0.3s ease;
+}
+.header_menu i:hover {
+  color: #00cc66;
+}
+
 .profile_dropdown {
   display: flex;
   align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 5px 10px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-left: 20px;
+  transition: background 0.3s ease;
+}
+.profile_dropdown:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 .header_profile_pic img {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
+  border: 2px solid #00ff80;
 }
 .header_profile_name_role {
-  margin: 0 10px;
-  text-align: left;
+  line-height: 1.2;
 }
+.name {
+  font-weight: bold;
+}
+.role {
+  font-size: 0.85rem;
+  color: #a1a1a1;
+}
+
+/* Logout Button */
+.logout_btn {
+  background: transparent;
+  border: 1px solid #ff4d4d;
+  color: #ff4d4d;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.logout_btn:hover {
+  background: #ff4d4d;
+  color: white;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 30%;
-  max-width: 400px;
+  width: 280px;
   height: 100%;
-  background: #fff;
-  color: #333;
+  background: rgba(16, 16, 34, 0.95);
+  backdrop-filter: blur(10px);
+  color: white;
   transition: right 0.3s ease;
-  z-index: 1001;
+  z-index: 1200;
   padding: 20px;
   overflow-y: auto;
 }
@@ -186,56 +212,45 @@ const handleLogout = () => {
   position: relative;
 }
 .sidebar-profile-pic {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
+  border: 3px solid #00ff80;
   object-fit: cover;
 }
 .sidebar-header h3 {
   margin: 10px 0 5px;
 }
-.sidebar-header span {
-  color: gray;
+.balance {
+  font-weight: bold;
+  color: #00ff80;
 }
 .close-btn {
   position: absolute;
-  top: 10px;
-  right: 15px;
+  top: 8px;
+  right: 12px;
   font-size: 24px;
   background: none;
   border: none;
   cursor: pointer;
+  color: white;
 }
 .sidebar-menu {
   list-style: none;
   padding: 20px 0;
 }
-.sidebar-menu li {
-  padding: 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #ddd;
-}
-.sidebar-menu li:hover {
-  background-color: #f1f1f1;
-}
-.request-form {
-  margin-top: 20px;
-}
-.request-form input {
+.sidebar-link {
   display: block;
-  margin-bottom: 10px;
-  padding: 8px;
-  width: 100%;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.request-form button {
-  background-color: #4a89dc;
+  padding: 12px;
+  text-decoration: none;
   color: white;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  width: 100%;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.sidebar-link:hover {
+  background: rgba(0, 255, 128, 0.15);
+  transform: translateX(4px);
 }
 .overlay {
   position: fixed;
@@ -243,45 +258,16 @@ const handleLogout = () => {
   left: 0;
   height: 100%;
   width: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
 }
-/* Modern link styles */
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
 
-.sidebar-link:hover {
-  background: #f5f7fa;
-  transform: translateX(4px);
-}
-
-.sidebar-link i {
-  font-size: 1.2rem;
-  color: #4a89dc;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .sidebar-link {
-    font-size: 1rem;
-    padding: 10px 14px;
-  }
-}
-
-
-/* Responsive */
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
+  }
+  .brand-name {
+    font-size: 1.2rem;
   }
 }
 </style>

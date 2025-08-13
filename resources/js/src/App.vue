@@ -32,3 +32,27 @@ onMounted(() => {
 
 
 </script>
+<style>
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0d0d1a; /* Dark background everywhere */
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure full viewport height */
+}
+
+.main_screen_sidebar_devider {
+  flex: 1;
+  display: flex;
+}
+
+.main_content_screen {
+  flex: 1;
+  background-color: #0d0d1a; /* Keep background consistent */
+}
+</style>
