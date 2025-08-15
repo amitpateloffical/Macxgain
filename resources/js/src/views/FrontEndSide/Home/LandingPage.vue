@@ -69,7 +69,14 @@
           <h1 class="brand-name">Macxgain</h1>
         </div>
         
-        <nav class="nav-menu">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="nav-menu" :class="{ 'mobile-open': mobileMenuOpen }">
           <a href="#" class="nav-link">Home</a>
           <a href="/markets" class="nav-link">Markets</a>
           <a href="#" class="nav-link">Download APK</a>
@@ -1260,10 +1267,19 @@ export default {
   data() {
     return {
       // Component data
+      mobileMenuOpen: false
     };
   },
   mounted() {
     this.initScrollAnimations();
+    
+    // Add click outside handler for mobile menu
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  
+  beforeUnmount() {
+    // Remove click outside handler
+    document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
     initScrollAnimations() {
@@ -1293,6 +1309,21 @@ export default {
         el.style.opacity = '0';
         el.style.transform = 'translateX(-100px) translateY(50px) scale(0.8)';
       });
+    },
+    
+    toggleMobileMenu() {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+    },
+    
+    handleClickOutside(event) {
+      const mobileMenu = document.querySelector('.nav-menu');
+      const mobileToggle = document.querySelector('.mobile-menu-toggle');
+      
+      if (this.mobileMenuOpen && 
+          !mobileMenu?.contains(event.target) && 
+          !mobileToggle?.contains(event.target)) {
+        this.mobileMenuOpen = false;
+      }
     }
   }
 };
@@ -1506,6 +1537,7 @@ export default {
 .nav-menu {
   display: flex;
   gap: 2rem;
+  transition: all 0.3s ease;
 }
 
 .nav-link {
@@ -1558,6 +1590,42 @@ export default {
 .btn-large {
   padding: 1rem 2rem;
   font-size: 1.1rem;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 20;
+}
+
+.mobile-menu-toggle span {
+  width: 100%;
+  height: 3px;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 /* Hero Section */
@@ -3459,9 +3527,55 @@ export default {
     font-size: 0.7rem;
   }
   
+  /* Header Mobile Responsive */
+  .header-container {
+    flex-direction: row;
+    gap: 1rem;
+    text-align: center;
+    position: relative;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
   /* Navigation */
   .nav-menu {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 26, 0.98);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  
+  .nav-menu.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .nav-menu .nav-link {
+    display: block;
+    padding: 1rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .nav-menu .nav-link:last-child {
+    border-bottom: none;
+  }
+  
+  .nav-menu .nav-link:hover {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
   }
   
   .auth-buttons {
@@ -3600,6 +3714,49 @@ export default {
 @media (max-width: 480px) {
   .container {
     padding: 0 0.8rem;
+  }
+  
+  /* Header Mobile Portrait */
+  .header-container {
+    padding: 0 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .logo-section {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .brand-name {
+    font-size: 1.2rem;
+  }
+  
+  .mobile-menu-toggle {
+    order: 2;
+    margin-left: auto;
+  }
+  
+  .auth-buttons {
+    order: 3;
+    width: 100%;
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .btn {
+    flex: 1;
+    max-width: 120px;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .nav-menu {
+    order: 4;
+    width: 100%;
+    margin-top: 0.5rem;
   }
   
   .hero-container {

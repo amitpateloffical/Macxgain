@@ -44,7 +44,14 @@
           <h1 class="brand-name">Macxgain</h1>
         </div>
         
-        <nav class="nav-menu">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="nav-menu" :class="{ 'mobile-open': mobileMenuOpen }">
           <router-link to="/" class="nav-link">Home</router-link>
           <router-link to="/markets" class="nav-link active">Markets</router-link>
           <a href="#" class="nav-link">Download APK</a>
@@ -757,7 +764,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -1810,6 +1817,9 @@ onMounted(() => {
   // Fetch top stocks on component mount
   fetchTopStocks();
   
+  // Add click outside handler for mobile menu
+  document.addEventListener('click', handleClickOutside);
+  
   updateInterval = setInterval(() => {
     // Update indices
     indices.value.forEach(index => {
@@ -1892,6 +1902,9 @@ onUnmounted(() => {
   if (updateInterval) {
     clearInterval(updateInterval)
   }
+  
+  // Remove click outside handler
+  document.removeEventListener('click', handleClickOutside)
 })
 
 // Market categories for Indian stocks
@@ -2000,6 +2013,34 @@ const showAllResults = () => {
     stock.symbol.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
     stock.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
+}
+
+// Mobile menu toggle
+const mobileMenuOpen = ref(false)
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+// Close mobile menu when clicking outside
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
+
+// Close mobile menu on route change
+watch(() => router.currentRoute.value.path, () => {
+  mobileMenuOpen.value = false
+})
+
+// Handle click outside mobile menu
+const handleClickOutside = (event) => {
+  const mobileMenu = document.querySelector('.nav-menu')
+  const mobileToggle = document.querySelector('.mobile-menu-toggle')
+  
+  if (mobileMenuOpen.value && 
+      !mobileMenu?.contains(event.target) && 
+      !mobileToggle?.contains(event.target)) {
+    mobileMenuOpen.value = false
+  }
 }
 </script>
 
@@ -2120,6 +2161,7 @@ const showAllResults = () => {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem 0;
+  overflow: visible;
 }
 
 .main-header .header-container {
@@ -2152,6 +2194,7 @@ const showAllResults = () => {
 .main-header .nav-menu {
   display: flex;
   gap: 2rem;
+  transition: all 0.3s ease;
 }
 
 .main-header .nav-link {
@@ -2287,6 +2330,44 @@ const showAllResults = () => {
   padding: 0 2rem;
 }
 
+/* Desktop-specific search improvements */
+@media (min-width: 769px) {
+  .search-box {
+    margin-bottom: 4rem;
+  }
+  
+  .search-suggestions {
+    top: calc(100% + 12px);
+    border-radius: 16px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(0, 255, 136, 0.3);
+    border-top: none;
+  }
+  
+  .suggestion-item {
+    padding: 1.25rem 1.5rem;
+    min-height: 70px;
+  }
+  
+  .suggestion-item:hover {
+    background: rgba(0, 255, 136, 0.15);
+    border-left: 4px solid #00ff88;
+  }
+  
+  .suggestions-header {
+    padding: 1.25rem 1.5rem;
+    border-radius: 16px 16px 0 0;
+    background: rgba(0, 255, 136, 0.1);
+  }
+  
+  .suggestions-footer {
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 0 16px 16px;
+  }
+}
+
 /* Section Headers */
 .section-header {
   display: flex;
@@ -2295,6 +2376,8 @@ const showAllResults = () => {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+  position: relative;
+  z-index: 5;
 }
 
 .section-header h2 {
@@ -3486,13 +3569,58 @@ const showAllResults = () => {
 @media (max-width: 768px) {
   /* Main Header Responsive */
   .main-header .header-container {
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
     text-align: center;
+    position: relative;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
   }
   
   .main-header .nav-menu {
-    gap: 1rem;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 26, 0.98);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  
+  .main-header .nav-menu.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .main-header .nav-menu .nav-link {
+    display: block;
+    padding: 1rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .main-header .nav-menu .nav-link:last-child {
+    border-bottom: none;
+  }
+  
+  .main-header .nav-menu .nav-link:hover {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+  }
+  
+  .main-header .nav-menu .nav-link.active {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+    border-left: 4px solid #00ff88;
   }
   
   .main-header .auth-buttons {
@@ -3543,6 +3671,7 @@ const showAllResults = () => {
   /* Stock Search Section Mobile */
   .stock-search-section {
     padding: 2rem 0;
+    margin-bottom: 1.5rem;
   }
   
   .search-container {
@@ -3572,6 +3701,10 @@ const showAllResults = () => {
   .search-suggestions {
     position: relative;
     margin-top: 1rem;
+    margin-bottom: 2rem;
+    z-index: 1000;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   
   .suggestion-item {
@@ -3592,6 +3725,7 @@ const showAllResults = () => {
   /* Top Stocks Section Mobile */
   .top-stocks-section {
     padding: 2rem 0;
+    margin-top: 1.5rem;
   }
   
   .refresh-controls {
@@ -3736,26 +3870,44 @@ const showAllResults = () => {
   /* Main Header Mobile */
   .main-header .header-container {
     padding: 0 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
   
-  .main-header .nav-menu {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .main-header .auth-buttons {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.5rem;
-  }
-  
-  .main-header .btn {
-    width: 100%;
-    text-align: center;
+  .main-header .logo-section {
+    flex: 1;
+    min-width: 0;
   }
   
   .main-header .brand-name {
     font-size: 1.2rem;
+  }
+  
+  .mobile-menu-toggle {
+    order: 2;
+    margin-left: auto;
+  }
+  
+  .main-header .auth-buttons {
+    order: 3;
+    width: 100%;
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .main-header .btn {
+    flex: 1;
+    max-width: 120px;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .main-header .nav-menu {
+    order: 4;
+    width: 100%;
+    margin-top: 0.5rem;
   }
   
   /* Markets Page Mobile */
@@ -3971,6 +4123,27 @@ const showAllResults = () => {
   .indian-stock-card {
     min-width: 200px;
   }
+  
+  /* Header adjustments for very small screens */
+  .main-header .header-container {
+    padding: 0 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .main-header .brand-name {
+    font-size: 1.1rem;
+  }
+  
+  .main-header .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    max-width: 100px;
+  }
+  
+  .mobile-menu-toggle {
+    width: 25px;
+    height: 18px;
+  }
 }
 
 /* Landscape orientation adjustments */
@@ -4008,6 +4181,14 @@ const showAllResults = () => {
 .stock-search-section {
   padding: 3rem 0;
   background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 769px) {
+  .stock-search-section {
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+  }
 }
 
 .search-container {
@@ -4035,7 +4216,8 @@ const showAllResults = () => {
 
 .search-box {
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  z-index: 10;
 }
 
 .search-input-wrapper {
@@ -4046,6 +4228,9 @@ const showAllResults = () => {
   border-radius: 12px;
   padding: 0.5rem;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  overflow: visible;
 }
 
 .search-input-wrapper:focus-within {
@@ -4092,17 +4277,34 @@ const showAllResults = () => {
 
 .search-suggestions {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: rgba(10, 10, 26, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  margin-top: 0.5rem;
+  background: rgba(10, 10, 26, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  margin-top: 0;
   max-height: 300px;
   overflow-y: auto;
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  animation: slideDown 0.3s ease-out;
+  transform-origin: top;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
 }
 
 .suggestion-item {
@@ -4113,15 +4315,19 @@ const showAllResults = () => {
   cursor: pointer;
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 60px;
+}
+
+.suggestion-item:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-left: 3px solid #00ff88;
 }
 
 .suggestion-item:last-child {
   border-bottom: none;
 }
 
-.suggestion-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
+
 
 .suggestion-symbol {
   font-weight: bold;
@@ -4152,10 +4358,11 @@ const showAllResults = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px 8px 0 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px 12px 0 0;
+  font-weight: 500;
 }
 
 .suggestions-header span:first-child {
@@ -4177,10 +4384,10 @@ const showAllResults = () => {
 
 .suggestions-footer {
   text-align: center;
-  padding: 0.75rem;
+  padding: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 0 0 8px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0 0 12px 12px;
 }
 
 .view-all-btn {
@@ -4202,6 +4409,15 @@ const showAllResults = () => {
 
 .search-result {
   margin-top: 2rem;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 5;
+}
+
+@media (min-width: 769px) {
+  .search-result {
+    margin-bottom: 4rem;
+  }
 }
 
 .result-card {
@@ -4274,6 +4490,14 @@ const showAllResults = () => {
 /* Top Stocks Section Styles */
 .top-stocks-section {
   padding: 3rem 0;
+  margin-top: 2rem;
+}
+
+@media (min-width: 769px) {
+  .top-stocks-section {
+    margin-top: 3rem;
+    padding: 4rem 0;
+  }
 }
 
 .refresh-controls {
@@ -4504,5 +4728,81 @@ const showAllResults = () => {
 
 .view-all-btn:hover {
   background-color: #00d4aa;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 20;
+}
+
+.mobile-menu-toggle span {
+  width: 100%;
+  height: 3px;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Mobile Navigation Styles */
+.nav-menu.mobile-open {
+  display: flex !important;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 26, 0.98);
+  backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.nav-menu.mobile-open .nav-link {
+  display: block;
+  padding: 1rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.nav-menu.mobile-open .nav-link:last-child {
+  border-bottom: none;
+}
+
+.nav-menu.mobile-open .nav-link:hover {
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+}
+
+.nav-menu.mobile-open .nav-link.active {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+  border-left: 4px solid #00ff88;
 }
 </style>
