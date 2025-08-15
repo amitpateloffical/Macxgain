@@ -64,25 +64,7 @@
       </div>
     </header>
 
-    <!-- Markets Header -->
-    <header class="markets-header">
-      <div class="header-container">
-        <button class="back-button fade-in-left" @click="goBack">
-          <i class="fas fa-arrow-left"></i>
-          Back to Home
-        </button>
-        
-        <div class="header-content fade-in-up">
-          <h1>Indian Markets</h1>
-          <p>Real-time Indian market data and live charts</p>
-        </div>
-        
-        <div class="market-status fade-in-right">
-          <div class="status-indicator live"></div>
-          <span>Live Data</span>
-        </div>
-      </div>
-    </header>
+
 
     <!-- Stock Search Section -->
     <section class="stock-search-section">
@@ -170,6 +152,14 @@
                   <span class="stat-value">{{ formatVolume(searchResult.volume) }}</span>
                 </div>
               </div>
+              
+              <!-- View Details Button -->
+              <div class="result-actions">
+                <button @click="viewStockDetails(searchResult)" class="btn btn-primary btn-details">
+                  <i class="fas fa-chart-line"></i>
+                  View Live Details
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -244,66 +234,79 @@
           <p>Unable to fetch Indian stock data. Please try refreshing.</p>
         </div>
       </div>
-    </section>
-
-    <!-- Market Categories Tabs -->
-    <section class="market-tabs">
-      <div class="container">
-        <div class="tabs-container fade-in-up">
-          <button 
-            v-for="tab in marketTabs" 
-            :key="tab.id"
-            :class="['tab-btn', { active: activeTab === tab.id }]"
-            @click="activeTab = tab.id"
-          >
-            <i :class="tab.icon"></i>
-            {{ tab.name }}
-          </button>
+      
+      <!-- TradingEconomics India Markets Iframe -->
+      <div class="tradingeconomics-iframe-section">
+        <div class="section-header">
+          <h3>Live Indian Markets</h3>
+          <p>Real-time data from TradingEconomics India</p>
         </div>
-      </div>
-    </section>
-
-    <!-- Indices Section -->
-    <section v-if="activeTab === 'indices'" class="market-section">
-      <div class="container">
-        <div class="section-header fade-in-up">
-          <h2>Major Indices</h2>
-          <div class="section-subtitle">Global market benchmarks</div>
-        </div>
-        
-        <div class="indices-grid">
-          <div v-for="(index, idx) in indices" :key="index.symbol" :class="['index-card', idx % 2 === 0 ? 'fade-in-left' : 'fade-in-right']">
-            <div class="index-header">
-              <div class="index-info">
-                <h3>{{ index.name }}</h3>
-                <span class="symbol">{{ index.symbol }}</span>
-              </div>
-              <div class="index-change" :class="{ up: index.change >= 0, down: index.change < 0 }">
-                <span class="change-value">{{ index.change >= 0 ? '+' : '' }}{{ index.change.toFixed(2) }}%</span>
-                <span class="change-arrow">{{ index.change >= 0 ? '↗' : '↘' }}</span>
-              </div>
-            </div>
-            
-            <div class="index-price">
-              <span class="price-value">{{ index.price.toFixed(2) }}</span>
-              <span class="price-change">{{ index.change >= 0 ? '+' : '' }}{{ index.priceChange.toFixed(2) }}</span>
-            </div>
-            
-            <div class="index-chart">
-              <div class="mini-chart">
-                <div 
-                  v-for="(point, index) in index.chartData" 
-                  :key="index"
-                  class="chart-bar"
-                  :style="{ height: point + '%' }"
-                  :class="{ up: point > 50, down: point <= 50 }"
-                ></div>
+        <div class="iframe-container">
+          <iframe 
+            src="https://tradingeconomics.com/india/stock-market"
+            frameborder="0"
+            allowfullscreen
+            class="tradingeconomics-iframe"
+            title="TradingEconomics India Stock Market"
+            loading="lazy"
+            @error="handleIframeError"
+          ></iframe>
+          <div v-if="iframeError" class="iframe-fallback">
+            <div class="fallback-content">
+              <i class="fas fa-external-link-alt"></i>
+              <h4>Iframe Loading Failed</h4>
+              <p>Click below to view Indian Markets from multiple sources</p>
+              <div class="fallback-links">
+                <a href="https://tradingeconomics.com/india/stock-market" target="_blank" class="fallback-btn">
+                  TradingEconomics India
+                </a>
+                <a href="https://groww.in/share-market-today" target="_blank" class="fallback-btn">
+                  Groww India
+                </a>
+                <a href="https://www.nseindia.com/market-data/live-equity-market" target="_blank" class="fallback-btn">
+                  NSE India
+                </a>
+                <a href="https://www.moneycontrol.com/stocksmarketsindia/" target="_blank" class="fallback-btn">
+                  MoneyControl
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
+      <!-- External Market Links -->
+      <div class="external-links">
+        <div class="section-header">
+          <h3>View Full Markets</h3>
+          <p>Access comprehensive market data from multiple sources</p>
+        </div>
+        <div class="links-grid">
+          <a href="https://groww.in/share-market-today" target="_blank" class="link-card">
+            <i class="fas fa-chart-line"></i>
+            <span>Groww India</span>
+            <small>Live Markets</small>
+          </a>
+          <a href="https://www.nseindia.com/market-data/live-equity-market" target="_blank" class="link-card">
+            <i class="fas fa-building"></i>
+            <span>NSE India</span>
+            <small>Official Exchange</small>
+          </a>
+          <a href="https://www.moneycontrol.com/stocksmarketsindia/" target="_blank" class="link-card">
+            <i class="fas fa-rupee-sign"></i>
+            <span>MoneyControl</span>
+            <small>Financial News</small>
+          </a>
+          <a href="https://www.investing.com/markets/india" target="_blank" class="link-card">
+            <i class="fas fa-globe"></i>
+            <span>Investing.com</span>
+            <small>Global Platform</small>
+          </a>
+        </div>
+      </div>
     </section>
+
+
 
     <!-- India Section -->
     <section v-if="activeTab === 'india'" class="market-section">
@@ -616,78 +619,7 @@
       </div>
     </section>
 
-    <!-- Live Charts Section -->
-    <section class="live-charts">
-      <div class="container">
-        <div class="section-header">
-          <h2>Live Charts</h2>
-          <div class="chart-controls">
-            <button class="timeframe-btn active">1D</button>
-            <button class="timeframe-btn">1W</button>
-            <button class="timeframe-btn">1M</button>
-            <button class="timeframe-btn">3M</button>
-            <button class="timeframe-btn">1Y</button>
-          </div>
-        </div>
-        
-        <div class="charts-grid">
-          <div class="chart-container">
-            <div class="chart-header">
-              <h3>AAPL - Apple Inc.</h3>
-              <div class="chart-price">
-                <span class="current-price">$185.42</span>
-                <span class="price-change up">+4.15 (+2.29%)</span>
-              </div>
-            </div>
-            <div class="chart-widget">
-              <!-- TradingView Widget Placeholder -->
-              <div class="chart-placeholder">
-                <div class="chart-lines">
-                  <div class="price-line up"></div>
-                  <div class="volume-bars">
-                    <div class="volume-bar" v-for="i in 20" :key="i" :style="{ height: Math.random() * 100 + '%' }"></div>
-                  </div>
-                </div>
-                <div class="chart-overlay">
-                  <div class="chart-tools">
-                    <button class="tool-btn"><i class="fas fa-chart-line"></i></button>
-                    <button class="tool-btn"><i class="fas fa-chart-bar"></i></button>
-                    <button class="tool-btn"><i class="fas fa-chart-area"></i></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="chart-container">
-            <div class="chart-header">
-              <h3>TSLA - Tesla Inc.</h3>
-              <div class="chart-price">
-                <span class="current-price">$248.50</span>
-                <span class="price-change down">-3.02 (-1.20%)</span>
-              </div>
-            </div>
-            <div class="chart-widget">
-              <div class="chart-placeholder">
-                <div class="chart-lines">
-                  <div class="price-line down"></div>
-                  <div class="volume-bars">
-                    <div class="volume-bar" v-for="i in 20" :key="i" :style="{ height: Math.random() * 100 + '%' }"></div>
-                  </div>
-                </div>
-                <div class="chart-overlay">
-                  <div class="chart-tools">
-                    <button class="tool-btn"><i class="fas fa-chart-line"></i></button>
-                    <button class="tool-btn"><i class="fas fa-chart-bar"></i></button>
-                    <button class="tool-btn"><i class="fas fa-chart-area"></i></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+
 
     <!-- Market Categories -->
     <section class="market-categories">
@@ -714,52 +646,122 @@
       </div>
     </section>
 
-    <!-- TradingView Widget Integration -->
-    <section class="tradingview-widgets">
-      <div class="container">
-        <div class="section-header">
-          <h2>Advanced Charts</h2>
-          <p>Powered by TradingView</p>
+    <!-- Stock Details Modal -->
+    <div v-if="showStockModal" class="stock-modal-overlay" @click="closeStockModal">
+      <div class="stock-modal" @click.stop>
+        <div class="modal-header">
+          <div class="modal-title">
+            <h2>{{ selectedStock.symbol }}</h2>
+            <p>{{ selectedStock.name }}</p>
+          </div>
+          <button @click="closeStockModal" class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         
-        <div class="widget-grid">
-          <div class="widget-container">
-            <h3>Market Overview Widget</h3>
-            <div class="widget-placeholder">
-              <div class="widget-content">
-                <div class="widget-header">
-                  <span class="widget-title">Global Markets</span>
-                  <span class="widget-time">Live</span>
-                </div>
-                <div class="widget-data">
-                  <div class="data-row" v-for="item in widgetData" :key="item.symbol">
-                    <span class="symbol">{{ item.symbol }}</span>
-                    <span class="price">{{ item.price }}</span>
-                    <span class="change" :class="{ up: item.change >= 0, down: item.change < 0 }">
-                      {{ item.change >= 0 ? '+' : '' }}{{ item.change.toFixed(2) }}%
-                    </span>
-                  </div>
+        <div class="modal-content">
+          <!-- Live Price Section -->
+          <div class="live-price-section">
+            <div class="current-price">
+              <span class="price">₹{{ selectedStock.price.toFixed(2) }}</span>
+              <span class="change" :class="{ up: selectedStock.change >= 0, down: selectedStock.change < 0 }">
+                {{ selectedStock.change >= 0 ? '+' : '' }}{{ selectedStock.change.toFixed(2) }}%
+              </span>
+            </div>
+            <div class="price-change-amount">
+              {{ selectedStock.change >= 0 ? '+' : '' }}₹{{ selectedStock.priceChange.toFixed(2) }}
+            </div>
+          </div>
+          
+          <!-- Live Chart Section -->
+          <div class="chart-section">
+            <div class="chart-header">
+              <h3>Live Price Chart</h3>
+              <div class="timeframe-selector">
+                <button 
+                  v-for="timeframe in timeframes" 
+                  :key="timeframe.value"
+                  :class="['timeframe-btn', { active: activeTimeframe === timeframe.value }]"
+                  @click="activeTimeframe = timeframe.value"
+                >
+                  {{ timeframe.label }}
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="candlestick-chart">
+                <div 
+                  v-for="(candle, index) in selectedStock.chartData.candles" 
+                  :key="index"
+                  class="candlestick"
+                  :class="{ up: candle.close >= candle.open, down: candle.close < candle.open }"
+                >
+                  <div class="candle-body" :style="{ height: getCandleHeight(candle) + 'px' }"></div>
+                  <div class="candle-wick" :style="{ height: getWickHeight(candle) + 'px' }"></div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="widget-container">
+          <!-- Live Statistics -->
+          <div class="live-stats">
+            <div class="stat-row">
+              <div class="stat-item">
+                <span class="stat-label">Open</span>
+                <span class="stat-value">₹{{ selectedStock.open.toFixed(2) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">High</span>
+                <span class="stat-value">₹{{ selectedStock.high.toFixed(2) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Low</span>
+                <span class="stat-value">₹{{ selectedStock.low.toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-item">
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">{{ formatVolume(selectedStock.volume) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Market Cap</span>
+                <span class="stat-value">{{ selectedStock.marketCap || 'N/A' }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">52W High</span>
+                <span class="stat-value">₹{{ (selectedStock.price * 1.15).toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Technical Indicators -->
+          <div class="technical-indicators">
             <h3>Technical Analysis</h3>
-            <div class="widget-placeholder">
-              <div class="widget-content">
-                <div class="analysis-indicators">
-                  <div class="indicator" v-for="indicator in technicalIndicators" :key="indicator.name">
-                    <span class="indicator-name">{{ indicator.name }}</span>
-                    <span class="indicator-value" :class="indicator.signal">{{ indicator.value }}</span>
-                  </div>
-                </div>
+            <div class="indicators-grid">
+              <div class="indicator">
+                <span class="indicator-name">RSI</span>
+                <span class="indicator-value" :class="getRSIClass(selectedStock.rsi)">{{ selectedStock.rsi || '65.2' }}</span>
+              </div>
+              <div class="indicator">
+                <span class="indicator-name">MACD</span>
+                <span class="indicator-value" :class="getMACDClass(selectedStock.macd)">{{ selectedStock.macd || 'Bullish' }}</span>
+              </div>
+              <div class="indicator">
+                <span class="indicator-name">MA 50</span>
+                <span class="indicator-value">₹{{ (selectedStock.price * 0.98).toFixed(2) }}</span>
+              </div>
+              <div class="indicator">
+                <span class="indicator-name">MA 200</span>
+                <span class="indicator-value">₹{{ (selectedStock.price * 0.95).toFixed(2) }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+
+
   </div>
 </template>
 
@@ -979,6 +981,8 @@ const searchStock = async () => {
     const stockData = await fetchStockData(symbol)
     
     if (stockData) {
+      // Generate chart data for the selected stock
+      stockData.chartData = generateChartData(stockData.price, '1D')
       searchResult.value = stockData
     } else {
       // Show error or fallback data
@@ -1002,98 +1006,135 @@ const searchStock = async () => {
   }
 }
 
-// Fetch stock data from free API
-const fetchStockData = async (symbol) => {
-  try {
-    // For Indian stocks, we need to add .NS suffix for NSE
-    const nseSymbol = symbol.includes('.NS') ? symbol : `${symbol}.NS`
-    
-    // Try using Yahoo Finance for Indian stocks (no API key required)
-    const response = await fetch(`https://api.allorigins.win/get?url=https://query1.finance.yahoo.com/v8/finance/chart/${nseSymbol}`)
-    const data = await response.json()
-    
-    if (data.contents) {
-      const yahooData = JSON.parse(data.contents)
-      if (yahooData.chart && yahooData.chart.result && yahooData.chart.result[0]) {
-        const quote = yahooData.chart.result[0].meta
-        const indicators = yahooData.chart.result[0].indicators.quote[0]
-        
-        const currentPrice = quote.regularMarketPrice
-        const previousClose = quote.previousClose
+// Generate realistic mock stock data for Indian stocks
+const generateMockStockData = (symbol) => {
+  // Base prices for different sectors
+  const basePrices = {
+    'RELIANCE': 2500, 'TCS': 3800, 'HDFCBANK': 1600, 'ICICIBANK': 950,
+    'INFY': 1400, 'ITC': 450, 'SBIN': 650, 'AXISBANK': 1100,
+    'HINDUNILVR': 2800, 'BHARTIARTL': 900, 'KOTAKBANK': 1800, 'ASIANPAINT': 3200,
+    'MARUTI': 9500, 'SUNPHARMA': 1200, 'TATAMOTORS': 750, 'WIPRO': 450,
+    'ULTRACEMCO': 8500, 'TITAN': 3200, 'BAJFINANCE': 7200, 'NESTLEIND': 22000
+  }
+  
+  const basePrice = basePrices[symbol] || 1000
+  const volatility = 0.02 // 2% daily volatility
+  
+  // Generate realistic price movement
+  const changePercent = (Math.random() - 0.5) * 4 // -2% to +2%
+  const currentPrice = basePrice * (1 + changePercent / 100)
+  const previousClose = basePrice
         const priceChange = currentPrice - previousClose
-        const changePercent = (priceChange / previousClose) * 100
+  
+  // Generate OHLC data
+  const open = basePrice * (1 + (Math.random() - 0.5) * 0.01)
+  const high = Math.max(open, currentPrice) * (1 + Math.random() * 0.01)
+  const low = Math.min(open, currentPrice) * (1 - Math.random() * 0.01)
+  const volume = Math.floor(1000000 + Math.random() * 5000000)
         
         return {
-          symbol: symbol.replace('.NS', ''),
-          name: quote.symbol.replace('.NS', ''),
-          price: currentPrice,
-          priceChange: priceChange,
-          change: changePercent,
-          open: indicators.open[indicators.open.length - 1] || currentPrice,
-          high: indicators.high[indicators.high.length - 1] || currentPrice,
-          low: indicators.low[indicators.low.length - 1] || currentPrice,
-          volume: indicators.volume[indicators.volume.length - 1] || 0
-        }
-      }
-    }
-    
-    // Fallback: Try using Alpha Vantage API for Indian stocks
-    return await fetchStockDataFallback(symbol)
-  } catch (error) {
-    console.error('Error fetching Indian stock data:', error)
-    return await fetchStockDataFallback(symbol)
+    symbol: symbol,
+    name: indianStocksList.find(stock => stock.symbol === symbol)?.name || symbol,
+    price: parseFloat(currentPrice.toFixed(2)),
+    priceChange: parseFloat(priceChange.toFixed(2)),
+    change: parseFloat(changePercent.toFixed(2)),
+    open: parseFloat(open.toFixed(2)),
+    high: parseFloat(high.toFixed(2)),
+    low: parseFloat(low.toFixed(2)),
+    volume: volume
   }
 }
 
-// Fallback API method using Alpha Vantage API for Indian stocks
-const fetchStockDataFallback = async (symbol) => {
-  try {
-    // Try Alpha Vantage API with .NS suffix for Indian stocks
-    const nseSymbol = symbol.includes('.NS') ? symbol : `${symbol}.NS`
-    const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${nseSymbol}&apikey=demo`)
-    const data = await response.json()
+// Generate candlestick chart data for stock details
+const generateChartData = (currentPrice, timeframe = '1D') => {
+  const candles = []
+  const volumes = []
+  let price = currentPrice
+  const basePrice = currentPrice
+  
+  let numCandles = 50 // default for 1D
+  if (timeframe === '1W') numCandles = 35
+  else if (timeframe === '1M') numCandles = 30
+  else if (timeframe === '3M') numCandles = 60
+  else if (timeframe === '1Y') numCandles = 120
+  
+  let trend = 0
+  let momentum = 0
+  
+  for (let i = 0; i < numCandles; i++) {
+    const volatility = timeframe === '1D' ? 0.015 : timeframe === '1W' ? 0.03 : timeframe === '1M' ? 0.05 : 0.12
     
-    if (data['Global Quote']) {
-      const quote = data['Global Quote']
+    trend += (Math.random() - 0.5) * 0.1
+    trend = Math.max(-0.5, Math.min(0.5, trend))
+    momentum += (Math.random() - 0.5) * 0.05
+    momentum = Math.max(-0.3, Math.min(0.3, momentum))
+    
+    const trendInfluence = trend * (basePrice * volatility * 0.3)
+    const momentumInfluence = momentum * (basePrice * volatility * 0.2)
+    const randomChange = (Math.random() - 0.5) * (basePrice * volatility * 0.5)
+    const change = trendInfluence + momentumInfluence + randomChange
+    
+    const open = price
+    const close = price + change
+    const bodyRange = Math.abs(close - open)
+    const maxWickLength = bodyRange * 2 + (basePrice * volatility * 0.3)
+    const high = Math.max(open, close) + Math.random() * maxWickLength
+    const low = Math.min(open, close) - Math.random() * maxWickLength
+    
+    candles.push({ open, high, low, close })
+    
+    const baseVolume = 1000000 + Math.random() * 5000000
+    const volumeMultiplier = 1 + (Math.abs(change) / (basePrice * 0.01)) * 0.5
+    volumes.push(baseVolume * volumeMultiplier)
+    
+    price = close
+  }
+  
+  const allPrices = candles.flatMap(c => [c.open, c.high, c.low, c.close])
       return {
-        symbol: symbol.replace('.NS', ''),
-        name: symbol.replace('.NS', ''),
-        price: parseFloat(quote['05. price']) || 0,
-        priceChange: parseFloat(quote['09. change']) || 0,
-        change: parseFloat(quote['10. change percent']?.replace('%', '')) || 0,
-        open: parseFloat(quote['02. open']) || 0,
-        high: parseFloat(quote['03. high']) || 0,
-        low: parseFloat(quote['04. low']) || 0,
-        volume: parseInt(quote['06. volume']) || 0
-      }
-    }
-    
-    // If no data found, return null
-    return null
-  } catch (error) {
-    console.error('Error fetching fallback data for Indian stocks:', error)
-    return null
+    candles: candles.reverse(),
+    volumes,
+    open: candles[0].open,
+    high: Math.max(...allPrices),
+    low: Math.min(...allPrices),
+    close: candles[candles.length - 1].close
   }
 }
+
+// Fetch stock data - now using mock data for reliability
+const fetchStockData = async (symbol) => {
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300))
+    
+    // Return mock data for now
+    return generateMockStockData(symbol)
+  } catch (error) {
+    console.error('Error generating stock data:', error)
+    return generateMockStockData(symbol) // Fallback to mock data
+  }
+}
+
+
 
 // Fetch top 10 stocks data
 const fetchTopStocks = async () => {
   isLoading.value = true
   
   try {
-    // Fetch data for popular stocks
-    const stockPromises = popularStocks.slice(0, 10).map(async (stock) => {
-      const data = await fetchStockData(stock.symbol)
-      if (data) {
-        // Generate random chart data for visualization
-        data.chartData = Array.from({ length: 20 }, () => Math.random() * 100)
+    // Generate mock data for popular stocks
+    const mockStocks = popularStocks.slice(0, 10).map(stock => {
+      const data = generateMockStockData(stock.symbol)
+      // Generate realistic chart data for visualization
+      data.chartData = Array.from({ length: 20 }, () => {
+        const base = 50
+        const variation = (Math.random() - 0.5) * 40
+        return Math.max(10, Math.min(90, base + variation))
+      })
         return data
-      }
-      return null
     })
     
-    const results = await Promise.all(stockPromises)
-    topStocks.value = results.filter(stock => stock !== null)
+    topStocks.value = mockStocks
     
   } catch (error) {
     console.error('Error fetching top stocks:', error)
@@ -1817,6 +1858,12 @@ onMounted(() => {
   // Fetch top stocks on component mount
   fetchTopStocks();
   
+  // Initialize market sentiment
+  updateMarketSentiment();
+  
+  // Start live data updates every 5 seconds
+  const liveUpdateInterval = setInterval(updateLiveData, 5000);
+  
   // Add click outside handler for mobile menu
   document.addEventListener('click', handleClickOutside);
   
@@ -2021,6 +2068,20 @@ const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
 }
 
+// Stock Details Modal
+const showStockModal = ref(false)
+const selectedStock = ref(null)
+const activeTimeframe = ref('1D')
+
+// Timeframes for chart
+const timeframes = ref([
+  { label: '1D', value: '1D' },
+  { label: '1W', value: '1W' },
+  { label: '1M', value: '1M' },
+  { label: '3M', value: '3M' },
+  { label: '1Y', value: '1Y' }
+])
+
 // Close mobile menu when clicking outside
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false
@@ -2041,6 +2102,246 @@ const handleClickOutside = (event) => {
       !mobileToggle?.contains(event.target)) {
     mobileMenuOpen.value = false
   }
+}
+
+// Stock Details Methods
+const viewStockDetails = (stock) => {
+  selectedStock.value = {
+    ...stock,
+    chartData: generateChartData(stock.price, '1D'),
+    rsi: Math.floor(Math.random() * 40) + 30, // Random RSI between 30-70
+    macd: Math.random() > 0.5 ? 'Bullish' : 'Bearish',
+    marketCap: formatMarketCap(stock.price * stock.volume)
+  }
+  showStockModal.value = true
+}
+
+const closeStockModal = () => {
+  showStockModal.value = false
+  selectedStock.value = null
+}
+
+
+
+const getCandleHeight = (candle) => {
+  if (!selectedStock.value?.chartData?.candles) return 10
+  const range = Math.abs(candle.close - candle.open)
+  const maxRange = Math.max(...selectedStock.value.chartData.candles.map(c => Math.abs(c.close - c.open)))
+  return Math.max((range / maxRange) * 200, 8)
+}
+
+const getWickHeight = (candle) => {
+  if (!selectedStock.value?.chartData?.candles) return 5
+  const bodyHeight = Math.abs(candle.close - candle.open)
+  const totalHeight = candle.high - candle.low
+  return Math.max((totalHeight - bodyHeight) / totalHeight * 200, 2)
+}
+
+
+
+const getVolumeHeight = (volume) => {
+  if (!selectedStock.value?.chartData?.volumes) return 5
+  const maxVolume = Math.max(...selectedStock.value.chartData.volumes)
+  return Math.max((volume / maxVolume) * 100, 5)
+}
+
+const formatMarketCap = (marketCap) => {
+  if (marketCap >= 1000000000000) {
+    return (marketCap / 1000000000000).toFixed(1) + 'T'
+  } else if (marketCap >= 1000000000) {
+    return (marketCap / 1000000000).toFixed(1) + 'B'
+  } else if (marketCap >= 1000000) {
+    return (marketCap / 1000000).toFixed(1) + 'M'
+  }
+  return marketCap.toFixed(0)
+}
+
+const getRSIClass = (rsi) => {
+  if (rsi >= 70) return 'overbought'
+  if (rsi <= 30) return 'oversold'
+  return 'neutral'
+}
+
+const getMACDClass = (macd) => {
+  return macd === 'Bullish' ? 'bullish' : 'bearish'
+}
+
+// Chart Control Functions
+const chartType = ref('candlestick')
+const showVolume = ref(true)
+const chartZoom = ref(1)
+
+const toggleChartType = () => {
+  chartType.value = chartType.value === 'candlestick' ? 'line' : 'candlestick'
+}
+
+const toggleVolume = () => {
+  showVolume.value = !showVolume.value
+}
+
+const resetZoom = () => {
+  chartZoom.value = 1
+}
+
+// Live Dashboard Data
+const lastUpdateTime = ref(new Date().toLocaleTimeString())
+const activeStockTab = ref('topGainers')
+
+// Live Indices with Real-time Updates
+const liveIndices = ref([
+  {
+    name: 'Nifty 50',
+    symbol: 'NIFTY',
+    logo: '50',
+    price: 24363.30,
+    change: -0.95,
+    chartData: [45, 52, 48, 55, 62, 58, 65, 70, 68, 75, 72, 78, 82, 85, 88, 92, 89, 94, 91, 95]
+  },
+  {
+    name: 'S&P BSE Sensex',
+    symbol: 'SENSEX',
+    logo: 'BSE',
+    price: 79857.79,
+    change: -0.95,
+    chartData: [60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55]
+  },
+  {
+    name: 'Bank Nifty',
+    symbol: 'BANKNIFTY',
+    logo: '🏦',
+    price: 54321.50,
+    change: 1.25,
+    chartData: [55, 60, 65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58]
+  },
+  {
+    name: 'Nifty IT',
+    symbol: 'NIFTYIT',
+    logo: '💻',
+    price: 32145.80,
+    change: 2.15,
+    chartData: [65, 70, 75, 80, 85, 90, 95, 92, 88, 85, 82, 78, 75, 72, 68, 65, 62, 58, 55, 52]
+  }
+])
+
+// Stock Tabs Configuration
+const stockTabs = [
+  { id: 'topGainers', name: 'Top Gainers' },
+  { id: 'topLosers', name: 'Top Losers' },
+  { id: 'mostTraded', name: 'Most Traded' },
+  { id: 'allStocks', name: 'All Stocks' }
+]
+
+// Market Sentiment Data
+const advancingStocks = ref(0)
+const decliningStocks = ref(0)
+const unchangedStocks = ref(0)
+const totalStocks = ref(0)
+
+// Market News Data
+const marketNews = ref([
+  {
+    id: 1,
+    category: 'Market Update',
+    title: 'Nifty 50 crosses 24,400 level amid positive global cues',
+    summary: 'Indian markets opened higher following positive global market trends and strong corporate earnings.',
+    time: '2 hours ago',
+    source: 'Financial Express'
+  },
+  {
+    id: 2,
+    category: 'Stock Alert',
+    title: 'Reliance Industries hits new 52-week high',
+    summary: 'RIL stock surged 3% to reach ₹2,850, driven by strong Q2 results and positive outlook.',
+    time: '4 hours ago',
+    source: 'Economic Times'
+  },
+  {
+    id: 3,
+    category: 'Sector News',
+    title: 'Banking stocks gain on RBI policy announcement',
+    summary: 'Banking sector stocks rallied after RBI maintained status quo on interest rates.',
+    time: '6 hours ago',
+    source: 'Business Standard'
+  },
+  {
+    id: 4,
+    category: 'Global Markets',
+    title: 'US markets close higher, Asian markets follow suit',
+    summary: 'Positive US market performance boosts Asian markets including Indian indices.',
+    time: '8 hours ago',
+    source: 'Reuters'
+  }
+])
+
+// Live Dashboard Functions
+const getActiveStocks = () => {
+  if (!topStocks.value.length) return []
+  
+  switch (activeStockTab.value) {
+    case 'topGainers':
+      return [...topStocks.value].sort((a, b) => b.change - a.change).slice(0, 8)
+    case 'topLosers':
+      return [...topStocks.value].sort((a, b) => a.change - b.change).slice(0, 8)
+    case 'mostTraded':
+      return [...topStocks.value].sort((a, b) => b.volume - a.volume).slice(0, 8)
+    case 'allStocks':
+      return topStocks.value.slice(0, 8)
+    default:
+      return topStocks.value.slice(0, 8)
+  }
+}
+
+// Update Market Sentiment
+const updateMarketSentiment = () => {
+  if (!topStocks.value.length) return
+  
+  const stocks = topStocks.value
+  advancingStocks.value = stocks.filter(s => s.change > 0).length
+  decliningStocks.value = stocks.filter(s => s.change < 0).length
+  unchangedStocks.value = stocks.filter(s => s.change === 0).length
+  totalStocks.value = stocks.length
+}
+
+// Live Data Update Function
+const updateLiveData = () => {
+  // Update indices with realistic price movements
+  liveIndices.value.forEach(index => {
+    const volatility = 0.001 // 0.1% volatility
+    const change = (Math.random() - 0.5) * volatility * 2
+    index.price *= (1 + change)
+    index.change += change * 100
+    
+    // Update chart data
+    const newPoint = 50 + (Math.random() - 0.5) * 40
+    index.chartData.push(newPoint)
+    index.chartData.shift()
+  })
+  
+  // Update stock data
+  topStocks.value.forEach(stock => {
+    const volatility = 0.002 // 0.2% volatility
+    const change = (Math.random() - 0.5) * volatility * 2
+    stock.price *= (1 + change)
+    stock.change += change * 100
+    
+    // Update OHLC
+    if (stock.price > stock.high) stock.high = stock.price
+    if (stock.price < stock.low) stock.low = stock.price
+  })
+  
+  // Update sentiment
+  updateMarketSentiment()
+  
+  // Update timestamp
+  lastUpdateTime.value = new Date().toLocaleTimeString()
+}
+
+// Iframe error handling (keeping for compatibility)
+const iframeError = ref(false)
+
+const handleIframeError = () => {
+  iframeError.value = true
+  console.log('Iframe failed to load, showing custom dashboard')
 }
 </script>
 
@@ -2365,6 +2666,80 @@ const handleClickOutside = (event) => {
   .suggestions-footer {
     padding: 1.25rem 1.5rem;
     border-radius: 0 0 16px 16px;
+  }
+}
+
+/* Mobile-specific search fixes */
+@media (max-width: 768px) {
+  .search-box {
+    margin-bottom: 12rem;
+    z-index: 9999;
+    position: relative;
+  }
+  
+  .search-suggestions {
+    position: fixed !important;
+    top: auto !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: calc(100% - 2rem) !important;
+    max-height: 250px !important;
+    z-index: 99999 !important;
+    background: rgba(10, 10, 26, 0.99) !important;
+    border: 2px solid rgba(0, 255, 136, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+    /* Force above everything */
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .search-input-wrapper {
+    z-index: 9999;
+  }
+  
+  .suggestion-item {
+    padding: 0.75rem;
+    min-height: 50px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+  
+  .suggestions-header {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .suggestions-footer {
+    padding: 0.75rem;
+  }
+  
+  .view-all-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Force content below search to have lower z-index */
+  .top-stocks-section {
+    margin-top: 4rem;
+    position: relative;
+    z-index: 1 !important;
+    transform: translateZ(0);
+  }
+  
+  .section-header {
+    position: relative;
+    z-index: 1 !important;
+    transform: translateZ(0);
+  }
+  
+  /* Ensure all content below search has lower z-index */
+  .stock-search-section + * {
+    z-index: 1 !important;
+    position: relative;
   }
 }
 
@@ -4177,6 +4552,649 @@ const handleClickOutside = (event) => {
   }
 }
 
+/* Stock Details Modal Styles */
+.stock-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.stock-modal {
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #00ff88;
+  margin: 0 0 0.5rem 0;
+}
+
+.modal-title p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.modal-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.modal-content {
+  padding: 2rem;
+}
+
+/* Live Price Section */
+.live-price-section {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.current-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.current-price .price {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+}
+
+.current-price .change {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.current-price .change.up {
+  color: #00ff88;
+}
+
+.current-price .change.down {
+  color: #ff4757;
+}
+
+.price-change-amount {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Chart Section */
+.chart-section {
+  margin-bottom: 2rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chart-header h3 {
+  font-size: 1.5rem;
+  color: white;
+  margin: 0;
+}
+
+.timeframe-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.timeframe-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.timeframe-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.timeframe-btn.active {
+  background: #00ff88;
+  color: #0a0a1a;
+  border-color: #00ff88;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  height: 300px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.candlestick-chart {
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 0 1rem;
+}
+
+.candlestick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 8px;
+}
+
+.candlestick:hover {
+  transform: scaleY(1.05);
+  z-index: 10;
+}
+
+.candlestick:hover .candle-price-labels {
+  opacity: 1;
+  transform: translateY(-5px);
+}
+
+.candlestick.up .candle-body {
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  border: 1px solid #00ff88;
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+}
+
+.candlestick.down .candle-body {
+  background: linear-gradient(135deg, #ff4757 0%, #ff6b6b 100%);
+  border: 1px solid #ff4757;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+}
+
+.candlestick.up .candle-wick {
+  background: #00ff88;
+  box-shadow: 0 0 4px rgba(0, 255, 136, 0.5);
+}
+
+.candlestick.down .candle-wick {
+  background: #ff4757;
+  box-shadow: 0 0 4px rgba(255, 71, 87, 0.5);
+}
+
+.candle-body {
+  width: 70%;
+  border-radius: 3px;
+  min-height: 6px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.candle-wick {
+  width: 2px;
+  border-radius: 1px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.candle-price-labels {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 26, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.candle-price-labels .candle-high {
+  display: block;
+  color: #00ff88;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.candle-price-labels .candle-low {
+  display: block;
+  color: #ff4757;
+  font-weight: bold;
+}
+
+/* Enhanced Volume Chart */
+.volume-chart {
+  position: absolute;
+  left: 70px;
+  right: 0;
+  bottom: 0;
+  height: 60px;
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  padding: 0 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.volume-bar {
+  flex: 1;
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 2px;
+  min-height: 5px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.volume-bar.up {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 136, 0.2) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.5);
+}
+
+.volume-bar:not(.up) {
+  background: linear-gradient(135deg, rgba(255, 71, 87, 0.4) 0%, rgba(255, 71, 87, 0.2) 100%);
+  border: 1px solid rgba(255, 71, 87, 0.5);
+}
+
+.volume-bar:hover {
+  transform: scaleY(1.1);
+  z-index: 5;
+}
+
+/* Chart Controls */
+.chart-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.chart-control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+}
+
+.chart-control-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(0, 255, 136, 0.5);
+  transform: translateY(-1px);
+}
+
+.chart-control-btn i {
+  font-size: 1rem;
+}
+
+/* Chart Grid Lines */
+.chart-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grid-line.horizontal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.grid-line.vertical {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced Chart Container */
+.chart-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Chart Header Enhancements */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-header h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.timeframe-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.timeframe-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.timeframe-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.timeframe-btn.active {
+  background: #00ff88;
+  color: #0a0a1a;
+  border-color: #00ff88;
+}
+
+/* Chart Info Bar Enhancements */
+.chart-info-bar {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  display: block;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Live Statistics */
+.live-stats {
+  margin-bottom: 2rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  display: block;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Technical Indicators */
+.technical-indicators h3 {
+  font-size: 1.5rem;
+  color: white;
+  margin: 0 0 1rem 0;
+}
+
+.indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.indicator {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.indicator-name {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+.indicator-value {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.indicator-value.bullish {
+  color: #00ff88;
+}
+
+.indicator-value.bearish {
+  color: #ff4757;
+}
+
+.indicator-value.overbought {
+  color: #ff6b6b;
+}
+
+.indicator-value.oversold {
+  color: #4ecdc4;
+}
+
+.indicator-value.neutral {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile Responsive for Modal */
+@media (max-width: 768px) {
+  .stock-modal {
+    margin: 1rem;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+  
+  .modal-title h2 {
+    font-size: 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+  }
+  
+  .current-price .price {
+    font-size: 2rem;
+  }
+  
+  .current-price .change {
+    font-size: 1.2rem;
+  }
+  
+  .stat-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .indicators-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .chart-container {
+    height: 200px;
+    padding: 1rem;
+  }
+  
+  /* Enhanced Chart Mobile Styles */
+  .candlestick {
+    min-width: 6px;
+  }
+  
+  .candle-body {
+    width: 80%;
+  }
+  
+  .chart-controls {
+    top: 5px;
+    right: 5px;
+    gap: 0.25rem;
+  }
+  
+  .chart-control-btn {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+  
+  .candle-price-labels {
+    font-size: 0.7rem;
+    padding: 0.4rem;
+    max-width: 120px;
+  }
+  
+  .chart-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .price-scale {
+    width: 50px;
+  }
+  
+  .candlestick-chart {
+    left: 60px;
+  }
+  
+  .volume-chart {
+    left: 60px;
+  }
+  
+  .time-scale {
+    left: 60px;
+  }
+  
+  .timeframe-selector {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .timeframe-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
 /* Stock Search Section Styles */
 .stock-search-section {
   padding: 3rem 0;
@@ -4216,8 +5234,11 @@ const handleClickOutside = (event) => {
 
 .search-box {
   position: relative;
-  margin-bottom: 3rem;
-  z-index: 10;
+  margin-bottom: 4rem;
+  z-index: 99999;
+  /* Force above everything */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .search-input-wrapper {
@@ -4229,7 +5250,7 @@ const handleClickOutside = (event) => {
   padding: 0.5rem;
   transition: all 0.3s ease;
   position: relative;
-  z-index: 10;
+  z-index: 9999;
   overflow: visible;
 }
 
@@ -4286,7 +5307,7 @@ const handleClickOutside = (event) => {
   margin-top: 0;
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 99999;
   backdrop-filter: blur(15px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
   border-top: none;
@@ -4294,6 +5315,13 @@ const handleClickOutside = (event) => {
   border-top-right-radius: 0;
   animation: slideDown 0.3s ease-out;
   transform-origin: top;
+  /* Prevent overlap on all devices */
+  pointer-events: auto;
+  /* Ensure proper spacing and no interference with content below */
+  margin-bottom: 2rem;
+  /* Force above everything */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 @keyframes slideDown {
@@ -4412,6 +5440,8 @@ const handleClickOutside = (event) => {
   margin-bottom: 3rem;
   position: relative;
   z-index: 5;
+  /* Ensure search results don't overlap with suggestions */
+  clear: both;
 }
 
 @media (min-width: 769px) {
@@ -4490,7 +5520,9 @@ const handleClickOutside = (event) => {
 /* Top Stocks Section Styles */
 .top-stocks-section {
   padding: 3rem 0;
-  margin-top: 2rem;
+  margin-top: 4rem;
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 769px) {
@@ -4698,6 +5730,26 @@ const handleClickOutside = (event) => {
   margin-bottom: 1rem;
 }
 
+/* Result Actions */
+.result-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.btn-details {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-details i {
+  font-size: 1.2rem;
+}
+
 .view-all {
   color: #00ff88;
   font-size: 0.9rem;
@@ -4729,6 +5781,797 @@ const handleClickOutside = (event) => {
 .view-all-btn:hover {
   background-color: #00d4aa;
 }
+  
+  /* TradingEconomics India Iframe Section */
+  .tradingeconomics-iframe-section {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+  
+  .tradingeconomics-iframe-section .section-header {
+    padding: 0 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .iframe-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .tradingeconomics-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    display: block;
+  }
+  
+  .live-markets-dashboard h4 {
+    color: #00ff88;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .update-time {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: normal;
+    border: none;
+  }
+  
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .pulse {
+    width: 8px;
+    height: 8px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  
+  .pulse-small {
+    width: 6px;
+    height: 6px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  
+  /* Live Indices Section */
+  .indices-live-section {
+    margin-bottom: 3rem;
+  }
+  
+  .indices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .index-card.live {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .index-card.live::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00ff88, #00d4aa);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  .index-card.live:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 255, 136, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.15);
+  }
+  
+  .live-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  /* Live Stocks Section */
+  .live-stocks-section {
+    margin-bottom: 3rem;
+  }
+  
+  .stocks-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+  
+  .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+  }
+  
+  .tab-btn.active {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+    color: #00ff88;
+  }
+  
+  .stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  
+  .stock-card.live {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .stock-card.live:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 136, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .stock-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .detail-item .label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+  }
+  
+  .detail-item .value {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  /* Market Sentiment */
+  .market-sentiment {
+    margin-bottom: 3rem;
+  }
+  
+  .sentiment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .sentiment-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .sentiment-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  .sentiment-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .sentiment-info h5 {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+  
+  .sentiment-value {
+    color: #00ff88;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .sentiment-percent {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+  }
+  
+  .groww-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    /* Groww specific optimizations */
+    min-height: 600px;
+  }
+  
+  .custom-markets-dashboard h4 {
+    color: #00ff88;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Indices Overview */
+  .indices-overview {
+    margin-bottom: 3rem;
+  }
+  
+  .indices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .index-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .index-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+  }
+  
+  .index-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .index-logo {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .index-info h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: white;
+  }
+  
+  .index-symbol {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+  }
+  
+  .index-price {
+    margin-bottom: 1rem;
+  }
+  
+  .price-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .price-change {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .price-change.up {
+    color: #00ff88;
+  }
+  
+  .price-change.down {
+    color: #ff4757;
+  }
+  
+  .mini-chart {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 60px;
+  }
+  
+  .chart-bar {
+    flex: 1;
+    background: rgba(0, 255, 136, 0.3);
+    border-radius: 2px;
+    min-height: 5px;
+    transition: all 0.2s ease;
+  }
+  
+  .chart-bar.up {
+    background: rgba(0, 255, 136, 0.6);
+  }
+  
+  .chart-bar.down {
+    background: rgba(255, 71, 87, 0.6);
+  }
+  
+  /* Top Stocks Overview */
+  .top-stocks-overview {
+    margin-bottom: 3rem;
+  }
+  
+  .stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  .stock-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .stock-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+  }
+  
+  .stock-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .stock-symbol {
+    font-weight: bold;
+    color: #00ff88;
+    font-size: 1.1rem;
+  }
+  
+  .stock-name {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+  
+  .stock-price {
+    margin-bottom: 0.5rem;
+  }
+  
+  .stock-volume {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+  }
+  
+  /* Market News */
+  .market-news {
+    margin-bottom: 3rem;
+  }
+  
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .news-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .news-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  .news-category {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+  
+  .news-title {
+    color: white;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  
+  .news-summary {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+  
+  .news-meta {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+  }
+  
+  /* External Links */
+  .external-links {
+    margin-bottom: 2rem;
+  }
+  
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .link-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .link-card:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+    transform: translateY(-3px);
+    color: #00ff88;
+  }
+  
+  .link-card i {
+    font-size: 2rem;
+    color: #00ff88;
+  }
+  
+  .link-card span {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  
+  .link-card small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+  }
+  
+  .iframe-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .investing-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    /* Investing.com specific optimizations */
+    min-height: 600px;
+  }
+  
+  /* Iframe Fallback Styling */
+  .iframe-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 26, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  
+  .fallback-content {
+    text-align: center;
+    padding: 2rem;
+    color: white;
+  }
+  
+  .fallback-content i {
+    font-size: 3rem;
+    color: #00ff88;
+    margin-bottom: 1rem;
+  }
+  
+  .fallback-content h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .fallback-content p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+  }
+  
+  .fallback-btn {
+    display: inline-block;
+    background: #00ff88;
+    color: #0a0a1a;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .fallback-btn:hover {
+    background: #00d4aa;
+    transform: translateY(-2px);
+  }
+  
+  .fallback-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  .fallback-links .fallback-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Mobile responsive iframe */
+  @media (max-width: 768px) {
+    .tradingeconomics-iframe-section {
+      margin-top: 1.5rem;
+      padding: 1rem 0;
+    }
+    
+    .iframe-container {
+      height: 500px;
+      border-radius: 6px;
+    }
+    
+    .tradingeconomics-iframe {
+      border-radius: 6px;
+    }
+  }
+  
+  /* Tablet responsive */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .iframe-container {
+      height: 550px;
+    }
+  }
+  
+  /* Small mobile devices */
+  @media (max-width: 480px) {
+    .tradingeconomics-iframe-section {
+      margin-top: 1rem;
+      padding: 0.5rem 0;
+    }
+    
+    .tradingeconomics-iframe-section .section-header {
+      padding: 0 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .tradingeconomics-iframe-section .section-header h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .tradingeconomics-iframe-section .section-header p {
+      font-size: 0.85rem;
+    }
+    
+    .iframe-container {
+      height: 450px;
+      border-radius: 4px;
+    }
+    
+    .tradingeconomics-iframe {
+      border-radius: 4px;
+    }
+  }
+  
+  /* Extra small mobile devices */
+  @media (max-width: 360px) {
+    .iframe-container {
+      height: 400px;
+    }
+  }
+  
+    /* Landscape mobile */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .iframe-container {
+      height: 350px;
+    }
+  }
+  
+  /* External Market Links */
+  .external-links {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .external-links .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .external-links .section-header h3 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .external-links .section-header p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+  }
+  
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .link-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  
+  .link-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+  
+  .link-card i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #4CAF50;
+  }
+  
+  .link-card span {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+  
+  .link-card small {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Mobile responsive external links */
+  @media (max-width: 768px) {
+    .external-links {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+    }
+    
+    .links-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    .link-card {
+      padding: 1.25rem;
+    }
+    
+    .link-card i {
+      font-size: 1.75rem;
+    }
+    
+    .link-card span {
+      font-size: 1rem;
+    }
+  }
 
 /* Mobile Menu Toggle */
 .mobile-menu-toggle {

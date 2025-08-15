@@ -39,8 +39,8 @@
     <div :class="['sidebar', { open: sidebarOpen }]">
       <div class="sidebar-header">
         <img src="../assest/img/tableprofileimg.png" alt="Profile" class="sidebar-profile-pic" />
-        <h3>{{ storedUser.name }}</h3>
-        <span class="balance">💰 {{ storedUser.total_balance }}</span>
+        <h3>{{ storedUser?.name || 'User' }}</h3>
+        <span class="balance">💰 {{ storedUser?.total_balance || '0.00' }}</span>
         <button class="close-btn" @click="toggleSidebar">&times;</button>
       </div>
 
@@ -74,7 +74,7 @@ const storedUser = JSON.parse(localStorage.getItem("userData"));
 const sidebarOpen = ref(false);
 
 const goToDashboard = () => {
-  if(storedUser.value.is_admin){
+  if(storedUser && storedUser.is_admin){
     router.push("/admin/dashboard");
   }else{
     router.push("/user/dashboard");
