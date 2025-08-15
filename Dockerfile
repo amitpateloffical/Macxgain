@@ -1,6 +1,11 @@
 # Use PHP 8.2 with Apache as base image
 FROM php:8.2-apache
 
+# Set environment variables
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+ENV PHP_MEMORY_LIMIT=512M
+ENV PHP_MAX_EXECUTION_TIME=300
+
 # Set working directory
 WORKDIR /var/www/html
 
@@ -51,21 +56,20 @@ COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
 # Create .env file if it doesn't exist
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+RUN if [ -f .env.example ]; then cp .env.example .env; fi
 
-# Generate application key
-RUN php artisan key:generate --no-interaction
+# Generate application key (only if .env exists)
+RUN if [ -f .env ]; then php artisan key:generate --no-interaction; fi
 
-# Run migrations
-RUN php artisan migrate --force
+# Note: Migrations and optimizations should be run after container starts
+# when database is available, not during build time
 
-# Optimize Laravel
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Copy startup script
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start with custom script
+CMD ["/usr/local/bin/start.sh"]
