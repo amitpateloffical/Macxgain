@@ -235,4 +235,20 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function total_b(Request $request)
+    {
+        $id = $request->input('id');
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json([
+            'total_balance' => $user->total_balance
+        ]);
+    }
+
+
 }

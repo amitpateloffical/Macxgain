@@ -129,6 +129,8 @@ Route::middleware('auth:api')->group(function() {
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::patch('/users/{id}/status', [UserController::class, 'updateStatus']);
+
+    Route::post('/total_b', [UserController::class, 'total_b']);
     
     // Register Requests API Routes
     Route::get('/register-requests', [RegisterRequestController::class, 'index']);

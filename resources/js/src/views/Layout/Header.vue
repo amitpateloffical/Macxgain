@@ -66,29 +66,64 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import axios from "@axios";
 
 const router = useRouter();
-const storedUser = JSON.parse(localStorage.getItem("userData"));
 const sidebarOpen = ref(false);
+const showRequestForm = ref(false);
+const transactionId = ref("");
+const file = ref(null);
+
+// Store user as reactive so UI updates
+  const storedUser = ref(JSON.parse(localStorage.getItem("userData")) || {});
 
 const goToDashboard = () => {
-  if(storedUser && storedUser.is_admin){
-    router.push("/admin/dashboard");
-  }else{
-    router.push("/user/dashboard");
-  }
+  router.push("/user/dashboard");
 };
+
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
+  showRequestForm.value = false;
 };
+
 const handleLogout = () => {
   localStorage.removeItem("userData");
   localStorage.removeItem("access_token");
-  router.push("/login");
+  router.push({ name: "login" });
 };
+
+// Function to get latest balance
+async function fetchTotalBalance() {
+  try {
+  const res = await axios.post("/total_b", {
+  id: storedUser.value.id
+});
+
+    if (res.data && res.data.total_balance !== undefined) {
+      storedUser.value.total_balance = res.data.total_balance;
+
+      // Update localStorage too
+      localStorage.setItem("userData", JSON.stringify(storedUser.value));
+    }
+  } catch (err) {
+    console.error("Error fetching total balance:", err);
+  }
+}
+
+let intervalId = null;
+
+onMounted(() => {
+  fetchTotalBalance(); // initial fetch
+  intervalId = setInterval(fetchTotalBalance, 10000); // every 1 min
+});
+
+onBeforeUnmount(() => {
+  if (intervalId) clearInterval(intervalId);
+});
 </script>
+
 
 <style scoped>
 .header_screen {
