@@ -27,7 +27,7 @@ const layout = computed(() => {
 
 // Set default title
 onMounted(() => {
-  document.title = 'Macxgain - Best Trading App – Trade Smarter, Faster, Safer';
+  document.title = 'Macxgain - Trading with AI and Gain Profit';
 })
 
 

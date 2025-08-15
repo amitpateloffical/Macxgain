@@ -5,6 +5,10 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'; // Import path module
 export default defineConfig({
     transpileDependencies: true,
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+    },
     plugins: [
         vue(),
         laravel({
