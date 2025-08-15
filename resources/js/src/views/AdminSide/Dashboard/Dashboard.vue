@@ -78,6 +78,8 @@
         </div>
       </router-link>
     </div>
+
+
   </div>
 </template>
 
@@ -332,134 +334,461 @@ export default {
   }
 }
 
-/* Landscape Mobile (Orientation) */
-@media (max-width: 768px) and (orientation: landscape) {
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+  
+  .hero-visual {
+    order: -1;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .analytics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
   .dashboard-screen {
     padding: 16px;
   }
   
-  .dashboard-header {
-    margin-bottom: 20px;
+  .hero-section {
+    padding: 24px;
+    margin-bottom: 24px;
   }
   
-  .dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
   }
   
-  .dashboard-card {
-    padding: 16px 12px;
-    min-height: 120px;
+  .hero-title {
+    font-size: 2rem;
   }
   
-  .card-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
+  .hero-subtitle {
+    font-size: 1rem;
   }
   
-  .card-title {
-    font-size: 16px;
-    margin-bottom: 6px;
+  .hero-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
   }
   
-  .card-description {
-    font-size: 12px;
-    padding: 0 6px;
+  .stat-item {
+    padding: 16px;
+    min-width: 100px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .hero-visual {
+    display: none;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .action-card {
+    padding: 20px;
+  }
+  
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .analytics-card {
+    padding: 20px;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .status-card {
+    padding: 16px;
   }
 }
 
-/* Small Mobile (320px and below) */
-@media (max-width: 320px) {
+@media (max-width: 480px) {
   .dashboard-screen {
     padding: 12px;
   }
   
-  .dashboard-title {
-    font-size: 20px;
+  .hero-section {
+    padding: 20px;
+    border-radius: 16px;
   }
   
-  .dashboard-subtitle {
-    font-size: 14px;
+  .hero-title {
+    font-size: 1.75rem;
   }
   
-  .dashboard-card {
-    padding: 16px 12px;
-    min-height: 120px;
+  .hero-subtitle {
+    font-size: 0.9rem;
   }
   
-  .card-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
+  .current-time {
+    font-size: 0.875rem;
+    padding: 6px 12px;
   }
   
-  .card-title {
-    font-size: 14px;
+  .hero-stats {
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+    min-width: 80px;
+    border-radius: 12px;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
     margin-bottom: 6px;
   }
   
-  .card-description {
-    font-size: 12px;
-    padding: 0 4px;
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .quick-actions-grid {
+    gap: 12px;
+  }
+  
+  .action-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .action-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  
+  .action-title {
+    font-size: 1.125rem;
+    margin-bottom: 6px;
+  }
+  
+  .action-description {
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+  }
+  
+  .action-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+  
+  .analytics-grid {
+    gap: 12px;
+  }
+  
+  .analytics-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .analytics-header {
+    margin-bottom: 16px;
+  }
+  
+  .analytics-title {
+    font-size: 1rem;
+  }
+  
+  .trend-indicator {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+  }
+  
+  .chart-container {
+    height: 150px;
+    margin-bottom: 12px;
+  }
+  
+  .chart-label {
+    font-size: 0.7rem;
+  }
+  
+  .activity-list {
+    border-radius: 12px;
+  }
+  
+  .activity-item {
+    padding: 16px;
+  }
+  
+  .activity-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    margin-right: 12px;
+  }
+  
+  .activity-title {
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+  }
+  
+  .activity-time {
+    font-size: 0.7rem;
+  }
+  
+  .activity-status {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+  
+  .status-grid {
+    gap: 12px;
+  }
+  
+  .status-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .status-info h4 {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
+  
+  .status-info p {
+    font-size: 0.8rem;
   }
 }
 
-/* Touch Device Optimizations */
-@media (hover: none) and (pointer: coarse) {
-  .dashboard-card {
-    transition: none;
+@media (max-width: 360px) {
+  .dashboard-screen {
+    padding: 8px;
   }
   
-  .dashboard-card:active {
-    transform: scale(0.98);
-    background: linear-gradient(145deg, #0f172a, #0b0b16);
+  .hero-section {
+    padding: 16px;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .stat-item {
+    padding: 10px;
+    min-width: 70px;
+  }
+  
+  .stat-number {
+    font-size: 1.125rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+  }
+  
+  .action-card {
+    padding: 12px;
+  }
+  
+  .action-icon {
+    font-size: 1.75rem;
+  }
+  
+  .action-title {
+    font-size: 1rem;
+  }
+  
+  .action-description {
+    font-size: 0.75rem;
+  }
+  
+  .analytics-card {
+    padding: 12px;
+  }
+  
+  .chart-container {
+    height: 120px;
+  }
+  
+  .activity-item {
+    padding: 12px;
+  }
+  
+  .status-card {
+    padding: 12px;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hero-section {
+    padding: 20px;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-stats {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Tablet Specific */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-screen {
+    padding: 20px;
+  }
+  
+  .hero-section {
+    padding: 32px;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.125rem;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  
+  .chart-container {
+    height: 250px;
   }
 }
 
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .dashboard-card {
+  .hero-section,
+  .action-card,
+  .analytics-card,
+  .activity-list,
+  .status-card {
     border-width: 0.5px;
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .dashboard-screen {
-    background-color: #0d0d1a;
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .action-card:hover,
+  .analytics-card:hover {
+    transform: none;
   }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-card {
+  
+  .action-card:active,
+  .analytics-card:active {
+    transform: scale(0.98);
+  }
+  
+  .action-arrow {
     transition: none;
   }
   
-  .dashboard-card:hover {
-    transform: none;
+  .action-card:active .action-arrow {
+    transform: translateX(4px);
   }
 }
 
 /* Print Styles */
 @media print {
   .dashboard-screen {
-    background-color: white;
+    background: white;
     color: black;
     padding: 0;
   }
   
-  .dashboard-cards {
-    display: grid;
+  .hero-section {
+    background: white;
+    border: 1px solid #000;
+    color: black;
+  }
+  
+  .hero-title {
+    background: none;
+    -webkit-text-fill-color: black;
+    color: black;
+  }
+  
+  .hero-visual,
+  .floating-elements {
+    display: none;
+  }
+  
+  .quick-actions-grid,
+  .analytics-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
   
-  .dashboard-card {
+  .action-card,
+  .analytics-card {
     background: white;
     border: 1px solid #000;
     color: black;
     box-shadow: none;
   }
+  
+  .chart-container {
+    height: auto;
+    min-height: 150px;
+    border: 1px solid #ccc;
+  }
 }
+
+
 </style>

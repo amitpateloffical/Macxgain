@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WalletTransaction extends Model
 {
-    //
-     protected $fillable = [
+    protected $fillable = [
         'user_id',
         'transaction_code',
         'type',
@@ -15,4 +14,12 @@ class WalletTransaction extends Model
         'running_balance',
         'remark',
     ];
+
+    /**
+     * Get the user that owns the transaction
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

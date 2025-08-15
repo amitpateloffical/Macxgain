@@ -17,11 +17,11 @@ class RegisterRequestController extends Controller
     public function index()
     {
         try {
-            // Get all users with their registration status
+            // Get all users with their registration status, sorted by latest first
             $requests = User::select([
                 'id', 'name', 'email', 'phone', 'profile_image', 'status',
                 'created_at', 'updated_at'
-            ])->get();
+            ])->orderBy('created_at', 'desc')->get();
 
             // Transform data to match frontend expectations
             $formattedRequests = $requests->map(function ($user) {

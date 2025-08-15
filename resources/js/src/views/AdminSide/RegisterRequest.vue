@@ -74,6 +74,19 @@
           <option value="week">This Week</option>
           <option value="month">This Month</option>
         </select>
+        
+        <select v-model="sortBy" class="filter-select">
+          <option value="latest">🕐 Latest First</option>
+          <option value="oldest">🕐 Oldest First</option>
+          <option value="name">🔤 Name A-Z</option>
+          <option value="email">📧 Email A-Z</option>
+        </select>
+      </div>
+      
+      <div class="results-info">
+        <span class="results-count">
+          Showing {{ filteredRequests.length }} of {{ requests.length }} requests
+        </span>
       </div>
     </div>
 
@@ -215,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 // Reactive Data
 const loading = ref(false)
@@ -224,6 +237,7 @@ const requests = ref([])
 const searchQuery = ref('')
 const statusFilter = ref('all')
 const dateFilter = ref('all')
+const sortBy = ref('latest')
 const currentPage = ref(1)
 const requestsPerPage = ref(10)
 const processingRequest = ref(null)
@@ -273,6 +287,22 @@ const filteredRequests = computed(() => {
     })
   }
 
+  // Sort the filtered results
+  filtered.sort((a, b) => {
+    switch (sortBy.value) {
+      case 'latest':
+        return new Date(b.created_at) - new Date(a.created_at)
+      case 'oldest':
+        return new Date(a.created_at) - new Date(b.created_at)
+      case 'name':
+        return a.name.localeCompare(b.name)
+      case 'email':
+        return a.email.localeCompare(b.email)
+      default:
+        return new Date(b.created_at) - new Date(a.created_at)
+    }
+  })
+
   return filtered
 })
 
@@ -304,6 +334,11 @@ const rejectedRequests = computed(() => {
   return requests.value.filter(r => 
     r.status === 'rejected' && new Date(r.updated_at) >= todayStart
   ).length
+})
+
+// Watchers - Reset page when filters change
+watch([searchQuery, statusFilter, dateFilter, sortBy], () => {
+  currentPage.value = 1
 })
 
 // Methods
@@ -681,6 +716,21 @@ onMounted(() => {
   border-color: #00ff80;
 }
 
+.results-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.results-count {
+  color: #a1a1a1;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Requests List */
 .requests-container {
   background: rgba(255, 255, 255, 0.02);
@@ -925,23 +975,68 @@ onMounted(() => {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  
+  .filter-options {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .results-info {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
+  .register-request-screen {
+    padding: 16px;
+  }
+  
+  .page-header {
+    margin-bottom: 20px;
+  }
+  
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
   }
   
   .header-left h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+  
+  .header-left p {
+    font-size: 0.9rem;
   }
   
   .stats-cards {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+    min-width: auto;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
   }
   
   .filters-section {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
   
   .search-box {
@@ -950,26 +1045,414 @@ onMounted(() => {
   
   .filter-options {
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .filter-select {
+    min-width: 150px;
+    font-size: 0.875rem;
+  }
+  
+  .results-info {
+    justify-content: center;
+    margin-top: 0;
+  }
+  
+  .requests-container {
+    padding: 16px;
+  }
+  
+  .request-card {
+    padding: 20px;
   }
   
   .request-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
+    align-items: flex-start;
   }
   
   .user-info {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
+  }
+  
+  .user-avatar {
+    width: 50px;
+    height: 50px;
   }
   
   .request-actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   
   .btn-approve,
   .btn-reject {
     justify-content: center;
+    padding: 12px 20px;
+  }
+  
+  .pagination {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-request-screen {
+    padding: 12px;
+  }
+  
+  .page-header {
+    margin-bottom: 16px;
+  }
+  
+  .header-left h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-left p {
+    font-size: 0.8rem;
+  }
+  
+  .stats-cards {
+    gap: 12px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .filters-section {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .filter-options {
+    gap: 8px;
+  }
+  
+  .filter-select {
+    min-width: 120px;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+  
+  .search-input {
+    font-size: 0.875rem;
+    padding: 8px 12px;
+  }
+  
+  .requests-container {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .request-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .user-avatar {
+    width: 45px;
+    height: 45px;
+    border-width: 2px;
+  }
+  
+  .user-name {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+  
+  .user-email,
+  .user-phone {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+  
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  .request-meta {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .meta-item {
+    font-size: 0.8rem;
+  }
+  
+  .btn-approve,
+  .btn-reject {
+    font-size: 0.875rem;
+    padding: 10px 16px;
+  }
+  
+  .processed-info {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  
+  .pagination {
+    margin-top: 16px;
+    padding-top: 12px;
+    gap: 8px;
+  }
+  
+  .btn-page {
+    padding: 6px 10px;
+    font-size: 0.875rem;
+  }
+  
+  .page-info {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .register-request-screen {
+    padding: 8px;
+  }
+  
+  .page-header {
+    margin-bottom: 12px;
+  }
+  
+  .header-left h1 {
+    font-size: 1.25rem;
+  }
+  
+  .header-left p {
+    font-size: 0.75rem;
+  }
+  
+  .stats-cards {
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  .stat-icon {
+    font-size: 1.25rem;
+  }
+  
+  .stat-number {
+    font-size: 1.125rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .filters-section {
+    padding: 12px;
+  }
+  
+  .filter-select {
+    min-width: 100px;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+  
+  .search-input {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  .requests-container {
+    padding: 8px;
+  }
+  
+  .request-card {
+    padding: 12px;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .user-name {
+    font-size: 0.9rem;
+  }
+  
+  .user-email,
+  .user-phone {
+    font-size: 0.75rem;
+  }
+  
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+  
+  .btn-approve,
+  .btn-reject {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+  
+  .pagination {
+    gap: 6px;
+  }
+  
+  .btn-page {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .page-info {
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .register-request-screen {
+    padding: 12px;
+  }
+  
+  .stats-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .filters-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .filter-options {
+    flex-direction: row;
+    gap: 8px;
+  }
+  
+  .filter-select {
+    min-width: 120px;
+  }
+}
+
+/* Tablet Specific */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .register-request-screen {
+    padding: 20px;
+  }
+  
+  .stats-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  
+  .stat-card {
+    padding: 18px;
+  }
+  
+  .filter-options {
+    gap: 16px;
+  }
+  
+  .filter-select {
+    min-width: 180px;
+  }
+  
+  .request-card {
+    padding: 22px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .page-header,
+  .stat-card,
+  .filters-section,
+  .request-card {
+    border-width: 0.5px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .stat-card:hover,
+  .request-card:hover,
+  .btn-approve:hover,
+  .btn-reject:hover {
+    transform: none;
+  }
+  
+  .stat-card:active,
+  .request-card:active {
+    transform: scale(0.98);
+  }
+  
+  .btn-approve:active,
+  .btn-reject:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .register-request-screen {
+    background: white;
+    color: black;
+    padding: 0;
+  }
+  
+  .page-header,
+  .filters-section,
+  .btn-refresh,
+  .btn-approve,
+  .btn-reject {
+    display: none;
+  }
+  
+  .stats-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    background: white;
+    border: 1px solid #000;
+    color: black;
+    box-shadow: none;
+  }
+  
+  .request-card {
+    background: white;
+    border: 1px solid #000;
+    color: black;
+    box-shadow: none;
+    margin-bottom: 1rem;
+  }
+  
+  .pagination {
+    display: none;
   }
 }
 </style>

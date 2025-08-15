@@ -126,7 +126,7 @@ const routes = [
         path: "/analytics",
         name: "analytics",
         meta: { requiresAuth: true },
-        component: () => import("../views/AdminSide/Dashboard/Dashboard.vue"), // Temporary - replace with actual component
+        component: () => import("../views/AdminSide/Analytics.vue"),
       },
 
   {

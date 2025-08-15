@@ -78,6 +78,7 @@ Route::post('/register', [UserProfileController::class, 'register']);
 Route::get('/email-logs', [EmailLogsController::class, 'index']);
 Route::get('/login-logs', [EmailLogsController::class, 'getLoginLogs']);
 Route::get('/getData', [ChartController::class, 'getData']);
+Route::get('/analytics', [ChartController::class, 'getAnalytics']);
 
 //customer module
 Route::post('/store', [CustomerController::class, 'store']);
