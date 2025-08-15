@@ -31,6 +31,9 @@ class UserProfileController extends Controller
                     'email' => $user->email,
                     'phone' => $user->phone,
                     'profile_image' => $user->profile_image,
+                    'bank_name'=>$user->bank_name,
+                    'account_no'=>$user->account_no,
+                    'ifsc_code'=>$user->ifsc_code,
                 ]
             ]);
         }
@@ -39,42 +42,48 @@ class UserProfileController extends Controller
     }
 
     public function updateUserProfile(Request $request, $encodedId)
-    {
-        $id = base64_decode($encodedId);
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'email' => 'required|string|email|max:255',
-        //     'profile_image' => 'nullable|image|mimes:jpg,png,gif|max:800',
-        //     'phone' => 'required|numeric|digits:10',
+{
+    $id = base64_decode($encodedId);
+    $user = User::find($id);
 
-        // ]);
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-             'email' => 'required|string|email|max:255',
-             'phone' => 'required|numeric|digits:10',
-             'profile_image' => 'nullable|image|mimes:jpg,png,gif|max:800',
-         ]);
-         if ($validator->fails()) {
-             return response(['errors' => $validator->errors()->messages(), 'code' => 422], 422);
-         }
-
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        if ($request->hasFile('profile_image')) {
-            if ($user->profile_image) {
-                Storage::delete($user->profile_image);
-            }
-            $path = $request->file('profile_image')->store('profile_images', 'public');
-            $user->profile_image = $path;
-        }
-        $user->save();
-        return response()->json(['message' => 'Profile updated successfully', 'data' => $user]);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
     }
+
+    $validator = Validator::make($request->all(), [
+        'name'         => 'required|string|max:255',
+        'email'        => 'required|string|email|max:255',
+        'phone'        => 'required|numeric|digits:10',
+        'profile_image'=> 'nullable|image|mimes:jpg,png,gif|max:800',
+        'bank_name'    => 'required|string|max:255',
+        'account_no' => 'required|integer',
+        'ifsc_code'    => 'required|string|max:20',
+    ]);
+
+    if ($validator->fails()) {
+        return response(['errors' => $validator->errors()->messages(), 'code' => 422], 422);
+    }
+
+    $user->name = $request->name;
+    $user->email = $request->email;
+    $user->phone = $request->phone;
+    $user->bank_name = $request->bank_name;
+    $user->account_no = $request->account_no;
+    $user->ifsc_code = $request->ifsc_code;
+
+    if ($request->hasFile('profile_image')) {
+        if ($user->profile_image) {
+            Storage::delete($user->profile_image);
+        }
+        $path = $request->file('profile_image')->store('profile_images', 'public');
+        $user->profile_image = $path;
+    }
+
+    $user->save();
+
+    return response()->json(['message' => 'Profile updated successfully', 'data' => $user]);
+}
+
 
     public function register(Request $request)
     {

@@ -3,8 +3,8 @@
     <b-card class="profile-card shadow-lg border-0">
       <b-row>
         <!-- Profile Picture + Info -->
-<b-col md="4" class="text-center border-end border-gray-700 pe-4">
-        <!--           <b-img
+        <b-col md="4" class="text-center border-end border-gray-700 pe-4">
+          <!--           <b-img
             :src="imagePreview || `/storage/${options.profile_image}?t=${new Date().getTime()}`"
             rounded
             class="profile-avatar mb-3"
@@ -30,8 +30,12 @@
 
           <div class="mt-4">
             <h5 class="fw-bold">{{ options.name }}</h5>
-            <p class="text-muted"><strong>Email:</strong> {{ options.email }}</p>
-            <p class="text-muted"><strong>Contact:</strong> {{ options.phone }}</p>
+            <p class="text-muted">
+              <strong>Email:</strong> {{ options.email }}
+            </p>
+            <p class="text-muted">
+              <strong>Contact:</strong> {{ options.phone }}
+            </p>
           </div>
         </b-col>
 
@@ -42,10 +46,10 @@
             <b-row>
               <b-col md="6" class="mb-3">
                 <b-form-group label="Full Name" label-class="fw-semibold">
-                  <b-form-input 
+                  <b-form-input
                     id="name"
-                    v-model="options.name" 
-                    @input="RemoveError('name')" 
+                    v-model="options.name"
+                    @input="RemoveError('name')"
                     :state="hasErrors('name') ? false : null"
                     placeholder="Enter Name"
                     autocomplete="off"
@@ -64,10 +68,10 @@
 
               <b-col md="6" class="mb-3">
                 <b-form-group label="Phone" label-class="fw-semibold">
-                  <b-form-input 
+                  <b-form-input
                     id="phone"
-                    v-model="options.phone" 
-                    @input="RemoveError('phone')" 
+                    v-model="options.phone"
+                    @input="RemoveError('phone')"
                     :state="hasErrors('phone') ? false : null"
                     placeholder="Enter Mobile Number"
                     autocomplete="off"
@@ -77,13 +81,68 @@
                   </div>
                 </b-form-group>
               </b-col>
+              <b-col md="6" class="mb-3">
+                <b-form-group label="Bank Name" label-class="fw-semibold">
+                  <b-form-input
+                    id="bank_name"
+                    v-model="options.bank_name"
+                    @input="RemoveError('bank_name')"
+                    :state="hasErrors('bank_name') ? false : null"
+                    placeholder="Enter Bank Name"
+                    autocomplete="off"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('bank_name')">
+                    {{ getErrors("bank_name") }}
+                  </div>
+                </b-form-group>
+              </b-col>
+
+              <b-col md="6" class="mb-3">
+                <b-form-group label="Account Number" label-class="fw-semibold">
+                  <b-form-input
+                    id="account_no"
+                    v-model="options.account_no"
+                    @input="RemoveError('account_no')"
+                    :state="hasErrors('account_no') ? false : null"
+                    placeholder="Enter Account Number"
+                    autocomplete="off"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('account_no')">
+                    {{ getErrors("account_no") }}
+                  </div>
+                </b-form-group>
+              </b-col>
+
+              <b-col md="6" class="mb-3">
+                <b-form-group label="IFSC Code" label-class="fw-semibold">
+                  <b-form-input
+                    id="ifsc_code"
+                    v-model="options.ifsc_code"
+                    @input="RemoveError('ifsc_code')"
+                    :state="hasErrors('ifsc_code') ? false : null"
+                    placeholder="Enter IFSC Code"
+                    autocomplete="off"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('ifsc_code')">
+                    {{ getErrors("ifsc_code") }}
+                  </div>
+                </b-form-group>
+              </b-col>
             </b-row>
 
             <div class="mt-4">
-              <b-button type="submit" variant="primary" class="me-2 rounded-pill px-4">
+              <b-button
+                type="submit"
+                variant="primary"
+                class="me-2 rounded-pill px-4"
+              >
                 <i class="bi bi-check-circle me-1"></i> Save
               </b-button>
-              <b-button type="reset" variant="secondary" class="rounded-pill px-4">
+              <b-button
+                type="reset"
+                variant="secondary"
+                class="rounded-pill px-4"
+              >
                 <i class="bi bi-x-circle me-1"></i> Cancel
               </b-button>
             </div>
@@ -144,6 +203,10 @@ export default {
       formData.append("email", this.options.email);
       formData.append("phone", this.options.phone);
       formData.append("role", this.options.role);
+      formData.append("bank_name", this.options.bank_name || "");
+      formData.append("account_no", this.options.account_no || "");
+      formData.append("ifsc_code", this.options.ifsc_code || "");
+
       if (this.selectedFile) {
         formData.append("profile_image", this.selectedFile);
       }
@@ -156,13 +219,19 @@ export default {
           this.selectedFile = null;
           this.imagePreview = null;
           window.dispatchEvent(new Event("profileUpdated"));
+
           Swal.fire({
             icon: "success",
             title: "Profile updated successfully",
             timer: 1500,
             showConfirmButton: false,
           });
-          this.$router.push("/dashboard");
+
+          if (res.data.data.is_admin == 0) {
+            this.$router.push("/user/dashboard");
+          } else {
+            this.$router.push("/admin/dashboard");
+          }
         })
         .catch((err) => {
           if (err.response?.data.code === 422) {
