@@ -66,8 +66,8 @@
         </button>
         
         <div class="header-content fade-in-up">
-          <h1>Global Markets</h1>
-          <p>Real-time market data and live charts</p>
+          <h1>Indian Markets</h1>
+          <p>Real-time Indian market data and live charts</p>
         </div>
         
         <div class="market-status fade-in-right">
@@ -76,6 +76,168 @@
         </div>
       </div>
     </header>
+
+    <!-- Stock Search Section -->
+    <section class="stock-search-section">
+      <div class="container">
+        <div class="search-container fade-in-up">
+          <div class="search-header">
+            <h2>Indian Stock Search</h2>
+            <p>Search for any Indian stock symbol to get real-time data</p>
+          </div>
+          
+          <div class="search-box">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input 
+                v-model="searchQuery" 
+                @input="handleSearch"
+                @keyup.enter="searchStock"
+                type="text" 
+                placeholder="Enter Indian stock symbol (e.g., RELIANCE, TCS, INFY)"
+                class="search-input"
+              />
+              <button @click="searchStock" class="search-btn">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+            
+            <!-- Search Suggestions -->
+            <div v-if="searchSuggestions.length > 0 && searchQuery" class="search-suggestions">
+              <div class="suggestions-header">
+                <span>Found {{ searchSuggestions.length }} matches</span>
+                <span v-if="searchSuggestions.length >= 10" class="view-all">View All Results</span>
+              </div>
+              <div 
+                v-for="suggestion in searchSuggestions" 
+                :key="suggestion.symbol"
+                @click="selectSuggestion(suggestion)"
+                class="suggestion-item"
+              >
+                <div class="suggestion-symbol">{{ suggestion.symbol }}</div>
+                <div class="suggestion-name">{{ suggestion.name }}</div>
+                <div class="suggestion-category">{{ getStockCategory(suggestion.symbol) }}</div>
+              </div>
+              <div v-if="searchSuggestions.length >= 10" class="suggestions-footer">
+                <button @click="showAllResults" class="view-all-btn">
+                  Show All {{ getTotalMatches() }} Results
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Search Results -->
+          <div v-if="searchResult" class="search-result">
+            <div class="result-card">
+              <div class="result-header">
+                <div class="result-info">
+                  <h3>{{ searchResult.symbol }}</h3>
+                  <p>{{ searchResult.name }}</p>
+                </div>
+                <div class="result-change" :class="{ up: searchResult.change >= 0, down: searchResult.change < 0 }">
+                  <span class="change-value">{{ searchResult.change >= 0 ? '+' : '' }}{{ searchResult.change.toFixed(2) }}%</span>
+                  <span class="change-arrow">{{ searchResult.change >= 0 ? '↗' : '↘' }}</span>
+                </div>
+              </div>
+              
+              <div class="result-price">
+                <span class="price-value">₹{{ searchResult.price.toFixed(2) }}</span>
+                <span class="price-change">{{ searchResult.change >= 0 ? '+' : '' }}{{ searchResult.priceChange.toFixed(2) }}</span>
+              </div>
+              
+              <div class="result-stats">
+                <div class="stat">
+                  <span class="stat-label">Open</span>
+                  <span class="stat-value">₹{{ searchResult.open.toFixed(2) }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">High</span>
+                  <span class="stat-value">₹{{ searchResult.high.toFixed(2) }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Low</span>
+                  <span class="stat-value">₹{{ searchResult.low.toFixed(2) }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Volume</span>
+                  <span class="stat-value">{{ formatVolume(searchResult.volume) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top 10 Stocks Section -->
+    <section class="top-stocks-section">
+      <div class="container">
+        <div class="section-header fade-in-up">
+          <h2>Top 10 Indian Stocks</h2>
+          <div class="section-subtitle">Most actively traded Indian stocks</div>
+          <div class="refresh-controls">
+            <button @click="refreshTopStocks" class="refresh-btn" :disabled="isLoading">
+              <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
+              {{ isLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+        </div>
+        
+        <div v-if="isLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading Indian market data...</p>
+        </div>
+        
+        <div v-else-if="topStocks.length > 0" class="top-stocks-grid">
+          <div v-for="(stock, idx) in topStocks" :key="stock.symbol" :class="['stock-card', idx % 2 === 0 ? 'fade-in-left' : 'fade-in-right']">
+            <div class="stock-header">
+              <div class="stock-info">
+                <h3>{{ stock.symbol }}</h3>
+                <span class="company-name">{{ stock.name }}</span>
+              </div>
+              <div class="stock-change" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                <span class="change-value">{{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ stock.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="stock-price">
+              <span class="price-value">₹{{ stock.price.toFixed(2) }}</span>
+              <span class="price-change">{{ stock.change >= 0 ? '+' : '' }}{{ stock.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="stock-stats">
+              <div class="stat">
+                <span class="stat-label">Open</span>
+                <span class="stat-value">₹{{ stock.open.toFixed(2) }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">{{ formatVolume(stock.volume) }}</span>
+              </div>
+            </div>
+            
+            <div class="stock-chart">
+              <div class="mini-chart">
+                <div 
+                  v-for="(point, index) in stock.chartData" 
+                  :key="index"
+                  class="chart-bar"
+                  :style="{ height: point + '%' }"
+                  :class="{ up: point > 50, down: point <= 50 }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div v-else class="no-data">
+          <i class="fas fa-chart-line no-data-icon"></i>
+          <h3>No Data Available</h3>
+          <p>Unable to fetch Indian stock data. Please try refreshing.</p>
+        </div>
+      </div>
+    </section>
 
     <!-- Market Categories Tabs -->
     <section class="market-tabs">
@@ -528,7 +690,7 @@
         </div>
         
         <div class="categories-grid">
-          <div class="category-card" v-for="category in marketCategories" :key="category.id">
+          <div class="category-card" v-for="category in globalMarketCategories" :key="category.id">
             <div class="category-icon">
               <i :class="category.icon"></i>
             </div>
@@ -601,6 +763,425 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const goBack = () => {
   router.push('/')
+}
+
+// Stock search functionality
+const searchQuery = ref('')
+const searchSuggestions = ref([])
+const searchResult = ref(null)
+const isSearching = ref(false)
+
+// Top stocks data
+const topStocks = ref([])
+const isLoading = ref(false)
+
+// Comprehensive list of Indian stocks for search suggestions
+const indianStocksList = [
+  // Adani Group
+  { symbol: 'ADANIENT', name: 'Adani Enterprises Ltd.' },
+  { symbol: 'ADANIPORTS', name: 'Adani Ports & SEZ Ltd.' },
+  { symbol: 'ADANIGREEN', name: 'Adani Green Energy Ltd.' },
+  { symbol: 'ADANITRANS', name: 'Adani Transmission Ltd.' },
+  { symbol: 'ADANIPOWER', name: 'Adani Power Ltd.' },
+  { symbol: 'ADANIGAS', name: 'Adani Total Gas Ltd.' },
+  { symbol: 'ADANICAP', name: 'Adani Capital Ltd.' },
+  { symbol: 'ADANIWILMAR', name: 'Adani Wilmar Ltd.' },
+  
+  // Reliance Group
+  { symbol: 'RELIANCE', name: 'Reliance Industries Ltd.' },
+  { symbol: 'RELIANCEINFRA', name: 'Reliance Infrastructure Ltd.' },
+  { symbol: 'RELIANCEPOWER', name: 'Reliance Power Ltd.' },
+  { symbol: 'RELIANCECAP', name: 'Reliance Capital Ltd.' },
+  
+  // Tata Group
+  { symbol: 'TCS', name: 'Tata Consultancy Services Ltd.' },
+  { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd.' },
+  { symbol: 'TATASTEEL', name: 'Tata Steel Ltd.' },
+  { symbol: 'TATAPOWER', name: 'Tata Power Company Ltd.' },
+  { symbol: 'TATACONSUM', name: 'Tata Consumer Products Ltd.' },
+  { symbol: 'TATACOMM', name: 'Tata Communications Ltd.' },
+  { symbol: 'TATACHEM', name: 'Tata Chemicals Ltd.' },
+  { symbol: 'TATAMETALI', name: 'Tata Metaliks Ltd.' },
+  
+  // Banking Sector
+  { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd.' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd.' },
+  { symbol: 'SBIN', name: 'State Bank of India' },
+  { symbol: 'AXISBANK', name: 'Axis Bank Ltd.' },
+  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank Ltd.' },
+  { symbol: 'INDUSINDBK', name: 'IndusInd Bank Ltd.' },
+  { symbol: 'BANKBARODA', name: 'Bank of Baroda' },
+  { symbol: 'CANBK', name: 'Canara Bank' },
+  { symbol: 'PNB', name: 'Punjab National Bank' },
+  { symbol: 'UNIONBANK', name: 'Union Bank of India' },
+  
+  // IT Sector
+  { symbol: 'INFY', name: 'Infosys Ltd.' },
+  { symbol: 'WIPRO', name: 'Wipro Ltd.' },
+  { symbol: 'TECHM', name: 'Tech Mahindra Ltd.' },
+  { symbol: 'HCLTECH', name: 'HCL Technologies Ltd.' },
+  { symbol: 'MINDTREE', name: 'Mindtree Ltd.' },
+  { symbol: 'MPHASIS', name: 'Mphasis Ltd.' },
+  { symbol: 'LTI', name: 'Larsen & Toubro Infotech Ltd.' },
+  { symbol: 'PERSISTENT', name: 'Persistent Systems Ltd.' },
+  
+  // FMCG Sector
+  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever Ltd.' },
+  { symbol: 'ITC', name: 'ITC Ltd.' },
+  { symbol: 'NESTLEIND', name: 'Nestle India Ltd.' },
+  { symbol: 'MARICO', name: 'Marico Ltd.' },
+  { symbol: 'DABUR', name: 'Dabur India Ltd.' },
+  { symbol: 'BRITANNIA', name: 'Britannia Industries Ltd.' },
+  { symbol: 'COLPAL', name: 'Colgate Palmolive India Ltd.' },
+  { symbol: 'GODREJCP', name: 'Godrej Consumer Products Ltd.' },
+  
+  // Auto Sector
+  { symbol: 'MARUTI', name: 'Maruti Suzuki India Ltd.' },
+  { symbol: 'HEROMOTOCO', name: 'Hero MotoCorp Ltd.' },
+  { symbol: 'BAJAJ-AUTO', name: 'Bajaj Auto Ltd.' },
+  { symbol: 'EICHERMOT', name: 'Eicher Motors Ltd.' },
+  { symbol: 'ASHOKLEY', name: 'Ashok Leyland Ltd.' },
+  { symbol: 'M&M', name: 'Mahindra & Mahindra Ltd.' },
+  { symbol: 'TVSMOTOR', name: 'TVS Motor Company Ltd.' },
+  
+  // Pharma Sector
+  { symbol: 'SUNPHARMA', name: 'Sun Pharmaceutical Industries Ltd.' },
+  { symbol: 'DRREDDY', name: 'Dr. Reddy\'s Laboratories Ltd.' },
+  { symbol: 'CIPLA', name: 'Cipla Ltd.' },
+  { symbol: 'DIVISLAB', name: 'Divi\'s Laboratories Ltd.' },
+  { symbol: 'APOLLOHOSP', name: 'Apollo Hospitals Enterprise Ltd.' },
+  { symbol: 'BIOCON', name: 'Biocon Ltd.' },
+  { symbol: 'TORNTPHARM', name: 'Torrent Pharmaceuticals Ltd.' },
+  
+  // Energy Sector
+  { symbol: 'NTPC', name: 'NTPC Ltd.' },
+  { symbol: 'POWERGRID', name: 'Power Grid Corporation of India Ltd.' },
+  { symbol: 'TATAPOWER', name: 'Tata Power Company Ltd.' },
+  { symbol: 'ADANIPOWER', name: 'Adani Power Ltd.' },
+  { symbol: 'JSWENERGY', name: 'JSW Energy Ltd.' },
+  { symbol: 'TATACOMM', name: 'Tata Communications Ltd.' },
+  
+  // Real Estate
+  { symbol: 'DLF', name: 'DLF Ltd.' },
+  { symbol: 'GODREJPROP', name: 'Godrej Properties Ltd.' },
+  { symbol: 'SUNTV', name: 'Sun TV Network Ltd.' },
+  { symbol: 'PEL', name: 'Piramal Enterprises Ltd.' },
+  
+  // Telecom
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd.' },
+  { symbol: 'IDEA', name: 'Vodafone Idea Ltd.' },
+  { symbol: 'MTNL', name: 'Mahanagar Telephone Nigam Ltd.' },
+  
+  // Cement
+  { symbol: 'ULTRACEMCO', name: 'UltraTech Cement Ltd.' },
+  { symbol: 'AMBUJACEM', name: 'Ambuja Cements Ltd.' },
+  { symbol: 'ACC', name: 'ACC Ltd.' },
+  { symbol: 'SHREECEM', name: 'Shree Cement Ltd.' },
+  { symbol: 'RAMCOCEM', name: 'The Ramco Cements Ltd.' },
+  
+  // Metals
+  { symbol: 'HINDALCO', name: 'Hindalco Industries Ltd.' },
+  { symbol: 'VEDL', name: 'Vedanta Ltd.' },
+  { symbol: 'JSWSTEEL', name: 'JSW Steel Ltd.' },
+  { symbol: 'SAIL', name: 'Steel Authority of India Ltd.' },
+  { symbol: 'HINDCOPPER', name: 'Hindustan Copper Ltd.' },
+  
+  // Oil & Gas
+  { symbol: 'ONGC', name: 'Oil & Natural Gas Corporation Ltd.' },
+  { symbol: 'IOC', name: 'Indian Oil Corporation Ltd.' },
+  { symbol: 'BPCL', name: 'Bharat Petroleum Corporation Ltd.' },
+  { symbol: 'HPCL', name: 'Hindustan Petroleum Corporation Ltd.' },
+  { symbol: 'GAIL', name: 'GAIL India Ltd.' },
+  
+  // Consumer Durables
+  { symbol: 'HAVELLS', name: 'Havells India Ltd.' },
+  { symbol: 'CROMPTON', name: 'Crompton Greaves Consumer Electricals Ltd.' },
+  { symbol: 'VOLTAS', name: 'Voltas Ltd.' },
+  { symbol: 'BLUESTARCO', name: 'Blue Star Ltd.' },
+  
+  // Others
+  { symbol: 'LARSEN', name: 'Larsen & Toubro Ltd.' },
+  { symbol: 'BHARATFORG', name: 'Bharat Forge Ltd.' },
+  { symbol: 'SIEMENS', name: 'Siemens Ltd.' },
+  { symbol: 'ABB', name: 'ABB India Ltd.' },
+  { symbol: 'SCHNEIDER', name: 'Schneider Electric Infrastructure Ltd.' }
+]
+
+// Popular stock symbols for suggestions (keeping the top ones)
+const popularStocks = [
+  { symbol: 'RELIANCE', name: 'Reliance Industries Ltd.' },
+  { symbol: 'TCS', name: 'Tata Consultancy Services Ltd.' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd.' },
+  { symbol: 'INFY', name: 'Infosys Ltd.' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd.' },
+  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever Ltd.' },
+  { symbol: 'ITC', name: 'ITC Ltd.' },
+  { symbol: 'SBIN', name: 'State Bank of India' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd.' },
+  { symbol: 'AXISBANK', name: 'Axis Bank Ltd.' }
+]
+
+// Handle search input
+const handleSearch = () => {
+  if (searchQuery.value.length < 2) {
+    searchSuggestions.value = []
+    return
+  }
+  
+  const query = searchQuery.value.toLowerCase()
+  
+  // Search through comprehensive Indian stocks list
+  const suggestions = indianStocksList.filter(stock => 
+    stock.symbol.toLowerCase().includes(query) || 
+    stock.name.toLowerCase().includes(query)
+  )
+  
+  // Sort by relevance (exact matches first, then partial matches)
+  const sortedSuggestions = suggestions.sort((a, b) => {
+    const aSymbolMatch = a.symbol.toLowerCase().startsWith(query)
+    const bSymbolMatch = b.symbol.toLowerCase().startsWith(query)
+    const aNameMatch = a.name.toLowerCase().includes(query)
+    const bNameMatch = b.name.toLowerCase().includes(query)
+    
+    if (aSymbolMatch && !bSymbolMatch) return -1
+    if (!aSymbolMatch && bSymbolMatch) return 1
+    if (aNameMatch && !bNameMatch) return -1
+    if (!aNameMatch && bNameMatch) return 1
+    return a.symbol.localeCompare(b.symbol)
+  })
+  
+  searchSuggestions.value = sortedSuggestions.slice(0, 10) // Show top 10 matches
+}
+
+// Select a suggestion
+const selectSuggestion = (suggestion) => {
+  searchQuery.value = suggestion.symbol
+  searchSuggestions.value = []
+  searchStock()
+}
+
+// Search for a stock
+const searchStock = async () => {
+  if (!searchQuery.value.trim()) return
+  
+  isSearching.value = true
+  searchResult.value = null
+  
+  try {
+    const symbol = searchQuery.value.toUpperCase().trim()
+    const stockData = await fetchStockData(symbol)
+    
+    if (stockData) {
+      searchResult.value = stockData
+    } else {
+      // Show error or fallback data
+      searchResult.value = {
+        symbol: symbol,
+        name: 'Company Name Not Available',
+        price: 0,
+        priceChange: 0,
+        change: 0,
+        open: 0,
+        high: 0,
+        low: 0,
+        volume: 0
+      }
+    }
+  } catch (error) {
+    console.error('Error searching for stock:', error)
+    // Show error message to user
+  } finally {
+    isSearching.value = false
+  }
+}
+
+// Fetch stock data from free API
+const fetchStockData = async (symbol) => {
+  try {
+    // For Indian stocks, we need to add .NS suffix for NSE
+    const nseSymbol = symbol.includes('.NS') ? symbol : `${symbol}.NS`
+    
+    // Try using Yahoo Finance for Indian stocks (no API key required)
+    const response = await fetch(`https://api.allorigins.win/get?url=https://query1.finance.yahoo.com/v8/finance/chart/${nseSymbol}`)
+    const data = await response.json()
+    
+    if (data.contents) {
+      const yahooData = JSON.parse(data.contents)
+      if (yahooData.chart && yahooData.chart.result && yahooData.chart.result[0]) {
+        const quote = yahooData.chart.result[0].meta
+        const indicators = yahooData.chart.result[0].indicators.quote[0]
+        
+        const currentPrice = quote.regularMarketPrice
+        const previousClose = quote.previousClose
+        const priceChange = currentPrice - previousClose
+        const changePercent = (priceChange / previousClose) * 100
+        
+        return {
+          symbol: symbol.replace('.NS', ''),
+          name: quote.symbol.replace('.NS', ''),
+          price: currentPrice,
+          priceChange: priceChange,
+          change: changePercent,
+          open: indicators.open[indicators.open.length - 1] || currentPrice,
+          high: indicators.high[indicators.high.length - 1] || currentPrice,
+          low: indicators.low[indicators.low.length - 1] || currentPrice,
+          volume: indicators.volume[indicators.volume.length - 1] || 0
+        }
+      }
+    }
+    
+    // Fallback: Try using Alpha Vantage API for Indian stocks
+    return await fetchStockDataFallback(symbol)
+  } catch (error) {
+    console.error('Error fetching Indian stock data:', error)
+    return await fetchStockDataFallback(symbol)
+  }
+}
+
+// Fallback API method using Alpha Vantage API for Indian stocks
+const fetchStockDataFallback = async (symbol) => {
+  try {
+    // Try Alpha Vantage API with .NS suffix for Indian stocks
+    const nseSymbol = symbol.includes('.NS') ? symbol : `${symbol}.NS`
+    const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${nseSymbol}&apikey=demo`)
+    const data = await response.json()
+    
+    if (data['Global Quote']) {
+      const quote = data['Global Quote']
+      return {
+        symbol: symbol.replace('.NS', ''),
+        name: symbol.replace('.NS', ''),
+        price: parseFloat(quote['05. price']) || 0,
+        priceChange: parseFloat(quote['09. change']) || 0,
+        change: parseFloat(quote['10. change percent']?.replace('%', '')) || 0,
+        open: parseFloat(quote['02. open']) || 0,
+        high: parseFloat(quote['03. high']) || 0,
+        low: parseFloat(quote['04. low']) || 0,
+        volume: parseInt(quote['06. volume']) || 0
+      }
+    }
+    
+    // If no data found, return null
+    return null
+  } catch (error) {
+    console.error('Error fetching fallback data for Indian stocks:', error)
+    return null
+  }
+}
+
+// Fetch top 10 stocks data
+const fetchTopStocks = async () => {
+  isLoading.value = true
+  
+  try {
+    // Fetch data for popular stocks
+    const stockPromises = popularStocks.slice(0, 10).map(async (stock) => {
+      const data = await fetchStockData(stock.symbol)
+      if (data) {
+        // Generate random chart data for visualization
+        data.chartData = Array.from({ length: 20 }, () => Math.random() * 100)
+        return data
+      }
+      return null
+    })
+    
+    const results = await Promise.all(stockPromises)
+    topStocks.value = results.filter(stock => stock !== null)
+    
+  } catch (error) {
+    console.error('Error fetching top stocks:', error)
+    // Fallback to mock data if API fails
+    topStocks.value = generateMockTopStocks()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Generate mock data for top Indian stocks (fallback)
+const generateMockTopStocks = () => {
+  return popularStocks.slice(0, 10).map(stock => {
+    // Generate realistic Indian stock prices based on typical ranges
+    let basePrice, priceRange
+    switch(stock.symbol) {
+      case 'RELIANCE':
+        basePrice = 2500
+        priceRange = 500
+        break
+      case 'TCS':
+        basePrice = 3800
+        priceRange = 400
+        break
+      case 'HDFCBANK':
+        basePrice = 1600
+        priceRange = 200
+        break
+      case 'INFY':
+        basePrice = 1400
+        priceRange = 150
+        break
+      case 'ICICIBANK':
+        basePrice = 900
+        priceRange = 100
+        break
+      case 'HINDUNILVR':
+        basePrice = 2500
+        priceRange = 200
+        break
+      case 'ITC':
+        basePrice = 400
+        priceRange = 50
+        break
+      case 'SBIN':
+        basePrice = 600
+        priceRange = 80
+        break
+      case 'BHARTIARTL':
+        basePrice = 1100
+        priceRange = 150
+        break
+      case 'AXISBANK':
+        basePrice = 900
+        priceRange = 100
+        break
+      default:
+        basePrice = 1000
+        priceRange = 200
+    }
+    
+    const price = basePrice + (Math.random() - 0.5) * priceRange
+    const priceChange = (Math.random() - 0.5) * (price * 0.1) // ±5% change
+    const change = (priceChange / (price - priceChange)) * 100
+    
+    return {
+      symbol: stock.symbol,
+      name: stock.name,
+      price: price,
+      priceChange: priceChange,
+      change: change,
+      open: price + (Math.random() - 0.5) * (price * 0.02),
+      high: price + Math.random() * (price * 0.03),
+      low: price - Math.random() * (price * 0.03),
+      volume: Math.floor(Math.random() * 10000000) + 1000000,
+      chartData: Array.from({ length: 20 }, () => Math.random() * 100)
+    }
+  })
+}
+
+// Refresh top stocks
+const refreshTopStocks = () => {
+  fetchTopStocks()
+}
+
+// Format volume numbers
+const formatVolume = (volume) => {
+  if (volume >= 1000000000) {
+    return (volume / 1000000000).toFixed(1) + 'B'
+  } else if (volume >= 1000000) {
+    return (volume / 1000000).toFixed(1) + 'M'
+  } else if (volume >= 1000) {
+    return (volume / 1000).toFixed(1) + 'K'
+  }
+  return volume.toString()
 }
 
 // Scroll animations
@@ -1153,8 +1734,8 @@ const commodities = ref([
   }
 ])
 
-// Market categories
-const marketCategories = ref([
+// Market categories for global markets (keeping for other tabs)
+const globalMarketCategories = ref([
   {
     id: 1,
     name: 'US Stocks',
@@ -1216,11 +1797,18 @@ const filteredMarkets = computed(() => {
   return markets.value.filter(market => market.category === activeFilter.value)
 })
 
+// Add missing activeFilter variable
+const activeFilter = ref('all')
+const markets = ref([])
+
 // Simulate real-time updates
 let updateInterval
 
 onMounted(() => {
   initScrollAnimations();
+  
+  // Fetch top stocks on component mount
+  fetchTopStocks();
   
   updateInterval = setInterval(() => {
     // Update indices
@@ -1305,6 +1893,114 @@ onUnmounted(() => {
     clearInterval(updateInterval)
   }
 })
+
+// Market categories for Indian stocks
+const marketCategories = ref([
+  {
+    id: 1,
+    name: 'Adani Group',
+    description: 'Adani Group companies across various sectors',
+    icon: 'fas fa-industry',
+    symbols: ['ADANIENT', 'ADANIPORTS', 'ADANIGREEN', 'ADANITRANS', 'ADANIPOWER', 'ADANIGAS', 'ADANICAP', 'ADANIWILMAR'],
+    change: 2.85
+  },
+  {
+    id: 2,
+    name: 'Banking',
+    description: 'Major Indian banks and financial institutions',
+    icon: 'fas fa-university',
+    symbols: ['HDFCBANK', 'ICICIBANK', 'SBIN', 'AXISBANK', 'KOTAKBANK', 'INDUSINDBK', 'BANKBARODA', 'CANBK', 'PNB', 'UNIONBANK'],
+    change: 1.42
+  },
+  {
+    id: 3,
+    name: 'IT & Technology',
+    description: 'Information technology and software companies',
+    icon: 'fas fa-laptop-code',
+    symbols: ['TCS', 'INFY', 'WIPRO', 'TECHM', 'HCLTECH', 'MINDTREE', 'MPHASIS', 'LTI', 'PERSISTENT'],
+    change: 3.75
+  },
+  {
+    id: 4,
+    name: 'FMCG',
+    description: 'Fast Moving Consumer Goods companies',
+    icon: 'fas fa-shopping-cart',
+    symbols: ['HINDUNILVR', 'ITC', 'NESTLEIND', 'MARICO', 'DABUR', 'BRITANNIA', 'COLPAL', 'GODREJCP'],
+    change: 0.95
+  },
+  {
+    id: 5,
+    name: 'Automobile',
+    description: 'Automobile and auto component manufacturers',
+    icon: 'fas fa-car',
+    symbols: ['TATAMOTORS', 'MARUTI', 'HEROMOTOCO', 'BAJAJ-AUTO', 'EICHERMOT', 'ASHOKLEY', 'M&M', 'TVSMOTOR'],
+    change: 2.15
+  },
+  {
+    id: 6,
+    name: 'Pharmaceuticals',
+    description: 'Pharmaceutical and healthcare companies',
+    icon: 'fas fa-pills',
+    symbols: ['SUNPHARMA', 'DRREDDY', 'CIPLA', 'DIVISLAB', 'APOLLOHOSP', 'BIOCON', 'TORNTPHARM'],
+    change: 1.68
+  },
+  {
+    id: 7,
+    name: 'Energy & Power',
+    description: 'Power generation and energy companies',
+    icon: 'fas fa-bolt',
+    symbols: ['NTPC', 'POWERGRID', 'TATAPOWER', 'ADANIPOWER', 'JSWENERGY', 'RELIANCE'],
+    change: 0.75
+  },
+  {
+    id: 8,
+    name: 'Metals & Mining',
+    description: 'Metal, mining and steel companies',
+    icon: 'fas fa-gem',
+    symbols: ['TATASTEEL', 'HINDALCO', 'VEDL', 'JSWSTEEL', 'SAIL', 'HINDCOPPER'],
+    change: -0.45
+  },
+  {
+    id: 9,
+    name: 'Oil & Gas',
+    description: 'Oil exploration and refining companies',
+    icon: 'fas fa-fire',
+    symbols: ['ONGC', 'IOC', 'BPCL', 'HPCL', 'GAIL'],
+    change: 1.25
+  },
+  {
+    id: 10,
+    name: 'Real Estate',
+    description: 'Real estate development companies',
+    icon: 'fas fa-building',
+    symbols: ['DLF', 'GODREJPROP', 'SUNTV', 'PEL'],
+    change: 1.85
+  }
+])
+
+// Get stock category
+const getStockCategory = (symbol) => {
+  const category = marketCategories.value.find(category => 
+    category.symbols.includes(symbol)
+  )
+  return category ? category.name : 'Other'
+}
+
+// Get total matches
+const getTotalMatches = () => {
+  return indianStocksList.filter(stock => 
+    stock.symbol.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+    stock.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  ).length
+}
+
+// Show all results
+const showAllResults = () => {
+  searchSuggestions.value = indianStocksList.filter(stock => 
+    stock.symbol.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+    stock.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+}
 </script>
 
 <style scoped>
@@ -2844,6 +3540,87 @@ onUnmounted(() => {
     font-size: 0.9rem;
   }
   
+  /* Stock Search Section Mobile */
+  .stock-search-section {
+    padding: 2rem 0;
+  }
+  
+  .search-container {
+    padding: 0 1rem;
+  }
+  
+  .search-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .search-input-wrapper {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .search-input {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .search-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+  
+  .search-suggestions {
+    position: relative;
+    margin-top: 1rem;
+  }
+  
+  .suggestion-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .suggestion-name {
+    margin: 0;
+  }
+  
+  .result-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  /* Top Stocks Section Mobile */
+  .top-stocks-section {
+    padding: 2rem 0;
+  }
+  
+  .refresh-controls {
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  
+  .top-stocks-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .top-stocks-grid .stock-card {
+    padding: 1.25rem;
+  }
+  
+  .top-stocks-grid .stock-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .top-stocks-grid .stock-info h3 {
+    font-size: 1.1rem;
+  }
+  
+  .company-name {
+    font-size: 0.8rem;
+  }
+  
   /* Market Tabs */
   .market-tabs .container {
     padding: 0;
@@ -3001,6 +3778,80 @@ onUnmounted(() => {
     font-size: 1.75rem;
   }
   
+  /* Stock Search Section Mobile Portrait */
+  .stock-search-section {
+    padding: 1.5rem 0;
+  }
+  
+  .search-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .search-header p {
+    font-size: 0.9rem;
+  }
+  
+  .search-input-wrapper {
+    padding: 0.25rem;
+  }
+  
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+  }
+  
+  .search-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .result-card {
+    padding: 1rem;
+  }
+  
+  .result-info h3 {
+    font-size: 1.3rem;
+  }
+  
+  .result-price .price-value {
+    font-size: 1.6rem;
+  }
+  
+  .result-stats {
+    gap: 0.5rem;
+  }
+  
+  /* Top Stocks Section Mobile Portrait */
+  .top-stocks-section {
+    padding: 1.5rem 0;
+  }
+  
+  .section-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .refresh-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .top-stocks-grid .stock-card {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .top-stocks-grid .stock-info h3 {
+    font-size: 1rem;
+  }
+  
+  .top-stocks-grid .stock-price .price-value {
+    font-size: 1.2rem;
+  }
+  
+  .top-stocks-grid .stock-stats {
+    gap: 0.5rem;
+  }
+  
   .market-tabs {
     padding: 0.75rem 0;
   }
@@ -3151,5 +4002,507 @@ onUnmounted(() => {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
+}
+
+/* Stock Search Section Styles */
+.stock-search-section {
+  padding: 3rem 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.search-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.search-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.search-header h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 0.5rem 0;
+}
+
+.search-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.search-icon {
+  color: rgba(255, 255, 255, 0.6);
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 0.75rem 0;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-btn {
+  background: #00ff88;
+  color: #0a0a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+.search-btn:hover {
+  background: #00d4aa;
+  transform: translateY(-1px);
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 26, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-symbol {
+  font-weight: bold;
+  color: white;
+  font-size: 1.1rem;
+  min-width: 120px;
+}
+
+.suggestion-name {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  flex: 1;
+  margin: 0 1rem;
+  line-height: 1.3;
+}
+
+.suggestion-category {
+  color: #00ff88;
+  font-weight: 500;
+  font-size: 0.8rem;
+  background: rgba(0, 255, 136, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px 8px 0 0;
+}
+
+.suggestions-header span:first-child {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.view-all {
+  color: #00ff88;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.view-all:hover {
+  color: #00d4aa;
+}
+
+.suggestions-footer {
+  text-align: center;
+  padding: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0 0 8px 8px;
+}
+
+.view-all-btn {
+  background: #00ff88;
+  color: #0a0a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+  background: #00d4aa;
+  transform: translateY(-1px);
+}
+
+.search-result {
+  margin-top: 2rem;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.result-info h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 0.25rem 0;
+}
+
+.result-info p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.result-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.result-change.up {
+  color: #00ff88;
+}
+
+.result-change.down {
+  color: #ff4757;
+}
+
+.result-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-price .price-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.result-price .price-change {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+/* Top Stocks Section Styles */
+.top-stocks-section {
+  padding: 3rem 0;
+}
+
+.refresh-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.refresh-btn {
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: rgba(0, 255, 136, 0.5);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.top-stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.top-stocks-grid .stock-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.top-stocks-grid .stock-card:hover {
+  border-color: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+
+.top-stocks-grid .stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.top-stocks-grid .stock-info h3 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 0 0.25rem 0;
+}
+
+.company-name {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  display: block;
+}
+
+.top-stocks-grid .stock-change {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: bold;
+}
+
+.top-stocks-grid .stock-change.up {
+  color: #00ff88;
+}
+
+.top-stocks-grid .stock-change.down {
+  color: #ff4757;
+}
+
+.top-stocks-grid .stock-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.top-stocks-grid .stock-price .price-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+}
+
+.top-stocks-grid .stock-price .price-change {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.top-stocks-grid .stock-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.top-stocks-grid .stock-chart {
+  margin-top: 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.no-data-icon {
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 1rem;
+}
+
+.no-data h3 {
+  color: white;
+  margin: 0 0 0.5rem 0;
+}
+
+.no-data p {
+  margin: 0;
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .market-section {
+    padding: 1.5rem 0;
+  }
+  
+  .header-container {
+    flex-direction: row;
+    padding: 1rem;
+  }
+  
+  .header-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .trading-background {
+    display: block;
+    opacity: 0.3;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .index-logo,
+  .indian-stock-logo,
+  .category-icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Search Suggestions Styles */
+.suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.view-all {
+  color: #00ff88;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.view-all:hover {
+  color: #00d4aa;
+}
+
+.suggestions-footer {
+  text-align: right;
+  margin-top: 1rem;
+}
+
+.view-all-btn {
+  background: #00ff88;
+  color: #0a0a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.view-all-btn:hover {
+  background-color: #00d4aa;
 }
 </style>
