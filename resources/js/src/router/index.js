@@ -71,7 +71,7 @@ const routes = [
   // },
   {
     path: "/admin/dashboard",
-    name: "admin-ashboard",
+    name: "admin-dashboard",
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/Dashboard/Dashboard.vue"),
   },
@@ -114,6 +114,20 @@ const routes = [
     meta: { requiresAuth:true},
     component: () => import("../views/AddMoney/MoneyRequest.vue"),
   },
+
+      {
+        path: "/withdrawal-request",
+        name: "withdrawal_request",
+        meta: { requiresAuth: true },
+        component: () => import("../views/AdminSide/WithdrawalRequest.vue"),
+      },
+
+      {
+        path: "/analytics",
+        name: "analytics",
+        meta: { requiresAuth: true },
+        component: () => import("../views/AdminSide/Dashboard/Dashboard.vue"), // Temporary - replace with actual component
+      },
 
   {
     path: "/email-logs",
@@ -202,6 +216,18 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../views/outlook/outlook.vue"),
   },
+  {
+    path: "/user-management",
+    name: "user_management",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/UserManagement.vue"),
+  },
+  {
+    path: "/register-request",
+    name: "register_request",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/RegisterRequest.vue"),
+  },
   // Catch-all route - must be last
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
@@ -212,18 +238,27 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('access_token');
+  
+  console.log('🚨 Router Guard Debug:');
+  console.log('🚨 To route:', to.path);
+  console.log('🚨 Requires auth:', to.matched.some(record => record.meta.requiresAuth));
+  console.log('🚨 Token exists:', !!token);
+  console.log('🚨 Token value:', token);
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
+      console.log('🚨 No token, redirecting to LandingPage');
       if (to.name !== 'LandingPage') { // Prevent infinite loop
         next({ name: 'LandingPage' }); 
       } else {
         next(); 
       }
     } else {
+      console.log('🚨 Token found, proceeding to route');
       next();
     }
   } else {
+    console.log('🚨 No auth required, proceeding to route');
     next();
   }
 });

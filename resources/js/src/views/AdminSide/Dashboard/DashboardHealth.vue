@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="dashboard-health">
         <div class="kpi_group_screen mt-3">
             <div class="kpi_item">
                 <span class="kpi_line1">Total Customers</span>
@@ -76,21 +76,23 @@
                 <h6>Latest 10 Tickets</h6>
                 <b-link>View All</b-link>
             </div>
-            <b-table :items="ltData.tabledata" :fields="ltData.ChartField">
-                <template #cell(priority)="data">
-                    <span v-if="data.value == 'High'" class="badgehigh">{{ data.value }}</span>
-                    <span v-if="data.value == 'Medium'" class="badgemedium">{{ data.value }}</span>
-                    <span v-if="data.value == 'Low'" class="badgelow">{{ data.value }}</span>
-                </template>
-                <template #cell(client)="data">
-                    <span class="table_img_cell"><span class="table_img"><img
-                                src="./assest/img/tableprofileimg.png" alt="profile"/></span>{{
-                                    data.value }}</span>
-                </template>
-                <template #cell(action)>
-                    <div class="grid_table_action"><i class="fa-solid fa-ellipsis"></i></div>
-                </template>
-            </b-table>
+            <div class="table-responsive">
+                <b-table :items="ltData.tabledata" :fields="ltData.ChartField" responsive>
+                    <template #cell(priority)="data">
+                        <span v-if="data.value == 'High'" class="badgehigh">{{ data.value }}</span>
+                        <span v-if="data.value == 'Medium'" class="badgemedium">{{ data.value }}</span>
+                        <span v-if="data.value == 'Low'" class="badgelow">{{ data.value }}</span>
+                    </template>
+                    <template #cell(client)="data">
+                        <span class="table_img_cell"><span class="table_img"><img
+                                    src="./assest/img/tableprofileimg.png" alt="profile"/></span>{{
+                                        data.value }}</span>
+                    </template>
+                    <template #cell(action)>
+                        <div class="grid_table_action"><i class="fa-solid fa-ellipsis"></i></div>
+                    </template>
+                </b-table>
+            </div>
         </div>
     </div>
 </template>

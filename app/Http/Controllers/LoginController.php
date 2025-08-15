@@ -53,7 +53,9 @@ class LoginController extends Controller
         }
         
         $token = $user->createToken('auth_token')->plainTextToken;
-        $user->user_password = $request->password;
+        
+        // Update last_login_at timestamp
+        $user->update(['last_login_at' => Carbon::now()]);
        
         $ipAddress = $request->ip();
         $userAgent = $request->header('User-Agent');

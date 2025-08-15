@@ -22,6 +22,7 @@ use App\Http\Controllers\AdminSide\CategoryController;
 use App\Http\Controllers\AdminSide\ProductController;
 use App\Http\Controllers\MoneyRequestController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RegisterRequestController;
 
 
 
@@ -118,6 +119,21 @@ Route::resource('/products', ProductController::class);
     Route::match(['patch', 'put'], '/money-requests/{id}/status', [MoneyRequestController::class, 'updateStatus']);
     Route::get('/money-requests/{id}', [MoneyRequestController::class, 'show']);
     Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);
+
+// User Management API Routes
+Route::middleware('auth:api')->group(function() {
+    Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::patch('/users/{id}/status', [UserController::class, 'updateStatus']);
+    
+    // Register Requests API Routes
+    Route::get('/register-requests', [RegisterRequestController::class, 'index']);
+    Route::patch('/register-requests/{id}/approve', [RegisterRequestController::class, 'approve']);
+    Route::patch('/register-requests/{id}/reject', [RegisterRequestController::class, 'reject']);
+});
 
 
 
