@@ -114,6 +114,12 @@ const routes = [
     meta: { requiresAuth:true},
     component: () => import("../views/AddMoney/MoneyRequest.vue"),
   },
+   {
+    path: "/Withdrawal/Request",
+    name: "withdrawal_request_list",
+    meta: { requiresAuth:true},
+    component: () => import("../views/AddMoney/WithdrawalRequest.vue"),
+  },
 
       {
         path: "/withdrawal-request",

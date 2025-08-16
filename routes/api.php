@@ -23,6 +23,8 @@ use App\Http\Controllers\AdminSide\ProductController;
 use App\Http\Controllers\MoneyRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterRequestController;
+use App\Http\Controllers\WithdrawalRequestController;
+
 
 
 
@@ -119,6 +121,13 @@ Route::resource('/products', ProductController::class);
     Route::put('/money-requests/{id}', [MoneyRequestController::class, 'updateStatus']);
     Route::match(['patch', 'put'], '/money-requests/{id}/status', [MoneyRequestController::class, 'updateStatus']);
     Route::get('/money-requests/{id}', [MoneyRequestController::class, 'show']);
+
+    Route::post('/withdrawal-request', [WithdrawalRequestController::class, 'store']);
+    Route::get('/withdrawal-request', [WithdrawalRequestController::class, 'index']);
+    Route::put('/withdrawal-request/{id}', [WithdrawalRequestController::class, 'updateStatus']);
+    Route::match(['patch', 'put'], '/withdrawal-request/{id}/status', [WithdrawalRequestController::class, 'updateStatus']);
+    Route::get('/withdrawal-request/{id}', [WithdrawalRequestController::class, 'show']);
+
     Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);
 
 // User Management API Routes

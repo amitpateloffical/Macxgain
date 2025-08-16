@@ -5,7 +5,7 @@
         {{ successMessage }}
       </div>
       <div class="list__title">
-        <h4>Money Requests</h4>
+        <h4>Withdrawal Requests</h4>
         <b-button
           v-if="!isAdmin"
           variant="primary"
@@ -27,7 +27,7 @@
       <div v-if="showfilter">
         <b-card class="filterBox mb-0">
           <b-row>
-            <b-col md="4">
+            <!-- <b-col md="4">
               <b-form-group label="Transaction ID" label-for="transaction_id">
                 <b-form-input
                   v-model="search.transaction_id"
@@ -35,7 +35,7 @@
                   placeholder="Enter Transaction ID"
                 />
               </b-form-group>
-            </b-col>
+            </b-col> -->
             <b-col md="4">
               <b-form-group label="Status" label-for="status">
                 <b-form-select
@@ -257,7 +257,7 @@
         <div v-if="!editmodalLoading">
           <b-form @submit.prevent="submitRequest">
             <b-row>
-              <b-col md="6">
+              <!-- <b-col md="6">
                 <b-form-group label="Transaction ID" label-for="transaction_id">
                   <b-form-input
                     id="transaction_id"
@@ -270,7 +270,7 @@
                     {{ getErrors("transaction_id") }}
                   </div>
                 </b-form-group>
-              </b-col>
+              </b-col> -->
               <b-col md="6">
                 <b-form-group label="Amount (₹)" label-for="amount">
                   <b-form-input
@@ -299,7 +299,7 @@
                   </div>
                 </b-form-group>
               </b-col> -->
-              <b-col md="6">
+              <!-- <b-col md="6">
                 <b-form-group label="Payment Receipt" label-for="image">
                   <input
                     type="file"
@@ -321,7 +321,7 @@
                     </b-link>
                   </div>
                 </b-form-group>
-              </b-col>
+              </b-col> -->
             </b-row>
 
             <b-form-group label="Description" label-for="description">
@@ -396,7 +396,7 @@ export default {
       showfilter: false,
       fetchRequests: [],
       fields: [
-        { key: "transaction_id", label: "Transaction ID", sortable: true },
+        // { key: "transaction_id", label: "Transaction ID", sortable: true },
         { key: "amount", label: "Amount", sortable: true },
         { key: "description", label: "Description" },
         { key: "status", label: "Status", sortable: true },
@@ -411,7 +411,7 @@ export default {
           sortable: true,
           formatter: (value) => new Date(value).toLocaleString(),
         },
-        { key: "image_path", label: "Receipt" },
+        // { key: "image_path", label: "Receipt" },
         { key: "actions", label: "Actions" },
       ],
       requestData: {
@@ -510,7 +510,7 @@ export default {
     fetchRequestss() {
       this.modalLoading = true;
       axios
-        .get("/money-requests", {
+        .get("/withdrawal-request", {
           params: {
             page: this.currentPage,
             perPage: this.perPage,
@@ -547,7 +547,7 @@ export default {
       if (editId) {
         this.editmodalLoading = true;
         axios
-          .get(`/money-requests/${editId}`)
+          .get(`/withdrawal-request/${editId}`)
           .then((response) => {
             const res = response.data.data; 
             this.requestData.transaction_id = res.transaction_id;
@@ -584,8 +584,8 @@ export default {
       });
 
       const request = this.isEdit
-        ? axios.put(`/money-requests/${this.currentEditId}`, formData)
-        : axios.post("/money-requests", formData);
+        ? axios.put(`/withdrawal-request/${this.currentEditId}`, formData)
+        : axios.post("/withdrawal-request", formData);
 
       request
         .then((response) => {
@@ -607,7 +607,7 @@ export default {
     approveRequest(request) {
       if (confirm(`Are you sure you want to approve this request?`)) {
         axios
-          .patch(`/money-requests/${request.id}/status`, { status: "approved" })
+          .patch(`/withdrawal-request/${request.id}/status`, { status: "approved" })
           .then(() => {
             this.fetchRequestss();
             this.successMessage = "Request approved successfully!";
@@ -625,7 +625,7 @@ export default {
     },
     confirmReject() {
       axios
-        .patch(`/money-requests/${this.currentRequestToReject.id}/status`, {
+        .patch(`/withdrawal-request/${this.currentRequestToReject.id}/status`, {
           status: "rejected",
           reject_reason: this.rejectReason,
         })
@@ -642,7 +642,7 @@ export default {
     deleteRequest(id) {
       if (confirm("Are you sure you want to delete this request?")) {
         axios
-          .delete(`/money-requests/${id}`)
+          .delete(`/withdrawal-request/${id}`)
           .then(() => {
             this.fetchRequestss();
             this.successMessage = "Request deleted successfully!";

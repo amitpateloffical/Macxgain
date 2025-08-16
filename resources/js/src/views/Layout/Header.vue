@@ -52,6 +52,9 @@
           <router-link :to="{ name: 'money_request' }" class="sidebar-link" @click="toggleSidebar">📝 Request Add Money</router-link>
         </li>
         <li>
+          <router-link :to="{ name: 'withdrawal_request_list' }" class="sidebar-link" @click="toggleSidebar">💳 Withdrawal Request</router-link>
+        </li>
+        <li>
           <router-link :to="{ name: 'profile' }" class="sidebar-link" @click="toggleSidebar">⚙️ Update Profile</router-link>
         </li>
         <li @click="handleLogout">
