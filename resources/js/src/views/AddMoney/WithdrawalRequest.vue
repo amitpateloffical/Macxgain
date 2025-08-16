@@ -284,6 +284,7 @@
                     placeholder="Enter amount"
                     @input="removeError('amount')"
                   />
+                    <small class="text-muted">Available Balance: ₹{{ availableBalance }}</small>
                   <div class="text-danger" v-if="hasErrors('amount')">
                     {{ getErrors("amount") }}
                   </div>
