@@ -127,6 +127,8 @@ Route::resource('/products', ProductController::class);
     Route::put('/withdrawal-request/{id}', [WithdrawalRequestController::class, 'updateStatus']);
     Route::match(['patch', 'put'], '/withdrawal-request/{id}/status', [WithdrawalRequestController::class, 'updateStatus']);
     Route::get('/withdrawal-request/{id}', [WithdrawalRequestController::class, 'show']);
+    Route::get('/checkBankInfo', [WithdrawalRequestController::class, 'checkBankInfo']);
+
 
     Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);
 

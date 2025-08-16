@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\User;
+
 
 class WithdrawalRequestController extends Controller
 {
@@ -19,7 +21,7 @@ class WithdrawalRequestController extends Controller
             $userId = Auth::guard('api')->user()->id;
             $query->where(function ($q) use ($userId) {
                 $q->where('request_by', $userId)
-                  ->orWhere('request_create_for', $userId);
+                    ->orWhere('request_create_for', $userId);
             });
         }
 
@@ -33,7 +35,7 @@ class WithdrawalRequestController extends Controller
 
         $sortBy = $request->get('sortBy', 'created_at');
         $sortDesc = $request->get('sortDesc', true) ? 'desc' : 'asc';
-        $query->orderBy($sortBy??'id', $sortDesc);
+        $query->orderBy($sortBy ?? 'id', $sortDesc);
 
         $perPage = $request->get('perPage', 10);
         $requests = $query->paginate($perPage);
@@ -121,7 +123,6 @@ class WithdrawalRequestController extends Controller
 
         return response()->json(['message' => 'Withdrawal deleted.']);
     }
-
     public function updateStatus(Request $request, $id)
     {
         $withdrawal = WithdrawalRequest::findOrFail($id);
@@ -134,6 +135,17 @@ class WithdrawalRequestController extends Controller
             'status' => 'required|in:approved,rejected',
             'reject_reason' => 'required_if:status,rejected|string|max:255',
         ]);
+
+        // ✅ Check available balance first
+        $lastBalance = WalletTransaction::where('user_id', $withdrawal->request_by)
+            ->orderBy('id', 'desc')
+            ->value('running_balance') ?? 0;
+
+        if ($request->status === 'approved' && $withdrawal->amount > $lastBalance) {
+            return response()->json([
+                'message' => 'Insufficient balance in wallet. Withdrawal cannot be approved.'
+            ], 200);
+        }
 
         $withdrawal->status = $request->status;
         $withdrawal->approve_by = Auth::guard('api')->user()->id;
@@ -148,20 +160,58 @@ class WithdrawalRequestController extends Controller
         $withdrawal->save();
 
         if ($request->status === 'approved') {
-            $lastBalance = WalletTransaction::where('user_id', $withdrawal->request_by)
-                ->orderBy('id', 'desc')
-                ->value('running_balance') ?? 0;
-
             WalletTransaction::create([
                 'user_id' => $withdrawal->request_by,
                 'transaction_code' => strtoupper(Str::random(12)),
                 'type' => 'debit',
                 'amount' => $withdrawal->amount,
                 'running_balance' => $lastBalance - $withdrawal->amount,
-                // 'remark' => 'Withdrawal approved - ' . $withdrawal->transaction_id,
+                'remark' => 'Withdrawal approved - ' . $withdrawal->id,
             ]);
         }
 
-        return response()->json(['message' => 'Status updated.']);
+        return response()->json(['message' => 'Status updated successfully.']);
+    }
+
+    public function checkBankInfo(Request $request)
+    {
+        $login = Auth::guard('api')->user()->id;
+        $user = User::find($login);
+
+        // Check if user exists
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        if (empty($user->bank_name) || empty($user->account_no) || empty($user->ifsc_code)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bank details are incomplete. Please update your bank information.'
+            ], 200);
+        }
+
+        $balance = $user->total_balance;
+
+        if ($balance < 100) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Insufficient balance. Minimum balance of ₹100 is required for withdrawal.',
+                'balance' => $balance
+            ], 200);
+        }
+
+        // ✅ All good - ready to withdraw
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Withdrawal is available.',
+            'data' => [
+                'user' => $user,
+                'balance' => $balance,
+                'min_withdraw_amount' => 100,
+            ]
+        ], 200);
     }
 }

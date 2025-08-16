@@ -239,38 +239,39 @@
         </div>
       </div>
       <!-- Request Modal -->
+
       <b-modal
         v-model="showRequestModal"
         @hide="resetModal"
         centered
         size="lg"
-        :title="isEdit ? 'Edit Money Request' : 'Create Money Request'"
+        :title="'Create Withdrawal Request'"
         hide-footer
       >
+        <!-- Loading Spinner -->
         <div
-          v-if="editmodalLoading && isEdit"
+          v-if="modalLoading"
           class="d-flex justify-content-center align-items-center"
           style="height: 100px"
         >
           <i class="fas fa-spinner fa-spin fa-3x"></i>
         </div>
-        <div v-if="!editmodalLoading">
+
+        <!-- Error / Bank Info Missing -->
+        <div v-else-if="!canWithdraw">
+          <div class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+        </div>
+
+        <!-- Withdrawal Form -->
+        <div v-else>
+          <b-alert variant="info" show>
+            Available Balance: ₹{{ availableBalance }}
+          </b-alert>
+
           <b-form @submit.prevent="submitRequest">
             <b-row>
-              <!-- <b-col md="6">
-                <b-form-group label="Transaction ID" label-for="transaction_id">
-                  <b-form-input
-                    id="transaction_id"
-                    v-model="requestData.transaction_id"
-                    required
-                    placeholder="Enter transaction ID"
-                    @input="removeError('transaction_id')"
-                  />
-                  <div class="text-danger" v-if="hasErrors('transaction_id')">
-                    {{ getErrors("transaction_id") }}
-                  </div>
-                </b-form-group>
-              </b-col> -->
               <b-col md="6">
                 <b-form-group label="Amount (₹)" label-for="amount">
                   <b-form-input
@@ -279,6 +280,7 @@
                     v-model="requestData.amount"
                     required
                     min="1"
+                    :max="availableBalance"
                     placeholder="Enter amount"
                     @input="removeError('amount')"
                   />
@@ -287,41 +289,6 @@
                   </div>
                 </b-form-group>
               </b-col>
-            </b-row>
-
-            <b-row>
-              <!-- <b-col md="6">
-                <b-form-group label="Recipient" label-for="request_create_for">
-                  <v-select v-model="requestData.request_create_for" :options="userOptions" label="name" 
-                    :reduce="user => user.id" placeholder="Select recipient" required @input="removeError('request_create_for')" />
-                  <div class="text-danger" v-if="hasErrors('request_create_for')">
-                    {{ getErrors("request_create_for") }}
-                  </div>
-                </b-form-group>
-              </b-col> -->
-              <!-- <b-col md="6">
-                <b-form-group label="Payment Receipt" label-for="image">
-                  <input
-                    type="file"
-                    @change="handleFileChange"
-                    id="image"
-                    accept="image/*"
-                    :required="!isEdit"
-                  />
-                  <div class="text-danger" v-if="hasErrors('image')">
-                    {{ getErrors("image") }}
-                  </div>
-                  <small class="text-muted">Max 2MB (JPEG, PNG, GIF)</small>
-                  <div v-if="isEdit && requestData.image_path" class="mt-2">
-                    <b-link
-                      @click="showImage(requestData.image_path)"
-                      class="text-primary cursor-pointer"
-                    >
-                      View Current Receipt
-                    </b-link>
-                  </div>
-                </b-form-group>
-              </b-col> -->
             </b-row>
 
             <b-form-group label="Description" label-for="description">
@@ -334,17 +301,11 @@
             </b-form-group>
 
             <div class="d-flex justify-content-end">
-              <b-button
-                variant="primary"
-                :disabled="loading"
-                @click="submitRequest"
-              >
+              <b-button variant="primary" :disabled="loading" type="submit">
                 <span v-if="loading">
                   <i class="fas fa-spinner fa-spin"></i> Processing...
                 </span>
-                <span v-else>
-                  {{ isEdit ? "Update Request" : "Submit Request" }}
-                </span>
+                <span v-else> Submit Request </span>
               </b-button>
             </div>
           </b-form>
@@ -396,7 +357,6 @@ export default {
       showfilter: false,
       fetchRequests: [],
       fields: [
-        // { key: "transaction_id", label: "Transaction ID", sortable: true },
         { key: "amount", label: "Amount", sortable: true },
         { key: "description", label: "Description" },
         { key: "status", label: "Status", sortable: true },
@@ -411,7 +371,6 @@ export default {
           sortable: true,
           formatter: (value) => new Date(value).toLocaleString(),
         },
-        // { key: "image_path", label: "Receipt" },
         { key: "actions", label: "Actions" },
       ],
       requestData: {
@@ -445,6 +404,9 @@ export default {
       rejectReason: "",
       isAdmin: false,
       currentUserId: null,
+      canWithdraw: false,
+      availableBalance: 0,
+      errorMessage: "",
     };
   },
   computed: {
@@ -541,6 +503,28 @@ export default {
     },
     openRequestModal(editId = null) {
       this.showRequestModal = true;
+      this.modalLoading = true;
+      this.canWithdraw = false;
+      axios
+        .get(`/checkBankInfo`)
+        .then((res) => {
+          if (res.data.status === "success") {
+            this.availableBalance = res.data.data.balance;
+            this.canWithdraw = true;
+          } else {
+            this.errorMessage = res.data.message;
+            this.canWithdraw = false;
+          }
+        })
+        .catch((err) => {
+          this.errorMessage =
+            err.response?.data?.message || "Something went wrong!";
+          this.canWithdraw = false;
+        })
+        .finally(() => {
+          this.modalLoading = false;
+        });
+
       this.isEdit = !!editId;
       this.currentEditId = editId;
 
@@ -549,7 +533,7 @@ export default {
         axios
           .get(`/withdrawal-request/${editId}`)
           .then((response) => {
-            const res = response.data.data; 
+            const res = response.data.data;
             this.requestData.transaction_id = res.transaction_id;
             this.requestData.amount = res.amount;
             this.requestData.description = res.description;
@@ -607,17 +591,24 @@ export default {
     approveRequest(request) {
       if (confirm(`Are you sure you want to approve this request?`)) {
         axios
-          .patch(`/withdrawal-request/${request.id}/status`, { status: "approved" })
-          .then(() => {
+          .patch(`/withdrawal-request/${request.id}/status`, {
+            status: "approved",
+          })
+          .then((response) => {
             this.fetchRequestss();
-            this.successMessage = "Request approved successfully!";
+            this.successMessage =
+              response.data.message || "Request approved successfully!";
             this.clearSuccessMessage();
           })
           .catch((error) => {
             console.error(error);
+            this.successMessage =
+              "Something went wrong while approving the request.";
+            this.clearSuccessMessage();
           });
       }
     },
+
     rejectRequest(request) {
       this.currentRequestToReject = request;
       this.rejectReason = "";
