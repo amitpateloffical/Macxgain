@@ -13,71 +13,6 @@
       </div>
     </div>
 
-    <!-- New Request Form Modal -->
-    <div v-if="showNewRequestForm" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>Create New Withdrawal Request</h3>
-          <button class="close-btn" @click="closeModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="createWithdrawalRequest" class="request-form">
-            <div class="form-group">
-              <label for="userSelect">Select User</label>
-              <select id="userSelect" v-model="newRequest.user_id" required class="form-control">
-                <option value="">Choose a user...</option>
-                <option v-for="user in users" :key="user.id" :value="user.id">
-                  {{ user.name }} ({{ user.email }})
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="amount">Amount (₹)</label>
-              <input 
-                type="number" 
-                id="amount" 
-                v-model="newRequest.amount" 
-                required 
-                min="100"
-                step="100"
-                class="form-control"
-                placeholder="Enter amount"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="bankDetails">Bank Details</label>
-              <textarea 
-                id="bankDetails" 
-                v-model="newRequest.bank_details" 
-                required 
-                class="form-control"
-                rows="3"
-                placeholder="Account number, IFSC, Bank name..."
-              ></textarea>
-            </div>
-            
-            <div class="form-group">
-              <label for="reason">Reason</label>
-              <textarea 
-                id="reason" 
-                v-model="newRequest.reason" 
-                class="form-control"
-                rows="2"
-                placeholder="Optional reason for withdrawal"
-              ></textarea>
-            </div>
-            
-            <div class="form-actions">
-              <button type="button" class="btn-secondary" @click="closeModal">Cancel</button>
-              <button type="submit" class="btn-primary">Create Request</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <!-- Status Filter Tabs -->
     <div class="status-tabs">
       <button 
@@ -110,11 +45,15 @@
           <div class="request-header">
             <div class="user-info">
               <div class="user-avatar">
-                <img :src="getUserAvatar(request.user_id)" :alt="getUserName(request.user_id)" />
+                <img 
+                  :src="request.requester.profile_image || '../assest/img/tableprofileimg.png'" 
+                  :alt="request.requester.name" 
+                />
               </div>
               <div class="user-details">
-                <h4 class="user-name">{{ getUserName(request.user_id) }}</h4>
-                <p class="user-email">{{ getUserEmail(request.user_id) }}</p>
+                <h4 class="user-name">{{ request.requester.name }}</h4>
+                <p class="user-email">{{ request.requester.email }}</p>
+                <p class="user-phone">{{ request.requester.mobile_code }} {{ request.requester.phone }}</p>
               </div>
             </div>
             <div class="request-status" :class="getStatusClass(request.status)">
@@ -126,63 +65,70 @@
           <div class="request-details">
             <div class="detail-row">
               <span class="detail-label">Amount:</span>
-              <span class="detail-value amount">₹{{ request.amount.toLocaleString() }}</span>
+              <span class="detail-value amount">₹{{ parseFloat(request.amount).toLocaleString() }}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">Requested:</span>
               <span class="detail-value">{{ formatDate(request.created_at) }}</span>
             </div>
-            <div class="detail-row" v-if="request.bank_details">
+            <div class="detail-row" v-if="request.requester.bank_name">
               <span class="detail-label">Bank Details:</span>
-              <span class="detail-value bank-details">{{ request.bank_details }}</span>
+              <span class="detail-value bank-details">
+                {{ request.requester.bank_name }} - 
+                {{ request.requester.account_no }} - 
+                {{ request.requester.ifsc_code }}
+              </span>
             </div>
-            <div class="detail-row" v-if="request.reason">
+            <div class="detail-row" v-if="request.description">
               <span class="detail-label">Reason:</span>
-              <span class="detail-value">{{ request.reason }}</span>
+              <span class="detail-value">{{ request.description }}</span>
+            </div>
+            <div class="detail-row" v-if="request.reject_reason">
+              <span class="detail-label">Rejection Reason:</span>
+              <span class="detail-value reject-reason">{{ request.reject_reason }}</span>
+            </div>
+            <div class="detail-row" v-if="request.approve_date">
+              <span class="detail-label">Processed On:</span>
+              <span class="detail-value">{{ formatDate(request.approve_date) }}</span>
             </div>
           </div>
 
           <!-- Action Buttons -->
-          <div class="request-actions">
-            <button 
-              v-if="request.status === 'pending'"
-              class="btn-action btn-approve"
-              @click="updateStatus(request.id, 'in_progress')"
-              :disabled="request.status !== 'pending'"
-            >
-              <i class="fa-solid fa-play"></i> Initiate Withdrawal
-            </button>
-            
-            <button 
-              v-if="request.status === 'in_progress'"
-              class="btn-action btn-complete"
-              @click="updateStatus(request.id, 'completed')"
-              :disabled="request.status !== 'in_progress'"
-            >
-              <i class="fa-solid fa-check"></i> Mark Complete
-            </button>
-            
-            <button 
-              v-if="request.status === 'pending'"
-              class="btn-action btn-reject"
-              @click="updateStatus(request.id, 'rejected')"
-              :disabled="request.status !== 'pending'"
-            >
-              <i class="fa-solid fa-times"></i> Reject
-            </button>
-            
-            <button 
-              v-if="request.status === 'completed' || request.status === 'rejected'"
-              class="btn-action btn-lock"
-              disabled
-            >
-              <i class="fa-solid fa-lock"></i> Locked
-            </button>
-          </div>
+        <div class="request-actions">
+      <!-- Approve -->
+      <button 
+        v-if="request.status === 'pending'"
+        class="btn-action btn-approve"
+        @click="updateStatus(request.id, 'approved')"
+      >
+        <i class="fa-solid fa-check"></i> Approve
+      </button>
+      
+      <!-- Reject -->
+      <button 
+        v-if="request.status === 'pending'"
+        class="btn-action btn-reject"
+        @click="showRejectDialog(request.id)"
+      >
+        <i class="fa-solid fa-times"></i> Reject
+      </button>
+      
+      <!-- Locked (approved/rejected) -->
+      <button 
+        v-if="request.status !== 'pending'"
+        class="btn-action btn-lock"
+        disabled
+      >
+        <i class="fa-solid fa-lock"></i> 
+        {{ request.status === 'approved' ? 'Approved' : 'Rejected' }}
+      </button>
+    </div>
+
+ 
 
           <!-- Status Timeline -->
           <div class="status-timeline">
-            <div class="timeline-item" :class="{ active: request.status === 'pending' }">
+            <div class="timeline-item" :class="{ active: ['pending', 'approved', 'rejected'].includes(request.status) }">
               <div class="timeline-icon">📝</div>
               <div class="timeline-content">
                 <span class="timeline-status">Request Submitted</span>
@@ -190,54 +136,85 @@
               </div>
             </div>
             
-            <div class="timeline-item" :class="{ active: request.status === 'in_progress' || request.status === 'completed' }">
-              <div class="timeline-icon">🔄</div>
+            <div class="timeline-item" :class="{ active: ['approved', 'rejected'].includes(request.status) }">
+              <div class="timeline-icon">{{ request.status === 'approved' ? '✅' : '❌' }}</div>
               <div class="timeline-content">
-                <span class="timeline-status">Withdrawal Initiated</span>
-                <span class="timeline-date" v-if="request.status_updated_at">{{ formatDate(request.status_updated_at) }}</span>
-              </div>
-            </div>
-            
-            <div class="timeline-item" :class="{ active: request.status === 'completed' }">
-              <div class="timeline-icon">✅</div>
-              <div class="timeline-content">
-                <span class="timeline-status">Completed</span>
-                <span class="timeline-date" v-if="request.status_updated_at">{{ formatDate(request.status_updated_at) }}</span>
+                <span class="timeline-status">{{ request.status === 'approved' ? 'Approved' : 'Rejected' }}</span>
+                <span class="timeline-date" v-if="request.approve_date">{{ formatDate(request.approve_date) }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+ <b-modal v-model="showRejectModal" title="Reject Request" hide-footer>
+  <div>
+    <!-- Full width textarea -->
+    <b-form-textarea
+      v-model="rejectReason"
+      placeholder="Enter rejection reason"
+      rows="4"
+      class="w-100"
+    ></b-form-textarea>
+
+
+    <div class="request-actions mt-3 d-flex justify-content-end">
+      <button 
+        @click="confirmReject" 
+        class="btn-action btn-approve me-2"
+      >
+        Confirm
+      </button>
+      <button 
+        @click="showRejectModal = false" 
+        class="btn-action btn-reject"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</b-modal>
+
+
+    <!-- Pagination -->
+    <div class="pagination" v-if="totalPages > 1">
+      <button @click="prevPage" :disabled="currentPage === 1">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div v-if="loading" class="loading-indicator">
+      <i class="fa-solid fa-spinner fa-spin"></i> Loading requests...
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from '@axios'
 
 // Reactive Data
-const showNewRequestForm = ref(false)
 const activeStatus = ref('all')
 const requests = ref([])
-const users = ref([])
-
-// New Request Form Data
-const newRequest = ref({
-  user_id: '',
-  amount: '',
-  bank_details: '',
-  reason: ''
-})
+const loading = ref(false)
+const currentPage = ref(1)
+const perPage = ref(10)
+const totalrows = ref(0)
+const showRejectModal = ref(false)
+const rejectReason = ref('')
+const currentRejectId = ref(null)
 
 // Status Options
 const statusOptions = [
   { value: 'all', label: 'All Requests' },
   { value: 'pending', label: 'Pending' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
+  { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' }
 ]
 
@@ -249,108 +226,99 @@ const filteredRequests = computed(() => {
   return requests.value.filter(request => request.status === activeStatus.value)
 })
 
+const totalPages = computed(() => {
+  return Math.ceil(totalrows.value / perPage.value)
+})
+
 // Methods
-const closeModal = () => {
-  showNewRequestForm.value = false
-  resetForm()
-}
-
-const resetForm = () => {
-  newRequest.value = {
-    user_id: '',
-    amount: '',
-    bank_details: '',
-    reason: ''
-  }
-}
-
-const createWithdrawalRequest = async () => {
+const fetchRequests = async () => {
   try {
-    // Simulate API call
-    const request = {
-      id: Date.now(),
-      user_id: newRequest.value.user_id,
-      amount: parseFloat(newRequest.value.amount),
-      bank_details: newRequest.value.bank_details,
-      reason: newRequest.value.reason,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      status_updated_at: null
-    }
+    loading.value = true
+    const response = await axios.get("/withdrawal-request", {
+      params: {
+        page: currentPage.value,
+        perPage: perPage.value,
+        status: activeStatus.value === 'all' ? null : activeStatus.value
+      }
+    })
     
-    requests.value.unshift(request)
-    closeModal()
-    
-    // Show success message
-    alert('Withdrawal request created successfully!')
+    requests.value = response.data.data
+    totalrows.value = response.data.total
   } catch (error) {
-    console.error('Error creating request:', error)
-    alert('Error creating withdrawal request')
+    console.error("Error fetching requests:", error)
+    alert("Failed to load withdrawal requests")
+  } finally {
+    loading.value = false
   }
 }
 
 const updateStatus = async (requestId, newStatus) => {
   try {
-    const request = requests.value.find(r => r.id === requestId)
-    if (request) {
-      request.status = newStatus
-      request.status_updated_at = new Date().toISOString()
-      
-      // Show success message
-      const statusLabel = getStatusLabel(newStatus)
-      alert(`Request status updated to: ${statusLabel}`)
+    const payload = newStatus === 'rejected'
+      ? { reject_reason: rejectReason.value }
+      : {}
+
+    await axios.patch(`/withdrawal-request/${requestId}/status`, {
+      status: newStatus,
+      ...payload
+    })
+
+    await fetchRequests()
+
+    if (newStatus === 'rejected') {
+      showRejectModal.value = false
+      rejectReason.value = ''
+      currentRejectId.value = null
     }
+
+    alert(`Request has been ${newStatus} successfully!`)
   } catch (error) {
-    console.error('Error updating status:', error)
-    alert('Error updating request status')
+    console.error("Error updating request status:", error)
+    alert("Failed to update request status")
   }
+}
+
+// Show reject modal
+const showRejectDialog = (requestId) => {
+  currentRejectId.value = requestId
+  rejectReason.value = ''
+  showRejectModal.value = true
+}
+
+// Confirm reject
+const confirmReject = () => {
+  if (!rejectReason.value.trim()) {
+    alert("Please enter a rejection reason")
+    return
+  }
+  updateStatus(currentRejectId.value, 'rejected')
 }
 
 const getStatusCount = (status) => {
-  if (status === 'all') {
-    return requests.value.length
-  }
-  return requests.value.filter(request => request.status === status).length
+  if (status === 'all') return totalrows.value
+  return requests.value.filter(r => r.status === status).length
 }
 
 const getStatusClass = (status) => {
-  const statusClasses = {
+  return {
     pending: 'status-pending',
-    in_progress: 'status-progress',
-    completed: 'status-completed',
+    approved: 'status-approved',
     rejected: 'status-rejected'
-  }
-  return statusClasses[status] || 'status-pending'
+  }[status] || 'status-pending'
 }
 
 const getStatusLabel = (status) => {
-  const statusLabels = {
+  return {
     pending: 'Pending',
-    in_progress: 'In Progress',
-    completed: 'Completed',
+    approved: 'Approved',
     rejected: 'Rejected'
-  }
-  return statusLabels[status] || 'Pending'
-}
-
-const getUserName = (userId) => {
-  const user = users.value.find(u => u.id === userId)
-  return user ? user.name : 'Unknown User'
-}
-
-const getUserEmail = (userId) => {
-  const user = users.value.find(u => u.id === userId)
-  return user ? user.email : 'unknown@email.com'
-}
-
-const getUserAvatar = (userId) => {
-  const user = users.value.find(u => u.id === userId)
-  return user ? user.avatar : '../assest/img/tableprofileimg.png'
+  }[status] || 'Pending'
 }
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-IN', {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -359,50 +327,33 @@ const formatDate = (dateString) => {
   })
 }
 
-// Load Sample Data
-onMounted(() => {
-  // Sample Users
-  users.value = [
-    { id: 1, name: 'Kamlesh Patel', email: 'kamlesh@example.com', avatar: '../assest/img/tableprofileimg.png' },
-    { id: 2, name: 'Rahul Sharma', email: 'rahul@example.com', avatar: '../assest/img/tableprofileimg.png' },
-    { id: 3, name: 'Priya Singh', email: 'priya@example.com', avatar: '../assest/img/tableprofileimg.png' }
-  ]
-  
-  // Sample Requests
-  requests.value = [
-    {
-      id: 1,
-      user_id: 1,
-      amount: 5000,
-      bank_details: 'HDFC Bank - 1234567890 - HDFC0001234',
-      reason: 'Emergency funds needed',
-      status: 'pending',
-      created_at: '2024-01-15T10:30:00Z',
-      status_updated_at: null
-    },
-    {
-      id: 2,
-      user_id: 2,
-      amount: 10000,
-      bank_details: 'SBI Bank - 0987654321 - SBIN0001234',
-      reason: 'Business investment',
-      status: 'in_progress',
-      created_at: '2024-01-14T15:45:00Z',
-      status_updated_at: '2024-01-15T09:00:00Z'
-    },
-    {
-      id: 3,
-      user_id: 3,
-      amount: 7500,
-      bank_details: 'ICICI Bank - 1122334455 - ICIC0001234',
-      reason: 'Medical expenses',
-      status: 'completed',
-      created_at: '2024-01-13T11:20:00Z',
-      status_updated_at: '2024-01-15T14:30:00Z'
-    }
-  ]
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+    fetchRequests()
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+    fetchRequests()
+  }
+}
+
+// Initial fetch
+onMounted(fetchRequests)
+
+// Watch for status filter changes
+watch(activeStatus, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    currentPage.value = 1
+    fetchRequests()
+  }
 })
 </script>
+
+
 
 <style scoped>
 .withdrawal-request-screen {
