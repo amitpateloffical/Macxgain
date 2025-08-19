@@ -3,7 +3,6 @@
     <div class="app">
       <Header v-if="layout !== 'FullLayout'" />
       <div class="main_screen_sidebar_devider">
-        <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
         <div class="main_content_screen">
           <router-view />
         </div>
@@ -16,7 +15,6 @@
 <script setup>
 import { watch, computed, onMounted } from 'vue'
 import Header from "./views/Layout/Header.vue";
-import Sidebar from "./views/Layout/Sidebar.vue";
 import { useRouter } from 'vue-router';
 
 const route = useRouter();
