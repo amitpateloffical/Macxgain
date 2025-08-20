@@ -53,7 +53,7 @@
         <input 
           v-model="searchQuery" 
           type="text" 
-          placeholder="Search users by name, email, or ID..."
+          placeholder="Search users by name, mobile, or ID..."
           class="search-input"
         />
       </div>
@@ -69,8 +69,8 @@
       </div>
     </div>
 
-    <!-- Users Table -->
-    <div class="users-table-container">
+    <!-- Users Grid -->
+    <div class="users-grid-container">
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading users...</p>
@@ -82,40 +82,53 @@
         <p>{{ searchQuery ? 'Try adjusting your search terms' : 'No users available at the moment' }}</p>
       </div>
       
-      <div v-else class="users-table">
-        <div class="table-header">
-          <div class="header-cell">User</div>
-          <div class="header-cell">Balance</div>
-          <div class="header-cell">Status</div>
-        </div>
-        
+      <div v-else class="users-grid">
         <div 
           v-for="user in paginatedUsers" 
           :key="user.id" 
-          class="table-row"
+          class="user-card"
         >
-          <div class="user-cell">
+          <!-- User Card Header -->
+          <div class="card-header">
             <div class="user-avatar">
               <span class="avatar-text">{{ getUserInitials(user.name) }}</span>
             </div>
-            <div class="user-info">
-              <div class="user-name">{{ user.name }}</div>
-              <div class="user-email">{{ user.email }}</div>
-              <div class="user-id">ID: {{ user.id }}</div>
+            <div class="user-status">
+              <span class="status-badge" :class="getUserStatus(user.status)">
+                {{ getUserStatusText(user.status) }}
+              </span>
             </div>
           </div>
           
-          <div class="balance-cell">
+          <!-- User Info -->
+          <div class="user-info">
+            <h3 class="user-name">{{ user.name }}</h3>
+            <p class="user-mobile">
+              <i class="fas fa-mobile-alt"></i>
+              {{ user.phone || 'No Mobile' }}
+            </p>
+            <div class="user-id">ID: {{ user.id }}</div>
+          </div>
+          
+          <!-- Balance Section -->
+          <div class="balance-section">
+            <div class="balance-label">Total Balance</div>
             <div class="balance-amount">₹{{ user.total_balance || '0.00' }}</div>
             <div class="balance-status" :class="getBalanceStatus(user.total_balance)">
               {{ getBalanceStatusText(user.total_balance) }}
             </div>
           </div>
           
-          <div class="status-cell">
-            <span class="status-badge" :class="getUserStatus(user.status)">
-              {{ getUserStatusText(user.status) }}
-            </span>
+          <!-- Card Actions -->
+          <div class="card-actions">
+            <button class="action-btn view-btn" @click="viewUserDetails(user)">
+              <i class="fas fa-eye"></i>
+              View Details
+            </button>
+            <button class="action-btn trade-btn" @click="tradeWithUser(user)">
+              <i class="fas fa-robot"></i>
+              Trade with AI
+            </button>
           </div>
         </div>
       </div>
@@ -148,6 +161,102 @@
         >
           <i class="fas fa-chevron-right"></i>
         </button>
+      </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div v-if="showUserModal" class="modal-overlay" @click="closeUserModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2 class="modal-title">👤 User Details</h2>
+          <button class="modal-close" @click="closeUserModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body" v-if="selectedUser">
+          <!-- User Profile Section -->
+          <div class="user-profile-section">
+            <div class="profile-avatar">
+              <span class="avatar-text-large">{{ getUserInitials(selectedUser.name) }}</span>
+            </div>
+            <div class="profile-info">
+              <h3 class="profile-name">{{ selectedUser.name }}</h3>
+              <p class="profile-status">
+                <span class="status-badge" :class="getUserStatus(selectedUser.status)">
+                  {{ getUserStatusText(selectedUser.status) }}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          <!-- User Details Grid -->
+          <div class="details-grid">
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-id-card"></i>
+                User ID
+              </div>
+              <div class="detail-value">{{ selectedUser.id }}</div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-envelope"></i>
+                Email Address
+              </div>
+              <div class="detail-value">{{ selectedUser.email }}</div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-mobile-alt"></i>
+                Mobile Number
+              </div>
+              <div class="detail-value">{{ selectedUser.phone || 'Not provided' }}</div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-calendar-alt"></i>
+                Joined Date
+              </div>
+              <div class="detail-value">{{ formatDate(selectedUser.created_at) }}</div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-wallet"></i>
+                Current Balance
+              </div>
+              <div class="detail-value balance-highlight">₹{{ selectedUser.total_balance || '0.00' }}</div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-label">
+                <i class="fas fa-chart-line"></i>
+                Balance Status
+              </div>
+              <div class="detail-value">
+                <span class="balance-status-badge" :class="getBalanceStatus(selectedUser.total_balance)">
+                  {{ getBalanceStatusText(selectedUser.total_balance) }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Additional Actions -->
+          <div class="modal-actions">
+            <button class="action-btn trade-btn-large" @click="tradeWithUser(selectedUser)">
+              <i class="fas fa-robot"></i>
+              Start AI Trading
+            </button>
+            <button class="action-btn close-btn" @click="closeUserModal">
+              <i class="fas fa-times"></i>
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -202,7 +311,9 @@ export default {
         { label: 'Inactive', value: 'I' },
         { label: 'New', value: 'new' }
       ],
-      apiBaseUrl: process.env.NODE_ENV === 'production' ? '/api' : 'http://127.0.0.1:8000/api'
+      apiBaseUrl: process.env.NODE_ENV === 'production' ? '/api' : 'http://127.0.0.1:8000/api',
+      showUserModal: false,
+      selectedUser: null
     }
   },
   computed: {
@@ -369,13 +480,28 @@ export default {
         minute: '2-digit' 
       });
     },
-    viewUser(user) {
-      console.log('View user:', user);
-      // Implement user view functionality
+    viewUserDetails(user) {
+      console.log('View user details:', user);
+      this.selectedUser = user;
+      this.showUserModal = true;
     },
-    editUser(user) {
-      console.log('Edit user:', user);
-      // Implement user edit functionality
+    tradeWithUser(user) {
+      console.log('Trade with AI for user:', user);
+      // Professional AI Trading functionality
+      this.$toast?.success?.(`Initiating AI Trading session for ${user.name}`);
+      
+      // You can implement:
+      // 1. Redirect to AI Trading dashboard
+      // 2. Open AI Trading modal
+      // 3. Start AI Trading session
+      // 4. Show trading analytics
+      
+      // Example: Redirect to AI Trading page
+      // this.$router.push(`/admin/ai-trading-session/${user.id}`);
+    },
+    closeUserModal() {
+      this.showUserModal = false;
+      this.selectedUser = null;
     },
     deleteUser(user) {
       if (confirm(`Are you sure you want to delete ${user.name}?`)) {
@@ -570,11 +696,12 @@ export default {
   border-color: #00ff88;
 }
 
-/* Users Table */
-.users-table-container {
+/* Users Grid */
+.users-grid-container {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
-  overflow: hidden;
+  padding: 20px;
+  margin-bottom: 24px;
 }
 
 .loading-container {
@@ -620,188 +747,248 @@ export default {
   margin: 0;
 }
 
-.users-table {
-  width: 100%;
-}
-
-.table-header {
+.users-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px 20px;
-  background: rgba(0, 255, 136, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.user-cell {
+.user-card {
+  background: linear-gradient(145deg, #101022, #0d0d1a);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ff88, #00d4aa, #00ff88);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-card:hover {
+  border-color: #00ff88;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.15);
+}
+
+.user-card:hover::before {
+  opacity: 1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.avatar-text {
   font-weight: bold;
   color: #0d0d1a;
-  font-size: 14px;
+  font-size: 20px;
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 600;
-  color: white;
-  margin-bottom: 4px;
-}
-
-.user-email {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-.user-id {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 11px;
-}
-
-.balance-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.balance-amount {
-  font-weight: 600;
-  color: white;
-}
-
-.balance-status {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.balance-status.high {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-}
-
-.balance-status.medium {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-}
-
-.balance-status.low {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-}
-
-.status-cell {
+.user-status {
   display: flex;
   align-items: center;
 }
 
 .status-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .status-badge.active {
   background: rgba(0, 255, 136, 0.2);
   color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .status-badge.inactive {
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
-.date-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.user-info {
+  margin-bottom: 16px;
 }
 
-.join-date {
+.user-name {
+  font-size: 20px;
+  font-weight: 700;
   color: white;
-  font-weight: 500;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.join-time {
-  color: rgba(255, 255, 255, 0.6);
+.user-mobile {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  margin: 0 0 6px 0;
+  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.user-mobile i {
+  color: #00ff88;
   font-size: 12px;
 }
 
-.actions-cell {
+.user-id {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.balance-section {
   display: flex;
+  flex-direction: column;
   gap: 8px;
+  padding: 16px;
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 136, 0.1);
+}
+
+.balance-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.balance-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #00ff88;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.balance-status {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balance-status.high {
+  color: #00ff88;
+}
+
+.balance-status.medium {
+  color: #ffd700;
+}
+
+.balance-status.low {
+  color: #ff6b6b;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  flex: 1;
+  padding: 12px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
   transition: all 0.3s ease;
-  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .view-btn {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  color: #0d0d1a;
+  width: 100%;
 }
 
-.view-btn:hover {
-  background: rgba(0, 255, 136, 0.3);
+.view-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
 }
 
-.edit-btn {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
+.trade-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
 }
 
-.edit-btn:hover {
-  background: rgba(255, 193, 7, 0.3);
+.trade-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-.delete-btn {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
+.trade-btn:hover::before {
+  left: 100%;
 }
 
-.delete-btn:hover {
-  background: rgba(255, 107, 107, 0.3);
+.trade-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Pagination */
@@ -896,117 +1083,460 @@ export default {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .ai-trading-screen {
-    padding: 16px;
-    padding-bottom: 120px;
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .ai-trading-screen {
+      padding: 16px;
+      padding-bottom: 120px;
+    }
+    
+    .page-header {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 16px;
+    }
+    
+    .page-title {
+      font-size: 24px;
+    }
+    
+    .page-subtitle {
+      font-size: 14px;
+    }
+    
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .stat-card {
+      padding: 16px;
+    }
+    
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+    }
+    
+    .search-filters {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .search-box {
+      width: 100%;
+    }
+    
+    .filter-buttons {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+    
+    .users-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 16px;
+    }
+    
+    .user-card {
+      padding: 20px;
+    }
+    
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+    
+    .user-status {
+      align-self: flex-start;
+    }
+    
+    .user-info {
+      text-align: center;
+    }
+    
+    .user-name {
+      font-size: 18px;
+    }
+    
+    .user-mobile {
+      font-size: 13px;
+    }
+    
+    .user-id {
+      font-size: 11px;
+    }
+    
+    .balance-section {
+      align-items: center;
+      padding: 12px;
+    }
+    
+    .balance-label {
+      font-size: 11px;
+    }
+    
+    .balance-amount {
+      font-size: 20px;
+    }
+    
+    .balance-status {
+      font-size: 11px;
+    }
+    
+    .card-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    
+    .pagination {
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .page-numbers {
+      order: 2;
+    }
+    
+    .page-btn {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
   }
   
-  .page-header {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .user-card {
+      padding: 16px;
+    }
+    
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+    }
+    
+    .user-name {
+      font-size: 16px;
+    }
+    
+    .balance-amount {
+      font-size: 18px;
+    }
+    
+    .action-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
   }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  
-  .stat-card {
-    padding: 16px;
-  }
-  
-  .search-filters {
-    gap: 12px;
-  }
-  
-  .filter-buttons {
-    justify-content: center;
-  }
-  
-  .table-header,
-  .table-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  
-  .table-header {
-    display: none;
-  }
-  
-  .table-row {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    padding: 16px;
-  }
-  
-  .user-cell {
-    justify-content: center;
-    text-align: center;
-  }
-  
-  .balance-cell,
-  .status-cell,
-  .date-cell,
-  .actions-cell {
-    text-align: center;
-  }
-  
-  .mobile-bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    padding: 16px 8px;
-  }
-}
 
-@media (max-width: 480px) {
-  .ai-trading-screen {
-    padding: 12px;
-    padding-bottom: 100px;
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
   }
-  
-  .page-title {
+
+  .modal-content {
+    background: linear-gradient(145deg, #101022, #0d0d1a);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-title {
     font-size: 24px;
+    font-weight: 700;
+    color: #00ff88;
+    margin: 0;
   }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
+
+  .modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
   }
-  
-  .stat-card {
-    padding: 12px;
+
+  .modal-close:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
   }
-  
-  .stat-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
+
+  .modal-body {
+    padding: 24px;
   }
-  
-  .search-input {
-    padding: 12px 12px 12px 40px;
+
+  .user-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding: 20px;
+    background: rgba(0, 255, 136, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(0, 255, 136, 0.1);
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  }
+
+  .avatar-text-large {
+    font-weight: bold;
+    color: #0d0d1a;
+    font-size: 32px;
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  .profile-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 12px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-status {
+    margin: 0;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .detail-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .detail-item:hover {
+    border-color: rgba(0, 255, 136, 0.2);
+    background: rgba(0, 255, 136, 0.02);
+  }
+
+  .detail-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  
-  .filter-btn {
-    padding: 6px 12px;
+
+  .detail-label i {
+    color: #00ff88;
+    font-size: 16px;
+  }
+
+  .detail-value {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .balance-highlight {
+    color: #00ff88;
+    font-size: 20px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .balance-status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
     font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  
-  .mobile-bottom-nav {
-    padding: 12px 6px;
-    gap: 2px;
+
+  .balance-status-badge.high {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.3);
   }
-  
-  .mobile-bottom-nav .nav-icon {
-    font-size: 18px;
+
+  .balance-status-badge.medium {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
   }
-  
-  .mobile-bottom-nav .nav-label {
-    font-size: 9px;
+
+  .balance-status-badge.low {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
   }
-}
+
+  .modal-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .trade-btn-large {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .trade-btn-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+      transition: all 0.3s ease;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  /* Modal Mobile Responsive */
+  @media (max-width: 768px) {
+    .modal-content {
+      max-width: 95vw;
+      margin: 10px;
+    }
+
+    .modal-header {
+      padding: 20px 20px 16px 20px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .user-profile-section {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .profile-avatar {
+      width: 70px;
+      height: 70px;
+    }
+
+    .avatar-text-large {
+      font-size: 28px;
+    }
+
+    .profile-name {
+      font-size: 24px;
+    }
+
+    .details-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .modal-actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .trade-btn-large,
+    .close-btn {
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 14px;
+    }
+  }
 </style>
