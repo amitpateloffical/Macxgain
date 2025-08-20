@@ -1,13 +1,8 @@
 <template>
   <div :class="layout">
     <div class="app">
-<<<<<<< HEAD
       <Header v-if="layout !== 'FullLayout' && !isMobile" />
       <div class="main_screen_sidebar_devider" :class="{ 'mobile-layout': isMobile }">
-        <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
-=======
-      <Header v-if="layout !== 'FullLayout'" />
-      <div class="main_screen_sidebar_devider">
         <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
         <div class="main_content_screen">
           <router-view />
