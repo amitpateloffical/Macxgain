@@ -1,28 +1,63 @@
 <template>
-  <div class="dashboard">
-    <div class="list__page">
-      <div v-if="successMessage" class="alert alert-success">
-        {{ successMessage }}
+  <div class="money-request-screen">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">💰 Money Requests</h1>
+        <p class="page-subtitle">Manage all money requests and transactions</p>
       </div>
-      <div class="list__title">
-        <h4>Money Requests</h4>
-        <b-button
+      <div class="header-actions">
+        <button 
           v-if="!isAdmin"
-          variant="primary"
+          class="btn-primary" 
           :disabled="loading"
           @click="openRequestModal()"
         >
-          Create Request
-        </b-button>
-        <b-button
-          variant="primary"
-          class="mb-0 ml-md-1 basicButton"
-          v-ripple.400="'rgba(113, 102, 240, 0.15)'"
-          @click="showfilter = !showfilter"
-        >
-          Filter
-        </b-button>
+          <i class="fa-solid fa-plus"></i> Create Request
+        </button>
+        <button class="btn-secondary" @click="showfilter = !showfilter">
+          <i class="fa-solid fa-filter"></i> {{ showfilter ? 'Hide' : 'Show' }} Filters
+        </button>
       </div>
+    </div>
+
+    <!-- Success Message -->
+    <div v-if="successMessage" class="success-alert">
+      <i class="fa-solid fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ totalRequests || 0 }}</div>
+          <div class="stat-label">Total Requests</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ pendingRequests || 0 }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ approvedRequests || 0 }}</div>
+          <div class="stat-label">Approved</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ rejectedRequests || 0 }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+      </div>
+    </div>
 
       <div v-if="showfilter">
         <b-card class="filterBox mb-0">
@@ -88,18 +123,39 @@
         </b-card>
       </div>
 
-      <div class="table-container">
-        <div v-if="!modalLoading">
-          <b-table
-            responsive
-            stacked="sm"
-            ref="refRequestListTable"
-            :items="fetchRequests"
-            :fields="fields"
-            @sort-changed="onSortChanged"
-            class="mb-2 staticTable"
-            empty-text="No matching records found"
-          >
+    <!-- Requests Table -->
+    <div class="requests-container">
+      <div class="table-header">
+        <h3>Money Requests ({{ totalRows || 0 }})</h3>
+        <div class="table-actions">
+          <button class="btn-refresh" @click="fetchRequestss" :disabled="modalLoading">
+            <i class="fa-solid fa-rotate" :class="{ 'fa-spin': modalLoading }"></i>
+            {{ modalLoading ? 'Loading...' : 'Refresh' }}
+          </button>
+        </div>
+      </div>
+      
+      <div v-if="modalLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading requests...</p>
+      </div>
+      
+      <div v-else-if="!fetchRequests || fetchRequests.length === 0" class="no-data">
+        <div class="no-data-icon">💰</div>
+        <h3>No Money Requests Found</h3>
+        <p>No requests match your current filters</p>
+      </div>
+      
+      <div v-else class="requests-table">
+        <div class="table-row header-row">
+          <div class="col-id">Transaction ID</div>
+          <div class="col-user">User</div>
+          <div class="col-amount">Amount</div>
+          <div class="col-status">Status</div>
+          <div class="col-receipt">Receipt</div>
+          <div class="col-date">Date</div>
+          <div class="col-actions">Actions</div>
+        </div>
             <template #cell(transaction_id)="data">
               <span class="font-weight-bold">{{
                 data.item.transaction_id

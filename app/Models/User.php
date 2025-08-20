@@ -27,7 +27,10 @@ class User extends Authenticatable
         'phone',
         'is_admin',
         'status',
-        'last_login_at'
+        'last_login_at',
+        'bank_name',
+        'account_no',
+        'ifsc_code'
     ];
 
     /**
