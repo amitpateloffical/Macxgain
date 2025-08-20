@@ -67,6 +67,16 @@
           </p>
         </div>
       </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/payment-collector')">
+        <div class="card-content">
+          <div class="card-icon">💸</div>
+          <h3 class="card-title">Payment Collector</h3>
+          <p class="card-description">
+            Manage payment collections and transactions
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
@@ -94,6 +104,10 @@
       <div class="nav-item" @click="navigateTo('/admin/ai-trading')">
         <div class="nav-icon">🤖</div>
         <span class="nav-label">AI Trading</span>
+      </div>
+      <div class="nav-item" @click="navigateTo('/admin/payment-collector')">
+        <div class="nav-icon">💸</div>
+        <span class="nav-label">Payments</span>
       </div>
       <div class="nav-item" @click="showProfileMenu = !showProfileMenu">
         <div class="nav-icon">👤</div>
