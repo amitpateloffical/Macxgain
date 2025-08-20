@@ -147,15 +147,17 @@
       </div>
       
       <div v-else class="requests-table">
-        <div class="table-row header-row">
-          <div class="col-id">Transaction ID</div>
-          <div class="col-user">User</div>
-          <div class="col-amount">Amount</div>
-          <div class="col-status">Status</div>
-          <div class="col-receipt">Receipt</div>
-          <div class="col-date">Date</div>
-          <div class="col-actions">Actions</div>
-        </div>
+        <b-table
+          :items="fetchRequests"
+          :fields="tableFields"
+          :current-page="currentPage"
+          :per-page="perPage"
+          :busy="isLoading"
+          responsive
+          striped
+          hover
+          class="requests-table"
+        >
             <template #cell(transaction_id)="data">
               <span class="font-weight-bold">{{
                 data.item.transaction_id
