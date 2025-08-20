@@ -41,7 +41,7 @@ class UserController extends Controller
         try {
             $users = User::select([
                 'id', 'name', 'email', 'phone', 'is_admin', 'status',
-                'created_at', 'last_login_at' // Add last_login_at
+                'created_at', 'last_login_at', 'bank_name', 'account_no', 'ifsc_code'
             ])->get();
 
             return response()->json([

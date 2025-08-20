@@ -50,13 +50,30 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/Dashboard/Dashboard.vue"),
   },
+  {
+    path: "/admin/ai-trading",
+    name: "admin-ai-trading",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/AITrading.vue"),
+  },
    {
     path: "/user/dashboard",
     name: "user-ashboard",
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/Dashboard/UserDashboard.vue"),
   },
- 
+  {
+    path: "/admin/product",
+    name: "admin-product",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/Product/ListProduct.vue"),
+  },
+  {
+    path: "/admin/add/product",
+    name: "admin-add-product",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/Product/AddProduct.vue"),
+  },
 
   
   {
