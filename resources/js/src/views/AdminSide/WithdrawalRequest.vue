@@ -7,9 +7,7 @@
         <p class="page-subtitle">Manage and process withdrawal requests from users</p>
       </div>
       <div class="header-actions">
-        <button class="btn-primary" @click="showNewRequestForm = true">
-          <i class="fa-solid fa-plus"></i> New Request
-        </button>
+        <!-- New Request button removed -->
       </div>
     </div>
 
@@ -31,7 +29,7 @@
       <div v-if="filteredRequests.length === 0" class="no-requests">
         <div class="no-requests-icon">📭</div>
         <h3>No {{ activeStatus === 'all' ? '' : activeStatus }} requests found</h3>
-        <p>Create a new withdrawal request to get started</p>
+        <p>No withdrawal requests available at the moment</p>
       </div>
       
       <div v-else class="requests-grid">
