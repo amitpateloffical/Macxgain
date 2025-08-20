@@ -436,7 +436,6 @@
           />
         </b-form-group>
       </b-modal>
-    </div>
   </div>
 </template>
 
