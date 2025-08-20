@@ -1,5 +1,5 @@
 <template>
-  <div class="header_screen" :class="{ 'header-mobile-hidden': isMobile }">
+  <div class="header_screen">
     <!-- Logo -->
     <div
   class="logo-section"
@@ -78,7 +78,6 @@ const sidebarOpen = ref(false);
 const showRequestForm = ref(false);
 const transactionId = ref("");
 const file = ref(null);
-const isMobile = ref(false);
 
 // Store user as reactive so UI updates
   const storedUser = ref(JSON.parse(localStorage.getItem("userData")) || {});
@@ -99,21 +98,6 @@ const handleLogout = () => {
 };
 
 // Function to get latest balance
-
-// Mobile detection
-const checkDeviceType = () => {
-  isMobile.value = window.innerWidth <= 768;
-};
-
-// Lifecycle hooks
-onMounted(() => {
-  checkDeviceType();
-  window.addEventListener('resize', checkDeviceType);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', checkDeviceType);
-});
 async function fetchTotalBalance() {
   try {
   const res = await axios.post("/total_b", {
@@ -553,38 +537,6 @@ onBeforeUnmount(() => {
   .logout_btn,
   .sidebar {
     transition: none;
-  }
-}
-
-/* Mobile Header Hiding */
-.header-mobile-hidden {
-  display: none !important;
-}
-
-/* Mobile-specific styles */
-@media (max-width: 768px) {
-  .header_screen {
-    display: none !important;
-  }
-  
-  /* Ensure main content takes full height on mobile */
-  .app .main_screen_sidebar_devider {
-    margin-top: 0;
-  }
-}
-
-/* Tablet styles */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .header_screen {
-    min-height: 60px;
-  }
-  
-  .logo-section {
-    margin-bottom: 8px;
-  }
-  
-  .header_menu {
-    gap: 12px;
   }
 }
 </style>

@@ -166,8 +166,8 @@
           
           <div class="col-actions">
             <div class="action-buttons">
-              <button class="btn-action btn-view" @click="viewUser(user)" title="View Details" :disabled="isViewingUser">
-                <i class="fa-solid fa-eye" :class="{ 'fa-spin': isViewingUser }"></i>
+              <button class="btn-action btn-view" @click="viewUser(user)" title="View Details">
+                <i class="fa-solid fa-eye"></i>
               </button>
               <button class="btn-action btn-edit" @click="editUser(user)" title="Edit User">
                 <i class="fa-solid fa-edit"></i>
@@ -507,32 +507,6 @@
                 <span class="info-label">Last Login:</span>
                 <span class="info-value">{{ viewingUser.last_login || 'Never' }}</span>
               </div>
-              
-              <!-- Balance Information -->
-              <div class="info-row">
-                <span class="info-label">Total Balance:</span>
-                <span class="info-value balance-value">₹{{ viewingUser.total_balance || '0.00' }}</span>
-              </div>
-              
-              <!-- Bank Details Section -->
-              <div class="bank-details-section">
-                <h4 class="section-title">🏦 Bank Details</h4>
-                
-                <div class="info-row">
-                  <span class="info-label">Bank Name:</span>
-                  <span class="info-value">{{ viewingUser.bank_name || 'Not provided' }}</span>
-                </div>
-                
-                <div class="info-row">
-                  <span class="info-label">Account Number:</span>
-                  <span class="info-value">{{ viewingUser.account_no || 'Not provided' }}</span>
-                </div>
-                
-                <div class="info-row">
-                  <span class="info-label">IFSC Code:</span>
-                  <span class="info-value">{{ viewingUser.ifsc_code || 'Not provided' }}</span>
-                </div>
-              </div>
             </div>
           </div>
           
@@ -556,7 +530,6 @@ const router = useRouter()
 const showAddUserModal = ref(false)
 const showEditUserModal = ref(false)
 const showViewUserModal = ref(false)
-const isViewingUser = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('all')
 const roleFilter = ref('all')
@@ -881,46 +854,9 @@ const addNewUser = async () => {
   }
 }
 
-const viewUser = async (user) => {
-  isViewingUser.value = true
-  try {
-    // Fetch fresh user data including balance and bank details
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      throw new Error('No access token found. Please login again.')
-    }
-
-    const response = await fetch(`${API_BASE}/users/${user.id}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user details')
-    }
-
-    const result = await response.json()
-    
-    if (result.success && result.data) {
-      viewingUser.value = result.data
-      showViewUserModal.value = true
-    } else {
-      throw new Error(result.message || 'Failed to fetch user details')
-    }
-  } catch (error) {
-    console.error('Error fetching user details:', error)
-    alert(`Error fetching user details: ${error.message}`)
-    
-    // Fallback to existing user data
-    viewingUser.value = user
-    showViewUserModal.value = true
-  } finally {
-    isViewingUser.value = false
-  }
+const viewUser = (user) => {
+  viewingUser.value = user
+  showViewUserModal.value = true
 }
 
 const editUser = (user) => {
@@ -2515,32 +2451,6 @@ const handleClickOutside = (event, modalRef) => {
 .info-value {
   font-weight: 400;
   color: #a1a1a1;
-}
-
-.balance-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #00ff80 !important;
-  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
-}
-
-.bank-details-section {
-  margin-top: 20px;
-  padding: 20px;
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.05) 0%, rgba(0, 212, 170, 0.05) 100%);
-  border: 1px solid rgba(0, 255, 128, 0.2);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 255, 128, 0.1);
-}
-
-.section-title {
-  color: #00ff80;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .modal-actions {

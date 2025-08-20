@@ -166,10 +166,77 @@
       </div>
     </section>
 
-
+    <!-- Top 10 Stocks Section -->
+    <section class="top-stocks-section">
+      <div class="container">
+        <div class="section-header fade-in-up">
+          <h2>Top 10 Indian Stocks</h2>
+          <div class="section-subtitle">Most actively traded Indian stocks</div>
+          <div class="refresh-controls">
+            <button @click="refreshTopStocks" class="refresh-btn" :disabled="isLoading">
+              <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
+              {{ isLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+        </div>
+        
+        <div v-if="isLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading Indian market data...</p>
+        </div>
+        
+        <div v-else-if="topStocks.length > 0" class="top-stocks-grid">
+          <div v-for="(stock, idx) in topStocks" :key="stock.symbol" :class="['stock-card', idx % 2 === 0 ? 'fade-in-left' : 'fade-in-right']">
+            <div class="stock-header">
+              <div class="stock-info">
+                <h3>{{ stock.symbol }}</h3>
+                <span class="company-name">{{ stock.name }}</span>
+              </div>
+              <div class="stock-change" :class="{ up: stock.change >= 0, down: stock.change < 0 }">
+                <span class="change-value">{{ stock.change >= 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}%</span>
+                <span class="change-arrow">{{ stock.change >= 0 ? '↗' : '↘' }}</span>
+              </div>
+            </div>
+            
+            <div class="stock-price">
+              <span class="price-value">₹{{ stock.price.toFixed(2) }}</span>
+              <span class="price-change">{{ stock.change >= 0 ? '+' : '' }}{{ stock.priceChange.toFixed(2) }}</span>
+            </div>
+            
+            <div class="stock-stats">
+              <div class="stat">
+                <span class="stat-label">Open</span>
+                <span class="stat-value">₹{{ stock.open.toFixed(2) }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">{{ formatVolume(stock.volume) }}</span>
+              </div>
+            </div>
+            
+            <div class="stock-chart">
+              <div class="mini-chart">
+                <div 
+                  v-for="(point, index) in stock.chartData" 
+                  :key="index"
+                  class="chart-bar"
+                  :style="{ height: point + '%' }"
+                  :class="{ up: point > 50, down: point <= 50 }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div v-else class="no-data">
+          <i class="fas fa-chart-line no-data-icon"></i>
+          <h3>No Data Available</h3>
+          <p>Unable to fetch Indian stock data. Please try refreshing.</p>
+        </div>
+      </div>
       
       <!-- TradingEconomics India Markets Iframe -->
-      <section class="tradingeconomics-iframe-section">
+      <div class="tradingeconomics-iframe-section">
         <div class="section-header">
           <h3>Live Indian Markets</h3>
           <p>Real-time data from TradingEconomics India</p>
@@ -206,10 +273,10 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
       
       <!-- External Market Links -->
-      <section class="external-links">
+      <div class="external-links">
         <div class="section-header">
           <h3>View Full Markets</h3>
           <p>Access comprehensive market data from multiple sources</p>
@@ -236,7 +303,10 @@
             <small>Global Platform</small>
           </a>
         </div>
-      </section>
+      </div>
+    </section>
+
+
 
     <!-- India Section -->
     <section v-if="activeTab === 'india'" class="market-section">
