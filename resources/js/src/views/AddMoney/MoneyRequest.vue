@@ -128,10 +128,14 @@
       <div class="table-header">
         <h3>Money Requests ({{ totalRequests || 0 }})</h3>
         <div class="table-actions">
-          <button class="btn-refresh" @click="fetchRequestss" :disabled="modalLoading">
-            <i class="fa-solid fa-rotate" :class="{ 'fa-spin': modalLoading }"></i>
-            {{ modalLoading ? 'Loading...' : 'Refresh' }}
-          </button>
+                  <button class="btn-refresh" @click="fetchRequestss" :disabled="modalLoading">
+          <i class="fa-solid fa-rotate" :class="{ 'fa-spin': modalLoading }"></i>
+          {{ modalLoading ? 'Loading...' : 'Refresh' }}
+        </button>
+        <button class="btn-refresh ml-1" @click="updateStats" style="margin-left: 8px;">
+          <i class="fa-solid fa-chart-bar"></i>
+          Update Stats
+        </button>
         </div>
       </div>
       
@@ -551,6 +555,14 @@ export default {
     this.fetchUserInfo();
     this.fetchRequestss();
     this.fetchUsers();
+    
+    // Debug: Check initial state
+    console.log('🚨 Component mounted, initial stats:', {
+      totalRequests: this.totalRequests,
+      pendingRequests: this.pendingRequests,
+      approvedRequests: this.approvedRequests,
+      rejectedRequests: this.rejectedRequests
+    });
   },
   watch: {
     fetchRequests: {
@@ -803,7 +815,10 @@ export default {
       this.fetchRequestss();
     },
     updateStats() {
+      console.log('🚨 updateStats called with fetchRequests:', this.fetchRequests);
+      
       if (!this.fetchRequests || this.fetchRequests.length === 0) {
+        console.log('🚨 No requests found, setting stats to 0');
         this.totalRequests = 0;
         this.pendingRequests = 0;
         this.approvedRequests = 0;
@@ -822,6 +837,9 @@ export default {
         approved: this.approvedRequests,
         rejected: this.rejectedRequests
       });
+      
+      // Force reactivity update
+      this.$forceUpdate();
     },
   },
 };
