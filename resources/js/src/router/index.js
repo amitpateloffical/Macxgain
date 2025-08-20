@@ -150,9 +150,14 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('access_token');
-  
+  const userData = localStorage.getItem('userData');
 
+  console.log('🚨 Route Guard - Navigating to:', to.path);
+  console.log('🚨 Route Guard - From:', from.path);
+  console.log('🚨 Route Guard - Token exists:', !!token);
+  console.log('🚨 Route Guard - User data exists:', !!userData);
 
+  // Check if route requires authentication
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
       console.log('🚨 No token, redirecting to LandingPage');
@@ -162,11 +167,63 @@ router.beforeEach((to, from, next) => {
         next(); 
       }
     } else {
-      console.log('🚨 Token found, proceeding to route');
-      next();
+      // Token exists, check if user data is valid
+      if (!userData) {
+        console.log('🚨 Token exists but no user data, clearing session and redirecting');
+        localStorage.removeItem('access_token');
+        next({ name: 'LandingPage' });
+        return;
+      }
+
+      try {
+        const user = JSON.parse(userData);
+        console.log('🚨 Route Guard - User role:', user.is_admin ? 'Admin' : 'User');
+        
+        // If admin is trying to access login/register pages, redirect to admin dashboard
+        if (user.is_admin && (to.path === '/login' || to.path === '/register' || to.path === '/')) {
+          console.log('🚨 Admin trying to access public pages, redirecting to admin dashboard');
+          next({ name: 'admin-dashboard' });
+          return;
+        }
+
+        // Prevent admin from being redirected to login when already authenticated
+        if (user.is_admin && to.path === '/login') {
+          console.log('🚨 Admin already authenticated, preventing redirect to login');
+          next({ name: 'admin-dashboard' });
+          return;
+        }
+
+        console.log('🚨 Token and user data valid, proceeding to route');
+        next();
+      } catch (error) {
+        console.error('🚨 Error parsing user data:', error);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('userData');
+        next({ name: 'LandingPage' });
+      }
     }
   } else {
+    // Route doesn't require auth
     console.log('🚨 No auth required, proceeding to route');
+    
+    // If user is logged in and trying to access public routes, redirect to appropriate dashboard
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        if (to.path === '/' || to.path === '/login' || to.path === '/register') {
+          console.log('🚨 Logged in user accessing public route, redirecting to dashboard');
+          if (user.is_admin) {
+            next({ name: 'admin-dashboard' });
+          } else {
+            next({ name: 'user-ashboard' });
+          }
+          return;
+        }
+      } catch (error) {
+        console.error('🚨 Error parsing user data in public route:', error);
+      }
+    }
+    
     next();
   }
 });
