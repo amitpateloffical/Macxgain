@@ -91,14 +91,20 @@ const routes = [
   },
 
       {
-        path: "/withdrawal-request",
+        path: "/admin/withdrawal-request",
         name: "withdrawal_request",
         meta: { requiresAuth: true },
         component: () => import("../views/AdminSide/WithdrawalRequest.vue"),
       },
+      {
+        path: "/admin/money-request",
+        name: "admin_money_request",
+        meta: { requiresAuth: true },
+        component: () => import("../views/AddMoney/MoneyRequest.vue"),
+      },
 
           {
-        path: "/analytics",
+        path: "/admin/analytics",
         name: "analytics",
         meta: { requiresAuth: true },
         component: () => import("../views/AdminSide/Analytics.vue"),
@@ -123,12 +129,12 @@ const routes = [
   },
 
   {
-    path: "/user-management",
+    path: "/admin/user-management",
     name: "user_management",
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/UserManagement.vue"),
   },  {
-    path: "/register-request",
+    path: "/admin/register-request",
     name: "register_request",
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/RegisterRequest.vue"),
