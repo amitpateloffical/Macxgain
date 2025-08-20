@@ -152,7 +152,7 @@
           :fields="tableFields"
           :current-page="currentPage"
           :per-page="perPage"
-          :busy="isLoading"
+          :busy="modalLoading"
           responsive
           striped
           hover
@@ -516,6 +516,17 @@ export default {
         return this.currentPage * this.perPage;
       }
     },
+    tableFields() {
+      return [
+        { key: "transaction_id", label: "Transaction ID", sortable: true },
+        { key: "amount", label: "Amount", sortable: true },
+        { key: "description", label: "Description" },
+        { key: "status", label: "Status", sortable: true },
+        { key: "created_at", label: "Request Date", sortable: true },
+        { key: "image_path", label: "Receipt" },
+        { key: "actions", label: "Actions" }
+      ];
+    }
   },
   setup() {
     const search = ref({
@@ -540,6 +551,15 @@ export default {
     this.fetchUserInfo();
     this.fetchRequestss();
     this.fetchUsers();
+  },
+  watch: {
+    fetchRequests: {
+      handler(newVal) {
+        console.log('🚨 fetchRequests changed:', newVal);
+        console.log('🚨 Length:', newVal ? newVal.length : 0);
+      },
+      immediate: true
+    }
   },
   methods: {
     fetchUserInfo() {
@@ -577,6 +597,9 @@ export default {
           },
         })
         .then((response) => {
+          console.log('🚨 API Response:', response.data);
+          console.log('🚨 fetchRequests:', response.data.data);
+          console.log('🚨 totalrows:', response.data.total);
           this.fetchRequests = response.data.data;
           this.totalrows = response.data.total;
           this.modalLoading = false;
