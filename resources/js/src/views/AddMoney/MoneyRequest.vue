@@ -126,7 +126,7 @@
     <!-- Requests Table -->
     <div class="requests-container">
       <div class="table-header">
-        <h3>Money Requests ({{ totalRows || 0 }})</h3>
+        <h3>Money Requests ({{ totalRequests || 0 }})</h3>
         <div class="table-actions">
           <button class="btn-refresh" @click="fetchRequestss" :disabled="modalLoading">
             <i class="fa-solid fa-rotate" :class="{ 'fa-spin': modalLoading }"></i>
@@ -602,6 +602,10 @@ export default {
           console.log('🚨 totalrows:', response.data.total);
           this.fetchRequests = response.data.data;
           this.totalrows = response.data.total;
+          
+          // Update stats based on fetched data
+          this.updateStats();
+          
           this.modalLoading = false;
         })
         .catch((error) => {
@@ -797,6 +801,27 @@ export default {
       this.sortBy = ctx.sortBy;
       this.sortDesc = ctx.sortDesc;
       this.fetchRequestss();
+    },
+    updateStats() {
+      if (!this.fetchRequests || this.fetchRequests.length === 0) {
+        this.totalRequests = 0;
+        this.pendingRequests = 0;
+        this.approvedRequests = 0;
+        this.rejectedRequests = 0;
+        return;
+      }
+      
+      this.totalRequests = this.fetchRequests.length;
+      this.pendingRequests = this.fetchRequests.filter(req => req.status === 'pending').length;
+      this.approvedRequests = this.fetchRequests.filter(req => req.status === 'approved').length;
+      this.rejectedRequests = this.fetchRequests.filter(req => req.status === 'rejected').length;
+      
+      console.log('🚨 Stats Updated:', {
+        total: this.totalRequests,
+        pending: this.pendingRequests,
+        approved: this.approvedRequests,
+        rejected: this.rejectedRequests
+      });
     },
   },
 };
