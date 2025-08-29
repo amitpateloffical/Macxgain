@@ -360,8 +360,8 @@ const users = ref([])
 const deposits = ref([])
 const withdrawals = ref([])
 
-// API Base URL
-const API_BASE = 'http://127.0.0.1:8000/api'
+// API Base URL - Dynamic based on current domain
+const API_BASE = `${window.location.origin}/api`
 
 // Computed Properties
 const filteredUsers = computed(() => {

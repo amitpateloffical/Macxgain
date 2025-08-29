@@ -243,7 +243,7 @@ const requestsPerPage = ref(10)
 const processingRequest = ref(null)
 
 // API Base URL
-const API_BASE = 'http://127.0.0.1:8000/api'
+const API_BASE = `${window.location.origin}/api`
 
 // Computed Properties
 const filteredRequests = computed(() => {

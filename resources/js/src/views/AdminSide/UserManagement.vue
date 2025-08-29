@@ -596,7 +596,7 @@ const loading = ref(false)
 const error = ref(null)
 
 // API Base URL
-const API_BASE = 'http://127.0.0.1:8000/api'
+const API_BASE = `${window.location.origin}/api`
 
 // Fetch Users from Backend
 const fetchUsers = async () => {

@@ -311,7 +311,7 @@ export default {
         { label: 'Inactive', value: 'I' },
         { label: 'New', value: 'new' }
       ],
-      apiBaseUrl: process.env.NODE_ENV === 'production' ? '/api' : 'http://127.0.0.1:8000/api',
+      apiBaseUrl: `${window.location.origin}/api`,
       showUserModal: false,
       selectedUser: null
     }
