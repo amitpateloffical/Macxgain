@@ -216,10 +216,13 @@
             </div>
 
             <div v-if="collector.barcode_image" class="barcode-section">
+              <div class="barcode-label">Payment QR/Barcode:</div>
               <img 
                 :src="getImageSrc(collector.barcode_image)" 
                 alt="Payment Barcode" 
                 class="barcode-image"
+                @error="handleImageError"
+                @load="handleImageLoad"
               >
             </div>
 
@@ -491,10 +494,15 @@ export default {
     },
 
     getImageSrc(imagePath) {
+      if (!imagePath) return '';
+      
+      // If it's a base64 data URL, return as is
       if (imagePath.startsWith('data:')) {
         return imagePath;
       }
-      return `/storage/${imagePath}`;
+      
+      // If it's a file path, prepend storage URL
+      return `${window.location.origin}/storage/${imagePath}`;
     },
 
     maskAccountNumber(accountNumber) {
@@ -502,6 +510,23 @@ export default {
       const length = accountNumber.length;
       if (length <= 4) return accountNumber;
       return '*'.repeat(length - 4) + accountNumber.slice(-4);
+    },
+
+    handleImageError(event) {
+      console.error('Image failed to load:', event.target.src);
+      event.target.style.display = 'none';
+      // Show fallback or error message
+      const parent = event.target.parentNode;
+      if (!parent.querySelector('.image-error')) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'image-error';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Image not available';
+        parent.appendChild(errorDiv);
+      }
+    },
+
+    handleImageLoad(event) {
+      console.log('Image loaded successfully:', event.target.src);
     },
 
     navigateTo(path) {
@@ -1010,10 +1035,33 @@ export default {
   border-radius: 8px;
 }
 
+.barcode-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
 .barcode-image {
   max-width: 100%;
-  max-height: 100px;
+  max-height: 120px;
   border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.barcode-image:hover {
+  transform: scale(1.05);
+  border-color: #00ff88;
+}
+
+.image-error {
+  color: #ff4444;
+  font-size: 0.9rem;
+  padding: 10px;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 68, 68, 0.2);
 }
 
 .notes-section {
