@@ -233,16 +233,16 @@
           <span class="app-bar-label">Portfolio</span>
         </div>
 
-        <div class="app-bar-item" @click="scrollToSection('ipo')" :class="{ active: activeSection === 'ipo' }">
+        <div class="app-bar-item" @click="navigateToPage('/MoneyRequest')" :class="{ active: activeSection === 'deposit' }">
           <div class="app-bar-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              <path d="M11 15h2v-3h3v-2h-3V7h-2v3H8v2h3v3zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
             </svg>
           </div>
-          <span class="app-bar-label">IPO</span>
+          <span class="app-bar-label">Deposit</span>
         </div>
 
-        <div class="app-bar-item" @click="scrollToSection('profile')" :class="{ active: activeSection === 'profile' }">
+        <div class="app-bar-item" @click="navigateToPage('/profile')" :class="{ active: activeSection === 'profile' }">
           <div class="app-bar-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -317,6 +317,12 @@ const scrollToSection = (section) => {
       block: 'start' 
     });
   }
+};
+
+// Navigation function for external pages
+const navigateToPage = (path) => {
+  // Use window.location for navigation
+  window.location.href = `http://127.0.0.1:8000${path}`;
 };
 
 // Fetch market movers data
