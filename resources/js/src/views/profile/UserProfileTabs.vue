@@ -42,57 +42,25 @@
     },
     methods: {
       logout() {
-        // Show confirmation dialog
-        this.$bvModal.msgBoxConfirm('Are you sure you want to logout?', {
-          title: 'Confirm Logout',
-          size: 'sm',
-          buttonSize: 'sm',
-          okVariant: 'danger',
-          okTitle: 'Yes, Logout',
-          cancelTitle: 'Cancel',
-          footerClass: 'p-2',
-          hideHeaderClose: false,
-          centered: true
-        })
-        .then(value => {
-          if (value) {
-            // User confirmed logout
-            this.performLogout();
-          }
-        })
-        .catch(err => {
-          // User cancelled or closed modal
-          console.log('Logout cancelled');
-        });
+        // Simple confirmation using native confirm
+        if (confirm('Are you sure you want to logout?')) {
+          this.performLogout();
+        }
       },
 
       performLogout() {
-        // Clear local storage
+        // Use same approach as Header component
+        localStorage.removeItem("userData");
+        localStorage.removeItem("access_token");
         localStorage.removeItem("token");
-        localStorage.removeItem("user");
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("user");
         
         // Clear session storage
         sessionStorage.clear();
         
-        // Redirect to login page
-        this.$router.push("/login");
-        
-        // Show success message
-        this.$toast.success("Logged out successfully!");
-        
-        // Optional: Call logout API
-        this.callLogoutAPI();
-      },
-
-      callLogoutAPI() {
-        // Optional API call to invalidate token on server
-        if (window.axios) {
-          window.axios.post("/api/logout")
-            .catch(error => {
-              console.log('Logout API call failed:', error);
-            });
-        }
+        // Redirect using router
+        this.$router.push({ name: "login" });
       }
     }
   };

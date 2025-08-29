@@ -130,7 +130,7 @@
               </b-col>
             </b-row>
 
-            <div class="mt-4 d-flex flex-wrap gap-2">
+            <div class="mt-4">
               <b-button
                 type="submit"
                 variant="primary"
@@ -144,16 +144,6 @@
                 class="rounded-pill px-4"
               >
                 <i class="bi bi-x-circle me-1"></i> Cancel
-              </b-button>
-              <b-button
-                @click="logout"
-                variant="danger"
-                class="logout-btn rounded-pill px-4"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="me-1">
-                  <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-                </svg>
-                Logout
               </b-button>
             </div>
           </b-form>
