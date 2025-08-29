@@ -5,7 +5,24 @@
         {{ successMessage }}
       </div>
       <div class="list__title">
-        <h4>Withdrawal Requests</h4>
+        <div class="title-section">
+          <h4>Withdrawal Requests</h4>
+          <!-- Balance Display -->
+          <div v-if="!isAdmin" class="balance-display">
+            <div class="balance-card-small">
+              <div class="balance-header-small">
+                <i class="bi bi-wallet2 me-1"></i>
+                <span>Available Balance</span>
+              </div>
+              <div class="balance-amount-small">
+                ₹{{ formatBalance(userBalance) }}
+              </div>
+              <button @click="fetchUserBalance" class="refresh-btn-small" :disabled="balanceLoading">
+                <i class="bi bi-arrow-clockwise" :class="{ 'spinning': balanceLoading }"></i>
+              </button>
+            </div>
+          </div>
+        </div>
         <b-button
           v-if="!isAdmin"
           variant="primary"
@@ -357,6 +374,8 @@ export default {
       errors: {},
       showfilter: false,
       fetchRequests: [],
+      userBalance: 0,
+      balanceLoading: false,
       fields: [
         { key: "amount", label: "Amount", sortable: true },
         { key: "description", label: "Description" },
@@ -446,6 +465,7 @@ export default {
     this.fetchUserInfo();
     this.fetchRequestss();
     this.fetchUsers();
+    this.fetchUserBalance();
   },
   methods: {
     fetchUserInfo() {
@@ -459,6 +479,43 @@ export default {
         .catch((error) => {
           console.error(error);
         });
+    },
+    
+    async fetchUserBalance() {
+      this.balanceLoading = true;
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.id) {
+          const res = await axios.post("/total_b", {
+            id: userData.id
+          });
+          
+          if (res.data && res.data.total_balance !== undefined) {
+            this.userBalance = res.data.total_balance;
+            
+            // Update localStorage with latest balance
+            userData.total_balance = res.data.total_balance;
+            localStorage.setItem("userData", JSON.stringify(userData));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        // Try to get balance from localStorage as fallback
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.total_balance !== undefined) {
+          this.userBalance = userData.total_balance;
+        }
+      } finally {
+        this.balanceLoading = false;
+      }
+    },
+    
+    formatBalance(balance) {
+      if (balance === null || balance === undefined) return '0.00';
+      return parseFloat(balance).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     },
     getStatusVariant(status) {
       switch (status) {
@@ -1268,6 +1325,124 @@ export default {
   
   .staticTable td {
     color: black !important;
+  }
+}
+
+/* Balance Display Styles */
+.title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.balance-display {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.balance-card-small {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.balance-card-small:hover {
+  border-color: rgba(0, 255, 128, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2);
+  transform: translateY(-1px);
+}
+
+.balance-header-small {
+  display: flex;
+  align-items: center;
+  color: #00ff80;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.balance-amount-small {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ff80;
+  text-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
+  flex: 1;
+}
+
+.refresh-btn-small {
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  color: #00ff80;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.refresh-btn-small:hover:not(:disabled) {
+  background: rgba(0, 255, 128, 0.2);
+  border-color: rgba(0, 255, 128, 0.5);
+}
+
+.refresh-btn-small:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Balance Display */
+@media (max-width: 768px) {
+  .title-section {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .balance-display {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .balance-card-small {
+    min-width: 180px;
+    padding: 10px 14px;
+  }
+  
+  .balance-amount-small {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .balance-card-small {
+    min-width: 160px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .balance-header-small {
+    font-size: 11px;
+  }
+  
+  .balance-amount-small {
+    font-size: 14px;
   }
 }
 </style>

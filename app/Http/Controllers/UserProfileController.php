@@ -34,6 +34,9 @@ class UserProfileController extends Controller
                     'bank_name'=>$user->bank_name,
                     'account_no'=>$user->account_no,
                     'ifsc_code'=>$user->ifsc_code,
+                    'aadhar_number'=>$user->aadhar_number,
+                    'pan_number'=>$user->pan_number,
+                    'address'=>$user->address,
                 ]
             ]);
         }
@@ -58,6 +61,9 @@ class UserProfileController extends Controller
         'bank_name'    => 'required|string|max:255',
         'account_no' => 'required|integer',
         'ifsc_code'    => 'required|string|max:20',
+        'aadhar_number'=> 'nullable|string|size:12',
+        'pan_number'   => 'nullable|string|size:10',
+        'address'      => 'nullable|string|max:500',
     ]);
 
     if ($validator->fails()) {
@@ -70,6 +76,9 @@ class UserProfileController extends Controller
     $user->bank_name = $request->bank_name;
     $user->account_no = $request->account_no;
     $user->ifsc_code = $request->ifsc_code;
+    $user->aadhar_number = $request->aadhar_number;
+    $user->pan_number = $request->pan_number;
+    $user->address = $request->address;
 
     if ($request->hasFile('profile_image')) {
         if ($user->profile_image) {

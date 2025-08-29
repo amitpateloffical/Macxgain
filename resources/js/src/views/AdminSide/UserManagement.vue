@@ -533,6 +533,32 @@
                   <span class="info-value">{{ viewingUser.ifsc_code || 'Not provided' }}</span>
                 </div>
               </div>
+              
+              <!-- KYC Details Section -->
+              <div class="kyc-details-section">
+                <h4 class="section-title">📋 KYC Details</h4>
+                
+                <div class="info-row">
+                  <span class="info-label">Aadhar Number:</span>
+                  <span class="info-value kyc-value">
+                    {{ viewingUser.aadhar_number ? formatAadhar(viewingUser.aadhar_number) : 'Not provided' }}
+                  </span>
+                </div>
+                
+                <div class="info-row">
+                  <span class="info-label">PAN Card Number:</span>
+                  <span class="info-value kyc-value">
+                    {{ viewingUser.pan_number || 'Not provided' }}
+                  </span>
+                </div>
+                
+                <div class="info-row address-row">
+                  <span class="info-label">Address:</span>
+                  <span class="info-value address-value">
+                    {{ viewingUser.address || 'Not provided' }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -1176,6 +1202,12 @@ const formatDate = (dateString) => {
     month: 'short',
     year: 'numeric'
   })
+}
+
+const formatAadhar = (aadharNumber) => {
+  if (!aadharNumber) return 'Not provided'
+  // Format as XXXX XXXX XXXX for better readability
+  return aadharNumber.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3')
 }
 
 // Map frontend status to database status
@@ -2531,6 +2563,33 @@ const handleClickOutside = (event, modalRef) => {
   border: 1px solid rgba(0, 255, 128, 0.2);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 255, 128, 0.1);
+}
+
+.kyc-details-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(255, 165, 0, 0.05) 0%, rgba(255, 140, 0, 0.05) 100%);
+  border: 1px solid rgba(255, 165, 0, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(255, 165, 0, 0.1);
+}
+
+.kyc-value {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #ffa500 !important;
+}
+
+.address-row {
+  align-items: flex-start !important;
+}
+
+.address-value {
+  text-align: right;
+  max-width: 300px;
+  word-wrap: break-word;
+  line-height: 1.4;
 }
 
 .section-title {

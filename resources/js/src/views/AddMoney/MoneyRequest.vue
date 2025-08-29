@@ -29,6 +29,20 @@
 
     <!-- Stats Cards -->
     <div class="stats-grid">
+      <!-- Balance Card (Only for non-admin users) -->
+      <div v-if="!isAdmin" class="stat-card balance-stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-number balance-amount">₹{{ formatBalance(userBalance) }}</div>
+          <div class="stat-label">
+            Available Balance
+            <button @click="fetchUserBalance" class="refresh-btn-mini" :disabled="balanceLoading">
+              <i class="fa-solid fa-rotate-right" :class="{ 'spinning': balanceLoading }"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <div class="stat-card">
         <div class="stat-icon">📊</div>
         <div class="stat-content">
@@ -454,6 +468,8 @@ export default {
       errors: {},
       showfilter: false,
       fetchRequests: [],
+      userBalance: 0,
+      balanceLoading: false,
       fields: [
         { key: "transaction_id", label: "Transaction ID", sortable: true },
         { key: "amount", label: "Amount", sortable: true },
@@ -553,6 +569,7 @@ export default {
     this.fetchUserInfo();
     this.fetchRequestss();
     this.fetchUsers();
+    this.fetchUserBalance();
     
     // Debug: Check initial state
     console.log('🚨 Component mounted, initial stats:', {
@@ -584,6 +601,44 @@ export default {
           console.error(error);
         });
     },
+    
+    async fetchUserBalance() {
+      this.balanceLoading = true;
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.id) {
+          const res = await axios.post("/total_b", {
+            id: userData.id
+          });
+          
+          if (res.data && res.data.total_balance !== undefined) {
+            this.userBalance = res.data.total_balance;
+            
+            // Update localStorage with latest balance
+            userData.total_balance = res.data.total_balance;
+            localStorage.setItem("userData", JSON.stringify(userData));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        // Try to get balance from localStorage as fallback
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.total_balance !== undefined) {
+          this.userBalance = userData.total_balance;
+        }
+      } finally {
+        this.balanceLoading = false;
+      }
+    },
+    
+    formatBalance(balance) {
+      if (balance === null || balance === undefined) return '0.00';
+      return parseFloat(balance).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+    
     getStatusVariant(status) {
       switch (status) {
         case "approved":
@@ -1297,6 +1352,70 @@ export default {
 
 .form-control::placeholder {
   color: #9ca3af;
+}
+
+/* Balance Stat Card Styles */
+.balance-stat-card {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05)) !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ff80, #00cc66);
+}
+
+.balance-stat-card:hover {
+  border-color: rgba(0, 255, 128, 0.5) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2) !important;
+  transform: translateY(-3px) !important;
+}
+
+.balance-amount {
+  color: #00ff80 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+  font-weight: 700 !important;
+}
+
+.refresh-btn-mini {
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  color: #00ff80;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.refresh-btn-mini:hover:not(:disabled) {
+  background: rgba(0, 255, 128, 0.2);
+  border-color: rgba(0, 255, 128, 0.5);
+  transform: scale(1.1);
+}
+
+.refresh-btn-mini:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Responsive Design */

@@ -36,6 +36,23 @@
             <p class="text-muted">
               <strong>Contact:</strong> {{ options.phone }}
             </p>
+            
+            <!-- Balance Display -->
+            <div class="balance-card mt-3">
+              <div class="balance-header">
+                <i class="bi bi-wallet2 me-2"></i>
+                <span>Current Balance</span>
+              </div>
+              <div class="balance-amount">
+                ₹{{ formatBalance(userBalance) }}
+              </div>
+              <div class="balance-refresh">
+                <button @click="fetchUserBalance" class="refresh-btn" :disabled="balanceLoading">
+                  <i class="bi bi-arrow-clockwise" :class="{ 'spinning': balanceLoading }"></i>
+                  {{ balanceLoading ? 'Updating...' : 'Refresh' }}
+                </button>
+              </div>
+            </div>
           </div>
         </b-col>
 
@@ -51,6 +68,7 @@
                     v-model="options.name"
                     @input="RemoveError('name')"
                     :state="hasErrors('name') ? false : null"
+                    :readonly="!isEditMode"
                     placeholder="Enter Name"
                     autocomplete="off"
                   />
@@ -73,6 +91,7 @@
                     v-model="options.phone"
                     @input="RemoveError('phone')"
                     :state="hasErrors('phone') ? false : null"
+                    :readonly="!isEditMode"
                     placeholder="Enter Mobile Number"
                     autocomplete="off"
                   />
@@ -88,6 +107,7 @@
                     v-model="options.bank_name"
                     @input="RemoveError('bank_name')"
                     :state="hasErrors('bank_name') ? false : null"
+                    :readonly="!isEditMode"
                     placeholder="Enter Bank Name"
                     autocomplete="off"
                   />
@@ -104,6 +124,7 @@
                     v-model="options.account_no"
                     @input="RemoveError('account_no')"
                     :state="hasErrors('account_no') ? false : null"
+                    :readonly="!isEditMode"
                     placeholder="Enter Account Number"
                     autocomplete="off"
                   />
@@ -120,6 +141,7 @@
                     v-model="options.ifsc_code"
                     @input="RemoveError('ifsc_code')"
                     :state="hasErrors('ifsc_code') ? false : null"
+                    :readonly="!isEditMode"
                     placeholder="Enter IFSC Code"
                     autocomplete="off"
                   />
@@ -130,21 +152,98 @@
               </b-col>
             </b-row>
 
+            <!-- Additional Fields Row -->
+            <b-row>
+              <b-col md="6" class="mb-3">
+                <b-form-group label="Aadhar Number" label-class="fw-semibold">
+                  <b-form-input
+                    id="aadhar_number"
+                    v-model="options.aadhar_number"
+                    @input="RemoveError('aadhar_number')"
+                    :state="hasErrors('aadhar_number') ? false : null"
+                    :readonly="!isEditMode"
+                    placeholder="Enter Aadhar Number"
+                    autocomplete="off"
+                    maxlength="12"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('aadhar_number')">
+                    {{ getErrors("aadhar_number") }}
+                  </div>
+                </b-form-group>
+              </b-col>
+
+              <b-col md="6" class="mb-3">
+                <b-form-group label="PAN Card Number" label-class="fw-semibold">
+                  <b-form-input
+                    id="pan_number"
+                    v-model="options.pan_number"
+                    @input="RemoveError('pan_number')"
+                    :state="hasErrors('pan_number') ? false : null"
+                    :readonly="!isEditMode"
+                    placeholder="Enter PAN Number"
+                    autocomplete="off"
+                    maxlength="10"
+                    style="text-transform: uppercase"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('pan_number')">
+                    {{ getErrors("pan_number") }}
+                  </div>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
+            <!-- Address Row -->
+            <b-row>
+              <b-col md="12" class="mb-3">
+                <b-form-group label="Address" label-class="fw-semibold">
+                  <b-form-textarea
+                    id="address"
+                    v-model="options.address"
+                    @input="RemoveError('address')"
+                    :state="hasErrors('address') ? false : null"
+                    :readonly="!isEditMode"
+                    placeholder="Enter Complete Address"
+                    rows="3"
+                    autocomplete="off"
+                  />
+                  <div class="text-danger small" v-if="hasErrors('address')">
+                    {{ getErrors("address") }}
+                  </div>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
             <div class="mt-4">
-              <b-button
-                type="submit"
-                variant="primary"
-                class="me-2 rounded-pill px-4"
-              >
-                <i class="bi bi-check-circle me-1"></i> Save
-              </b-button>
-              <b-button
-                type="reset"
-                variant="secondary"
-                class="rounded-pill px-4"
-              >
-                <i class="bi bi-x-circle me-1"></i> Cancel
-              </b-button>
+              <!-- Edit Mode Buttons -->
+              <template v-if="isEditMode">
+                <b-button
+                  type="submit"
+                  variant="success"
+                  class="me-2 rounded-pill px-4"
+                >
+                  <i class="bi bi-check-circle me-1"></i> Save Changes
+                </b-button>
+                <b-button
+                  type="button"
+                  variant="secondary"
+                  class="rounded-pill px-4"
+                  @click="toggleEditMode"
+                >
+                  <i class="bi bi-x-circle me-1"></i> Cancel
+                </b-button>
+              </template>
+              
+              <!-- View Mode Button -->
+              <template v-else>
+                <b-button
+                  type="button"
+                  variant="primary"
+                  class="me-2 rounded-pill px-4"
+                  @click="toggleEditMode"
+                >
+                  <i class="bi bi-pencil me-1"></i> Edit Profile
+                </b-button>
+              </template>
             </div>
           </b-form>
         </b-col>
@@ -163,14 +262,30 @@ export default {
   },
   data() {
     return {
-      options: { name: "", email: "", phone: "", role: "", profile_image: "" },
+      options: { 
+        name: "", 
+        email: "", 
+        phone: "", 
+        role: "", 
+        profile_image: "",
+        bank_name: "",
+        account_no: "",
+        ifsc_code: "",
+        aadhar_number: "",
+        pan_number: "",
+        address: ""
+      },
       selectedFile: null,
       imagePreview: null,
       errors: {},
+      userBalance: 0,
+      balanceLoading: false,
+      isEditMode: false,
     };
   },
   created() {
     this.getUserProfile();
+    this.fetchUserBalance();
   },
   methods: {
     RemoveError(field) {
@@ -186,6 +301,52 @@ export default {
       axios.get(`/userprofile`).then((res) => {
         this.options = res.data.data;
       });
+    },
+    
+    async fetchUserBalance() {
+      this.balanceLoading = true;
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.id) {
+          const res = await axios.post("/total_b", {
+            id: userData.id
+          });
+          
+          if (res.data && res.data.total_balance !== undefined) {
+            this.userBalance = res.data.total_balance;
+            
+            // Update localStorage with latest balance
+            userData.total_balance = res.data.total_balance;
+            localStorage.setItem("userData", JSON.stringify(userData));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        // Try to get balance from localStorage as fallback
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        if (userData && userData.total_balance !== undefined) {
+          this.userBalance = userData.total_balance;
+        }
+      } finally {
+        this.balanceLoading = false;
+      }
+    },
+    
+    formatBalance(balance) {
+      if (balance === null || balance === undefined) return '0.00';
+      return parseFloat(balance).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+    
+    toggleEditMode() {
+      this.isEditMode = !this.isEditMode;
+      if (!this.isEditMode) {
+        // If switching to view mode, reset any unsaved changes
+        this.getUserProfile();
+        this.errors = {};
+      }
     },
     onFileChange(e) {
       this.selectedFile = e.target.files[0];
@@ -206,6 +367,9 @@ export default {
       formData.append("bank_name", this.options.bank_name || "");
       formData.append("account_no", this.options.account_no || "");
       formData.append("ifsc_code", this.options.ifsc_code || "");
+      formData.append("aadhar_number", this.options.aadhar_number || "");
+      formData.append("pan_number", this.options.pan_number || "");
+      formData.append("address", this.options.address || "");
 
       if (this.selectedFile) {
         formData.append("profile_image", this.selectedFile);
@@ -218,6 +382,7 @@ export default {
           this.options = res.data.data;
           this.selectedFile = null;
           this.imagePreview = null;
+          this.isEditMode = false; // Switch back to view mode
           window.dispatchEvent(new Event("profileUpdated"));
 
           Swal.fire({
@@ -227,11 +392,7 @@ export default {
             showConfirmButton: false,
           });
 
-          if (res.data.data.is_admin == 0) {
-            this.$router.push("/user/dashboard");
-          } else {
-            this.$router.push("/admin/dashboard");
-          }
+          // Don't redirect, just stay on profile page
         })
         .catch((err) => {
           if (err.response?.data.code === 422) {
@@ -609,5 +770,159 @@ export default {
     color: black !important;
     border: 1px solid #ccc !important;
   }
+}
+
+/* Balance Card Styles */
+.balance-card {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.balance-card:hover {
+  border-color: rgba(0, 255, 128, 0.5);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+  transform: translateY(-2px);
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ff80;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.balance-amount {
+  font-size: 28px;
+  font-weight: bold;
+  color: #00ff80;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+}
+
+.balance-refresh {
+  margin-top: 10px;
+}
+
+.refresh-btn {
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  color: #00ff80;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 128, 0.2);
+  border-color: rgba(0, 255, 128, 0.5);
+  transform: translateY(-1px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Edit Mode Styles */
+.form-control[readonly] {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+.form-control[readonly]:focus {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+
+/* Edit Button Styles */
+.btn-primary i.bi-pencil {
+  transition: transform 0.3s ease;
+}
+
+.btn-primary:hover i.bi-pencil {
+  transform: rotate(15deg);
+}
+
+/* Save Button Animation */
+.btn-success {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+/* Form Field Focus in Edit Mode */
+.form-control:not([readonly]):focus {
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Textarea Styles */
+.form-control[readonly].form-control {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  resize: none;
+}
+
+textarea.form-control:not([readonly]):focus {
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  resize: vertical;
+}
+
+/* Special Input Styles */
+input[maxlength="12"], input[maxlength="10"] {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* PAN Number uppercase styling */
+input[style*="text-transform: uppercase"] {
+  font-weight: 600;
+}
+
+/* Aadhar Number styling */
+input[maxlength="12"]:not([readonly]) {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Address textarea styling */
+textarea.form-control {
+  min-height: 80px;
+  line-height: 1.5;
 }
 </style>

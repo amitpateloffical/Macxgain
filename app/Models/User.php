@@ -30,7 +30,10 @@ class User extends Authenticatable
         'last_login_at',
         'bank_name',
         'account_no',
-        'ifsc_code'
+        'ifsc_code',
+        'aadhar_number',
+        'pan_number',
+        'address'
     ];
 
     /**
