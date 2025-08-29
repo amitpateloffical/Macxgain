@@ -244,11 +244,21 @@ export default {
 </script>
 
 <style scoped>
+/* Modern Profile Card Styles */
+.main-content {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
 .profile-card {
-  background: linear-gradient(145deg, #111827, #0d0d1a);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .profile-avatar {
@@ -260,6 +270,7 @@ export default {
   box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3);
   transition: transform 0.3s ease;
 }
+
 .profile-avatar:hover {
   transform: scale(1.05);
 }
@@ -269,21 +280,334 @@ export default {
   color: #9ca3af;
 }
 
-label {
-  color: #a5f3fc;
+/* Enhanced Form Styling */
+.form-label, label {
+  color: #e5e7eb !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
 }
 
-input {
-  background-color: #1f2937 !important;
+.form-control, input {
+  background-color: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
-  border: 1px solid #374151 !important;
-}
-input:focus {
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
 }
 
-button {
-  font-weight: 500;
+.form-control:focus, input:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1) !important;
+  color: white !important;
+}
+
+.form-control[readonly] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  opacity: 0.7;
+}
+
+/* Modern Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  color: #0d0d1a !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  color: #0d0d1a !important;
+  font-weight: 600 !important;
+}
+
+/* Profile Info Section */
+.text-primary {
+  color: #00ff80 !important;
+}
+
+.text-muted {
+  color: #9ca3af !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+/* Error Messages */
+.text-danger {
+  color: #ff6b6b !important;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Enhanced Responsive Design */
+
+/* Large Tablets and Small Desktops */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 18px;
+  }
+  
+  .profile-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+  
+  .profile-card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+  
+  /* Stack profile layout vertically */
+  .profile-card .row {
+    margin: 0 !important;
+  }
+  
+  .profile-card .col-md-4 {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding-right: 0 !important;
+    padding-bottom: 20px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .profile-card .col-md-8 {
+    padding-left: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Adjust profile avatar */
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  
+  /* Form adjustments */
+  .form-control, input {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+  }
+  
+  /* Button adjustments */
+  .btn-primary, .btn-secondary, .btn-success {
+    width: 100% !important;
+    margin-bottom: 10px !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Form columns stack */
+  .profile-card .col-md-6 {
+    margin-bottom: 20px !important;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 10px;
+  }
+  
+  .profile-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+  
+  /* Smaller profile avatar */
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-width: 3px;
+  }
+  
+  /* Compact form styling */
+  .form-control, input {
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 6px !important;
+  }
+  
+  .form-label, label {
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+  }
+  
+  /* Compact buttons */
+  .btn-primary, .btn-secondary, .btn-success {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Profile info text */
+  .profile-card h5 {
+    font-size: 1.25rem !important;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.5rem !important;
+  }
+  
+  /* Spacing adjustments */
+  .profile-card .col-md-6 {
+    margin-bottom: 15px !important;
+  }
+  
+  .profile-card .col-md-4 {
+    padding-bottom: 15px !important;
+    margin-bottom: 15px !important;
+  }
+}
+
+/* Extra Small Phones */
+@media (max-width: 360px) {
+  .main-content {
+    padding: 8px;
+  }
+  
+  .profile-card {
+    padding: 0.75rem;
+  }
+  
+  /* Ultra compact avatar */
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+  }
+  
+  /* Ultra compact forms */
+  .form-control, input {
+    font-size: 15px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .form-label, label {
+    font-size: 13px !important;
+  }
+  
+  /* Ultra compact buttons */
+  .btn-primary, .btn-secondary, .btn-success {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Ultra compact text */
+  .profile-card h5 {
+    font-size: 1.1rem !important;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.3rem !important;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .profile-card .col-md-4 {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-bottom: none !important;
+    padding-right: 20px !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .profile-card .col-md-8 {
+    padding-left: 20px !important;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-success {
+    width: auto !important;
+    display: inline-block !important;
+    margin-right: 10px !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn-primary, .btn-secondary, .btn-success {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .form-control, input {
+    min-height: 44px !important;
+  }
+  
+  /* Enhanced touch targets */
+  .profile-avatar {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .profile-card h4, .profile-card h5 {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .main-content {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .profile-card {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-success {
+    display: none !important;
+  }
+  
+  .form-control, input {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
 }
 </style>

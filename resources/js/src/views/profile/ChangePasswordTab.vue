@@ -159,58 +159,302 @@ export default {
 };
 </script>
 <style scoped>
+/* Modern Change Password Styles */
+.main-content {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
 .profile-card {
-  background: linear-gradient(145deg, #111827, #0d0d1a);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.05);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-label {
-  color: #a5f3fc;
-  font-weight: 500;
+.profile-card h4 {
+  color: #00ff80;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+/* Enhanced Form Styling */
+.form-label, label {
+  color: #e5e7eb !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
 }
 
 .input-group-merge {
-  border-radius: 0.5rem;
+  border-radius: 8px;
   overflow: hidden;
 }
 
-input.form-control {
-  background-color: #1f2937 !important;
+.form-control, input.form-control {
+  background-color: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
-  border: 1px solid #374151 !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
 }
-input.form-control:focus {
+
+.form-control:focus, input.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
   border-color: #00ff80 !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25);
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1) !important;
+  color: white !important;
+}
+
+.input-group-append {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
 }
 
 .toggle-password-btn {
   border: none;
-  background: transparent;
+  background: transparent !important;
   cursor: pointer;
-  color: #a5f3fc;
-  font-size: 1.2rem;
-  padding: 0 0.75rem;
-}
-.toggle-password-btn:hover {
-  color: #00ff80;
+  color: #9ca3af;
+  font-size: 1.1rem;
+  padding: 0 12px;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
-button.btn-success {
-  background-color: #00ff80 !important;
-  border-color: #00ff80 !important;
-  color: #0d0d1a;
-  padding: 0.6rem 1.25rem;
-  font-weight: 600;
-  border-radius: 0.5rem;
+.toggle-password-btn:hover {
+  color: #00ff80;
+  background: rgba(0, 255, 128, 0.1) !important;
 }
-button.btn-success:hover {
-  background-color: #00cc66 !important;
-  border-color: #00cc66 !important;
+
+/* Modern Buttons */
+.btn-success, button.btn-success {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  color: #0d0d1a !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-success:hover, button.btn-success:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3) !important;
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border-color: transparent !important;
+}
+
+/* Error Messages */
+.text-danger {
+  color: #ff6b6b !important;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Enhanced Responsive Design */
+
+/* Large Tablets and Small Desktops */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 18px;
+  }
+  
+  .profile-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+  
+  .profile-card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Form adjustments */
+  .form-control, input.form-control {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+  }
+  
+  .toggle-password-btn {
+    padding: 0 16px;
+    font-size: 1.2rem;
+  }
+  
+  /* Button adjustments */
+  .btn-success, button.btn-success {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Form groups spacing */
+  .form-group {
+    margin-bottom: 1.5rem !important;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 10px;
+  }
+  
+  .profile-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Compact form styling */
+  .form-control, input.form-control {
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 6px !important;
+  }
+  
+  .form-label, label {
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .input-group-merge {
+    border-radius: 6px;
+  }
+  
+  .toggle-password-btn {
+    padding: 0 12px;
+    font-size: 1.1rem;
+  }
+  
+  /* Compact buttons */
+  .btn-success, button.btn-success {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Spacing adjustments */
+  .form-group {
+    margin-bottom: 1.25rem !important;
+  }
+}
+
+/* Extra Small Phones */
+@media (max-width: 360px) {
+  .main-content {
+    padding: 8px;
+  }
+  
+  .profile-card {
+    padding: 0.75rem;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.1rem;
+  }
+  
+  /* Ultra compact forms */
+  .form-control, input.form-control {
+    font-size: 15px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .form-label, label {
+    font-size: 13px !important;
+  }
+  
+  .toggle-password-btn {
+    padding: 0 10px;
+    font-size: 1rem;
+  }
+  
+  /* Ultra compact buttons */
+  .btn-success, button.btn-success {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Ultra compact spacing */
+  .form-group {
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn-success, button.btn-success {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .form-control, input.form-control {
+    min-height: 44px !important;
+  }
+  
+  .toggle-password-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .profile-card h4 {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .main-content {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .profile-card {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
+  
+  .btn-success, button.btn-success {
+    display: none !important;
+  }
+  
+  .form-control, input.form-control {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .toggle-password-btn {
+    display: none !important;
+  }
 }
 </style>
