@@ -86,7 +86,7 @@
             </div>
             
             <div v-else class="stocks-list">
-              <div v-for="(stock, i) in allStocks.top_gainers?.slice(0, 5)" :key="i" class="stock-item">
+              <div v-for="(stock, i) in allStocks.top_gainers?.slice(0, 50)" :key="i" class="stock-item">
                 <div class="stock-info">
                   <span class="stock-name">{{ stock.company_name }}</span>
                   <span class="stock-symbol">{{ stock.symbol }}</span>
@@ -122,7 +122,7 @@
             </div>
             
             <div v-else class="stocks-list">
-              <div v-for="(stock, i) in allStocks.top_losers?.slice(0, 5)" :key="i" class="stock-item">
+              <div v-for="(stock, i) in allStocks.top_losers?.slice(0, 50)" :key="i" class="stock-item">
                 <div class="stock-info">
                   <span class="stock-name">{{ stock.company_name }}</span>
                   <span class="stock-symbol">{{ stock.symbol }}</span>
@@ -270,14 +270,49 @@ const fetchMarketMovers = async () => {
         { company_name: "TCS", symbol: "TCS", price: 3890.20, percent_change: 2.78, net_change: 105.30 },
         { company_name: "Infosys", symbol: "INFY", price: 1678.90, percent_change: 2.15, net_change: 35.40 },
         { company_name: "HDFC Bank", symbol: "HDFCBANK", price: 1534.60, percent_change: 1.89, net_change: 28.45 },
-        { company_name: "ICICI Bank", symbol: "ICICIBANK", price: 987.30, percent_change: 1.67, net_change: 16.20 }
+        { company_name: "ICICI Bank", symbol: "ICICIBANK", price: 987.30, percent_change: 1.67, net_change: 16.20 },
+        { company_name: "Wipro", symbol: "WIPRO", price: 445.80, percent_change: 2.34, net_change: 10.20 },
+        { company_name: "HCL Tech", symbol: "HCLTECH", price: 1245.60, percent_change: 2.12, net_change: 25.80 },
+        { company_name: "Tech Mahindra", symbol: "TECHM", price: 1567.40, percent_change: 1.98, net_change: 30.50 },
+        { company_name: "L&T", symbol: "LT", price: 3456.20, percent_change: 1.87, net_change: 63.40 },
+        { company_name: "Bharti Airtel", symbol: "BHARTIARTL", price: 1234.50, percent_change: 1.76, net_change: 21.30 },
+        { company_name: "SBI", symbol: "SBIN", price: 789.60, percent_change: 1.65, net_change: 12.80 },
+        { company_name: "Axis Bank", symbol: "AXISBANK", price: 1098.40, percent_change: 1.54, net_change: 16.70 },
+        { company_name: "Kotak Bank", symbol: "KOTAKBANK", price: 1876.30, percent_change: 1.43, net_change: 26.40 },
+        { company_name: "ITC", symbol: "ITC", price: 456.70, percent_change: 1.32, net_change: 5.90 },
+        { company_name: "Hindustan Unilever", symbol: "HINDUNILVR", price: 2345.80, percent_change: 1.21, net_change: 28.10 },
+        { company_name: "Nestle India", symbol: "NESTLEIND", price: 23456.90, percent_change: 1.10, net_change: 255.20 },
+        { company_name: "HDFC Life", symbol: "HDFCLIFE", price: 678.50, percent_change: 0.98, net_change: 6.60 },
+        { company_name: "SBI Life", symbol: "SBILIFE", price: 1432.70, percent_change: 0.87, net_change: 12.30 },
+        { company_name: "ICICI Prudential", symbol: "ICICIPRULI", price: 567.80, percent_change: 0.76, net_change: 4.30 },
+        { company_name: "Bajaj Auto", symbol: "BAJAJ-AUTO", price: 9876.40, percent_change: 0.65, net_change: 63.70 },
+        { company_name: "Hero MotoCorp", symbol: "HEROMOTOCO", price: 4567.20, percent_change: 0.54, net_change: 24.50 },
+        { company_name: "Mahindra & Mahindra", symbol: "M&M", price: 2890.60, percent_change: 0.43, net_change: 12.30 },
+        { company_name: "Tata Motors", symbol: "TATAMOTORS", price: 987.40, percent_change: 0.32, net_change: 3.10 },
+        { company_name: "Eicher Motors", symbol: "EICHERMOT", price: 4321.80, percent_change: 0.21, net_change: 9.00 },
+        { company_name: "TVS Motor", symbol: "TVSMOTOR", price: 2134.50, percent_change: 0.15, net_change: 3.20 }
       ],
       top_losers: [
         { company_name: "Adani Enterprises", symbol: "ADANIENT", price: 2234.50, percent_change: -2.45, net_change: -56.10 },
         { company_name: "Bajaj Finance", symbol: "BAJFINANCE", price: 6789.40, percent_change: -1.98, net_change: -137.20 },
         { company_name: "Asian Paints", symbol: "ASIANPAINT", price: 3456.80, percent_change: -1.76, net_change: -61.90 },
         { company_name: "Maruti Suzuki", symbol: "MARUTI", price: 9876.50, percent_change: -1.45, net_change: -145.30 },
-        { company_name: "Titan Company", symbol: "TITAN", price: 2987.60, percent_change: -1.23, net_change: -37.20 }
+        { company_name: "Titan Company", symbol: "TITAN", price: 2987.60, percent_change: -1.23, net_change: -37.20 },
+        { company_name: "UPL", symbol: "UPL", price: 567.80, percent_change: -2.10, net_change: -12.20 },
+        { company_name: "JSW Steel", symbol: "JSWSTEEL", price: 890.40, percent_change: -1.87, net_change: -16.90 },
+        { company_name: "Tata Steel", symbol: "TATASTEEL", price: 1234.60, percent_change: -1.65, net_change: -20.70 },
+        { company_name: "Hindalco", symbol: "HINDALCO", price: 456.30, percent_change: -1.43, net_change: -6.60 },
+        { company_name: "Coal India", symbol: "COALINDIA", price: 345.70, percent_change: -1.21, net_change: -4.20 },
+        { company_name: "NTPC", symbol: "NTPC", price: 234.80, percent_change: -0.98, net_change: -2.30 },
+        { company_name: "Power Grid", symbol: "POWERGRID", price: 267.50, percent_change: -0.87, net_change: -2.30 },
+        { company_name: "ONGC", symbol: "ONGC", price: 189.60, percent_change: -0.76, net_change: -1.40 },
+        { company_name: "IOC", symbol: "IOC", price: 123.40, percent_change: -0.65, net_change: -0.80 },
+        { company_name: "BPCL", symbol: "BPCL", price: 456.70, percent_change: -0.54, net_change: -2.50 },
+        { company_name: "Grasim", symbol: "GRASIM", price: 1876.30, percent_change: -0.43, net_change: -8.10 },
+        { company_name: "UltraTech Cement", symbol: "ULTRACEMCO", price: 8765.40, percent_change: -0.32, net_change: -28.20 },
+        { company_name: "Shree Cement", symbol: "SHREECEM", price: 23456.80, percent_change: -0.21, net_change: -49.60 },
+        { company_name: "ACC", symbol: "ACC", price: 2134.50, percent_change: -0.15, net_change: -3.20 },
+        { company_name: "Ambuja Cements", symbol: "AMBUJACEM", price: 567.80, percent_change: -0.12, net_change: -0.70 }
       ]
     };
     updateLastUpdated();
@@ -593,6 +628,27 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.stocks-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stocks-list::-webkit-scrollbar-track {
+  background: rgba(0, 255, 128, 0.1);
+  border-radius: 3px;
+}
+
+.stocks-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 128, 0.3);
+  border-radius: 3px;
+}
+
+.stocks-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 128, 0.5);
 }
 
 .stock-item {
