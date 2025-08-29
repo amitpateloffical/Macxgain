@@ -37,6 +37,15 @@
         <span class="app-bar-label">Deposit</span>
       </div>
 
+      <div class="app-bar-item" @click="navigateToPage('/Withdrawal/Request')" :class="{ active: isActive('/Withdrawal/Request') }">
+        <div class="app-bar-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
+          </svg>
+        </div>
+        <span class="app-bar-label">Withdraw</span>
+      </div>
+
       <div class="app-bar-item" @click="navigateToPage('/profile')" :class="{ active: isActive('/profile') }">
         <div class="app-bar-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -95,20 +104,22 @@ const navigateToPage = (path) => {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 15px;
 }
 
 .app-bar-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 12px;
-  min-width: 60px;
+  min-width: 50px;
+  flex: 1;
+  max-width: 80px;
 }
 
 .app-bar-item:hover {
@@ -133,11 +144,14 @@ const navigateToPage = (path) => {
 }
 
 .app-bar-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   color: #9ca3af;
   transition: color 0.3s ease;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-bar-item.active .app-bar-label {

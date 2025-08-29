@@ -39,6 +39,7 @@ const shouldShowAppBar = computed(() => {
     '/markets', 
     '/user/portfolio',
     '/MoneyRequest',
+    '/Withdrawal/Request',
     '/profile',
     '/user/profile',
     '/user/settings',
@@ -70,6 +71,7 @@ const shouldShowAppBar = computed(() => {
          currentPath.startsWith('/user/') ||
          currentPath === '/markets' ||
          currentPath === '/MoneyRequest' ||
+         currentPath === '/Withdrawal/Request' ||
          currentPath === '/profile';
 })
 
