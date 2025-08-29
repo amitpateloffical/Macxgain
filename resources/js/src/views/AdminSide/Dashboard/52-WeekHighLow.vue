@@ -1,33 +1,33 @@
 <template>
   <div class="w-full p-4">
-    <h3 class="text-2xl font-semibold mb-4">52-Week High / Low Stocks</h3>
+    <h3 class="text-2xl font-semibold mb-4 text-white">52-Week High / Low Stocks</h3>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- BSE Section -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <h4 class="text-xl font-semibold mb-3">BSE</h4>
+      <div class="bg-gray-800 border border-gray-600 p-4 rounded-lg shadow text-white">
+        <h4 class="text-xl font-semibold mb-3 text-white">BSE</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="stock in bseData.high52Week" :key="stock.ticker" class="border-b pb-2">
-            <p class="font-medium">{{ stock.company }} (High)</p>
-            <p>Price: ₹{{ stock.price }}, 52-W High: ₹{{ stock["52_week_high"] }}</p>
+          <div v-for="stock in bseData.high52Week" :key="stock.ticker" class="border-b border-gray-600 pb-2">
+            <p class="font-medium text-green-400">{{ stock.company }} (High)</p>
+            <p class="text-gray-300">Price: <span class="text-white">₹{{ stock.price }}</span>, 52-W High: <span class="text-green-400">₹{{ stock["52_week_high"] }}</span></p>
           </div>
-          <div v-for="stock in bseData.low52Week" :key="stock.ticker" class="border-b pb-2">
-            <p class="font-medium">{{ stock.company }} (Low)</p>
-            <p>Price: ₹{{ stock.price }}, 52-W Low: ₹{{ stock["52_week_low"] }}</p>
+          <div v-for="stock in bseData.low52Week" :key="stock.ticker" class="border-b border-gray-600 pb-2">
+            <p class="font-medium text-red-400">{{ stock.company }} (Low)</p>
+            <p class="text-gray-300">Price: <span class="text-white">₹{{ stock.price }}</span>, 52-W Low: <span class="text-red-400">₹{{ stock["52_week_low"] }}</span></p>
           </div>
         </div>
       </div>
 
       <!-- NSE Section -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <h4 class="text-xl font-semibold mb-3">NSE</h4>
+      <div class="bg-gray-800 border border-gray-600 p-4 rounded-lg shadow text-white">
+        <h4 class="text-xl font-semibold mb-3 text-white">NSE</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="stock in nseData.high52Week" :key="stock.ticker" class="border-b pb-2">
-            <p class="font-medium">{{ stock.company }} (High)</p>
-            <p>Price: ₹{{ stock.price }}, 52-W High: ₹{{ stock["52_week_high"] }}</p>
+          <div v-for="stock in nseData.high52Week" :key="stock.ticker" class="border-b border-gray-600 pb-2">
+            <p class="font-medium text-green-400">{{ stock.company }} (High)</p>
+            <p class="text-gray-300">Price: <span class="text-white">₹{{ stock.price }}</span>, 52-W High: <span class="text-green-400">₹{{ stock["52_week_high"] }}</span></p>
           </div>
-          <div v-for="stock in nseData.low52Week" :key="stock.ticker" class="border-b pb-2">
-            <p class="font-medium">{{ stock.company }} (Low)</p>
-            <p>Price: ₹{{ stock.price }}, 52-W Low: ₹{{ stock["52_week_low"] }}</p>
+          <div v-for="stock in nseData.low52Week" :key="stock.ticker" class="border-b border-gray-600 pb-2">
+            <p class="font-medium text-red-400">{{ stock.company }} (Low)</p>
+            <p class="text-gray-300">Price: <span class="text-white">₹{{ stock.price }}</span>, 52-W Low: <span class="text-red-400">₹{{ stock["52_week_low"] }}</span></p>
           </div>
         </div>
       </div>

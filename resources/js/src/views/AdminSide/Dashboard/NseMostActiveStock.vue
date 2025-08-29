@@ -1,14 +1,14 @@
 <template>
-  <div class="most-active-nse-section w-full bg-gray-50 p-4 rounded-lg mt-6">
-    <h3 class="text-2xl font-semibold mb-4">NSE Most Active Stocks</h3>
+  <div class="most-active-nse-section w-full bg-transparent p-4 rounded-lg">
+    <h3 class="text-2xl font-semibold mb-4 text-white">NSE Most Active Stocks</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div 
         v-for="(stock, index) in mostActiveStocks" 
         :key="index"
-        class="stock-card bg-white p-4 rounded-lg shadow hover:shadow-lg transition"
+        class="stock-card bg-gray-800 border border-gray-600 p-4 rounded-lg shadow hover:shadow-lg hover:border-green-400 transition text-white"
       >
         <div class="flex justify-between items-center mb-2">
-          <h4 class="text-lg font-semibold">{{ stock.company }}</h4>
+          <h4 class="text-lg font-semibold text-white">{{ stock.company }}</h4>
           <span
             class="px-2 py-1 text-xs rounded"
             :class="stock.percent_change >= 0
@@ -18,9 +18,9 @@
             {{ stock.percent_change >= 0 ? '+' : '' }}{{ stock.percent_change }}%
           </span>
         </div>
-        <p class="text-gray-700 mb-1">Price: ₹{{ stock.price }}</p>
-        <p class="text-gray-700 mb-1">Change: {{ stock.net_change }}</p>
-        <p class="text-gray-700">Volume: {{ stock.volume }}</p>
+        <p class="text-gray-300 mb-1">Price: <span class="text-white font-medium">₹{{ stock.price }}</span></p>
+        <p class="text-gray-300 mb-1">Change: <span class="text-white font-medium">{{ stock.net_change }}</span></p>
+        <p class="text-gray-300">Volume: <span class="text-white font-medium">{{ stock.volume }}</span></p>
       </div>
     </div>
   </div>

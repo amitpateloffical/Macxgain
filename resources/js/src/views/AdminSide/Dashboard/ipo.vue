@@ -1,6 +1,6 @@
 <template>
-  <div class="ipo_section w-full bg-white shadow-md rounded-xl p-4 mt-6">
-    <h3 class="text-2xl font-semibold mb-4">IPO Updates</h3>
+  <div class="ipo_section w-full bg-transparent rounded-xl p-4">
+    <h3 class="text-2xl font-semibold mb-4 text-white">IPO Updates</h3>
 
     <!-- Tabs -->
     <div class="flex flex-wrap border-b mb-4">
@@ -8,7 +8,7 @@
         v-for="tab in ipoTabs"
         :key="tab"
         class="px-4 py-2 cursor-pointer text-sm md:text-base"
-        :class="activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600 font-medium' : 'text-gray-600'"
+        :class="activeTab === tab ? 'border-b-2 border-green-400 text-green-400 font-medium' : 'text-gray-300'"
         @click="activeTab = tab"
       >
         {{ tab }}
@@ -20,7 +20,7 @@
       <div
         v-for="(ipo, i) in ipoData[activeTab]"
         :key="i"
-        class="border rounded-lg p-4 hover:shadow-lg transition"
+        class="border border-gray-600 bg-gray-800 rounded-lg p-4 hover:shadow-lg hover:border-green-400 transition text-white"
       >
         <!-- IPO Name -->
         <div class="flex justify-between items-center mb-2">
