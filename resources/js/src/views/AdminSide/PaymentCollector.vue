@@ -1,796 +1,583 @@
 <template>
   <div class="payment-collector-screen">
-    <!-- Header -->
+    <!-- Header Section -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">💸 Payment Collector</h1>
-        <p class="page-subtitle">Manage payment collections, barcodes, and banker details</p>
-      </div>
-      <div class="header-actions">
-        <button class="refresh-btn" @click="refreshData" :disabled="isLoading">
-          <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
-          {{ isLoading ? 'Loading...' : 'Refresh' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ totalCollections }}</div>
-          <div class="stat-label">Total Collections</div>
+        <div class="header-left">
+          <button class="back-btn" @click="navigateTo('/admin/dashboard')">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="header-info">
+            <h1 class="page-title">💳 Payment Collector</h1>
+            <p class="page-subtitle">Manage payment collection details and bank accounts</p>
+          </div>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💳</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ totalAmount }}</div>
-          <div class="stat-label">Total Amount</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏦</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ totalBankers }}</div>
-          <div class="stat-label">Active Bankers</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">📱</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ totalBarcodes }}</div>
-          <div class="stat-label">Barcodes</div>
+        <div class="header-right">
+          <button class="add-btn" @click="showAddForm = true">
+            <i class="fas fa-plus"></i>
+            Add Payment Details
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Tabs -->
-    <div class="content-tabs">
-      <div class="tab-buttons">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id"
-          :class="['tab-btn', { active: activeTab === tab.id }]"
-          @click="activeTab = tab.id"
-        >
-          <i :class="tab.icon"></i>
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <!-- Tab Content -->
-      <div class="tab-content">
-        <!-- Barcode Management Tab -->
-        <div v-if="activeTab === 'barcodes'" class="tab-panel">
-          <div class="panel-header">
-            <h3>📱 Barcode Management</h3>
-            <button class="add-btn" @click="showBarcodeModal = true">
-              <i class="fas fa-plus"></i>
-              Add New Barcode
-            </button>
-          </div>
-          
-          <div class="barcode-grid">
-            <div v-for="barcode in barcodes" :key="barcode.id" class="barcode-card">
-              <div class="barcode-header">
-                <div class="barcode-icon">📱</div>
-                <div class="barcode-actions">
-                  <button class="action-btn edit-btn" @click="editBarcode(barcode)">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn" @click="deleteBarcode(barcode.id)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="barcode-content">
-                <h4>{{ barcode.name }}</h4>
-                <p class="barcode-number">{{ barcode.barcode_number }}</p>
-                <p class="barcode-type">{{ barcode.type }}</p>
-                <p class="barcode-status" :class="barcode.status">
-                  {{ barcode.status === 'active' ? '🟢 Active' : '🔴 Inactive' }}
-                </p>
-              </div>
-            </div>
-          </div>
+    <!-- Add/Edit Form Modal -->
+    <div v-if="showAddForm || editingCollector" class="modal-overlay" @click="closeForm">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ editingCollector ? 'Edit' : 'Add' }} Payment Details</h3>
+          <button class="close-btn" @click="closeForm">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
-        <!-- Banker Management Tab -->
-        <div v-if="activeTab === 'bankers'" class="tab-panel">
-          <div class="panel-header">
-            <h3>🏦 Banker Management</h3>
-            <button class="add-btn" @click="showBankerModal = true">
-              <i class="fas fa-plus"></i>
-              Add New Banker
-            </button>
-          </div>
-          
-          <div class="banker-grid">
-            <div v-for="banker in bankers" :key="banker.id" class="banker-card">
-              <div class="banker-header">
-                <div class="banker-avatar">
-                  <span class="avatar-text">{{ getBankerInitials(banker.name) }}</span>
-                </div>
-                <div class="banker-actions">
-                  <button class="action-btn edit-btn" @click="editBanker(banker)">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn delete-btn" @click="deleteBanker(banker.id)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="banker-content">
-                <h4>{{ banker.name }}</h4>
-                <p class="banker-phone">{{ banker.phone }}</p>
-                <p class="banker-bank">{{ banker.bank_name }}</p>
-                <p class="banker-status" :class="banker.status">
-                  {{ banker.status === 'active' ? '🟢 Active' : '🔴 Inactive' }}
-                </p>
-              </div>
+        <form @submit.prevent="submitForm" class="payment-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Bank Name *</label>
+              <input 
+                v-model="formData.bank_name" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., State Bank of India"
+                required
+              >
             </div>
-          </div>
-        </div>
 
-        <!-- Collections Tab -->
-        <div v-if="activeTab === 'collections'" class="tab-panel">
-          <div class="panel-header">
-            <h3>💰 Payment Collections</h3>
-            <button class="add-btn" @click="showCollectionModal = true">
-              <i class="fas fa-plus"></i>
-              Add Collection
-            </button>
-          </div>
-          
-          <div class="collections-table">
-            <div class="table-header">
-              <div class="header-cell">Date</div>
-              <div class="header-cell">Amount</div>
-              <div class="header-cell">Banker</div>
-              <div class="header-cell">Status</div>
-              <div class="header-cell">Actions</div>
+            <div class="form-group">
+              <label class="form-label">Account Holder Name *</label>
+              <input 
+                v-model="formData.account_holder_name" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., Macxgain Technologies"
+                required
+              >
             </div>
-            
-            <div v-for="collection in collections" :key="collection.id" class="table-row">
-              <div class="table-cell">{{ formatDate(collection.date) }}</div>
-              <div class="table-cell">₹{{ collection.amount }}</div>
-              <div class="table-cell">{{ collection.banker_name }}</div>
-              <div class="table-cell">
-                <span class="status-badge" :class="collection.status">
-                  {{ collection.status === 'completed' ? '✅ Completed' : '⏳ Pending' }}
-                </span>
+
+            <div class="form-group">
+              <label class="form-label">Account Number *</label>
+              <input 
+                v-model="formData.account_number" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., 1234567890123456"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">IFSC Code *</label>
+              <input 
+                v-model="formData.ifsc_code" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., SBIN0001234"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Branch Name</label>
+              <input 
+                v-model="formData.branch_name" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., Mumbai Main Branch"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">QR Code/UPI ID</label>
+              <input 
+                v-model="formData.qr_code" 
+                type="text" 
+                class="form-input"
+                placeholder="e.g., macxgain@paytm or UPI QR code data"
+              >
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Barcode/QR Image</label>
+            <div class="file-upload-area">
+              <input 
+                type="file" 
+                ref="fileInput"
+                @change="handleFileUpload"
+                accept="image/*"
+                class="file-input"
+              >
+              <div class="upload-placeholder" v-if="!formData.barcode_image">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click to upload barcode/QR image</p>
               </div>
-              <div class="table-cell">
-                <button class="action-btn view-btn" @click="viewCollection(collection)">
-                  <i class="fas fa-eye"></i>
+              <div v-if="formData.barcode_image" class="image-preview">
+                <img :src="getImageSrc(formData.barcode_image)" alt="Barcode Preview" />
+                <button type="button" @click="removeImage" class="remove-img-btn">
+                  <i class="fas fa-times"></i>
                 </button>
               </div>
             </div>
           </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Notes</label>
+            <textarea 
+              v-model="formData.notes" 
+              class="form-textarea"
+              placeholder="Additional notes or instructions..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="checkbox-label">
+              <input 
+                v-model="formData.is_primary" 
+                type="checkbox" 
+                class="form-checkbox"
+              >
+              <span class="checkbox-text">Mark as Primary Payment Method</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="closeForm" class="btn-cancel">
+              Cancel
+            </button>
+            <button type="submit" class="btn-submit" :disabled="loading">
+              <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+              {{ editingCollector ? 'Update' : 'Add' }} Payment Details
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Payment Collectors List -->
+    <div class="collectors-section">
+      <div class="section-header">
+        <h2>Payment Collection Methods</h2>
+        <div class="collectors-count">{{ paymentCollectors.length }} methods configured</div>
+      </div>
+
+      <div v-if="paymentCollectors.length === 0" class="empty-state">
+        <div class="empty-icon">💳</div>
+        <h3>No Payment Methods</h3>
+        <p>Add your first payment collection method to get started</p>
+        <button class="btn-primary" @click="showAddForm = true">
+          <i class="fas fa-plus"></i>
+          Add Payment Method
+        </button>
+      </div>
+
+      <div v-else class="collectors-grid">
+        <div 
+          v-for="collector in paymentCollectors" 
+          :key="collector.id"
+          class="collector-card"
+          :class="{ 'primary': collector.is_primary, 'inactive': !collector.is_active }"
+        >
+          <div class="card-header">
+            <div class="bank-info">
+              <h3 class="bank-name">{{ collector.bank_name }}</h3>
+              <div class="account-holder">{{ collector.account_holder_name }}</div>
+            </div>
+            <div class="card-badges">
+              <span v-if="collector.is_primary" class="badge primary">
+                <i class="fas fa-star"></i>
+                Primary
+              </span>
+              <span class="badge" :class="collector.is_active ? 'active' : 'inactive'">
+                {{ collector.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-content">
+            <div class="account-details">
+              <div class="detail-row">
+                <span class="label">Account Number:</span>
+                <span class="value">{{ maskAccountNumber(collector.account_number) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">IFSC Code:</span>
+                <span class="value">{{ collector.ifsc_code }}</span>
+              </div>
+              <div v-if="collector.branch_name" class="detail-row">
+                <span class="label">Branch:</span>
+                <span class="value">{{ collector.branch_name }}</span>
+              </div>
+              <div v-if="collector.qr_code" class="detail-row">
+                <span class="label">UPI/QR:</span>
+                <span class="value">{{ collector.qr_code }}</span>
+              </div>
+            </div>
+
+            <div v-if="collector.barcode_image" class="barcode-section">
+              <img 
+                :src="getImageSrc(collector.barcode_image)" 
+                alt="Payment Barcode" 
+                class="barcode-image"
+              >
+            </div>
+
+            <div v-if="collector.notes" class="notes-section">
+              <div class="notes-label">Notes:</div>
+              <div class="notes-text">{{ collector.notes }}</div>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button 
+              v-if="!collector.is_primary && collector.is_active"
+              @click="markAsPrimary(collector.id)"
+              class="action-btn primary-btn"
+              :disabled="loading"
+            >
+              <i class="fas fa-star"></i>
+              Make Primary
+            </button>
+            
+            <button 
+              @click="toggleStatus(collector.id)"
+              class="action-btn status-btn"
+              :class="collector.is_active ? 'deactivate' : 'activate'"
+              :disabled="loading"
+            >
+              <i :class="collector.is_active ? 'fas fa-pause' : 'fas fa-play'"></i>
+              {{ collector.is_active ? 'Deactivate' : 'Activate' }}
+            </button>
+
+            <button 
+              @click="editCollector(collector)"
+              class="action-btn edit-btn"
+            >
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+
+            <button 
+              @click="deleteCollector(collector.id)"
+              class="action-btn delete-btn"
+              :disabled="loading"
+            >
+              <i class="fas fa-trash"></i>
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Barcode Modal -->
-    <div v-if="showBarcodeModal" class="modal-overlay" @click="closeBarcodeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>{{ editingBarcode ? 'Edit Barcode' : 'Add New Barcode' }}</h2>
-          <button class="modal-close" @click="closeBarcodeModal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <form @submit.prevent="saveBarcode">
-            <div class="form-group">
-              <label>Barcode Name</label>
-              <input 
-                v-model="barcodeForm.name" 
-                type="text" 
-                placeholder="Enter barcode name"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Barcode Number</label>
-              <input 
-                v-model="barcodeForm.barcode_number" 
-                type="text" 
-                placeholder="Enter barcode number"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Type</label>
-              <select v-model="barcodeForm.type" required>
-                <option value="">Select type</option>
-                <option value="UPI">UPI</option>
-                <option value="QR">QR Code</option>
-                <option value="Bank">Bank Transfer</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label>Status</label>
-              <select v-model="barcodeForm.status" required>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="save-btn">
-                {{ editingBarcode ? 'Update' : 'Save' }}
-              </button>
-              <button type="button" class="cancel-btn" @click="closeBarcodeModal">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Banker Modal -->
-    <div v-if="showBankerModal" class="modal-overlay" @click="closeBankerModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>{{ editingBanker ? 'Edit Banker' : 'Add New Banker' }}</h2>
-          <button class="modal-close" @click="closeBankerModal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <form @submit.prevent="saveBanker">
-            <div class="form-group">
-              <label>Banker Name</label>
-              <input 
-                v-model="bankerForm.name" 
-                type="text" 
-                placeholder="Enter banker name"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input 
-                v-model="bankerForm.phone" 
-                type="tel" 
-                placeholder="Enter phone number"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Bank Name</label>
-              <input 
-                v-model="bankerForm.bank_name" 
-                type="text" 
-                placeholder="Enter bank name"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Status</label>
-              <select v-model="bankerForm.status" required>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="save-btn">
-                {{ editingBanker ? 'Update' : 'Save' }}
-              </button>
-              <button type="button" class="cancel-btn" @click="closeBankerModal">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Collection Modal -->
-    <div v-if="showCollectionModal" class="modal-overlay" @click="closeCollectionModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>Add New Collection</h2>
-          <button class="modal-close" @click="closeCollectionModal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <form @submit.prevent="saveCollection">
-            <div class="form-group">
-              <label>Amount</label>
-              <input 
-                v-model="collectionForm.amount" 
-                type="number" 
-                placeholder="Enter amount"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Banker</label>
-              <select v-model="collectionForm.banker_id" required>
-                <option value="">Select banker</option>
-                <option v-for="banker in bankers" :key="banker.id" :value="banker.id">
-                  {{ banker.name }} - {{ banker.bank_name }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label>Date</label>
-              <input 
-                v-model="collectionForm.date" 
-                type="date" 
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Notes</label>
-              <textarea 
-                v-model="collectionForm.notes" 
-                placeholder="Enter any additional notes"
-                rows="3"
-              ></textarea>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="save-btn">Save Collection</button>
-              <button type="button" class="cancel-btn" @click="closeCollectionModal">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-      <div class="nav-item" @click="navigateTo('admin_dashboard')">
-        <div class="nav-icon">🏠</div>
-        <span class="nav-label">Home</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('register_request')">
-        <div class="nav-icon">📝</div>
-        <span class="nav-label">Register</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('money_request')">
-        <div class="nav-icon">💰</div>
-        <span class="nav-label">Wallet</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('user_management')">
-        <div class="nav-icon">👥</div>
-        <span class="nav-label">Users</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('withdrawal_request')">
-        <div class="nav-icon">💳</div>
-        <span class="nav-label">Withdraw</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('analytics')">
-        <div class="nav-icon">📊</div>
-        <span class="nav-label">Analytics</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('ai_trading')">
-        <div class="nav-icon">🤖</div>
-        <span class="nav-label">AI Trading</span>
-      </div>
-      <div class="nav-item active">
-        <div class="nav-icon">💸</div>
-        <span class="nav-label">Payments</span>
+    <!-- Loading Overlay -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Processing...</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'PaymentCollector',
   data() {
     return {
-      isLoading: false,
-      activeTab: 'barcodes',
-      tabs: [
-        { id: 'barcodes', label: 'Barcodes', icon: 'fas fa-barcode' },
-        { id: 'bankers', label: 'Bankers', icon: 'fas fa-university' },
-        { id: 'collections', label: 'Collections', icon: 'fas fa-money-bill-wave' }
-      ],
-      
-      // Barcode Management
-      showBarcodeModal: false,
-      editingBarcode: null,
-      barcodeForm: {
-        name: '',
-        barcode_number: '',
-        type: '',
-        status: 'active'
-      },
-      barcodes: [
-        { id: 1, name: 'UPI QR Code', barcode_number: 'UPI123456789', type: 'UPI', status: 'active' },
-        { id: 2, name: 'Bank Transfer', barcode_number: 'BANK987654321', type: 'Bank', status: 'active' }
-      ],
-      
-      // Banker Management
-      showBankerModal: false,
-      editingBanker: null,
-      bankerForm: {
-        name: '',
-        phone: '',
+      loading: false,
+      showAddForm: false,
+      editingCollector: null,
+      paymentCollectors: [],
+      formData: {
         bank_name: '',
-        status: 'active'
-      },
-      bankers: [
-        { id: 1, name: 'John Doe', phone: '+91 98765 43210', bank_name: 'HDFC Bank', status: 'active' },
-        { id: 2, name: 'Jane Smith', phone: '+91 87654 32109', bank_name: 'ICICI Bank', status: 'active' }
-      ],
-      
-      // Collections
-      showCollectionModal: false,
-      collectionForm: {
-        amount: '',
-        banker_id: '',
-        date: '',
+        account_holder_name: '',
+        account_number: '',
+        ifsc_code: '',
+        branch_name: '',
+        barcode_image: '',
+        qr_code: '',
+        is_primary: false,
         notes: ''
-      },
-      collections: [
-        { id: 1, date: '2024-01-15', amount: '50000', banker_name: 'John Doe', status: 'completed' },
-        { id: 2, date: '2024-01-16', amount: '75000', banker_name: 'Jane Smith', status: 'pending' }
-      ]
-    }
-  },
-  computed: {
-    totalCollections() {
-      return this.collections.length;
-    },
-    totalAmount() {
-      return this.collections.reduce((sum, collection) => sum + parseInt(collection.amount), 0).toLocaleString();
-    },
-    totalBankers() {
-      return this.bankers.filter(banker => banker.status === 'active').length;
-    },
-    totalBarcodes() {
-      return this.barcodes.filter(barcode => barcode.status === 'active').length;
-    }
+      }
+    };
   },
   mounted() {
-    this.refreshData();
+    this.loadPaymentCollectors();
   },
   methods: {
-    refreshData() {
-      this.isLoading = true;
-      // Simulate API call
-      setTimeout(() => {
-        this.isLoading = false;
-      }, 1000);
-    },
-    
-    // Barcode Methods
-    editBarcode(barcode) {
-      this.editingBarcode = barcode;
-      this.barcodeForm = { ...barcode };
-      this.showBarcodeModal = true;
-    },
-    
-    saveBarcode() {
-      if (this.editingBarcode) {
-        // Update existing barcode
-        const index = this.barcodes.findIndex(b => b.id === this.editingBarcode.id);
-        if (index !== -1) {
-          this.barcodes[index] = { ...this.barcodeForm, id: this.editingBarcode.id };
+    async loadPaymentCollectors() {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get('/api/admin-payment-collectors', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.paymentCollectors = response.data.data;
         }
-      } else {
-        // Add new barcode
-        const newBarcode = {
-          ...this.barcodeForm,
-          id: Date.now()
-        };
-        this.barcodes.push(newBarcode);
-      }
-      
-      this.closeBarcodeModal();
-    },
-    
-    deleteBarcode(id) {
-      if (confirm('Are you sure you want to delete this barcode?')) {
-        this.barcodes = this.barcodes.filter(b => b.id !== id);
+
+      } catch (error) {
+        console.error('Error loading payment collectors:', error);
+        this.$toast?.error('Failed to load payment collectors');
+      } finally {
+        this.loading = false;
       }
     },
-    
-    closeBarcodeModal() {
-      this.showBarcodeModal = false;
-      this.editingBarcode = null;
-      this.barcodeForm = {
-        name: '',
-        barcode_number: '',
-        type: '',
-        status: 'active'
-      };
-    },
-    
-    // Banker Methods
-    editBanker(banker) {
-      this.editingBanker = banker;
-      this.bankerForm = { ...banker };
-      this.showBankerModal = true;
-    },
-    
-    saveBanker() {
-      if (this.editingBanker) {
-        // Update existing banker
-        const index = this.bankers.findIndex(b => b.id === this.editingBanker.id);
-        if (index !== -1) {
-          this.bankers[index] = { ...this.bankerForm, id: this.editingBanker.id };
+
+    async submitForm() {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+        
+        const url = this.editingCollector 
+          ? `/api/admin-payment-collectors/${this.editingCollector.id}`
+          : '/api/admin-payment-collectors';
+          
+        const method = this.editingCollector ? 'PUT' : 'POST';
+
+        const response = await axios({
+          method,
+          url,
+          data: this.formData,
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.$toast?.success(response.data.message);
+          this.closeForm();
+          await this.loadPaymentCollectors();
         }
-      } else {
-        // Add new banker
-        const newBanker = {
-          ...this.bankerForm,
-          id: Date.now()
-        };
-        this.bankers.push(newBanker);
-      }
-      
-      this.closeBankerModal();
-    },
-    
-    deleteBanker(id) {
-      if (confirm('Are you sure you want to delete this banker?')) {
-        this.bankers = this.bankers.filter(b => b.id !== id);
+
+      } catch (error) {
+        console.error('Error saving payment collector:', error);
+        this.$toast?.error(error.response?.data?.message || 'Failed to save payment collector');
+      } finally {
+        this.loading = false;
       }
     },
-    
-    closeBankerModal() {
-      this.showBankerModal = false;
-      this.editingBanker = null;
-      this.bankerForm = {
-        name: '',
-        phone: '',
+
+    async markAsPrimary(id) {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+
+        const response = await axios.patch(`/api/admin-payment-collectors/${id}/primary`, {}, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.$toast?.success('Payment method marked as primary');
+          await this.loadPaymentCollectors();
+        }
+
+      } catch (error) {
+        console.error('Error marking as primary:', error);
+        this.$toast?.error('Failed to mark as primary');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async toggleStatus(id) {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+
+        const response = await axios.patch(`/api/admin-payment-collectors/${id}/toggle-status`, {}, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.$toast?.success('Status updated successfully');
+          await this.loadPaymentCollectors();
+        }
+
+      } catch (error) {
+        console.error('Error toggling status:', error);
+        this.$toast?.error('Failed to update status');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async deleteCollector(id) {
+      if (!confirm('Are you sure you want to delete this payment method?')) {
+        return;
+      }
+
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+
+        const response = await axios.delete(`/api/admin-payment-collectors/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.$toast?.success('Payment method deleted successfully');
+          await this.loadPaymentCollectors();
+        }
+
+      } catch (error) {
+        console.error('Error deleting payment collector:', error);
+        this.$toast?.error('Failed to delete payment method');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    editCollector(collector) {
+      this.editingCollector = collector;
+      this.formData = { ...collector };
+      this.showAddForm = false;
+    },
+
+    closeForm() {
+      this.showAddForm = false;
+      this.editingCollector = null;
+      this.resetForm();
+    },
+
+    resetForm() {
+      this.formData = {
         bank_name: '',
-        status: 'active'
-      };
-    },
-    
-    // Collection Methods
-    saveCollection() {
-      const banker = this.bankers.find(b => b.id == this.collectionForm.banker_id);
-      const newCollection = {
-        ...this.collectionForm,
-        id: Date.now(),
-        banker_name: banker ? banker.name : 'Unknown',
-        status: 'pending'
-      };
-      
-      this.collections.push(newCollection);
-      this.closeCollectionModal();
-    },
-    
-    closeCollectionModal() {
-      this.showCollectionModal = false;
-      this.collectionForm = {
-        amount: '',
-        banker_id: '',
-        date: '',
+        account_holder_name: '',
+        account_number: '',
+        ifsc_code: '',
+        branch_name: '',
+        barcode_image: '',
+        qr_code: '',
+        is_primary: false,
         notes: ''
       };
     },
-    
-    viewCollection(collection) {
-      console.log('View collection:', collection);
-      // Implement collection details view
+
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.formData.barcode_image = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
     },
-    
-    // Utility Methods
-    getBankerInitials(name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+    removeImage() {
+      this.formData.barcode_image = '';
+      this.$refs.fileInput.value = '';
     },
-    
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-IN');
+
+    getImageSrc(imagePath) {
+      if (imagePath.startsWith('data:')) {
+        return imagePath;
+      }
+      return `/storage/${imagePath}`;
     },
-    
-    navigateTo(route) {
-      this.$router.push(`/admin/${route}`);
+
+    maskAccountNumber(accountNumber) {
+      if (!accountNumber) return '';
+      const length = accountNumber.length;
+      if (length <= 4) return accountNumber;
+      return '*'.repeat(length - 4) + accountNumber.slice(-4);
+    },
+
+    navigateTo(path) {
+      this.$router.push(path);
     }
   }
-}
+};
 </script>
 
 <style scoped>
-/* Payment Collector Page Styles */
 .payment-collector-screen {
-  background-color: #0d0d1a;
-  color: white;
   min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  color: #ffffff;
   padding: 20px;
-  padding-bottom: 120px;
 }
 
-/* Page Header */
+/* Header */
 .page-header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding: 20px;
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #00ff88;
-  margin: 0 0 8px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .page-subtitle {
   color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 16px;
-}
-
-.refresh-btn {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0d0d1a;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.refresh-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  border-color: #00ff88;
-  transform: translateY(-2px);
-}
-
-.stat-icon {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0d0d1a;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-}
-
-/* Content Tabs */
-.content-tabs {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.tab-buttons {
-  display: flex;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tab-btn {
-  flex: 1;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.tab-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tab-btn.active {
-  color: #00ff88;
-  background: rgba(0, 255, 136, 0.1);
-  border-bottom: 2px solid #00ff88;
-}
-
-.tab-content {
-  padding: 24px;
-}
-
-.tab-panel {
-  min-height: 400px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.panel-header h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: white;
-  margin: 0;
+  margin: 5px 0 0 0;
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0d0d1a;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: #000000;
   font-weight: 600;
+  cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -799,219 +586,10 @@ export default {
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
 }
 
-/* Barcode Grid */
-.barcode-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.barcode-card {
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.barcode-card:hover {
-  border-color: #00ff88;
-  transform: translateY(-2px);
-}
-
-.barcode-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.barcode-icon {
-  font-size: 24px;
-}
-
-.barcode-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.action-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  font-size: 12px;
-}
-
-.edit-btn {
-  background: rgba(74, 144, 226, 0.2);
-  color: #4a90e2;
-}
-
-.edit-btn:hover {
-  background: rgba(74, 144, 226, 0.3);
-}
-
-.delete-btn {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-}
-
-.delete-btn:hover {
-  background: rgba(255, 107, 107, 0.3);
-}
-
-.barcode-content h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 8px 0;
-}
-
-.barcode-number {
-  color: #00ff88;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  margin: 0 0 4px 0;
-}
-
-.barcode-type {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  margin: 0 0 8px 0;
-}
-
-.barcode-status {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Banker Grid */
-.banker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.banker-card {
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.banker-card:hover {
-  border-color: #00ff88;
-  transform: translateY(-2px);
-}
-
-.banker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.banker-avatar {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0d0d1a;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.banker-content h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 8px 0;
-}
-
-.banker-phone {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  margin: 0 0 4px 0;
-}
-
-.banker-bank {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  margin: 0 0 8px 0;
-}
-
-.banker-status {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Collections Table */
-.collections-table {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.table-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px 20px;
-  background: rgba(0, 255, 136, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.table-cell {
-  display: flex;
-  align-items: center;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-badge.completed {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-}
-
-.status-badge.pending {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-}
-
-/* Modal Styles */
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1023,314 +601,561 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
 }
 
 .modal-content {
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
   border-radius: 20px;
-  width: 100%;
-  max-width: 500px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 16px 24px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.modal-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #00ff88;
+.modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
   margin: 0;
+  color: #ffffff;
 }
 
-.modal-close {
+.close-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: rgba(255, 255, 255, 0.7);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  border-radius: 8px;
+  padding: 8px;
+  color: #ffffff;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: all 0.3s ease;
 }
 
-.modal-close:hover {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
+.close-btn:hover {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
 }
 
-.modal-body {
-  padding: 24px;
-}
-
-.form-group {
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   margin-bottom: 20px;
 }
 
-.form-group label {
-  display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.form-input,
+.form-textarea {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  transition: all 0.3s ease;
+  padding: 12px;
+  color: #ffffff;
+  font-size: 0.9rem;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-input:focus,
+.form-textarea:focus {
   outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.file-upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.file-upload-area:hover {
   border-color: #00ff88;
   background: rgba(0, 255, 136, 0.05);
 }
 
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.upload-placeholder i {
+  font-size: 2rem;
+  color: #00ff88;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 8px;
+}
+
+.remove-img-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4444;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #00ff88;
+}
+
+.checkbox-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
+  gap: 15px;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.save-btn {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0d0d1a;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
-}
-
-.cancel-btn {
+.btn-cancel {
   background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border: none;
-  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
+  padding: 12px 24px;
+  color: #ffffff;
   cursor: pointer;
-  font-weight: 600;
   transition: all 0.3s ease;
 }
 
-.cancel-btn:hover {
+.btn-cancel:hover {
   background: rgba(255, 255, 255, 0.2);
-  color: white;
 }
 
-/* Mobile Bottom Navigation */
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border-top: 1px solid rgba(0, 255, 136, 0.2);
+.btn-submit {
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  color: #000000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Collectors Section */
+.collectors-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.collectors-count {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.empty-state p {
+  margin-bottom: 30px;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: #000000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+/* Collectors Grid */
+.collectors-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
-  padding: 16px 8px;
-  z-index: 100;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
 }
 
-.nav-item {
+.collector-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.collector-card.primary {
+  border-left: 4px solid #00ff88;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.collector-card.inactive {
+  opacity: 0.6;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.collector-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.bank-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #ffffff;
+}
+
+.account-holder {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.card-badges {
   display: flex;
   flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
   align-items: center;
   gap: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 8px 4px;
-  border-radius: 8px;
 }
 
-.nav-item:hover {
-  background: rgba(0, 255, 136, 0.1);
-}
-
-.nav-item.active {
+.badge.primary {
   background: rgba(0, 255, 136, 0.2);
   color: #00ff88;
 }
 
-.nav-icon {
-  font-size: 20px;
+.badge.active {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
 }
 
-.nav-label {
-  font-size: 10px;
+.badge.inactive {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+}
+
+.card-content {
+  margin-bottom: 20px;
+}
+
+.account-details {
+  margin-bottom: 15px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-row .label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.detail-row .value {
+  color: #ffffff;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+.barcode-section {
   text-align: center;
-  line-height: 1.2;
+  margin: 15px 0;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
 
-/* Responsive Design */
+.barcode-image {
+  max-width: 100%;
+  max-height: 100px;
+  border-radius: 8px;
+}
+
+.notes-section {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.notes-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 5px;
+}
+
+.notes-text {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+/* Actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  color: #000000;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 255, 136, 0.3);
+}
+
+.status-btn.activate {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.status-btn.deactivate {
+  background: rgba(255, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(255, 158, 11, 0.3);
+}
+
+.edit-btn {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.delete-btn {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: #ffffff;
+}
+
+.loading-spinner i {
+  font-size: 3rem;
+  color: #00ff88;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .payment-collector-screen {
-    padding: 16px;
-    padding-bottom: 120px;
+    padding: 15px;
   }
   
-  .page-header {
+  .header-content {
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     text-align: center;
-    padding: 16px;
   }
   
-  .page-title {
-    font-size: 24px;
-  }
-  
-  .page-subtitle {
-    font-size: 14px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  
-  .stat-card {
-    padding: 16px;
-  }
-  
-  .stat-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-  }
-  
-  .tab-buttons {
-    flex-direction: column;
-  }
-  
-  .tab-btn {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-  
-  .tab-content {
-    padding: 16px;
-  }
-  
-  .panel-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  
-  .barcode-grid,
-  .banker-grid {
+  .form-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 15px;
   }
   
-  .table-header,
-  .table-row {
+  .collectors-grid {
     grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  
-  .mobile-bottom-nav {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 12px 8px;
-  }
-  
-  .nav-item {
-    padding: 6px 4px;
-  }
-  
-  .nav-icon {
-    font-size: 18px;
-  }
-  
-  .nav-label {
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .stat-card {
-    padding: 12px;
-  }
-  
-  .stat-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 20px;
-  }
-  
-  .stat-number {
-    font-size: 20px;
-  }
-  
-  .stat-label {
-    font-size: 12px;
   }
   
   .modal-content {
-    max-width: 95vw;
-    margin: 10px;
-  }
-  
-  .modal-header {
-    padding: 20px 20px 16px 20px;
-  }
-  
-  .modal-body {
+    width: 95%;
     padding: 20px;
+  }
+  
+  .card-actions {
+    justify-content: center;
   }
   
   .form-actions {
     flex-direction: column;
-    gap: 8px;
-  }
-  
-  .save-btn,
-  .cancel-btn {
-    width: 100%;
-    padding: 10px 20px;
-    font-size: 14px;
+    gap: 10px;
   }
 }
 </style>

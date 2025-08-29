@@ -18,6 +18,7 @@ use App\Http\Controllers\RegisterRequestController;
 use App\Http\Controllers\WithdrawalRequestController;
 use App\Http\Controllers\UpstoxController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AdminPaymentCollectorController;
 
 
 
@@ -116,6 +117,12 @@ Route::middleware('auth:sanctum')->group(function() {
     
     // Analytics API Routes
     Route::get('/analytics', [AnalyticsController::class, 'getAnalyticsData']);
+    
+    // Admin Payment Collector Routes
+    Route::apiResource('admin-payment-collectors', AdminPaymentCollectorController::class);
+    Route::patch('/admin-payment-collectors/{id}/primary', [AdminPaymentCollectorController::class, 'markAsPrimary']);
+    Route::patch('/admin-payment-collectors/{id}/toggle-status', [AdminPaymentCollectorController::class, 'toggleStatus']);
+    Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class, 'getPrimary']);
 });
 
 
