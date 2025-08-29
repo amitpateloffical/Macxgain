@@ -317,9 +317,9 @@
         v-model="showRequestModal"
         @hide="resetModal"
         centered
-        size="lg"
+        size="xl"
         hide-footer
-        modal-class="modern-modal"
+        modal-class="modern-modal wide-modal"
         header-class="modern-modal-header"
         body-class="modern-modal-body"
       >
@@ -344,6 +344,88 @@
             <i class="fas fa-spinner fa-spin"></i>
           </div>
           <p class="loading-text">Loading request details...</p>
+        </div>
+
+        <!-- Admin Payment Details Section -->
+        <div v-if="!editmodalLoading && primaryPaymentDetails" class="admin-payment-section">
+          <div class="section-header">
+            <div class="section-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+                      <div class="section-title">
+            <h4>💳 Payment Details</h4>
+          </div>
+          </div>
+          
+          <div class="payment-details-grid">
+            <div class="detail-item locked">
+              <label class="detail-label">
+                <i class="fas fa-university"></i>
+                Bank Name
+              </label>
+              <span class="detail-value">{{ primaryPaymentDetails.bank_name }}</span>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+            
+            <div class="detail-item locked">
+              <label class="detail-label">
+                <i class="fas fa-user"></i>
+                Account Holder
+              </label>
+              <span class="detail-value">{{ primaryPaymentDetails.account_holder_name }}</span>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+            
+            <div class="detail-item locked">
+              <label class="detail-label">
+                <i class="fas fa-hashtag"></i>
+                Account Number
+              </label>
+              <span class="detail-value">{{ primaryPaymentDetails.account_number }}</span>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+            
+            <div class="detail-item locked">
+              <label class="detail-label">
+                <i class="fas fa-code"></i>
+                IFSC Code
+              </label>
+              <span class="detail-value">{{ primaryPaymentDetails.ifsc_code }}</span>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+            
+            <div v-if="primaryPaymentDetails.qr_code" class="detail-item locked">
+              <label class="detail-label">
+                <i class="fas fa-qrcode"></i>
+                UPI ID
+              </label>
+              <span class="detail-value">{{ primaryPaymentDetails.qr_code }}</span>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+            
+            <div v-if="primaryPaymentDetails.barcode_image" class="detail-item locked barcode-item">
+              <label class="detail-label">
+                <i class="fas fa-barcode"></i>
+                Barcode
+              </label>
+              <div class="barcode-preview">
+                <img 
+                  :src="`/storage/${primaryPaymentDetails.barcode_image}`" 
+                  :alt="'Payment Barcode'"
+                  class="barcode-thumbnail"
+                />
+                <button 
+                  @click="openBarcodeModal" 
+                  class="view-barcode-btn"
+                  type="button"
+                >
+                  <i class="fas fa-eye"></i>
+                  View
+                </button>
+              </div>
+              <i class="fas fa-lock detail-lock"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Money Request Form -->
@@ -505,6 +587,26 @@
         </template>
       </b-modal>
 
+      <!-- Barcode Preview Modal -->
+      <b-modal 
+        v-model="showBarcodeModal" 
+        title="Payment Barcode" 
+        centered 
+        size="lg"
+        modal-class="barcode-modal"
+      >
+        <div class="text-center">
+          <img 
+            :src="`/storage/${primaryPaymentDetails?.barcode_image}`" 
+            alt="Payment Barcode" 
+            class="barcode-modal-image" 
+          />
+        </div>
+        <template #modal-footer>
+          <b-button variant="primary" @click="downloadBarcode">Download Barcode</b-button>
+        </template>
+      </b-modal>
+
       <!-- Reject Reason Modal -->
       <b-modal
         v-model="showRejectModal"
@@ -590,6 +692,9 @@ export default {
       rejectReason: "",
       isAdmin: false,
       currentUserId: null,
+      primaryPaymentDetails: null,
+      primaryPaymentLoading: false,
+      showBarcodeModal: false,
     };
   },
   computed: {
@@ -640,6 +745,7 @@ export default {
     this.fetchRequestss();
     this.fetchUsers();
     this.fetchUserBalance();
+    this.fetchPrimaryPaymentDetails();
     
     // Debug: Check initial state
     console.log('🚨 Component mounted, initial stats:', {
@@ -698,6 +804,39 @@ export default {
         }
       } finally {
         this.balanceLoading = false;
+      }
+    },
+
+    fetchPrimaryPaymentDetails() {
+      this.primaryPaymentLoading = true;
+      axios.get('/payment-collector/primary')
+        .then(response => {
+          if (response.data.success) {
+            this.primaryPaymentDetails = response.data.data;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching primary payment details:', error);
+        })
+        .finally(() => {
+          this.primaryPaymentLoading = false;
+        });
+    },
+
+      openBarcodeModal() {
+    console.log('Opening barcode modal...');
+    this.showBarcodeModal = true;
+    console.log('showBarcodeModal value:', this.showBarcodeModal);
+  },
+
+    downloadBarcode() {
+      if (this.primaryPaymentDetails?.barcode_image) {
+        const link = document.createElement('a');
+        link.href = `/storage/${this.primaryPaymentDetails.barcode_image}`;
+        link.download = 'payment-barcode.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
     },
     
@@ -1597,9 +1736,244 @@ export default {
   height: auto;
 }
 
+/* Admin Payment Details Section */
+.admin-payment-section {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f0f23;
+  font-size: 20px;
+}
+
+.section-title h4 {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+
+
+.payment-details-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+
+
+.detail-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 255, 128, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  border-color: rgba(0, 255, 128, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a1a1a1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.detail-value {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.detail-lock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: rgba(0, 255, 128, 0.6);
+  font-size: 14px;
+}
+
+/* Barcode Image Styles */
+.barcode-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.barcode-thumbnail {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.view-barcode-btn {
+  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  color: #0f0f23;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 60px;
+  justify-content: center;
+}
+
+.view-barcode-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.3);
+}
+
+.view-barcode-btn:active {
+  transform: translateY(0);
+}
+
+/* Barcode Modal Styles */
+.barcode-modal-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure barcode modal is visible */
+.barcode-modal .modal-content {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  color: white !important;
+}
+
+.barcode-modal .modal-header {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+}
+
+.barcode-modal .modal-title {
+  color: #00ff80;
+  font-weight: 600;
+}
+
+.barcode-modal .modal-body {
+  background: #1a1a2e !important;
+  padding: 24px;
+}
+
+/* Responsive Design for Admin Payment Section */
+@media (max-width: 1200px) {
+  .payment-details-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-payment-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .payment-details-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .detail-item {
+    padding: 12px;
+  }
+  
+  .barcode-preview {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .barcode-thumbnail {
+    width: 50px;
+    height: 35px;
+  }
+  
+  .view-barcode-btn {
+    min-width: 50px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+  
+
+}
+
+@media (max-width: 480px) {
+  .admin-payment-section {
+    padding: 12px;
+  }
+  
+  .section-title h4 {
+    font-size: 1.1rem;
+  }
+  
+  .detail-value {
+    font-size: 0.9rem;
+  }
+  
+
+}
+
 /* Modern Modal Styles */
 .modern-modal .modal-dialog {
   max-width: 600px;
+}
+
+.wide-modal .modal-dialog {
+  max-width: 95vw !important;
+  width: 95vw !important;
+  margin: 0 auto;
 }
 
 .modern-modal .modal-content {

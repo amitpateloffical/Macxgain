@@ -122,8 +122,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('admin-payment-collectors', AdminPaymentCollectorController::class);
     Route::patch('/admin-payment-collectors/{id}/primary', [AdminPaymentCollectorController::class, 'markAsPrimary']);
     Route::patch('/admin-payment-collectors/{id}/toggle-status', [AdminPaymentCollectorController::class, 'toggleStatus']);
-    Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class, 'getPrimary']);
 });
+
+// Public Payment Collector Routes (for users to see payment details)
+Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class, 'getPrimary']);
 
 
 
