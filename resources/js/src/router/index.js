@@ -56,13 +56,19 @@ const routes = [
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/AITrading.vue"),
   },
-  {
+    {
     path: "/admin/payment-collector",
     name: "payment_collector",
     meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/PaymentCollector.vue"),
   },
-   {
+  {
+    path: "/admin/stock-market",
+    name: "stock_market",
+    meta: { requiresAuth: true },
+    component: () => import("../views/AdminSide/StockMarket.vue"),
+  },
+  {
     path: "/user/dashboard",
     name: "user-ashboard",
     meta: { requiresAuth: true },

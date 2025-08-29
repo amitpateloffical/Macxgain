@@ -16,6 +16,7 @@ use App\Http\Controllers\MoneyRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterRequestController;
 use App\Http\Controllers\WithdrawalRequestController;
+use App\Http\Controllers\UpstoxController;
 
 
 
@@ -97,6 +98,20 @@ Route::middleware('auth:api')->group(function() {
     Route::get('/register-requests', [RegisterRequestController::class, 'index']);
     Route::patch('/register-requests/{id}/approve', [RegisterRequestController::class, 'approve']);
     Route::patch('/register-requests/{id}/reject', [RegisterRequestController::class, 'reject']);
+});
+
+// Upstox API Routes
+Route::middleware('auth:sanctum')->group(function() {
+    Route::get('/upstox/test', [UpstoxController::class, 'testConnection']);
+    Route::get('/upstox/dashboard', [UpstoxController::class, 'getDashboardData']);
+    Route::get('/upstox/market-quotes', [UpstoxController::class, 'getMarketQuotes']);
+    Route::get('/upstox/market-status', [UpstoxController::class, 'getMarketStatus']);
+    Route::get('/upstox/historical-data', [UpstoxController::class, 'getHistoricalData']);
+    Route::get('/upstox/search-instruments', [UpstoxController::class, 'searchInstruments']);
+    Route::get('/upstox/top-gainers', [UpstoxController::class, 'getTopGainers']);
+    Route::get('/upstox/top-losers', [UpstoxController::class, 'getTopLosers']);
+    Route::get('/upstox/market-indices', [UpstoxController::class, 'getMarketIndices']);
+    Route::get('/upstox/live-stock-data', [UpstoxController::class, 'getLiveStockData']);
 });
 
 

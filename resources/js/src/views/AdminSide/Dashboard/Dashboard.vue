@@ -77,6 +77,16 @@
           </p>
         </div>
       </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/stock-market')">
+        <div class="card-content">
+          <div class="card-icon">📈</div>
+          <h3 class="card-title">Stock Market</h3>
+          <p class="card-description">
+            Live stock prices and market data via Upstox
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
@@ -108,6 +118,10 @@
       <div class="nav-item" @click="navigateTo('/admin/payment-collector')">
         <div class="nav-icon">💸</div>
         <span class="nav-label">Payments</span>
+      </div>
+      <div class="nav-item" @click="navigateTo('/admin/stock-market')">
+        <div class="nav-icon">📈</div>
+        <span class="nav-label">Stocks</span>
       </div>
       <div class="nav-item" @click="showProfileMenu = !showProfileMenu">
         <div class="nav-icon">👤</div>

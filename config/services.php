@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'upstox' => [
+        'api_key' => env('UPSTOX_API_KEY'),
+        'base_url' => env('UPSTOX_BASE_URL', 'https://api.upstox.com/v2'),
+    ],
+
     'office365' => [
         'client_id' => env('O365_CLIENT_ID'),
         'client_secret' => env('O365_CLIENT_SECRET'),
