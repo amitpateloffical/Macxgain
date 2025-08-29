@@ -158,9 +158,7 @@
           :per-page="perPage"
           :busy="modalLoading"
           responsive
-          striped
-          hover
-          class="requests-table"
+          class="requests-table dark-table"
         >
             <template #cell(transaction_id)="data">
               <span class="font-weight-bold">{{
@@ -1127,26 +1125,48 @@ export default {
 }
 
 .requests-table .table {
-  background: transparent;
-  color: white;
+  background: transparent !important;
+  color: white !important;
 }
 
 .requests-table .table th {
-  background: rgba(0, 255, 128, 0.1);
-  border-color: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(0, 255, 128, 0.1) !important;
+  border-color: rgba(0, 255, 128, 0.2) !important;
+  color: #00ff80 !important;
   font-weight: 600;
   padding: 16px 12px;
 }
 
 .requests-table .table td {
-  border-color: rgba(0, 255, 128, 0.1);
+  background: transparent !important;
+  border-color: rgba(0, 255, 128, 0.1) !important;
   padding: 16px 12px;
   vertical-align: middle;
+  color: white !important;
+}
+
+.requests-table .table tbody tr {
+  background: transparent !important;
 }
 
 .requests-table .table tbody tr:hover {
-  background: rgba(0, 255, 128, 0.05);
+  background: rgba(0, 255, 128, 0.05) !important;
+}
+
+/* Override Bootstrap striped table styling */
+.dark-table .table-striped tbody tr:nth-of-type(odd) {
+  background: rgba(0, 255, 128, 0.02) !important;
+}
+
+.dark-table .table-striped tbody tr:nth-of-type(even) {
+  background: transparent !important;
+}
+
+/* Ensure all table cells have dark background */
+.dark-table .table tbody tr td,
+.dark-table .table thead tr th {
+  background-color: transparent !important;
+  color: white !important;
 }
 
 /* Badge Styling */
