@@ -952,7 +952,24 @@ export default {
   cursor: pointer;
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
+
+/* Large Tablets and Small Desktops */
+@media (max-width: 1024px) {
+  .dashboard {
+    padding: 18px;
+  }
+  
+  .list__page {
+    padding: 25px;
+  }
+  
+  .list__title h4 {
+    font-size: 1.85rem;
+  }
+}
+
+/* Tablets */
 @media (max-width: 768px) {
   .dashboard {
     padding: 15px;
@@ -960,45 +977,297 @@ export default {
   
   .list__page {
     padding: 20px;
+    margin: 0;
   }
   
   .list__title {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
+    text-align: center;
   }
 
   .list__title h4 {
     font-size: 1.75rem;
     text-align: center;
+    margin-bottom: 10px;
   }
 
-  .filterBox {
-    padding: 20px !important;
-  }
-
-  .table-container {
-    padding: 20px !important;
-    overflow-x: auto;
-  }
-  
+  /* Button Responsive */
   .btn-primary {
     width: 100% !important;
     margin-bottom: 10px !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+  
+  .basicButton {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+
+  /* Filter Responsive */
+  .filterBox {
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .filterBox .row {
+    margin: 0 !important;
+  }
+  
+  .filterBox .col-md-4,
+  .filterBox .col-md-3,
+  .filterBox .col-md-2 {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .form-control, .form-select {
+    font-size: 16px !important;
+    padding: 12px 16px !important;
+  }
+
+  /* Table Responsive */
+  .table-container {
+    padding: 15px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .staticTable {
+    min-width: 600px;
+    font-size: 14px;
+  }
+  
+  .staticTable th,
+  .staticTable td {
+    padding: 12px 8px !important;
+    white-space: nowrap;
+  }
+  
+  /* Pagination Responsive */
+  .mx-2.mb-2 {
+    margin: 0 !important;
+    padding: 15px 0;
+  }
+  
+  .mx-2.mb-2 .row {
+    margin: 0 !important;
+  }
+  
+  .mx-2.mb-2 .col-12 {
+    padding: 5px 0 !important;
+    text-align: center;
+  }
+  
+  .showing_pagination_result {
+    font-size: 13px;
+    display: block;
+    margin: 5px 0;
+  }
+  
+  .pagination {
+    justify-content: center !important;
+    margin: 10px 0 !important;
+  }
+  
+  .pagination .page-link {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
   }
 }
 
+/* Mobile Phones */
 @media (max-width: 480px) {
+  .dashboard {
+    padding: 10px;
+  }
+  
+  .list__page {
+    padding: 15px;
+    border-radius: 12px;
+  }
+  
   .list__title h4 {
     font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  /* Ultra Compact Buttons */
+  .btn-primary, .basicButton {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Compact Filter */
+  .filterBox {
+    padding: 15px !important;
+    border-radius: 10px !important;
+  }
+  
+  .form-control, .form-select {
+    font-size: 16px !important;
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
+  }
+  
+  .form-label {
+    font-size: 14px !important;
+    margin-bottom: 5px !important;
+  }
+  
+  /* Mobile Table */
+  .table-container {
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+  
+  .staticTable {
+    font-size: 12px;
+    min-width: 500px;
+  }
+  
+  .staticTable th,
+  .staticTable td {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+  }
+  
+  .badge {
+    font-size: 0.75em !important;
+    padding: 0.3em 0.6em !important;
+  }
+  
+  /* Mobile Pagination */
+  .pagination .page-link {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+  
+  .showing_pagination_result {
+    font-size: 12px;
+  }
+  
+  /* Mobile Modal */
+  .modal-dialog {
+    margin: 10px !important;
+  }
+  
+  .modal-content {
+    border-radius: 10px !important;
+  }
+}
+
+/* Extra Small Phones */
+@media (max-width: 360px) {
+  .dashboard {
+    padding: 8px;
+  }
+  
+  .list__page {
+    padding: 12px;
+  }
+  
+  .list__title h4 {
+    font-size: 1.3rem;
+  }
+  
+  .staticTable {
+    min-width: 450px;
+    font-size: 11px;
+  }
+  
+  .staticTable th,
+  .staticTable td {
+    padding: 6px 4px !important;
+    font-size: 11px !important;
+  }
+  
+  .btn-primary, .basicButton {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .list__title {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  
+  .list__title h4 {
+    text-align: left !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .btn-primary, .basicButton {
+    width: auto !important;
+    margin-left: 10px !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn-primary, .basicButton {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .form-control, .form-select {
+    min-height: 44px !important;
+  }
+  
+  .pagination .page-link {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  .cursor-pointer {
+    -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .list__title h4 {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .dashboard {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .list__page {
+    background: white !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .btn-primary, .basicButton {
+    display: none !important;
   }
   
   .filterBox {
-    padding: 15px !important;
+    display: none !important;
   }
   
-  .table-container {
-    padding: 15px !important;
+  .staticTable th {
+    background: #f5f5f5 !important;
+    color: black !important;
+  }
+  
+  .staticTable td {
+    color: black !important;
   }
 }
 </style>
