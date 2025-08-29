@@ -39,19 +39,19 @@
         </div>
 
         <!-- Details -->
-        <p class="text-sm text-gray-600 mb-1">Symbol: <span class="font-medium">{{ ipo.symbol }}</span></p>
-        <p class="text-sm text-gray-600 mb-1">Price Band: 
-          <span class="font-medium">
+        <p class="text-sm text-gray-300 mb-1">Symbol: <span class="font-medium text-white">{{ ipo.symbol }}</span></p>
+        <p class="text-sm text-gray-300 mb-1">Price Band: 
+          <span class="font-medium text-white">
             {{ ipo.min_price }} - {{ ipo.max_price }}
           </span>
         </p>
-        <p class="text-sm text-gray-600 mb-1">Lot Size: <span class="font-medium">{{ ipo.lot_size }}</span></p>
+        <p class="text-sm text-gray-300 mb-1">Lot Size: <span class="font-medium text-white">{{ ipo.lot_size }}</span></p>
         
-        <p class="text-sm text-gray-600 mb-1">Start Date: <span class="font-medium">{{ ipo.bidding_start_date }}</span></p>
-        <p class="text-sm text-gray-600 mb-1">End Date: <span class="font-medium">{{ ipo.bidding_end_date }}</span></p>
+        <p class="text-sm text-gray-300 mb-1">Start Date: <span class="font-medium text-green-400">{{ ipo.bidding_start_date }}</span></p>
+        <p class="text-sm text-gray-300 mb-1">End Date: <span class="font-medium text-red-400">{{ ipo.bidding_end_date }}</span></p>
 
         <!-- Additional Info -->
-        <p v-if="ipo.additional_text" class="text-xs mt-2 text-blue-500 italic">
+        <p v-if="ipo.additional_text" class="text-xs mt-2 text-blue-400 italic">
           {{ ipo.additional_text }}
         </p>
       </div>
