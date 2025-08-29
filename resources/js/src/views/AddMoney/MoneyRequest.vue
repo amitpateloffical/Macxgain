@@ -358,39 +358,67 @@
           </div>
           
           <div class="payment-details-grid">
-            <div class="detail-item locked">
+            <div v-if="primaryPaymentDetails.bank_name" class="detail-item locked">
               <label class="detail-label">
                 <i class="fas fa-university"></i>
                 Bank Name
               </label>
-              <span class="detail-value">{{ primaryPaymentDetails.bank_name }}</span>
+              <span 
+                class="detail-value clickable-value" 
+                @click="copyToClipboard(primaryPaymentDetails.bank_name, 'Bank Name')"
+                :title="`Click to copy ${primaryPaymentDetails.bank_name}`"
+              >
+                {{ primaryPaymentDetails.bank_name }}
+                <i class="fas fa-copy copy-icon"></i>
+              </span>
               <i class="fas fa-lock detail-lock"></i>
             </div>
             
-            <div class="detail-item locked">
+            <div v-if="primaryPaymentDetails.account_holder" class="detail-item locked">
               <label class="detail-label">
                 <i class="fas fa-user"></i>
                 Account Holder
               </label>
-              <span class="detail-value">{{ primaryPaymentDetails.account_holder_name }}</span>
+              <span 
+                class="detail-value clickable-value" 
+                @click="copyToClipboard(primaryPaymentDetails.account_holder, 'Account Holder')"
+                :title="`Click to copy ${primaryPaymentDetails.account_holder}`"
+              >
+                {{ primaryPaymentDetails.account_holder }}
+                <i class="fas fa-copy copy-icon"></i>
+              </span>
               <i class="fas fa-lock detail-lock"></i>
             </div>
             
-            <div class="detail-item locked">
+            <div v-if="primaryPaymentDetails.account_number" class="detail-item locked">
               <label class="detail-label">
                 <i class="fas fa-hashtag"></i>
                 Account Number
               </label>
-              <span class="detail-value">{{ primaryPaymentDetails.account_number }}</span>
+              <span 
+                class="detail-value clickable-value" 
+                @click="copyToClipboard(primaryPaymentDetails.account_number, 'Account Number')"
+                :title="`Click to copy ${primaryPaymentDetails.account_number}`"
+              >
+                {{ primaryPaymentDetails.account_number }}
+                <i class="fas fa-copy copy-icon"></i>
+              </span>
               <i class="fas fa-lock detail-lock"></i>
             </div>
             
-            <div class="detail-item locked">
+            <div v-if="primaryPaymentDetails.ifsc_code" class="detail-item locked">
               <label class="detail-label">
-                <i class="fas fa-code"></i>
+                <i class="fas fa-angle-double-right"></i>
                 IFSC Code
               </label>
-              <span class="detail-value">{{ primaryPaymentDetails.ifsc_code }}</span>
+              <span 
+                class="detail-value clickable-value" 
+                @click="copyToClipboard(primaryPaymentDetails.ifsc_code, 'IFSC Code')"
+                :title="`Click to copy ${primaryPaymentDetails.ifsc_code}`"
+              >
+                {{ primaryPaymentDetails.ifsc_code }}
+                <i class="fas fa-copy copy-icon"></i>
+              </span>
               <i class="fas fa-lock detail-lock"></i>
             </div>
             
@@ -399,7 +427,14 @@
                 <i class="fas fa-qrcode"></i>
                 UPI ID
               </label>
-              <span class="detail-value">{{ primaryPaymentDetails.qr_code }}</span>
+              <span 
+                class="detail-value clickable-value" 
+                @click="copyToClipboard(primaryPaymentDetails.qr_code, 'UPI ID')"
+                :title="`Click to copy ${primaryPaymentDetails.qr_code}`"
+              >
+                {{ primaryPaymentDetails.qr_code }}
+                <i class="fas fa-copy copy-icon"></i>
+              </span>
               <i class="fas fa-lock detail-lock"></i>
             </div>
             
@@ -827,6 +862,62 @@ export default {
     console.log('Opening barcode modal...');
     this.showBarcodeModal = true;
     console.log('showBarcodeModal value:', this.showBarcodeModal);
+  },
+
+  copyToClipboard(text, fieldName) {
+    if (navigator.clipboard && window.isSecureContext) {
+      // Use modern clipboard API
+      navigator.clipboard.writeText(text).then(() => {
+        this.showCopySuccess(fieldName);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        this.fallbackCopyToClipboard(text, fieldName);
+      });
+    } else {
+      // Fallback for older browsers
+      this.fallbackCopyToClipboard(text, fieldName);
+    }
+  },
+
+  fallbackCopyToClipboard(text, fieldName) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      this.showCopySuccess(fieldName);
+    } catch (err) {
+      console.error('Fallback copy failed: ', err);
+      this.showCopyError(fieldName);
+    }
+    
+    document.body.removeChild(textArea);
+  },
+
+  showCopySuccess(fieldName) {
+    this.$bvToast.toast(`${fieldName} copied to clipboard!`, {
+      title: 'Success',
+      variant: 'success',
+      solid: true,
+      autoHideDelay: 2000,
+      appendToast: true
+    });
+  },
+
+  showCopyError(fieldName) {
+    this.$bvToast.toast(`Failed to copy ${fieldName}`, {
+      title: 'Error',
+      variant: 'danger',
+      solid: true,
+      autoHideDelay: 3000,
+      appendToast: true
+    });
   },
 
     downloadBarcode() {
@@ -1738,11 +1829,13 @@ export default {
 
 /* Admin Payment Details Section */
 .admin-payment-section {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 128, 0.4);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .section-header {
@@ -1783,12 +1876,13 @@ export default {
 
 
 .detail-item {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 128, 0.3);
   border-radius: 12px;
   padding: 16px;
   position: relative;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .detail-item:hover {
@@ -1812,6 +1906,40 @@ export default {
   font-weight: 600;
   font-family: 'Courier New', monospace;
   letter-spacing: 0.5px;
+}
+
+.clickable-value {
+  cursor: pointer;
+  position: relative;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.2);
+}
+
+.clickable-value:hover {
+  background: rgba(0, 255, 128, 0.2);
+  border-color: rgba(0, 255, 128, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.2);
+}
+
+.copy-icon {
+  color: rgba(0, 255, 128, 0.7);
+  font-size: 14px;
+  margin-left: 8px;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.clickable-value:hover .copy-icon {
+  opacity: 1;
+  color: #00ff80;
+  transform: scale(1.1);
 }
 
 .detail-lock {
@@ -1897,9 +2025,42 @@ export default {
 }
 
 /* Responsive Design for Admin Payment Section */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .payment-details-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  
+  .detail-item {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .payment-details-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .wide-modal .modal-dialog {
+    max-width: 90vw !important;
+    width: 90vw !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .payment-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .wide-modal .modal-dialog {
+    max-width: 95vw !important;
+    width: 95vw !important;
+  }
+  
+  .admin-payment-section {
+    padding: 20px;
   }
 }
 
@@ -1922,12 +2083,28 @@ export default {
   }
   
   .payment-details-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
   
   .detail-item {
     padding: 12px;
+  }
+  
+  .detail-value {
+    font-size: 0.9rem;
+  }
+  
+  .clickable-value {
+    padding: 6px 8px;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+  
+  .copy-icon {
+    margin-left: 0;
+    margin-top: 4px;
   }
   
   .barcode-preview {
@@ -1945,24 +2122,125 @@ export default {
     padding: 4px 8px;
     font-size: 0.7rem;
   }
-  
-
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
+  .wide-modal .modal-dialog {
+    max-width: 98vw !important;
+    width: 98vw !important;
+    margin: 10px;
+  }
+  
   .admin-payment-section {
     padding: 12px;
+    margin-bottom: 12px;
   }
   
   .section-title h4 {
     font-size: 1.1rem;
   }
   
-  .detail-value {
-    font-size: 0.9rem;
+  .payment-details-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
   
+  .detail-item {
+    padding: 10px;
+  }
+  
+  .detail-label {
+    font-size: 0.8rem;
+  }
+  
+  .detail-value {
+    font-size: 0.85rem;
+  }
+  
+  .clickable-value {
+    padding: 8px;
+    justify-content: space-between;
+    flex-direction: row;
+  }
+  
+  .copy-icon {
+    margin-left: 8px;
+    margin-top: 0;
+  }
+  
+  .barcode-preview {
+    flex-direction: row;
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .barcode-thumbnail {
+    width: 45px;
+    height: 30px;
+  }
+  
+  .view-barcode-btn {
+    min-width: 45px;
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+}
 
+@media (max-width: 480px) {
+  .wide-modal .modal-dialog {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .admin-payment-section {
+    padding: 10px;
+    border-radius: 12px;
+  }
+  
+  .section-header {
+    gap: 8px;
+  }
+  
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .section-title h4 {
+    font-size: 1rem;
+  }
+  
+  .detail-item {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  
+  .detail-label {
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+  }
+  
+  .detail-value {
+    font-size: 0.8rem;
+  }
+  
+  .clickable-value {
+    padding: 6px;
+  }
+  
+  .barcode-thumbnail {
+    width: 40px;
+    height: 28px;
+  }
+  
+  .view-barcode-btn {
+    min-width: 40px;
+    padding: 2px 4px;
+    font-size: 0.6rem;
+  }
 }
 
 /* Modern Modal Styles */
@@ -1974,6 +2252,105 @@ export default {
   max-width: 95vw !important;
   width: 95vw !important;
   margin: 0 auto;
+}
+
+/* Enhanced Modal Responsiveness */
+@media (max-width: 1400px) {
+  .wide-modal .modal-dialog {
+    max-width: 92vw !important;
+    width: 92vw !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .wide-modal .modal-dialog {
+    max-width: 90vw !important;
+    width: 90vw !important;
+  }
+  
+  .modern-modal .modal-content {
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 992px) {
+  .wide-modal .modal-dialog {
+    max-width: 95vw !important;
+    width: 95vw !important;
+  }
+  
+  .modal-header-content {
+    padding: 20px;
+  }
+  
+  .modal-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .modal-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .wide-modal .modal-dialog {
+    max-width: 98vw !important;
+    width: 98vw !important;
+    margin: 10px;
+  }
+  
+  .modal-header-content {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .modal-title {
+    font-size: 1.2rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .wide-modal .modal-dialog {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .modern-modal .modal-content {
+    border-radius: 0;
+  }
+  
+  .modal-header-content {
+    padding: 12px;
+  }
+  
+  .modal-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.8rem;
+  }
 }
 
 .modern-modal .modal-content {
