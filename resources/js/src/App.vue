@@ -7,7 +7,10 @@
         <div class="main_content_screen">
           <router-view />
         </div>
-      </div>      
+      </div>
+      
+      <!-- Global Bottom App Bar for Employee Pages -->
+      <BottomAppBar v-if="shouldShowAppBar" />
     </div>
   </div>
 
@@ -16,6 +19,7 @@
 <script setup>
 import { watch, computed, onMounted, ref, onBeforeUnmount } from 'vue'
 import Header from "./views/Layout/Header.vue";
+import BottomAppBar from "./components/BottomAppBar.vue";
 import { useRouter } from 'vue-router';
 
 const route = useRouter();
@@ -23,6 +27,50 @@ const isMobile = ref(false);
 
 const layout = computed(() => {  
   return route.currentRoute.value.meta.layout === 'full' ? 'FullLayout' : 'DefaultLayout';
+})
+
+// Determine when to show the bottom app bar
+const shouldShowAppBar = computed(() => {
+  const currentPath = route.currentRoute.value.path;
+  
+  // Show app bar on employee/user pages, hide on admin and auth pages
+  const employeePages = [
+    '/user/dashboard',
+    '/markets', 
+    '/user/portfolio',
+    '/MoneyRequest',
+    '/profile',
+    '/user/profile',
+    '/user/settings',
+    '/user/transactions',
+    '/user/wallet'
+  ];
+  
+  // Hide on admin and auth pages
+  const hideOnPages = [
+    '/login',
+    '/register', 
+    '/forgot-password',
+    '/reset-password',
+    '/admin'
+  ];
+  
+  // Don't show on admin pages
+  if (currentPath.startsWith('/admin')) {
+    return false;
+  }
+  
+  // Don't show on auth pages
+  if (hideOnPages.some(page => currentPath.startsWith(page))) {
+    return false;
+  }
+  
+  // Show on employee pages or any user-related page
+  return employeePages.some(page => currentPath.startsWith(page)) || 
+         currentPath.startsWith('/user/') ||
+         currentPath === '/markets' ||
+         currentPath === '/MoneyRequest' ||
+         currentPath === '/profile';
 })
 
 // Mobile detection
@@ -65,6 +113,13 @@ html, body, #app {
 .main_content_screen {
   flex: 1;
   background-color: #0d0d1a; /* Keep background consistent */
+  padding-bottom: 0; /* Default no padding */
+}
+
+/* Add bottom padding when app bar is visible */
+.main_content_screen:has(~ .bottom-app-bar),
+.main_content_screen.with-app-bar {
+  padding-bottom: 80px;
 }
 
 /* Mobile Layout Styles */

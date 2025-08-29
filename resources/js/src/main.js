@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import mitt from 'mitt'; 
 import axios from "@axios";
 import "../src/views/assest/scss/style.scss"
+import BottomAppBar from "./components/BottomAppBar.vue";
 
 
 
@@ -130,6 +131,9 @@ app.config.globalProperties.emitter.on('login', () => {
 app.config.globalProperties.emitter.on('logout', () => {
     clearAllTimeouts();
 });
+
+// Register global components
+app.component('BottomAppBar', BottomAppBar);
 
 app.use(router);
 app.use(BootstrapVue3);
