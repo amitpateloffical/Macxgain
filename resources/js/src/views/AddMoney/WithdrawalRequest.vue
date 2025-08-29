@@ -255,78 +255,136 @@
           </b-row>
         </div>
       </div>
-      <!-- Request Modal -->
-
+      <!-- Professional Withdrawal Request Modal -->
       <b-modal
         v-model="showRequestModal"
         @hide="resetModal"
         centered
         size="lg"
-        :title="'Create Withdrawal Request'"
         hide-footer
+        modal-class="modern-modal"
+        header-class="modern-modal-header"
+        body-class="modern-modal-body"
       >
-        <!-- Loading Spinner -->
-        <div
-          v-if="modalLoading"
-          class="d-flex justify-content-center align-items-center"
-          style="height: 100px"
-        >
-          <i class="fas fa-spinner fa-spin fa-3x"></i>
+        <template #modal-header="{ close }">
+          <div class="modal-header-content">
+            <div class="modal-icon">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="modal-title-section">
+              <h4 class="modal-title">Create Withdrawal Request</h4>
+              <p class="modal-subtitle">Withdraw funds from your account</p>
+            </div>
+            <button type="button" class="modal-close-btn" @click="close()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </template>
+
+        <!-- Loading State -->
+        <div v-if="modalLoading" class="loading-container">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <p class="loading-text">Loading your account information...</p>
         </div>
 
-        <!-- Error / Bank Info Missing -->
-        <div v-else-if="!canWithdraw">
-          <div class="alert alert-danger">
-            {{ errorMessage }}
+        <!-- Error State -->
+        <div v-else-if="!canWithdraw" class="error-container">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h5 class="error-title">Unable to Process Withdrawal</h5>
+          <p class="error-message">{{ errorMessage }}</p>
+          <div class="error-actions">
+            <button class="btn-secondary" @click="resetModal">
+              <i class="fas fa-arrow-left"></i> Go Back
+            </button>
           </div>
         </div>
 
         <!-- Withdrawal Form -->
-        <div v-else>
-          <b-alert variant="info" show>
-            Available Balance: ₹{{ availableBalance }}
-          </b-alert>
-
-          <b-form @submit.prevent="submitRequest">
-            <b-row>
-              <b-col md="6">
-                <b-form-group label="Amount (₹)" label-for="amount">
-                  <b-form-input
-                    id="amount"
-                    type="number"
-                    v-model="requestData.amount"
-                    required
-                    min="1"
-                    :max="availableBalance"
-                    placeholder="Enter amount"
-                    @input="removeError('amount')"
-                  />
-                    <small class="text-muted">Available Balance: ₹{{ availableBalance }}</small>
-                  <div class="text-danger" v-if="hasErrors('amount')">
-                    {{ getErrors("amount") }}
-                  </div>
-                </b-form-group>
-              </b-col>
-            </b-row>
-
-            <b-form-group label="Description" label-for="description">
-              <b-form-textarea
-                id="description"
-                v-model="requestData.description"
-                rows="3"
-                placeholder="Optional description..."
-              />
-            </b-form-group>
-
-            <div class="d-flex justify-content-end">
-              <b-button variant="primary" :disabled="loading" type="submit">
-                <span v-if="loading">
-                  <i class="fas fa-spinner fa-spin"></i> Processing...
-                </span>
-                <span v-else> Submit Request </span>
-              </b-button>
+        <div v-else class="withdrawal-form-container">
+          <!-- Balance Display -->
+          <div class="balance-display-card">
+            <div class="balance-icon">
+              <i class="fas fa-wallet"></i>
             </div>
-          </b-form>
+            <div class="balance-info">
+              <span class="balance-label">Available Balance</span>
+              <span class="balance-amount">₹{{ formatBalance(availableBalance) }}</span>
+            </div>
+          </div>
+
+          <form @submit.prevent="submitRequest" class="withdrawal-form">
+            <!-- Amount Input -->
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-rupee-sign"></i>
+                Amount (₹)
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  v-model="requestData.amount"
+                  required
+                  min="1"
+                  :max="availableBalance"
+                  placeholder="Enter amount"
+                  class="form-input-modern"
+                  :class="{ 'error': hasErrors('amount') }"
+                  @input="removeError('amount')"
+                />
+                <div class="input-icon">
+                  <i class="fas fa-rupee-sign"></i>
+                </div>
+              </div>
+              <div class="input-help">
+                Maximum withdrawal: ₹{{ formatBalance(availableBalance) }}
+              </div>
+              <div v-if="hasErrors('amount')" class="error-text">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getErrors("amount") }}
+              </div>
+            </div>
+
+            <!-- Description Input -->
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-comment-alt"></i>
+                Description
+              </label>
+              <div class="input-wrapper">
+                <textarea
+                  v-model="requestData.description"
+                  rows="3"
+                  placeholder="Optional description..."
+                  class="form-textarea-modern"
+                ></textarea>
+              </div>
+              <div class="input-help">
+                Provide additional details about this withdrawal (optional)
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" @click="closeModal">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+              <button type="submit" class="btn-submit" :disabled="loading">
+                <span v-if="loading" class="btn-loading">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Processing...
+                </span>
+                <span v-else class="btn-content">
+                  <i class="fas fa-paper-plane"></i>
+                  Submit Request
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
       </b-modal>
 
@@ -744,6 +802,10 @@ export default {
       this.errors = {};
       this.isEdit = false;
       this.currentEditId = null;
+    },
+    closeModal() {
+      this.showRequestModal = false;
+      this.resetModal();
     },
     clearSuccessMessage() {
       setTimeout(() => {
@@ -1443,6 +1505,469 @@ export default {
   
   .balance-amount-small {
     font-size: 14px;
+  }
+}
+
+/* Modern Modal Styles */
+.modern-modal .modal-dialog {
+  max-width: 600px;
+}
+
+.modern-modal .modal-content {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+  overflow: hidden;
+}
+
+.modern-modal .modal-body {
+  background: #1a1a2e !important;
+  color: white !important;
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+}
+
+.modal-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00ff80, #00d4aa);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #1a1a2e;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+.modal-title-section {
+  flex: 1;
+}
+
+.modal-title {
+  margin: 0 0 4px 0;
+  color: #00ff80;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin: 0;
+  color: #a1a1a1;
+  font-size: 0.9rem;
+}
+
+.modal-close-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #a1a1a1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+  transform: rotate(90deg);
+}
+
+/* Loading Container */
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  color: #00ff80;
+  margin-bottom: 20px;
+}
+
+.loading-text {
+  color: #a1a1a1;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Error Container */
+.error-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-icon {
+  font-size: 4rem;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+}
+
+.error-title {
+  color: #ff6b6b;
+  margin-bottom: 12px;
+  font-size: 1.3rem;
+}
+
+.error-message {
+  color: #a1a1a1;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Form Container */
+.withdrawal-form-container,
+.money-form-container {
+  padding: 30px;
+  background: #1a1a2e !important;
+}
+
+.balance-display-card {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border: 1px solid rgba(0, 255, 128, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.balance-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00ff80, #00d4aa);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #1a1a2e;
+}
+
+.balance-info {
+  flex: 1;
+}
+
+.balance-label {
+  display: block;
+  color: #a1a1a1;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.balance-amount {
+  display: block;
+  color: #00ff80;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Form Styles */
+.withdrawal-form,
+.money-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-label-modern i {
+  color: #00ff80;
+  font-size: 0.9rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-input-modern,
+.form-textarea-modern {
+  width: 100%;
+  padding: 16px 50px 16px 16px;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border-radius: 12px;
+  color: white !important;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input-modern:focus,
+.form-textarea-modern:focus {
+  outline: none !important;
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.2) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.form-input-modern.error,
+.form-textarea-modern.error {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.form-textarea-modern {
+  resize: vertical;
+  min-height: 100px;
+  padding-right: 16px;
+}
+
+.form-input-modern::placeholder,
+.form-textarea-modern::placeholder {
+  color: #a1a1a1 !important;
+  opacity: 1 !important;
+}
+
+.input-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00ff80;
+  font-size: 0.9rem;
+}
+
+.input-help {
+  color: #a1a1a1;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.error-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+}
+
+/* File Upload Styles */
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.file-upload-area {
+  display: block;
+  padding: 30px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(0, 255, 128, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.file-upload-area:hover {
+  border-color: #00ff80;
+  background: rgba(0, 255, 128, 0.05);
+}
+
+.file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-upload-icon {
+  font-size: 2.5rem;
+  color: #00ff80;
+}
+
+.file-upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload-title {
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.upload-subtitle {
+  color: #a1a1a1;
+  font-size: 0.85rem;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #00ff80;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.current-receipt {
+  margin-top: 12px;
+}
+
+.view-receipt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 191, 255, 0.2);
+  color: #00bfff;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-receipt-btn:hover {
+  background: rgba(0, 191, 255, 0.3);
+  border-color: rgba(0, 191, 255, 0.5);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #a1a1a1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #00ff80, #00d4aa);
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 255, 128, 0.4);
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-loading,
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-header-content {
+    padding: 20px;
+    gap: 12px;
+  }
+  
+  .modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .modal-title {
+    font-size: 1.3rem;
+  }
+  
+  .withdrawal-form-container,
+  .money-form-container {
+    padding: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

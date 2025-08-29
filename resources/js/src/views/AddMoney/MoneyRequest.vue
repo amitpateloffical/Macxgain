@@ -312,116 +312,186 @@
           </b-row>
         </div>
       </div>
-      <!-- Request Modal -->
+      <!-- Professional Money Request Modal -->
       <b-modal
         v-model="showRequestModal"
         @hide="resetModal"
         centered
         size="lg"
-        :title="isEdit ? 'Edit Money Request' : 'Create Money Request'"
         hide-footer
+        modal-class="modern-modal"
+        header-class="modern-modal-header"
+        body-class="modern-modal-body"
       >
-        <div
-          v-if="editmodalLoading && isEdit"
-          class="d-flex justify-content-center align-items-center"
-          style="height: 100px"
-        >
-          <i class="fas fa-spinner fa-spin fa-3x"></i>
+        <template #modal-header="{ close }">
+          <div class="modal-header-content">
+            <div class="modal-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <div class="modal-title-section">
+              <h4 class="modal-title">{{ isEdit ? 'Edit Money Request' : 'Create Money Request' }}</h4>
+              <p class="modal-subtitle">{{ isEdit ? 'Update your money request details' : 'Add funds to your account' }}</p>
+            </div>
+            <button type="button" class="modal-close-btn" @click="close()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </template>
+
+        <!-- Loading State -->
+        <div v-if="editmodalLoading && isEdit" class="loading-container">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <p class="loading-text">Loading request details...</p>
         </div>
-        <div v-if="!editmodalLoading">
-          <b-form @submit.prevent="submitRequest">
-            <b-row>
-              <b-col md="6">
-                <b-form-group label="Transaction ID" label-for="transaction_id">
-                  <b-form-input
-                    id="transaction_id"
+
+        <!-- Money Request Form -->
+        <div v-if="!editmodalLoading" class="money-form-container">
+          <form @submit.prevent="submitRequest" class="money-form">
+            <!-- Transaction ID and Amount Row -->
+            <div class="form-row">
+              <div class="form-group-modern">
+                <label class="form-label-modern">
+                  <i class="fas fa-hashtag"></i>
+                  Transaction ID
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="text"
                     v-model="requestData.transaction_id"
                     required
                     placeholder="Enter transaction ID"
+                    class="form-input-modern"
+                    :class="{ 'error': hasErrors('transaction_id') }"
                     @input="removeError('transaction_id')"
                   />
-                  <div class="text-danger" v-if="hasErrors('transaction_id')">
-                    {{ getErrors("transaction_id") }}
+                  <div class="input-icon">
+                    <i class="fas fa-hashtag"></i>
                   </div>
-                </b-form-group>
-              </b-col>
-              <b-col md="6">
-                <b-form-group label="Amount (₹)" label-for="amount">
-                  <b-form-input
-                    id="amount"
+                </div>
+                <div class="input-help">
+                  Enter the unique transaction ID from your payment
+                </div>
+                <div v-if="hasErrors('transaction_id')" class="error-text">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ getErrors("transaction_id") }}
+                </div>
+              </div>
+
+              <div class="form-group-modern">
+                <label class="form-label-modern">
+                  <i class="fas fa-rupee-sign"></i>
+                  Amount (₹)
+                </label>
+                <div class="input-wrapper">
+                  <input
                     type="number"
                     v-model="requestData.amount"
                     required
                     min="1"
                     placeholder="Enter amount"
+                    class="form-input-modern"
+                    :class="{ 'error': hasErrors('amount') }"
                     @input="removeError('amount')"
                   />
-                  <div class="text-danger" v-if="hasErrors('amount')">
-                    {{ getErrors("amount") }}
+                  <div class="input-icon">
+                    <i class="fas fa-rupee-sign"></i>
                   </div>
-                </b-form-group>
-              </b-col>
-            </b-row>
+                </div>
+                <div class="input-help">
+                  Enter the exact amount you paid
+                </div>
+                <div v-if="hasErrors('amount')" class="error-text">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ getErrors("amount") }}
+                </div>
+              </div>
+            </div>
 
-            <b-row>
-              <!-- <b-col md="6">
-                <b-form-group label="Recipient" label-for="request_create_for">
-                  <v-select v-model="requestData.request_create_for" :options="userOptions" label="name" 
-                    :reduce="user => user.id" placeholder="Select recipient" required @input="removeError('request_create_for')" />
-                  <div class="text-danger" v-if="hasErrors('request_create_for')">
-                    {{ getErrors("request_create_for") }}
+            <!-- Payment Receipt Upload -->
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-receipt"></i>
+                Payment Receipt
+              </label>
+              <div class="file-upload-wrapper">
+                <input
+                  type="file"
+                  id="receipt-upload"
+                  @change="handleFileChange"
+                  accept="image/*"
+                  :required="!isEdit"
+                  class="file-input-hidden"
+                />
+                <label for="receipt-upload" class="file-upload-area">
+                  <div class="file-upload-content">
+                    <div class="file-upload-icon">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="file-upload-text">
+                      <span class="upload-title">Choose file or drag here</span>
+                      <span class="upload-subtitle">Max 2MB (JPEG, PNG, GIF)</span>
+                    </div>
                   </div>
-                </b-form-group>
-              </b-col> -->
-              <b-col md="6">
-                <b-form-group label="Payment Receipt" label-for="image">
-                  <input
-                    type="file"
-                    @change="handleFileChange"
-                    id="image"
-                    accept="image/*"
-                    :required="!isEdit"
-                  />
-                  <div class="text-danger" v-if="hasErrors('image')">
-                    {{ getErrors("image") }}
+                  <div v-if="requestData.image" class="file-selected">
+                    <i class="fas fa-check-circle"></i>
+                    File selected
                   </div>
-                  <small class="text-muted">Max 2MB (JPEG, PNG, GIF)</small>
-                  <div v-if="isEdit && requestData.image_path" class="mt-2">
-                    <b-link
-                      @click="showImage(requestData.image_path)"
-                      class="text-primary cursor-pointer"
-                    >
-                      View Current Receipt
-                    </b-link>
-                  </div>
-                </b-form-group>
-              </b-col>
-            </b-row>
+                </label>
+              </div>
+              <div v-if="isEdit && requestData.image_path" class="current-receipt">
+                <button type="button" @click="showImage(requestData.image_path)" class="view-receipt-btn">
+                  <i class="fas fa-eye"></i>
+                  View Current Receipt
+                </button>
+              </div>
+              <div class="input-help">
+                Upload a clear image of your payment receipt or screenshot
+              </div>
+              <div v-if="hasErrors('image')" class="error-text">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getErrors("image") }}
+              </div>
+            </div>
 
-            <b-form-group label="Description" label-for="description">
-              <b-form-textarea
-                id="description"
-                v-model="requestData.description"
-                rows="3"
-                placeholder="Optional description..."
-              />
-            </b-form-group>
+            <!-- Description Input -->
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-comment-alt"></i>
+                Description
+              </label>
+              <div class="input-wrapper">
+                <textarea
+                  v-model="requestData.description"
+                  rows="3"
+                  placeholder="Optional description..."
+                  class="form-textarea-modern"
+                ></textarea>
+              </div>
+              <div class="input-help">
+                Provide additional details about this payment (optional)
+              </div>
+            </div>
 
-            <div class="d-flex justify-content-end">
-              <b-button
-                variant="primary"
-                :disabled="loading"
-                @click="submitRequest"
-              >
-                <span v-if="loading">
-                  <i class="fas fa-spinner fa-spin"></i> Processing...
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" @click="closeModal">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+              <button type="submit" class="btn-submit" :disabled="loading">
+                <span v-if="loading" class="btn-loading">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Processing...
                 </span>
-                <span v-else>
+                <span v-else class="btn-content">
+                  <i class="fas fa-paper-plane"></i>
                   {{ isEdit ? "Update Request" : "Submit Request" }}
                 </span>
-              </b-button>
+              </button>
             </div>
-          </b-form>
+          </form>
         </div>
       </b-modal>
 
@@ -844,6 +914,10 @@ export default {
       this.errors = {};
       this.isEdit = false;
       this.currentEditId = null;
+    },
+    closeModal() {
+      this.showRequestModal = false;
+      this.resetModal();
     },
     clearSuccessMessage() {
       setTimeout(() => {
@@ -1521,5 +1595,395 @@ export default {
 .img-fluid {
   max-width: 100%;
   height: auto;
+}
+
+/* Modern Modal Styles */
+.modern-modal .modal-dialog {
+  max-width: 600px;
+}
+
+.modern-modal .modal-content {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+  overflow: hidden;
+}
+
+.modern-modal .modal-body {
+  background: #1a1a2e !important;
+  color: white !important;
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+}
+
+.modal-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00ff80, #00d4aa);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #1a1a2e;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+.modal-title-section {
+  flex: 1;
+}
+
+.modal-title {
+  margin: 0 0 4px 0;
+  color: #00ff80;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin: 0;
+  color: #a1a1a1;
+  font-size: 0.9rem;
+}
+
+.modal-close-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #a1a1a1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+  transform: rotate(90deg);
+}
+
+/* Loading Container */
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  color: #00ff80;
+  margin-bottom: 20px;
+}
+
+.loading-text {
+  color: #a1a1a1;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Form Container */
+.money-form-container {
+  padding: 30px;
+  background: #1a1a2e !important;
+}
+
+/* Form Styles */
+.money-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-label-modern i {
+  color: #00ff80;
+  font-size: 0.9rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-input-modern,
+.form-textarea-modern {
+  width: 100%;
+  padding: 16px 50px 16px 16px;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border-radius: 12px;
+  color: white !important;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input-modern:focus,
+.form-textarea-modern:focus {
+  outline: none !important;
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.2) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.form-input-modern.error,
+.form-textarea-modern.error {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.form-textarea-modern {
+  resize: vertical;
+  min-height: 100px;
+  padding-right: 16px;
+}
+
+.form-input-modern::placeholder,
+.form-textarea-modern::placeholder {
+  color: #a1a1a1 !important;
+  opacity: 1 !important;
+}
+
+.input-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00ff80;
+  font-size: 0.9rem;
+}
+
+.input-help {
+  color: #a1a1a1;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.error-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+}
+
+/* File Upload Styles */
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.file-upload-area {
+  display: block;
+  padding: 30px 20px;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 2px dashed rgba(0, 255, 128, 0.4) !important;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.file-upload-area:hover {
+  border-color: #00ff80 !important;
+  background: rgba(0, 255, 128, 0.1) !important;
+}
+
+.file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-upload-icon {
+  font-size: 2.5rem;
+  color: #00ff80;
+}
+
+.file-upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload-title {
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.upload-subtitle {
+  color: #a1a1a1;
+  font-size: 0.85rem;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #00ff80;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.current-receipt {
+  margin-top: 12px;
+}
+
+.view-receipt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 191, 255, 0.2);
+  color: #00bfff;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-receipt-btn:hover {
+  background: rgba(0, 191, 255, 0.3);
+  border-color: rgba(0, 191, 255, 0.5);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #a1a1a1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #00ff80, #00d4aa);
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 255, 128, 0.4);
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-loading,
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-header-content {
+    padding: 20px;
+    gap: 12px;
+  }
+  
+  .modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .modal-title {
+    font-size: 1.3rem;
+  }
+  
+  .money-form-container {
+    padding: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

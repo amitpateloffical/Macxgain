@@ -10,7 +10,7 @@
         <span class="app-bar-label">Dashboard</span>
       </div>
 
-      <div class="app-bar-item" @click="handleWatchlist()" :class="{ active: activeSection === 'watchlist' }">
+      <div class="app-bar-item" @click="navigateToPage('/user/watchlist')" :class="{ active: isActive('/user/watchlist') }">
         <div class="app-bar-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
@@ -19,13 +19,13 @@
         <span class="app-bar-label">Watchlist</span>
       </div>
 
-      <div class="app-bar-item" @click="navigateToPage('/user/portfolio')" :class="{ active: isActive('/user/portfolio') }">
+      <div class="app-bar-item" @click="navigateToPage('/user/orders')" :class="{ active: isActive('/user/orders') }">
         <div class="app-bar-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            <path d="M9,5V9H21V5M9,19H21V15H9M9,14H21V10H9M4,9H8V5H4M4,19H8V15H4M4,14H8V10H4V14Z"/>
           </svg>
         </div>
-        <span class="app-bar-label">Portfolio</span>
+        <span class="app-bar-label">Orders</span>
       </div>
 
       <div class="app-bar-item" @click="navigateToPage('/MoneyRequest')" :class="{ active: isActive('/MoneyRequest') }">
@@ -85,12 +85,7 @@ const navigateToPage = (path) => {
   }
 };
 
-// Handle watchlist click (no navigation, just visual feedback)
-const handleWatchlist = () => {
-  activeSection.value = 'watchlist';
-  // Add any future watchlist functionality here
-  console.log('Watchlist clicked - feature coming soon!');
-};
+
 </script>
 
 <style scoped>
