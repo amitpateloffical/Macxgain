@@ -11,18 +11,62 @@
       </div>
     </div>
 
-    <!-- Status Filter Tabs -->
-    <div class="status-tabs">
-      <button 
-        v-for="status in statusOptions" 
-        :key="status.value"
-        :class="['status-tab', { active: activeStatus === status.value }]"
-        @click="activeStatus = status.value"
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div 
+        class="stat-card total clickable"
+        :class="{ active: activeStatus === 'all' }"
+        @click="activeStatus = 'all'"
       >
-        {{ status.label }}
-        <span class="status-count">{{ getStatusCount(status.value) }}</span>
-      </button>
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ totalRequests || 0 }}</div>
+          <div class="stat-label">Total Requests</div>
+        </div>
+      </div>
+      <div 
+        class="stat-card pending clickable"
+        :class="{ active: activeStatus === 'pending' }"
+        @click="activeStatus = 'pending'"
+      >
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ pendingRequests || 0 }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+      <div 
+        class="stat-card approved clickable"
+        :class="{ active: activeStatus === 'approved' }"
+        @click="activeStatus = 'approved'"
+      >
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ approvedRequests || 0 }}</div>
+          <div class="stat-label">Approved</div>
+        </div>
+      </div>
+      <div 
+        class="stat-card rejected clickable"
+        :class="{ active: activeStatus === 'rejected' }"
+        @click="activeStatus = 'rejected'"
+      >
+        <div class="stat-icon">❌</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ rejectedRequests || 0 }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+      </div>
+      <div class="stat-card amount">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-number">₹{{ formatAmount(totalAmount) }}</div>
+          <div class="stat-label">Total Amount</div>
+        </div>
+      </div>
     </div>
+
+
 
     <!-- Requests List -->
     <div class="requests-container">
@@ -216,6 +260,17 @@ const statusOptions = [
   { value: 'rejected', label: 'Rejected' }
 ]
 
+// Stats Computed Properties
+const totalRequests = computed(() => requests.value.length)
+const pendingRequests = computed(() => requests.value.filter(r => r.status === 'pending').length)
+const approvedRequests = computed(() => requests.value.filter(r => r.status === 'approved').length)
+const rejectedRequests = computed(() => requests.value.filter(r => r.status === 'rejected').length)
+const totalAmount = computed(() => {
+  return requests.value
+    .filter(r => r.status === 'approved')
+    .reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)
+})
+
 // Computed Properties
 const filteredRequests = computed(() => {
   if (activeStatus.value === 'all') {
@@ -325,6 +380,11 @@ const formatDate = (dateString) => {
   })
 }
 
+const formatAmount = (amount) => {
+  if (!amount) return '0'
+  return parseFloat(amount).toLocaleString('en-IN')
+}
+
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
@@ -386,6 +446,100 @@ watch(activeStatus, (newVal, oldVal) => {
   font-size: 1.1rem;
   color: #a1a1a1;
   margin: 0;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card.clickable.active {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.stat-card.clickable.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+}
+
+.stat-card.total {
+  border-left: 4px solid #3b82f6;
+}
+
+.stat-card.pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.stat-card.approved {
+  border-left: 4px solid #10b981;
+}
+
+.stat-card.rejected {
+  border-left: 4px solid #ef4444;
+}
+
+.stat-card.amount {
+  border-left: 4px solid #8b5cf6;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #ffffff;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
 }
 
 .btn-primary {
@@ -532,13 +686,7 @@ watch(activeStatus, (newVal, oldVal) => {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Status Tabs */
-.status-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
+
 
 .status-tab {
   background: rgba(255, 255, 255, 0.05);
