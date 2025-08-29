@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // First Admin User
         $user = new User();
         $user->name = 'kamlesh patel';
         $user->email = 'admin@test.com';
@@ -23,5 +24,17 @@ class UserSeeder extends Seeder
         $user->created_at= now();
         $user->updated_at= now();
         $user->save();
+
+        // Second Admin User
+        $user2 = new User();
+        $user2->name = 'MacXgain Admin';
+        $user2->email = 'admin@macxgain.com';
+        $user2->mobile_code = '91';
+        $user2->phone = '9876543211';
+        $user2->is_admin = true;
+        $user2->password = '1234567890';
+        $user2->created_at = now();
+        $user2->updated_at = now();
+        $user2->save();
     }
 }
