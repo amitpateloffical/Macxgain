@@ -412,10 +412,10 @@ export default {
     this.loadMarketData();
     this.updateTimestamp();
     
-    // Auto refresh every 30 seconds
+    // Auto refresh every 5 seconds for real-time updates
     this.refreshInterval = setInterval(() => {
       this.refreshStockData();
-    }, 30000);
+    }, 5000);
   },
   beforeUnmount() {
     if (this.refreshInterval) {

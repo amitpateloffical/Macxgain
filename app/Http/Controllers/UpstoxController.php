@@ -872,8 +872,8 @@ class UpstoxController extends Controller
                 ];
             }
 
-            // Cache the prices for 30 seconds
-            \Cache::put($cacheKey, $lastPrices, 30);
+            // Cache the prices for 5 seconds for real-time updates
+            \Cache::put($cacheKey, $lastPrices, 5);
 
             // Market indices with some movement
             $niftyBase = 24350;

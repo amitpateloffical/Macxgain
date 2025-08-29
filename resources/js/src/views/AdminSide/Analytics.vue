@@ -9,7 +9,7 @@
             Analytics Dashboard
           </h1>
           <p class="page-subtitle">
-            Comprehensive insights into your platform's performance
+            Comprehensive insights into your platform's performance (Manual refresh only)
           </p>
         </div>
         <div class="header-actions">
@@ -114,90 +114,23 @@
           </div>
         </div>
 
+
+
         <div class="metric-card net-revenue">
-          <div class="metric-icon">📊</div>
+          <div class="metric-icon">💰</div>
           <div class="metric-content">
             <h3 class="metric-title">Net Revenue</h3>
             <div class="metric-value">₹{{ formatNumber(netRevenue) }}</div>
-            <div class="metric-change positive">
-              <i class="fa-solid fa-arrow-up"></i>
-              +{{ revenueGrowthRate }}% this month
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card pending-requests">
-          <div class="metric-icon">⏳</div>
-          <div class="metric-content">
-            <h3 class="metric-title">Pending Requests</h3>
-            <div class="metric-value">{{ formatNumber(pendingRequests) }}</div>
-            <div class="metric-change neutral">
-              <i class="fa-solid fa-minus"></i>
-              {{ pendingChange }}% change
+            <div class="metric-change" :class="revenueGrowthRate >= 0 ? 'positive' : 'negative'">
+              <i :class="revenueGrowthRate >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"></i>
+              {{ revenueGrowthRate >= 0 ? '+' : '' }}{{ revenueGrowthRate }}% this month
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="charts-section">
-      <div class="charts-grid">
-        <!-- User Growth Chart -->
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title">User Growth Trend</h3>
-            <div class="chart-actions">
-              <button class="chart-btn" @click="toggleChartView('users')">
-                <i class="fa-solid fa-chart-line"></i>
-              </button>
-              <button class="chart-btn" @click="toggleChartView('users')">
-                <i class="fa-solid fa-chart-bar"></i>
-              </button>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas ref="userChart" width="400" height="200"></canvas>
-          </div>
-        </div>
 
-        <!-- Financial Overview Chart -->
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3 class="chart-title">Financial Overview</h3>
-            <div class="chart-actions">
-              <button class="chart-btn" @click="toggleChartView('financial')">
-                <i class="fa-solid fa-chart-pie"></i>
-              </button>
-              <button class="chart-btn" @click="toggleChartView('financial')">
-                <i class="fa-solid fa-chart-area"></i>
-              </button>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas ref="financialChart" width="400" height="200"></canvas>
-          </div>
-        </div>
-
-        <!-- Monthly Comparison Chart -->
-        <div class="chart-card full-width">
-          <div class="chart-header">
-            <h3 class="chart-title">Monthly Comparison</h3>
-            <div class="chart-actions">
-              <button class="chart-btn" @click="toggleChartView('monthly')">
-                <i class="fa-solid fa-chart-bar"></i>
-              </button>
-              <button class="chart-btn" @click="toggleChartView('monthly')">
-                <i class="fa-solid fa-chart-line"></i>
-              </button>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas ref="monthlyChart" width="800" height="300"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Detailed Data Tables -->
     <div class="data-section">
@@ -389,7 +322,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 
 // Reactive Data
 const loading = ref(false)
@@ -412,7 +345,6 @@ const activeUsers = ref(0)
 const totalDeposits = ref(0)
 const totalWithdrawals = ref(0)
 const netRevenue = ref(0)
-const pendingRequests = ref(0)
 
 // Growth Rates
 const userGrowthRate = ref(0)
@@ -420,12 +352,8 @@ const activeUserGrowth = ref(0)
 const depositGrowthRate = ref(0)
 const withdrawalGrowthRate = ref(0)
 const revenueGrowthRate = ref(0)
-const pendingChange = ref(0)
 
-// Chart References
-const userChart = ref(null)
-const financialChart = ref(null)
-const monthlyChart = ref(null)
+
 
 // Table Data
 const users = ref([])
@@ -525,7 +453,6 @@ const updateData = async () => {
       totalDeposits.value = data.metrics.total_deposits
       totalWithdrawals.value = data.metrics.total_withdrawals
       netRevenue.value = data.metrics.net_revenue
-      pendingRequests.value = data.metrics.pending_requests
 
       // Update growth rates
       userGrowthRate.value = data.growth_rates.user_growth
@@ -533,15 +460,13 @@ const updateData = async () => {
       depositGrowthRate.value = data.growth_rates.deposit_growth
       withdrawalGrowthRate.value = data.growth_rates.withdrawal_growth
       revenueGrowthRate.value = data.growth_rates.revenue_growth
-      pendingChange.value = data.growth_rates.pending_change
 
       // Update table data
       users.value = data.users
       deposits.value = data.deposits
       withdrawals.value = data.withdrawals
 
-      // Update charts
-      updateCharts(data.charts)
+
     }
   } catch (error) {
     console.error('Error updating analytics data:', error)
@@ -551,42 +476,7 @@ const updateData = async () => {
   }
 }
 
-const updateCharts = (chartData) => {
-  // Update user growth chart
-  if (chartData.user_growth && userChart.value) {
-    updateUserChart(chartData.user_growth)
-  }
 
-  // Update financial chart
-  if (chartData.financial && financialChart.value) {
-    updateFinancialChart(chartData.financial)
-  }
-
-  // Update monthly comparison chart
-  if (chartData.monthly && monthlyChart.value) {
-    updateMonthlyChart(chartData.monthly)
-  }
-}
-
-const updateUserChart = (data) => {
-  // Chart implementation will be added when Chart.js is available
-  console.log('Updating user chart with:', data)
-}
-
-const updateFinancialChart = (data) => {
-  // Chart implementation will be added when Chart.js is available
-  console.log('Updating financial chart with:', data)
-}
-
-const updateMonthlyChart = (data) => {
-  // Chart implementation will be added when Chart.js is available
-  console.log('Updating monthly chart with:', data)
-}
-
-const toggleChartView = (chartType) => {
-  // Toggle between different chart types (line, bar, pie, etc.)
-  console.log(`Toggling ${chartType} chart view`)
-}
 
 const exportReport = () => {
   // Generate and download report
@@ -597,8 +487,7 @@ const exportReport = () => {
       activeUsers: activeUsers.value,
       totalDeposits: totalDeposits.value,
       totalWithdrawals: totalWithdrawals.value,
-      netRevenue: netRevenue.value,
-      pendingRequests: pendingRequests.value
+      netRevenue: netRevenue.value
     },
     users: users.value,
     deposits: deposits.value,
@@ -629,8 +518,7 @@ const exportCSV = () => {
   csvContent += `Active Users,${activeUsers.value}\n`
   csvContent += `Total Deposits,₹${formatNumber(totalDeposits.value)}\n`
   csvContent += `Total Withdrawals,₹${formatNumber(totalWithdrawals.value)}\n`
-  csvContent += `Net Revenue,₹${formatNumber(netRevenue.value)}\n`
-  csvContent += `Pending Requests,${pendingRequests.value}\n\n`
+  csvContent += `Net Revenue,₹${formatNumber(netRevenue.value)}\n\n`
   
   // Add users data
   if (users.value.length > 0) {
@@ -687,7 +575,6 @@ METRICS:
 - Total Deposits: ₹${formatNumber(totalDeposits.value)}
 - Total Withdrawals: ₹${formatNumber(totalWithdrawals.value)}
 - Net Revenue: ₹${formatNumber(netRevenue.value)}
-- Pending Requests: ${pendingRequests.value}
 
 USERS: ${users.value.length}
 DEPOSITS: ${deposits.value.length}
@@ -757,9 +644,21 @@ const getWithdrawalStatusClass = (status) => {
   return statusMap[status] || 'neutral'
 }
 
+// Auto refresh interval
+let refreshInterval = null
+
 // Lifecycle
 onMounted(async () => {
   await updateData()
+  
+  // Auto refresh disabled - only manual refresh via button
+})
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
 })
 
 // Watchers
@@ -813,6 +712,22 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
   font-size: 1.125rem;
   color: #a1a1aa;
   margin: 0;
+}
+
+.live-indicator {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .header-actions {
@@ -937,15 +852,15 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .metric-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 24px;
+  padding: 18px;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   position: relative;
@@ -975,8 +890,8 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 }
 
 .metric-icon {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
+  font-size: 2rem;
+  margin-bottom: 12px;
   display: block;
 }
 
@@ -988,10 +903,10 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 }
 
 .metric-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: white;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .metric-change {
@@ -1014,67 +929,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
   color: #6b7280;
 }
 
-/* Charts Section */
-.charts-section {
-  margin-bottom: 32px;
-}
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
-}
-
-.chart-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(10px);
-}
-
-.chart-card.full-width {
-  grid-column: 1 / -1;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.chart-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-  color: white;
-}
-
-.chart-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.chart-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 8px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.chart-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #00ff80;
-}
-
-.chart-container {
-  height: 300px;
-  position: relative;
-}
 
 /* Data Section */
 .data-section {
@@ -1247,13 +1102,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
   
-  .chart-card.full-width {
-    grid-column: 1;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1313,18 +1162,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
     font-size: 1.75rem;
   }
   
-  .charts-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .chart-card {
-    padding: 20px;
-  }
-  
-  .chart-container {
-    height: 250px;
-  }
+
   
   .data-tabs {
     flex-direction: column;
@@ -1419,26 +1257,9 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
     font-size: 0.8rem;
   }
   
-  .charts-section {
-    margin-bottom: 24px;
-  }
+
   
-  .chart-card {
-    padding: 16px;
-    border-radius: 12px;
-  }
-  
-  .chart-header {
-    margin-bottom: 16px;
-  }
-  
-  .chart-title {
-    font-size: 1rem;
-  }
-  
-  .chart-container {
-    height: 200px;
-  }
+
   
   .data-section {
     border-radius: 12px;
@@ -1501,13 +1322,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
     font-size: 1.25rem;
   }
   
-  .chart-card {
-    padding: 12px;
-  }
-  
-  .chart-container {
-    height: 180px;
-  }
+
   
   .tab-content {
     padding: 12px;
@@ -1550,23 +1365,12 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
     gap: 18px;
   }
   
-  .charts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .chart-card.full-width {
-    grid-column: 1 / -1;
-  }
-  
-  .chart-container {
-    height: 280px;
-  }
+
 }
 
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .metric-card,
-  .chart-card,
   .data-section {
     border-width: 0.5px;
   }
@@ -1574,13 +1378,11 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 /* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
-  .metric-card:hover,
-  .chart-btn:hover {
+  .metric-card:hover {
     transform: none;
   }
   
-  .metric-card:active,
-  .chart-btn:active {
+  .metric-card:active {
     transform: scale(0.98);
   }
   
@@ -1601,7 +1403,6 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
   .filter-section,
   .header-actions,
   .export-buttons,
-  .chart-actions,
   .data-tabs {
     display: none;
   }
@@ -1618,10 +1419,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
     box-shadow: none;
   }
   
-  .chart-container {
-    height: auto;
-    min-height: 200px;
-  }
+
   
   .data-table {
     border: 1px solid #000;

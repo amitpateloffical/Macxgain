@@ -301,7 +301,7 @@ class UpstoxService
      */
     public function getCachedMarketData()
     {
-        return Cache::remember('upstox_market_data', 60, function () {
+        return Cache::remember('upstox_market_data', 5, function () {
             $marketQuotes = $this->getMarketQuotes();
             $marketStatus = $this->getMarketStatus();
             $marketIndices = $this->getMarketIndices();

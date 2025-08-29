@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterRequestController;
 use App\Http\Controllers\WithdrawalRequestController;
 use App\Http\Controllers\UpstoxController;
+use App\Http\Controllers\AnalyticsController;
 
 
 
@@ -112,6 +113,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('/upstox/top-losers', [UpstoxController::class, 'getTopLosers']);
     Route::get('/upstox/market-indices', [UpstoxController::class, 'getMarketIndices']);
     Route::get('/upstox/live-stock-data', [UpstoxController::class, 'getLiveStockData']);
+    
+    // Analytics API Routes
+    Route::get('/analytics', [AnalyticsController::class, 'getAnalyticsData']);
 });
 
 
