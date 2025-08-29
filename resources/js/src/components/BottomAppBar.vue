@@ -194,10 +194,48 @@ const handleWatchlist = () => {
   }
 }
 
-/* Hide app bar on large desktop screens */
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .app-bar-container {
+    max-width: 700px;
+    padding: 0 18px;
+  }
+  
+  .app-bar-item {
+    padding: 8px 10px;
+    max-width: 90px;
+  }
+  
+  .app-bar-label {
+    font-size: 10px;
+  }
+}
+
+/* Desktop styles - keep app bar visible on all screen sizes */
 @media (min-width: 1200px) {
   .bottom-app-bar {
-    display: none;
+    background: rgba(17, 24, 39, 0.98);
+    backdrop-filter: blur(25px);
+    border-top: 1px solid rgba(0, 255, 128, 0.3);
+  }
+  
+  .app-bar-container {
+    max-width: 800px;
+    padding: 0 20px;
+  }
+  
+  .app-bar-item {
+    padding: 10px 12px;
+    max-width: 100px;
+  }
+  
+  .app-bar-label {
+    font-size: 11px;
+  }
+  
+  .app-bar-item:hover {
+    background: rgba(0, 255, 128, 0.15);
+    transform: translateY(-3px);
   }
 }
 </style>

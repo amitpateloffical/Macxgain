@@ -42,14 +42,7 @@
     },
     methods: {
       logout() {
-        // Simple confirmation using native confirm
-        if (confirm('Are you sure you want to logout?')) {
-          this.performLogout();
-        }
-      },
-
-      performLogout() {
-        // Use same approach as Header component
+        // Direct logout without confirmation
         localStorage.removeItem("userData");
         localStorage.removeItem("access_token");
         localStorage.removeItem("token");
