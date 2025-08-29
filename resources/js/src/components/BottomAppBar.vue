@@ -10,13 +10,13 @@
         <span class="app-bar-label">Dashboard</span>
       </div>
 
-      <div class="app-bar-item" @click="navigateToPage('/markets')" :class="{ active: isActive('/markets') }">
+      <div class="app-bar-item" @click="handleWatchlist()" :class="{ active: activeSection === 'watchlist' }">
         <div class="app-bar-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         </div>
-        <span class="app-bar-label">Market</span>
+        <span class="app-bar-label">Watchlist</span>
       </div>
 
       <div class="app-bar-item" @click="navigateToPage('/user/portfolio')" :class="{ active: isActive('/user/portfolio') }">
@@ -59,11 +59,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
+const activeSection = ref('');
 
 // Check if current route is active
 const isActive = (path) => {
@@ -73,7 +74,7 @@ const isActive = (path) => {
 // Navigation function
 const navigateToPage = (path) => {
   // Check if it's an internal Vue route or external page
-  const internalRoutes = ['/user/dashboard', '/markets', '/user/portfolio'];
+  const internalRoutes = ['/user/dashboard', '/user/portfolio'];
   
   if (internalRoutes.includes(path)) {
     // Use Vue Router for internal routes
@@ -82,6 +83,13 @@ const navigateToPage = (path) => {
     // Use window.location for external pages
     window.location.href = `http://127.0.0.1:8000${path}`;
   }
+};
+
+// Handle watchlist click (no navigation, just visual feedback)
+const handleWatchlist = () => {
+  activeSection.value = 'watchlist';
+  // Add any future watchlist functionality here
+  console.log('Watchlist clicked - feature coming soon!');
 };
 </script>
 

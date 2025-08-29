@@ -36,7 +36,6 @@ const shouldShowAppBar = computed(() => {
   // Show app bar on employee/user pages, hide on admin and auth pages
   const employeePages = [
     '/user/dashboard',
-    '/markets', 
     '/user/portfolio',
     '/MoneyRequest',
     '/Withdrawal/Request',
@@ -69,7 +68,6 @@ const shouldShowAppBar = computed(() => {
   // Show on employee pages or any user-related page
   return employeePages.some(page => currentPath.startsWith(page)) || 
          currentPath.startsWith('/user/') ||
-         currentPath === '/markets' ||
          currentPath === '/MoneyRequest' ||
          currentPath === '/Withdrawal/Request' ||
          currentPath === '/profile';
