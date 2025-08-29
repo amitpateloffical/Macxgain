@@ -715,65 +715,290 @@ export default {
 </script>
 
 <style scoped>
+/* Modern Dark Theme Withdrawal Dashboard */
 .dashboard {
-  padding: 20px;
-  background-color: #f4f4f4;
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
   min-height: 100vh;
-  width: 100%;
+  padding: 20px;
+  color: white;
+}
+
+.list__page {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
 }
 
 .list__title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.list__title h4 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Modern Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  color: #0d0d1a !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3) !important;
+}
+
+.basicButton {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.basicButton:hover {
+  background: rgba(0, 255, 128, 0.1) !important;
+  border-color: #00ff80 !important;
+  color: #00ff80 !important;
+}
+
+/* Success Alert */
+.alert-success {
+  background: rgba(0, 255, 128, 0.1) !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border-radius: 12px !important;
+  color: #00ff80 !important;
+  padding: 16px 20px !important;
+}
+
+/* Filter Box */
 .filterBox {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  margin-bottom: 30px !important;
+  backdrop-filter: blur(5px) !important;
 }
 
+/* Table Container */
 .table-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  backdrop-filter: blur(5px) !important;
 }
 
+/* Modern Table */
 .staticTable {
   width: 100%;
+  background: transparent !important;
+  color: white !important;
 }
 
+.staticTable th {
+  background: rgba(0, 255, 128, 0.1) !important;
+  border-color: rgba(0, 255, 128, 0.2) !important;
+  color: #00ff80 !important;
+  font-weight: 600 !important;
+  padding: 16px 12px !important;
+  border-top: none !important;
+}
+
+.staticTable td {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  padding: 16px 12px !important;
+  color: white !important;
+}
+
+.staticTable tbody tr {
+  background: transparent !important;
+}
+
+.staticTable tbody tr:hover {
+  background: rgba(0, 255, 128, 0.05) !important;
+}
+
+.staticTable tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 8px !important;
+}
+
+.form-control:focus, .form-select:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: #00ff80 !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1) !important;
+  color: white !important;
+}
+
+.form-label {
+  color: #e5e7eb !important;
+  font-weight: 600 !important;
+}
+
+/* Badges */
 .badge {
   font-size: 0.85em;
-  padding: 0.35em 0.65em;
+  padding: 0.5em 0.8em;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(0, 255, 128, 0.2) !important;
+  color: #00ff80 !important;
+  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+}
+
+.badge-warning {
+  background: rgba(255, 193, 7, 0.2) !important;
+  color: #ffc107 !important;
+  border: 1px solid rgba(255, 193, 7, 0.3) !important;
+}
+
+.badge-danger {
+  background: rgba(220, 53, 69, 0.2) !important;
+  color: #dc3545 !important;
+  border: 1px solid rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Pagination */
+.pagination {
+  --bs-pagination-bg: rgba(255, 255, 255, 0.1);
+  --bs-pagination-border-color: rgba(255, 255, 255, 0.2);
+  --bs-pagination-color: white;
+  --bs-pagination-hover-bg: rgba(0, 255, 128, 0.1);
+  --bs-pagination-hover-border-color: #00ff80;
+  --bs-pagination-hover-color: #00ff80;
+  --bs-pagination-active-bg: #00ff80;
+  --bs-pagination-active-border-color: #00ff80;
+  --bs-pagination-active-color: #0d0d1a;
+}
+
+/* Pagination Results */
+.showing_pagination_result {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Loading Spinner */
+.fa-spinner {
+  color: #00ff80;
+}
+
+/* Links */
+.text-primary {
+  color: #00ff80 !important;
+}
+
+.text-primary:hover {
+  color: #00cc66 !important;
+}
+
+.text-danger {
+  color: #ff6b6b !important;
+}
+
+.text-muted {
+  color: #9ca3af !important;
+}
+
+/* Modal Improvements */
+.modal-content {
+  background: rgba(26, 26, 46, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  color: white !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-title {
+  color: white !important;
+}
+
+.btn-close {
+  filter: invert(1) !important;
 }
 
 .cursor-pointer {
   cursor: pointer;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
+  .dashboard {
+    padding: 15px;
+  }
+  
+  .list__page {
+    padding: 20px;
+  }
+  
   .list__title {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 15px;
+    align-items: stretch;
   }
 
   .list__title h4 {
-    margin-bottom: 15px;
+    font-size: 1.75rem;
+    text-align: center;
   }
 
   .filterBox {
-    padding: 15px;
+    padding: 20px !important;
   }
 
   .table-container {
-    padding: 15px;
+    padding: 20px !important;
     overflow-x: auto;
+  }
+  
+  .btn-primary {
+    width: 100% !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .list__title h4 {
+    font-size: 1.5rem;
+  }
+  
+  .filterBox {
+    padding: 15px !important;
+  }
+  
+  .table-container {
+    padding: 15px !important;
   }
 }
 </style>
