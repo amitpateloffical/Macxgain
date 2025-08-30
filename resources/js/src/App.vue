@@ -1,7 +1,7 @@
 <template>
   <div :class="layout">
     <div class="app">
-      <Header v-if="layout !== 'FullLayout' && !isMobile && !shouldShowAppBar" />
+      <Header v-if="layout !== 'FullLayout' && !isMobile && !shouldShowAppBar && !isAdminPage" />
       <div class="main_screen_sidebar_devider" :class="{ 'mobile-layout': isMobile }">
         <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
         <div class="main_content_screen">
@@ -28,6 +28,12 @@ const isMobile = ref(false);
 const layout = computed(() => {  
   return route.currentRoute.value.meta.layout === 'full' ? 'FullLayout' : 'DefaultLayout';
 })
+
+// Check if current page is admin page
+const isAdminPage = computed(() => {
+  const currentPath = route.currentRoute.value.path;
+  return currentPath.startsWith('/admin');
+});
 
 // Determine when to show the bottom app bar
 const shouldShowAppBar = computed(() => {

@@ -1,25 +1,6 @@
 <template>
   <div class="payment-collector-screen">
-    <!-- Header Section -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <button class="back-btn" @click="navigateTo('/admin/dashboard')">
-            <i class="fas fa-arrow-left"></i>
-          </button>
-          <div class="header-info">
-            <h1 class="page-title">💳 Payment Collector</h1>
-            <p class="page-subtitle">Manage payment collection details and bank accounts</p>
-          </div>
-        </div>
-        <div class="header-right">
-          <button class="add-btn" @click="showAddForm = true">
-            <i class="fas fa-plus"></i>
-            Add Payment Details
-          </button>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Mobile Navigation Component -->
     <AdminMobileNav />

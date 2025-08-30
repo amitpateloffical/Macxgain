@@ -1,17 +1,6 @@
 <template>
   <div class="user-management-screen">
-    <!-- Header Section -->
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">👥 User Management</h1>
-        <p class="page-subtitle">Manage all registered users and their accounts</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn-primary" @click="showAddUserModal = true">
-          <i class="fa-solid fa-user-plus"></i> Add User
-        </button>
-      </div>
-    </div>
+
 
     <!-- Search and Filters -->
     <div class="search-filters">

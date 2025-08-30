@@ -121,7 +121,12 @@ export default {
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(0, 255, 136, 0.2);
   padding: 12px 0;
-  display: none;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  padding: 20px 8px 20px 12px;
+  justify-items: center;
+  align-items: center;
   z-index: 1000;
 }
 
@@ -167,18 +172,32 @@ export default {
   min-width: 60px;
 }
 
-/* Show mobile navigation on mobile devices */
+/* Responsive adjustments for different screen sizes */
 @media (max-width: 768px) {
   .mobile-bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
     gap: 8px;
     padding: 20px 8px 20px 12px;
-    justify-items: center;
-    align-items: center;
   }
   
   /* Add bottom padding to prevent content from being hidden behind nav */
+  body {
+    padding-bottom: 120px;
+  }
+}
+
+/* Desktop and larger screen adjustments */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    gap: 12px;
+    padding: 20px 16px 20px 20px;
+    max-width: 1200px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+    margin: 0 20px;
+  }
+  
+  /* Add bottom padding for desktop */
   body {
     padding-bottom: 120px;
   }
