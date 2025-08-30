@@ -32,6 +32,7 @@
           Withdrawal Request
         </b-button>
         <b-button
+          v-if="false"
           variant="primary"
           class="mb-0 ml-md-1 basicButton"
           v-ripple.400="'rgba(113, 102, 240, 0.15)'"
@@ -685,7 +686,7 @@ export default {
         });
     },
     approveRequest(request) {
-      if (confirm(`Are you sure you want to approve this request?`)) {
+              if (confirm(`Are you sure you want to approve this withdrawal request?`)) {
         axios
           .patch(`/withdrawal-request/${request.id}/status`, {
             status: "approved",
@@ -718,7 +719,7 @@ export default {
         })
         .then(() => {
           this.fetchRequestss();
-          this.successMessage = "Request rejected successfully!";
+                      this.successMessage = "Withdrawal request rejected successfully!";
           this.clearSuccessMessage();
           this.showRejectModal = false;
         })
