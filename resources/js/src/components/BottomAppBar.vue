@@ -80,8 +80,8 @@ const navigateToPage = (path) => {
     // Use Vue Router for internal routes
     router.push(path);
   } else {
-    // Use window.location for external pages
-    window.location.href = `http://127.0.0.1:8000${path}`;
+    // Use dynamic URL for external pages
+    window.location.href = `${window.location.origin}${path}`;
   }
 };
 
