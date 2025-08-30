@@ -1,6 +1,18 @@
 <template>
   <div class="ai-trading-screen">
-
+    <!-- Header -->
+    <div class="page-header">
+              <div class="header-content">
+          <h1 class="page-title">🤖 AI Trading - Regular Users</h1>
+          <p class="page-subtitle">Manage regular users (non-admin) in AI trading cart</p>
+        </div>
+      <div class="header-actions">
+        <button class="refresh-btn" @click="refreshUsers" :disabled="isLoading">
+          <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
+          {{ isLoading ? 'Loading...' : 'Refresh' }}
+        </button>
+      </div>
+    </div>
 
     <!-- Stats Cards -->
     <div class="stats-grid">

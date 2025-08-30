@@ -1,6 +1,15 @@
 <template>
   <div class="withdrawal-request-screen">
-
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">💳 Withdrawal Request</h1>
+        <p class="page-subtitle">Manage and process withdrawal requests from users</p>
+      </div>
+      <div class="header-actions">
+        <!-- New Request button removed -->
+      </div>
+    </div>
 
     <!-- Stats Cards -->
     <div class="stats-grid">

@@ -1,6 +1,25 @@
 <template>
   <div class="register-request-screen">
-
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">
+            <i class="fa-solid fa-user-plus"></i>
+            Register Request
+          </h1>
+          <p class="page-subtitle">
+            Review and approve new user registration requests
+          </p>
+        </div>
+        <div class="header-right">
+          <button class="btn-refresh" @click="fetchRegisterRequests" :disabled="loading">
+            <i class="fa-solid fa-rotate" :class="{ 'fa-spin': loading }"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Statistics Cards -->
     <div class="stats-cards">

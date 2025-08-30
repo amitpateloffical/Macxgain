@@ -1,6 +1,23 @@
 <template>
   <div class="money-request-screen">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+              <h1 class="page-title">💰 Fund Requests</h1>
+      <p class="page-subtitle">Manage all fund requests and transactions</p>
+      </div>
+      <div class="header-actions">
+        <button 
+          v-if="!isAdmin"
+          class="btn-primary" 
+          :disabled="loading"
+          @click="openRequestModal()"
+        >
+          <i class="fa-solid fa-plus"></i> Add Fund
+        </button>
 
+      </div>
+    </div>
 
     <!-- Success Message -->
     <div v-if="successMessage" class="success-alert">
@@ -57,8 +74,8 @@
     <!-- Requests Table -->
     <div class="requests-container">
       
-      <!-- Mobile Navigation Component -->
-      <AdminMobileNav />
+      <!-- Mobile Navigation Component - Only for Admin Users -->
+      <AdminMobileNav v-if="isAdmin" />
       <div class="table-header">
         <h3>Fund Requests ({{ totalRequests || 0 }})</h3>
         <div class="table-actions">

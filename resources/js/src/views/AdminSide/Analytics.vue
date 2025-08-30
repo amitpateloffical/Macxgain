@@ -1,6 +1,39 @@
 <template>
   <div class="analytics-screen">
-
+    <!-- Header Section -->
+    <div class="analytics-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">
+            <i class="fa-solid fa-chart-line"></i>
+            Analytics Dashboard
+          </h1>
+          <p class="page-subtitle">
+            Comprehensive insights into your platform's performance (Manual refresh only)
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-refresh" @click="refreshData" :disabled="loading">
+            <i class="fa-solid fa-rotate" :class="{ 'fa-spin': loading }"></i>
+            Refresh
+          </button>
+          <div class="export-buttons">
+            <button class="btn-export csv" @click="exportCSV">
+              <i class="fa-solid fa-file-csv"></i>
+              CSV
+            </button>
+            <button class="btn-export pdf" @click="exportPDF">
+              <i class="fa-solid fa-file-pdf"></i>
+              PDF
+            </button>
+            <button class="btn-export json" @click="exportReport">
+              <i class="fa-solid fa-file-code"></i>
+              JSON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Mobile Navigation Component -->
     <AdminMobileNav />
