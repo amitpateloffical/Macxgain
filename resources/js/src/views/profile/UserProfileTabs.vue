@@ -3,7 +3,7 @@
       <div class="tabs-wrapper">
         <div class="tabs-header">
           <b-tabs pills content-class="mt-3" nav-class="modern-nav-tabs">
-            <b-tab title="👤 General" active>
+            <b-tab title="👤 Profile" active>
               <GeneralTab :userId="userId" />
             </b-tab>
             <b-tab title="🔒 Change Password">

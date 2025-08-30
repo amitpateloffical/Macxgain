@@ -1,81 +1,135 @@
 <template>
   <b-container fluid class="main-content">
-    <b-card class="profile-card">
-      <h4 class="mb-4">Change Password</h4>
-      <b-form>
-        <!-- Old Password -->
-        <b-form-group label="Old Password">
-          <b-input-group class="input-group-merge">
-            <b-form-input
-              :type="showOldPassword ? 'text' : 'password'"
-              v-model="userpassword.current_password"
-              id="current_password"
-              @input="RemoveError('current_password')"
-              :state="hasErrors('current_password') ? false : null"
-              placeholder="Enter Current Password"
-              autocomplete="off"
-            />
-            <b-input-group-append is-text>
-              <button type="button" @click="toggleOldPasswordView" class="toggle-password-btn">
-                <i :class="showOldPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-              </button>
-            </b-input-group-append>
-          </b-input-group>
-          <div class="text-danger small" v-if="hasErrors('current_password')">
-            {{ getErrors("current_password") }}
+    <b-card class="profile-card shadow-lg border-0">
+      <b-row>
+        <!-- Left Side - Icon and Info -->
+        <b-col md="4" class="text-center border-end border-gray-700 pe-4">
+          <div class="password-icon-container mb-4">
+            <div class="password-icon">
+              <i class="bi bi-shield-lock"></i>
+            </div>
           </div>
-        </b-form-group>
-
-        <!-- New Password -->
-        <b-form-group label="New Password">
-          <b-input-group class="input-group-merge">
-            <b-form-input
-              :type="showNewPassword ? 'text' : 'password'"
-              v-model="userpassword.new_password"
-              id="new_password"
-              @input="RemoveError('new_password')"
-              :state="hasErrors('new_password') ? false : null"
-              placeholder="Enter New Password"
-              autocomplete="off"
-            />
-            <b-input-group-append is-text>
-              <button type="button" @click="toggleNewPasswordView" class="toggle-password-btn">
-                <i :class="showNewPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-              </button>
-            </b-input-group-append>
-          </b-input-group>
-          <div class="text-danger small" v-if="hasErrors('new_password')">
-            {{ getErrors("new_password") }}
+          
+          <div class="mt-4">
+            <h5 class="fw-bold text-primary">Password Security</h5>
+            <p class="text-muted">
+              <strong>Keep your account safe</strong>
+            </p>
+            <p class="text-muted">
+              <strong>Use a strong password</strong>
+            </p>
+            
+            <!-- Security Tips Card -->
+            <div class="security-tips-card mt-3">
+              <div class="tips-header">
+                <i class="bi bi-lightbulb me-2"></i>
+                <span>Security Tips</span>
+              </div>
+              <div class="tips-content">
+                <ul class="tips-list">
+                  <li>Use at least 8 characters</li>
+                  <li>Include numbers & symbols</li>
+                  <li>Don't reuse old passwords</li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </b-form-group>
+        </b-col>
 
-        <!-- Confirm Password -->
-        <b-form-group label="Confirm Password">
-          <b-input-group class="input-group-merge">
-            <b-form-input
-              :type="showConfirmPassword ? 'text' : 'password'"
-              v-model="userpassword.new_password_confirmation"
-              id="new_password_confirmation"
-              @input="RemoveError('new_password_confirmation')"
-              :state="hasErrors('new_password_confirmation') ? false : null"
-              placeholder="Confirm New Password"
-              autocomplete="off"
-            />
-            <b-input-group-append is-text>
-              <button type="button" @click="toggleConfirmPasswordView" class="toggle-password-btn">
-                <i :class="showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-              </button>
-            </b-input-group-append>
-          </b-input-group>
-          <div class="text-danger small" v-if="hasErrors('new_password_confirmation')">
-            {{ getErrors("new_password_confirmation") }}
-          </div>
-        </b-form-group>
+        <!-- Right Side - Password Form -->
+        <b-col md="8" class="ps-4">
+          <h4 class="fw-bold mb-4 text-primary">
+            <i class="bi bi-key me-2"></i>Change Password
+          </h4>
+          
+          <b-form @submit.prevent="changePassword">
+            <!-- Current Password -->
+            <b-form-group label="Current Password" label-class="fw-semibold" class="mb-3">
+              <b-input-group class="input-group-merge">
+                <b-form-input
+                  :type="showOldPassword ? 'text' : 'password'"
+                  v-model="userpassword.current_password"
+                  id="current_password"
+                  @input="RemoveError('current_password')"
+                  :state="hasErrors('current_password') ? false : null"
+                  placeholder="Enter your current password"
+                  autocomplete="current-password"
+                  class="form-control"
+                />
+                <b-input-group-append is-text>
+                  <button type="button" @click="toggleOldPasswordView" class="toggle-password-btn">
+                    <i :class="showOldPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                  </button>
+                </b-input-group-append>
+              </b-input-group>
+              <div class="text-danger small" v-if="hasErrors('current_password')">
+                {{ getErrors("current_password") }}
+              </div>
+            </b-form-group>
 
-        <b-button type="submit" variant="success" class="mt-3" @click="changePassword">
-          Change Password
-        </b-button>
-      </b-form>
+            <!-- New Password -->
+            <b-form-group label="New Password" label-class="fw-semibold" class="mb-3">
+              <b-input-group class="input-group-merge">
+                <b-form-input
+                  :type="showNewPassword ? 'text' : 'password'"
+                  v-model="userpassword.new_password"
+                  id="new_password"
+                  @input="RemoveError('new_password')"
+                  :state="hasErrors('new_password') ? false : null"
+                  placeholder="Enter your new password"
+                  autocomplete="new-password"
+                  class="form-control"
+                />
+                <b-input-group-append is-text>
+                  <button type="button" @click="toggleNewPasswordView" class="toggle-password-btn">
+                    <i :class="showNewPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                  </button>
+                </b-input-group-append>
+              </b-input-group>
+              <div class="text-danger small" v-if="hasErrors('new_password')">
+                {{ getErrors("new_password") }}
+              </div>
+            </b-form-group>
+
+            <!-- Confirm Password -->
+            <b-form-group label="Confirm New Password" label-class="fw-semibold" class="mb-4">
+              <b-input-group class="input-group-merge">
+                <b-form-input
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  v-model="userpassword.new_password_confirmation"
+                  id="new_password_confirmation"
+                  @input="RemoveError('new_password_confirmation')"
+                  :state="hasErrors('new_password_confirmation') ? false : null"
+                  placeholder="Confirm your new password"
+                  autocomplete="new-password"
+                  class="form-control"
+                />
+                <b-input-group-append is-text>
+                  <button type="button" @click="toggleConfirmPasswordView" class="toggle-password-btn">
+                    <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                  </button>
+                </b-input-group-append>
+              </b-input-group>
+              <div class="text-danger small" v-if="hasErrors('new_password_confirmation')">
+                {{ getErrors("new_password_confirmation") }}
+              </div>
+            </b-form-group>
+
+            <!-- Submit Button -->
+            <div class="mt-4">
+              <b-button 
+                type="submit" 
+                variant="success" 
+                class="change-password-btn"
+                :disabled="isSubmitting"
+              >
+                <i class="bi bi-check-circle me-1"></i> 
+                {{ isSubmitting ? 'Changing Password...' : 'Change Password' }}
+              </b-button>
+            </div>
+          </b-form>
+        </b-col>
+      </b-row>
     </b-card>
   </b-container>
 </template>
@@ -95,6 +149,7 @@ export default {
       showNewPassword: false,
       showConfirmPassword: false,
       errors: {},
+      isSubmitting: false,
     };
   },
   methods: {
@@ -118,6 +173,38 @@ export default {
     toggleConfirmPasswordView() {
       this.showConfirmPassword = !this.showConfirmPassword;
     },
+    async changePassword() {
+      this.isSubmitting = true;
+      
+      try {
+        const response = await axios.post("/change-password", this.userpassword);
+        
+        if (response.data.status === 'success') {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Password changed successfully.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            this.router.replace({ name: 'dashboard' });
+          });
+        }
+      } catch (error) {
+        if (error.response && error.response.data.code === 422) {
+          this.errors = error.response.data.errors;
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: 'Failed to change password. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
   },
   setup() {
     const userpassword = ref({
@@ -128,38 +215,17 @@ export default {
     const errors = ref([]);
     const router = useRouter();
 
-    const changePassword = () => {
-      axios.post("/change-password", userpassword.value)
-        .then((response) => {
-          if (response.data.status === 'success') {
-            Swal.fire({
-              title: 'Success!',
-              text: 'Password changed successfully.',
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false
-            }).then(() => {
-              router.replace({ name: 'dashboard' });
-            });
-          }
-        })
-        .catch(error => {
-          if (error.response && error.response.data.code === 422) {
-            errors.value = error.response.data.errors;
-          }
-        });
-    };
-
     return {
       userpassword,
-      changePassword,
       errors,
+      router,
     };
   }
 };
 </script>
+
 <style scoped>
-/* Modern Change Password Styles */
+/* Modern Change Password Styles - Matching Profile Tab */
 .main-content {
   background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
   min-height: 100vh;
@@ -176,13 +242,88 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.profile-card h4 {
-  color: #00ff80;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
+/* Password Icon Container */
+.password-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Enhanced Form Styling */
+.password-icon {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
+  border: 3px solid rgba(0, 255, 128, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.password-icon:hover {
+  border-color: rgba(0, 255, 128, 0.6);
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+}
+
+.password-icon i {
+  font-size: 3rem;
+  color: #00ff80;
+}
+
+/* Security Tips Card */
+.security-tips-card {
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: left;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.security-tips-card:hover {
+  border-color: rgba(0, 255, 128, 0.5);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+  transform: translateY(-2px);
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ff80;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.tips-content {
+  color: #9ca3af;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tips-list li {
+  padding: 5px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.tips-list li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #00ff80;
+  font-weight: bold;
+}
+
+/* Enhanced Form Styling - Matching Profile Tab */
 .form-label, label {
   color: #e5e7eb !important;
   font-weight: 600 !important;
@@ -192,6 +333,12 @@ export default {
 .input-group-merge {
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.input-group-merge:focus-within {
+  border-color: #00ff80;
+  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
 }
 
 .form-control, input.form-control {
@@ -211,31 +358,41 @@ export default {
 }
 
 .input-group-append {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: transparent !important;
+  border: none !important;
   border-left: none !important;
 }
 
 .toggle-password-btn {
   border: none;
-  background: transparent !important;
+  background: rgba(0, 255, 128, 0.15) !important;
   cursor: pointer;
-  color: #9ca3af;
+  color: #00ff80;
   font-size: 1.1rem;
   padding: 0 12px;
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
   align-items: center;
+  border-radius: 0 8px 8px 0;
+  min-width: 44px;
+  justify-content: center;
+  font-weight: 600;
 }
 
 .toggle-password-btn:hover {
-  color: #00ff80;
-  background: rgba(0, 255, 128, 0.1) !important;
+  color: #0d0d1a;
+  background: rgba(0, 255, 128, 0.4) !important;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
 }
 
-/* Modern Buttons */
-.btn-success, button.btn-success {
+.toggle-password-btn:active {
+  transform: scale(0.98);
+}
+
+/* Modern Buttons - Matching Profile Tab */
+.change-password-btn {
   background: linear-gradient(135deg, #00ff80, #00cc66) !important;
   border: none !important;
   color: #0d0d1a !important;
@@ -243,13 +400,36 @@ export default {
   padding: 12px 24px !important;
   border-radius: 12px !important;
   transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2) !important;
 }
 
-.btn-success:hover, button.btn-success:hover {
+.change-password-btn:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3) !important;
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
-  border-color: transparent !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.4) !important;
+  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+}
+
+.change-password-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Text Styling */
+.text-primary {
+  color: #00ff80 !important;
+}
+
+.text-muted {
+  color: #9ca3af !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
 }
 
 /* Error Messages */
@@ -259,7 +439,7 @@ export default {
   margin-top: 4px;
 }
 
-/* Enhanced Responsive Design */
+/* Enhanced Responsive Design - Matching Profile Tab */
 
 /* Large Tablets and Small Desktops */
 @media (max-width: 1024px) {
@@ -283,10 +463,32 @@ export default {
     border-radius: 12px;
   }
   
-  .profile-card h4 {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 1.25rem;
+  /* Stack layout vertically */
+  .profile-card .row {
+    margin: 0 !important;
+  }
+  
+  .profile-card .col-md-4 {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding-right: 0 !important;
+    padding-bottom: 20px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .profile-card .col-md-8 {
+    padding-left: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Adjust password icon */
+  .password-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .password-icon i {
+    font-size: 2.5rem;
   }
   
   /* Form adjustments */
@@ -295,21 +497,16 @@ export default {
     padding: 14px 16px !important;
   }
   
-  .toggle-password-btn {
-    padding: 0 16px;
-    font-size: 1.2rem;
-  }
-  
   /* Button adjustments */
-  .btn-success, button.btn-success {
+  .change-password-btn {
     width: 100% !important;
     padding: 14px 20px !important;
     font-size: 16px !important;
   }
   
-  /* Form groups spacing */
-  .form-group {
-    margin-bottom: 1.5rem !important;
+  /* Tips card adjustments */
+  .security-tips-card {
+    padding: 15px;
   }
 }
 
@@ -324,9 +521,15 @@ export default {
     border-radius: 10px;
   }
   
-  .profile-card h4 {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
+  /* Smaller password icon */
+  .password-icon {
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+  }
+  
+  .password-icon i {
+    font-size: 2rem;
   }
   
   /* Compact form styling */
@@ -351,15 +554,29 @@ export default {
   }
   
   /* Compact buttons */
-  .btn-success, button.btn-success {
+  .change-password-btn {
     padding: 12px 16px !important;
     font-size: 15px !important;
     border-radius: 10px !important;
   }
   
-  /* Spacing adjustments */
-  .form-group {
-    margin-bottom: 1.25rem !important;
+  /* Profile info text */
+  .profile-card h5 {
+    font-size: 1.25rem !important;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.5rem !important;
+  }
+  
+  /* Tips card adjustments */
+  .security-tips-card {
+    padding: 12px;
+  }
+  
+  .tips-list li {
+    font-size: 13px;
+    padding: 3px 0;
   }
 }
 
@@ -373,8 +590,14 @@ export default {
     padding: 0.75rem;
   }
   
-  .profile-card h4 {
-    font-size: 1.1rem;
+  /* Ultra compact password icon */
+  .password-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .password-icon i {
+    font-size: 1.8rem;
   }
   
   /* Ultra compact forms */
@@ -393,20 +616,54 @@ export default {
   }
   
   /* Ultra compact buttons */
-  .btn-success, button.btn-success {
+  .change-password-btn {
     padding: 10px 14px !important;
     font-size: 14px !important;
   }
   
-  /* Ultra compact spacing */
-  .form-group {
-    margin-bottom: 1rem !important;
+  /* Ultra compact text */
+  .profile-card h5 {
+    font-size: 1.1rem !important;
+  }
+  
+  .profile-card h4 {
+    font-size: 1.3rem !important;
+  }
+  
+  /* Ultra compact tips */
+  .security-tips-card {
+    padding: 10px;
+  }
+  
+  .tips-list li {
+    font-size: 12px;
+    padding: 2px 0;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .profile-card .col-md-4 {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-bottom: none !important;
+    padding-right: 20px !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .profile-card .col-md-8 {
+    padding-left: 20px !important;
+  }
+  
+  .change-password-btn {
+    width: auto !important;
+    display: inline-block !important;
   }
 }
 
 /* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
-  .btn-success, button.btn-success {
+  .change-password-btn {
     min-height: 44px !important;
     min-width: 44px !important;
   }
@@ -418,13 +675,18 @@ export default {
   .toggle-password-btn {
     min-height: 44px !important;
     min-width: 44px !important;
+  }
+  
+  /* Enhanced touch targets */
+  .password-icon {
+    cursor: pointer;
     -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
   }
 }
 
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .profile-card h4 {
+  .profile-card h4, .profile-card h5 {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -443,7 +705,7 @@ export default {
     color: black !important;
   }
   
-  .btn-success, button.btn-success {
+  .change-password-btn {
     display: none !important;
   }
   
@@ -455,6 +717,27 @@ export default {
   
   .toggle-password-btn {
     display: none !important;
+  }
+  
+  .password-icon {
+    border-color: #ccc !important;
+  }
+  
+  .password-icon i {
+    color: #333 !important;
+  }
+  
+  .security-tips-card {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+  }
+  
+  .tips-header {
+    color: #333 !important;
+  }
+  
+  .tips-content {
+    color: #666 !important;
   }
 }
 </style>

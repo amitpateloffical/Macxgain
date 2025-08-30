@@ -36,6 +36,20 @@
               <strong>Contact:</strong> {{ options.phone }}
             </p>
             
+            <!-- Edit Profile Button - Moved to top -->
+            <div class="edit-profile-section mt-3 mb-3">
+              <template v-if="!isEditMode">
+                <b-button
+                  type="button"
+                  variant="primary"
+                  class="edit-profile-btn"
+                  @click="toggleEditMode"
+                >
+                  <i class="bi bi-pencil me-1"></i> Edit Profile
+                </b-button>
+              </template>
+            </div>
+            
             <!-- Balance Display -->
             <div class="balance-card mt-3">
               <div class="balance-header">
@@ -388,18 +402,6 @@
                   @click="toggleEditMode"
                 >
                   <i class="bi bi-x-circle me-1"></i> Cancel
-                </b-button>
-              </template>
-              
-              <!-- View Mode Button -->
-              <template v-else>
-                <b-button
-                  type="button"
-                  variant="primary"
-                  class="me-2 rounded-pill px-4"
-                  @click="toggleEditMode"
-                >
-                  <i class="bi bi-pencil me-1"></i> Edit Profile
                 </b-button>
               </template>
             </div>
@@ -1649,12 +1651,64 @@ textarea.form-control {
   margin-bottom: 20px;
 }
 
+/* Edit Profile Button at Top */
+.edit-profile-section {
+  text-align: center;
+}
+
+.edit-profile-btn {
+  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  border: none !important;
+  color: #0d0d1a !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2) !important;
+}
+
+.edit-profile-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.4) !important;
+  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+}
+
+.edit-profile-btn i.bi-pencil {
+  transition: transform 0.3s ease;
+}
+
+.edit-profile-btn:hover i.bi-pencil {
+  transform: rotate(15deg);
+}
+
 /* Responsive button adjustments */
 @media (max-width: 768px) {
   .camera-btn {
     font-size: 0.8rem;
     padding: 6px 12px;
     border-radius: 16px;
+  }
+  
+  .edit-profile-btn {
+    width: 100% !important;
+    max-width: 300px !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .camera-btn {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 14px;
+  }
+  
+  .edit-profile-btn {
+    max-width: 100% !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
   }
 }
 
