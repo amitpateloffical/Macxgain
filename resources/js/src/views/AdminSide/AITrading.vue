@@ -71,6 +71,9 @@
 
     <!-- Users Grid -->
     <div class="users-grid-container">
+      
+      <!-- Mobile Navigation Component -->
+      <AdminMobileNav />
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading users...</p>
@@ -302,8 +305,13 @@
 </template>
 
 <script>
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
+
 export default {
   name: 'AITrading',
+  components: {
+    AdminMobileNav
+  },
   data() {
     return {
       users: [],

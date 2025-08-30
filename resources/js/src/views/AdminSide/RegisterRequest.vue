@@ -92,6 +92,9 @@
 
     <!-- Requests List -->
     <div class="requests-container">
+      
+      <!-- Mobile Navigation Component -->
+      <AdminMobileNav />
       <div v-if="loading" class="loading-state">
         <i class="fa-solid fa-spinner fa-spin"></i>
         <p>Loading registration requests...</p>
@@ -231,6 +234,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
 
 // Reactive Data
 const loading = ref(false)

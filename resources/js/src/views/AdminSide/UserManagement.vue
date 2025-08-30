@@ -82,6 +82,9 @@
 
     <!-- Users Table -->
     <div class="users-container">
+      
+      <!-- Mobile Navigation Component -->
+      <AdminMobileNav />
       <div class="table-header">
         <h3>Users List ({{ filteredUsers.length }})</h3>
         <div class="table-actions">
@@ -700,6 +703,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
 
 const router = useRouter()
 

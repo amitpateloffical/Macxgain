@@ -73,6 +73,9 @@
 
     <!-- Requests Table -->
     <div class="requests-container">
+      
+      <!-- Mobile Navigation Component -->
+      <AdminMobileNav />
       <div class="table-header">
         <h3>Fund Requests ({{ totalRequests || 0 }})</h3>
         <div class="table-actions">
@@ -550,9 +553,13 @@ import "vue-select/dist/vue-select.css";
 import axios from "@axios";
 import vSelect from "vue-select";
 import { ref, computed, onMounted } from "vue";
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
 
 export default {
-  components: { vSelect },
+  components: { 
+    vSelect,
+    AdminMobileNav
+  },
   data() {
     return {
       errors: {},

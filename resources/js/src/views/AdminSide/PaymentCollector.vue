@@ -21,6 +21,9 @@
       </div>
     </div>
 
+    <!-- Mobile Navigation Component -->
+    <AdminMobileNav />
+
     <!-- Add/Edit Form Modal -->
     <div v-if="showAddForm || editingCollector" class="modal-overlay" @click="closeForm">
       <div class="modal-content" @click.stop>
@@ -286,9 +289,13 @@
 
 <script>
 import axios from 'axios';
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
 
 export default {
   name: 'PaymentCollector',
+  components: {
+    AdminMobileNav
+  },
   data() {
     return {
       loading: false,

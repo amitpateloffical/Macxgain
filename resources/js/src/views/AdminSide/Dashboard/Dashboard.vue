@@ -89,85 +89,23 @@
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <div class="mobile-bottom-nav">
-      <div class="nav-item" @click="navigateTo('/admin/register-request')">
-        <div class="nav-icon">📝</div>
-        <span class="nav-label">Register</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/money-request')">
-        <div class="nav-icon">💰</div>
-        <span class="nav-label">Wallet</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/withdrawal-request')">
-        <div class="nav-icon">💳</div>
-        <span class="nav-label">Withdraw</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/user-management')">
-        <div class="nav-icon">👥</div>
-        <span class="nav-label">Users</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/ai-trading')">
-        <div class="nav-icon">🤖</div>
-        <span class="nav-label">AI Trading</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/payment-collector')">
-        <div class="nav-icon">💸</div>
-        <span class="nav-label">Payments</span>
-      </div>
-      <div class="nav-item" @click="showProfileMenu = !showProfileMenu">
-        <div class="nav-icon">👤</div>
-        <span class="nav-label">Profile</span>
-      </div>
-    </div>
-
-    <!-- Mobile Profile Menu -->
-    <div v-if="showProfileMenu" class="mobile-profile-menu">
-      <div class="profile-menu-header">
-        <div class="profile-info">
-          <div class="profile-avatar">👤</div>
-          <div class="profile-details">
-            <div class="profile-name">{{ userName || 'Admin User' }}</div>
-            <div class="profile-role">Administrator</div>
-          </div>
-        </div>
-        <button class="close-profile-btn" @click="showProfileMenu = false">×</button>
-      </div>
-      
-      <div class="profile-menu-actions">
-        <div class="profile-action" @click="navigateTo('profile')">
-          <div class="action-icon">⚙️</div>
-          <span>Update Profile</span>
-        </div>
-        <div class="profile-action" @click="navigateTo('add_money')">
-          <div class="action-icon">💰</div>
-          <span>Add Money</span>
-        </div>
-        <div class="profile-action" @click="navigateTo('withdrawal_request_list')">
-          <div class="action-icon">💳</div>
-          <span>Withdrawal History</span>
-        </div>
-        <div class="profile-action logout-action" @click="handleLogout">
-          <div class="action-icon">🚪</div>
-          <span>Logout</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Profile Menu Overlay -->
-    <div v-if="showProfileMenu" class="profile-overlay" @click="showProfileMenu = false"></div>
+    <!-- Mobile Navigation Component -->
+    <AdminMobileNav />
 
   </div>
 </template>
 
 <script>
+import AdminMobileNav from '../../../components/AdminMobileNav.vue';
+
 export default {
   name: 'Dashboard',
+  components: {
+    AdminMobileNav
+  },
   data() {
     return {
-      isMobile: false,
-      showProfileMenu: false,
-      userName: ''
+      isMobile: false
     }
   },
   mounted() {

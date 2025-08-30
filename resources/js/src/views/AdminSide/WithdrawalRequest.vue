@@ -66,7 +66,8 @@
       </div>
     </div>
 
-
+    <!-- Mobile Navigation Component -->
+    <AdminMobileNav />
 
     <!-- Requests List -->
     <div class="requests-container">
@@ -239,6 +240,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from '@axios'
+import AdminMobileNav from '../../components/AdminMobileNav.vue';
 
 // Reactive Data
 const activeStatus = ref('all')
