@@ -39,10 +39,11 @@ class UserController extends Controller
     public function index()
     {
         try {
-            $users = User::select([
-                'id', 'name', 'email', 'phone', 'is_admin', 'status',
-                'created_at', 'last_login_at', 'bank_name', 'account_no', 'ifsc_code'
-            ])->get();
+                    $users = User::select([
+            'id', 'name', 'email', 'phone', 'is_admin', 'status',
+            'created_at', 'last_login_at', 'bank_name', 'account_no', 'ifsc_code',
+            'profile_image'
+        ])->get();
 
             return response()->json([
                 'success' => true,

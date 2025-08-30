@@ -4,29 +4,36 @@
       <b-row>
         <!-- Profile Picture + Info -->
         <b-col md="4" class="text-center border-end border-gray-700 pe-4">
-          <!--           <b-img
-            :src="imagePreview || `/storage/${options.profile_image}?t=${new Date().getTime()}`"
-            rounded
-            class="profile-avatar mb-3"
-            alt="User Avatar"
-            @error="setDefaultImage"
-          />
-          <div>
+          <!-- Profile Image Display -->
+          <div class="profile-image-container mb-3">
+            <img
+              :src="imagePreview || getProfileImageUrl(options.profile_image)"
+              class="profile-avatar"
+              alt="User Avatar"
+              @error="setDefaultImage"
+            />
+          <!-- Edit Mode: Upload Button -->
+          <div v-if="isEditMode" class="profile-upload-overlay">
             <input
               type="file"
               ref="fileInput"
               @change="onFileChange"
               id="profile_image"
-              accept=".jpg, .png, .gif"
+              accept=".jpg, .png, .gif, .jpeg"
               style="display: none"
             />
-            <b-button variant="success" class="rounded-pill px-4" @click="triggerFileUpload">
-              <i class="bi bi-upload me-1"></i> Upload Image
+            <b-button v-if="isEditMode" variant="primary" class="upload-btn" @click="triggerFileUpload">
+              <i class="bi bi-camera me-1"></i> Change Photo
             </b-button>
           </div>
-          <b-card-text class="mt-2 small-text">
-            (Allowed JPG, GIF, or PNG. Max size of 800kB)
-          </b-card-text> -->
+          <!-- File Info - Only in Edit Mode -->
+          <div v-if="isEditMode" class="file-info">
+            <small class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              JPG, PNG, GIF up to 2MB
+            </small>
+          </div>
+          </div>
 
           <div class="mt-4">
             <h5 class="fw-bold">{{ options.name }}</h5>
@@ -513,9 +520,34 @@ export default {
       }
     },
     onFileChange(e) {
-      this.selectedFile = e.target.files[0];
-      if (this.selectedFile) {
-        this.imagePreview = URL.createObjectURL(this.selectedFile);
+      const file = e.target.files[0];
+      if (file) {
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+          Swal.fire({
+            icon: "error",
+            title: "File too large",
+            text: "Please select a file smaller than 2MB",
+          });
+          e.target.value = ''; // Clear the input
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+          Swal.fire({
+            icon: "error",
+            title: "Invalid file type",
+            text: "Please select JPG, PNG, GIF, or JPEG files only",
+          });
+          e.target.value = ''; // Clear the input
+          return;
+        }
+
+        this.selectedFile = file;
+        this.imagePreview = URL.createObjectURL(file);
+        console.log('Profile image selected:', file);
       }
     },
     triggerFileUpload() {
@@ -537,6 +569,9 @@ export default {
 
       if (this.selectedFile) {
         formData.append("profile_image", this.selectedFile);
+        console.log('Profile image appended:', this.selectedFile);
+      } else {
+        console.log('No profile image selected');
       }
 
       // Append KYC images if they exist
@@ -555,13 +590,24 @@ export default {
           headers: { "Content-Type": "multipart/form-data" },
         })
         .then((res) => {
+          console.log('Profile update response:', res.data);
+          
+          // Update the options with new data
           this.options = res.data.data;
+          console.log('Updated options:', this.options);
+          
+          // Clear file inputs
           this.selectedFile = null;
           this.imagePreview = null;
           this.kycImages = {}; // Clear KYC images
-          this.isEditMode = false; // Switch back to view mode
+          
+          // Switch back to view mode
+          this.isEditMode = false;
+          
+          // Dispatch event for other components
           window.dispatchEvent(new Event("profileUpdated"));
 
+          // Show success message
           Swal.fire({
             icon: "success",
             title: "Profile updated successfully",
@@ -569,7 +615,8 @@ export default {
             showConfirmButton: false,
           });
 
-          // Don't redirect, just stay on profile page
+          // Force refresh user data to ensure profile image is updated
+          this.fetchUserProfile();
         })
         .catch((err) => {
           if (err.response?.data.code === 422) {
@@ -624,6 +671,27 @@ export default {
       if (!imagePath) return '';
       if (imagePath.startsWith('http')) return imagePath;
       return `${window.location.origin}/storage/${imagePath}`;
+    },
+
+    // Get profile image URL
+    getProfileImageUrl(imagePath) {
+      if (!imagePath) return '/storage/default-avatar.png';
+      if (imagePath.startsWith('http')) return imagePath;
+      return `${window.location.origin}/storage/${imagePath}`;
+    },
+
+    // Fetch user profile data to refresh
+    fetchUserProfile() {
+      axios.get('/userprofile')
+        .then((res) => {
+          if (res.data.data) {
+            this.options = res.data.data;
+            console.log('Refreshed profile data:', this.options);
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching user profile:', err);
+        });
     },
 
     // Remove selected KYC image
@@ -1272,5 +1340,68 @@ textarea.form-control {
 
 .btn-remove-image i {
   font-size: 0.9rem;
+}
+
+/* Profile Image Styles */
+.profile-image-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(0, 255, 128, 0.3);
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  border-color: rgba(0, 255, 128, 0.6);
+  transform: scale(1.05);
+}
+
+.profile-upload-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 8px 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-image-container:hover .profile-upload-overlay {
+  opacity: 1;
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  border: none;
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, #00cc66, #00aa55);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3);
+  color: #000;
+}
+
+.file-info {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 128, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 128, 0.2);
 }
 </style>

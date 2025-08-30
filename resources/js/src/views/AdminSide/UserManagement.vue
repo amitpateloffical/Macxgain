@@ -132,7 +132,13 @@
         >
           <div class="col-user">
             <div class="user-info">
-              <img :src="user.avatar" :alt="user.name" class="user-avatar" />
+              <img 
+                :src="user.avatar" 
+                :alt="user.name" 
+                class="user-avatar" 
+                @error="handleProfileImageError($event, user.name)"
+                @load="() => console.log(`Profile image loaded successfully for ${user.name}:`, user.avatar)"
+              />
               <div class="user-details">
                 <h4 class="user-name">{{ user.name }}</h4>
                 <p class="user-id">ID: {{ user.id }}</p>
@@ -331,15 +337,38 @@
             
             <div class="form-row">
               <div class="form-group full-width">
-                <label for="profile_image">Profile Image</label>
-                <input 
-                  type="file" 
-                  id="profile_image" 
-                  @change="handleProfileImageUpload" 
-                  accept="image/*"
-                  class="form-control file-input"
-                />
-                <small class="form-help">Upload profile picture (JPG, PNG, GIF - Max 2MB)</small>
+                <label for="profile_image">
+                  <i class="fa-solid fa-camera me-2"></i>
+                  Profile Image
+                </label>
+                <div class="profile-upload-container">
+                  <input 
+                    type="file" 
+                    id="profile_image" 
+                    @change="handleProfileImageUpload" 
+                    accept="image/*"
+                    class="form-control file-input"
+                  />
+                  <div class="upload-preview" v-if="newUser.profile_image">
+                    <img 
+                      :src="getImagePreview(newUser.profile_image)" 
+                      alt="Preview" 
+                      class="preview-image"
+                    />
+                    <button 
+                      type="button" 
+                      @click="removeProfileImage" 
+                      class="remove-image-btn"
+                      title="Remove Image"
+                    >
+                      <i class="fa-solid fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <small class="form-help">
+                  <i class="fa-solid fa-info-circle me-1"></i>
+                  Upload profile picture (JPG, PNG, GIF - Max 2MB)
+                </small>
               </div>
             </div>
             
@@ -434,6 +463,44 @@
                   class="form-control"
                   placeholder="Leave blank to keep current password"
                 />
+              </div>
+            </div>
+            
+            <!-- Profile Image Upload for Edit -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="editProfileImage">
+                  <i class="fa-solid fa-camera me-2"></i>
+                  Profile Image
+                </label>
+                <div class="profile-upload-container">
+                  <input 
+                    type="file" 
+                    id="editProfileImage" 
+                    @change="handleEditProfileImageUpload" 
+                    accept="image/*"
+                    class="form-control file-input"
+                  />
+                  <div class="upload-preview" v-if="editingUser.profile_image">
+                    <img 
+                      :src="getImagePreview(editingUser.profile_image)" 
+                      alt="Preview" 
+                      class="preview-image"
+                    />
+                    <button 
+                      type="button" 
+                      @click="removeEditProfileImage" 
+                      class="remove-image-btn"
+                      title="Remove Image"
+                    >
+                      <i class="fa-solid fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <small class="form-help">
+                  <i class="fa-solid fa-info-circle me-1"></i>
+                  Upload new profile picture (JPG, PNG, GIF - Max 2MB)
+                </small>
               </div>
             </div>
             
@@ -562,6 +629,8 @@
                 <!-- KYC Document Images -->
                 <div class="kyc-images-section">
                   <h5 class="sub-section-title">📸 Document Images</h5>
+                  
+
                   
                   <div class="kyc-image-grid">
                     <!-- Aadhar Front Image -->
@@ -707,18 +776,30 @@ const fetchUsers = async () => {
     const data = await response.json()
     
     if (data.success && data.data) {
-      users.value = data.data.map(user => ({
-        id: user.id,
-        name: user.name || 'Unknown User',
-        email: user.email,
-        phone: user.phone || null,
-        role: user.is_admin ? 'admin' : 'user',
-        status: mapUserStatus(user.status) || 'active',
-        avatar: user.profile_image || '../assest/img/tableprofileimg.png',
-        created_at: user.created_at,
-        last_login: user.last_login_at || null, // Use real last_login_at data
-        total_balance: 0 // Field doesn't exist in database
-      }))
+      console.log('Raw user data:', data.data)
+      console.log('First user profile_image example:', data.data[0]?.profile_image)
+      
+      users.value = data.data.map(user => {
+        console.log(`Processing user: ${user.name}`)
+        console.log(`User ${user.name} raw profile_image:`, user.profile_image)
+        console.log(`User ${user.name} profile_image type:`, typeof user.profile_image)
+        
+        const avatarUrl = getProfileImageUrl(user.profile_image)
+        console.log(`User ${user.name} final avatar URL:`, avatarUrl)
+        
+        return {
+          id: user.id,
+          name: user.name || 'Unknown User',
+          email: user.email,
+          phone: user.phone || null,
+          role: user.is_admin ? 'admin' : 'user',
+          status: mapUserStatus(user.status) || 'active',
+          avatar: avatarUrl,
+          created_at: user.created_at,
+          last_login: user.last_login_at || null, // Use real last_login_at data
+          total_balance: 0 // Field doesn't exist in database
+        }
+      })
     } else {
       throw new Error(data.message || 'Failed to fetch users')
     }
@@ -737,7 +818,7 @@ const fetchUsers = async () => {
           phone: '+91 98765 43210',
           role: 'admin',
           status: 'active',
-          avatar: '../assest/img/tableprofileimg.png',
+          avatar: '/build/assets/tableprofileimg-DaN7tIxX.png',
           created_at: '2024-01-01T10:00:00Z',
           last_login: '2024-01-15T14:30:00Z',
           total_balance: 50000
@@ -839,7 +920,7 @@ const resetEditingUserForm = () => {
   }
 }
 
-// Handle profile image upload
+// Handle profile image upload for new user
 const handleProfileImageUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
@@ -859,6 +940,93 @@ const handleProfileImageUpload = (event) => {
     
     newUser.value.profile_image = file
   }
+}
+
+// Handle profile image upload for edit user
+const handleEditProfileImageUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Profile image must be less than 2MB')
+      event.target.value = ''
+      return
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file')
+      event.target.value = ''
+      return
+    }
+    
+    editingUser.value.profile_image = file
+  }
+}
+
+// Remove profile image from new user form
+const removeProfileImage = () => {
+  newUser.value.profile_image = null
+  document.getElementById('profile_image').value = ''
+}
+
+// Remove profile image from edit user form
+const removeEditProfileImage = () => {
+  editingUser.value.profile_image = null
+  document.getElementById('editProfileImage').value = ''
+}
+
+// Get image preview URL
+const getImagePreview = (file) => {
+  if (!file) return ''
+  if (typeof file === 'string') return file
+  return URL.createObjectURL(file)
+}
+
+// Get proper profile image URL
+const getProfileImageUrl = (profileImagePath) => {
+  console.log('getProfileImageUrl called with:', profileImagePath)
+  
+      if (!profileImagePath) {
+      console.log('No profile image path, returning default')
+      return '/build/assets/tableprofileimg-DaN7tIxX.png'
+    }
+  
+  if (profileImagePath.startsWith('http')) {
+    console.log('Profile image is already a full URL:', profileImagePath)
+    return profileImagePath
+  }
+  
+  const fullUrl = `${window.location.origin}/storage/${profileImagePath}`
+  console.log('Constructed full URL:', fullUrl)
+  return fullUrl
+}
+
+// Handle profile image error (fallback to initials)
+const handleProfileImageError = (event, userName) => {
+  console.log(`Profile image failed to load for ${userName}, creating initials fallback`)
+  console.log('Failed image src:', event.target.src)
+  
+  event.target.style.display = 'none'
+  // Create initials fallback
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 3)
+  const fallbackDiv = document.createElement('div')
+  fallbackDiv.className = 'profile-initials-fallback'
+  fallbackDiv.textContent = initials
+  fallbackDiv.style.cssText = `
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff80, #00cc66);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 3px solid #00ff80;
+  `
+  event.target.parentNode.appendChild(fallbackDiv)
 }
 
 // Add New User to Backend
@@ -936,7 +1104,7 @@ const addNewUser = async () => {
         phone: data.data.phone || null,
         role: data.data.is_admin ? 'admin' : 'user',
         status: mapUserStatus(data.data.status) || 'active',
-        avatar: data.data.profile_image || '../assest/img/tableprofileimg.png',
+        avatar: getProfileImageUrl(data.data.profile_image),
         created_at: data.data.created_at,
         last_login: null, // New user hasn't logged in yet
         total_balance: 0
@@ -1764,11 +1932,20 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
-  border: 2px solid #00ff80;
+  border: 3px solid #00ff80;
   object-fit: cover;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  border-color: #00cc66;
+  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.5);
 }
 
 .user-details h4 {
@@ -2884,8 +3061,87 @@ const handleClickOutside = (event, modalRef) => {
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
+}
+
+/* Profile Image Upload Styles */
+.profile-upload-container {
+  position: relative;
+  margin-top: 8px;
+}
+
+.upload-preview {
+  position: relative;
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.preview-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #00ff80;
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  cursor: pointer;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: rgba(220, 53, 69, 1);
+  transform: scale(1.1);
+}
+
+.file-input {
+  border: 2px dashed rgba(0, 255, 128, 0.3);
+  background: rgba(0, 255, 128, 0.05);
+  color: #00ff80;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  border-color: rgba(0, 255, 128, 0.6);
+  background: rgba(0, 255, 128, 0.1);
+}
+
+.file-input:focus {
+  outline: none;
+  border-color: #00ff80;
+  box-shadow: 0 0 0 2px rgba(0, 255, 128, 0.2);
+}
+
+/* Profile Initials Fallback */
+.profile-initials-fallback {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 3px solid #00ff80;
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
 }
 
 .btn-secondary.modal-action-btn:hover {
