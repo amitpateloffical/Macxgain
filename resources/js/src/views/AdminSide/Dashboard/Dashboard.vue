@@ -99,17 +99,13 @@
         <div class="nav-icon">💰</div>
         <span class="nav-label">Wallet</span>
       </div>
-      <div class="nav-item" @click="navigateTo('/admin/user-management')">
-        <div class="nav-icon">👥</div>
-        <span class="nav-label">Users</span>
-      </div>
       <div class="nav-item" @click="navigateTo('/admin/withdrawal-request')">
         <div class="nav-icon">💳</div>
         <span class="nav-label">Withdraw</span>
       </div>
-      <div class="nav-item" @click="navigateTo('/admin/analytics')">
-        <div class="nav-icon">📊</div>
-        <span class="nav-label">Analytics</span>
+      <div class="nav-item" @click="navigateTo('/admin/user-management')">
+        <div class="nav-icon">👥</div>
+        <span class="nav-label">Users</span>
       </div>
       <div class="nav-item" @click="navigateTo('/admin/ai-trading')">
         <div class="nav-icon">🤖</div>
@@ -118,10 +114,6 @@
       <div class="nav-item" @click="navigateTo('/admin/payment-collector')">
         <div class="nav-icon">💸</div>
         <span class="nav-label">Payments</span>
-      </div>
-      <div class="nav-item" @click="navigateTo('/admin/stock-market')">
-        <div class="nav-icon">📈</div>
-        <span class="nav-label">Stocks</span>
       </div>
       <div class="nav-item" @click="showProfileMenu = !showProfileMenu">
         <div class="nav-icon">👤</div>
@@ -948,13 +940,18 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  padding: 8px;
+  padding: 12px 10px;
   border-radius: 12px;
   transition: all 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  min-height: 70px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .mobile-bottom-nav .nav-item:active {
@@ -965,14 +962,20 @@ export default {
 .mobile-bottom-nav .nav-icon {
   font-size: 24px;
   line-height: 1;
+  margin-bottom: 2px;
+  max-width: 100%;
 }
 
 .mobile-bottom-nav .nav-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   line-height: 1.2;
+  white-space: nowrap;
+  max-width: 100%;
+  padding: 0 4px;
+  min-width: 60px;
 }
 
 
@@ -981,22 +984,24 @@ export default {
 @media (max-width: 768px) {
   .mobile-bottom-nav {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    padding: 16px 12px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 20px 10px 20px 16px;
+    justify-items: center;
+    align-items: center;
   }
   
   /* Add bottom padding to prevent content from being hidden behind nav */
   .dashboard-screen {
-    padding-bottom: 100px;
+    padding-bottom: 120px;
   }
 }
 
 /* Mobile-specific optimizations */
 @media (max-width: 480px) {
   .mobile-bottom-nav {
-    padding: 12px 8px;
-    gap: 4px;
+    padding: 16px 6px 16px 12px;
+    gap: 6px;
   }
   
   .mobile-bottom-nav .nav-icon {
@@ -1029,7 +1034,8 @@ export default {
 /* Landscape orientation adjustments */
 @media (max-width: 768px) and (orientation: landscape) {
   .mobile-bottom-nav {
-    padding: 8px 12px;
+    padding: 16px 16px 16px 20px;
+    gap: 14px;
   }
   
   .mobile-bottom-nav .nav-icon {
