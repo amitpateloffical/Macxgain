@@ -523,7 +523,12 @@
         <div class="modal-body">
           <div class="user-details-view">
             <div class="user-avatar-large">
-              <img :src="viewingUser.avatar" :alt="viewingUser.name" />
+              <img 
+                :src="viewingUser.avatar" 
+                :alt="viewingUser.name"
+                @error="handleViewUserImageError($event, viewingUser.name)"
+                @load="() => console.log('View user profile image loaded successfully:', viewingUser.avatar)"
+              />
             </div>
             
             <div class="user-info-grid">
@@ -1029,6 +1034,34 @@ const handleProfileImageError = (event, userName) => {
   event.target.parentNode.appendChild(fallbackDiv)
 }
 
+// Handle view user profile image error
+const handleViewUserImageError = (event, userName) => {
+  console.log(`View user profile image failed to load for ${userName}, creating initials fallback`)
+  console.log('Failed image src:', event.target.src)
+  
+  event.target.style.display = 'none'
+  // Create initials fallback for large avatar
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 3)
+  const fallbackDiv = document.createElement('div')
+  fallbackDiv.className = 'profile-initials-fallback-large'
+  fallbackDiv.textContent = initials
+  fallbackDiv.style.cssText = `
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff80, #00cc66);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 36px;
+    border: 4px solid #00ff80;
+    box-shadow: 0 4px 20px rgba(0, 255, 128, 0.3);
+  `
+  event.target.parentNode.appendChild(fallbackDiv)
+}
+
 // Add New User to Backend
 const addNewUser = async () => {
   try {
@@ -1151,7 +1184,14 @@ const viewUser = async (user) => {
     const result = await response.json()
     
     if (result.success && result.data) {
-      viewingUser.value = result.data
+      // Ensure the user data has the avatar property for profile image display
+      viewingUser.value = {
+        ...result.data,
+        avatar: getProfileImageUrl(result.data.profile_image)
+      }
+      console.log('Viewing user data:', viewingUser.value)
+      console.log('Profile image path:', result.data.profile_image)
+      console.log('Avatar URL:', viewingUser.value.avatar)
       showViewUserModal.value = true
     } else {
       throw new Error(result.message || 'Failed to fetch user details')
@@ -3144,6 +3184,22 @@ const handleClickOutside = (event, modalRef) => {
   box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
 }
 
+/* Large Profile Initials Fallback for View Modal */
+.profile-initials-fallback-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 36px;
+  border: 4px solid #00ff80;
+  box-shadow: 0 4px 20px rgba(0, 255, 128, 0.3);
+}
+
 .btn-secondary.modal-action-btn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -3166,6 +3222,832 @@ const handleClickOutside = (event, modalRef) => {
 .btn-primary.modal-action-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+/* ===== COMPREHENSIVE RESPONSIVE DESIGN ===== */
+
+/* Large Tablets and Small Laptops */
+@media (min-width: 1025px) and (max-width: 1366px) {
+  .user-management-screen {
+    padding: 24px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .table-header {
+    min-width: 1000px;
+  }
+  
+  .table-row {
+    min-width: 1000px;
+  }
+  
+  .modal-content {
+    width: 85%;
+    max-width: 800px;
+  }
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+  /* Enhanced Header */
+  .page-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 24px 20px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+  }
+  
+  .header-content h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+  }
+  
+  .header-content p {
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 1rem;
+    justify-content: center;
+    border-radius: 12px;
+  }
+  
+  /* Enhanced Stats */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .stat-card {
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+    margin: 0 auto 16px;
+  }
+  
+  .stat-content h3 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  
+  .stat-content p {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+  
+  /* Enhanced Search & Filters */
+  .search-filters {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .search-box {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+  
+  .filter-options {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+  
+  .btn-secondary {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 1rem;
+    justify-content: center;
+    border-radius: 12px;
+  }
+  
+  /* Enhanced Table */
+  .users-container {
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 255, 128, 0.05);
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .table-header h3 {
+    font-size: 1.4rem;
+    margin: 0;
+  }
+  
+  .table-actions {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .btn-export {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  
+  /* Enhanced Table Rows */
+  .table-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .header-row {
+    display: none;
+  }
+  
+  .col-user,
+  .col-email,
+  .col-phone,
+  .col-role,
+  .col-status,
+  .col-joined,
+  .col-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .col-user::before,
+  .col-email::before,
+  .col-phone::before,
+  .col-role::before,
+  .col-status::before,
+  .col-joined::before,
+  .col-actions::before {
+    font-weight: 600;
+    color: #00ff80;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  
+  .col-user::before { content: "👤 User: "; }
+  .col-email::before { content: "📧 Email: "; }
+  .col-phone::before { content: "📱 Phone: "; }
+  .col-role::before { content: "🔑 Role: "; }
+  .col-status::before { content: "📊 Status: "; }
+  .col-joined::before { content: "📅 Joined: "; }
+  .col-actions::before { content: "⚡ Actions: "; }
+  
+  /* Enhanced User Avatar */
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+  }
+  
+  .user-details h4 {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .user-details p {
+    font-size: 0.9rem;
+    text-align: center;
+    opacity: 0.8;
+  }
+  
+  /* Enhanced Action Buttons */
+  .col-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: none;
+  }
+  
+  .btn-action {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-width: 80px;
+  }
+  
+  /* Enhanced Modals */
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+  
+  .modal-header {
+    padding: 24px 20px;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+  
+  .modal-body {
+    padding: 24px 20px;
+  }
+  
+  /* Enhanced Forms */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+  
+  .form-group label {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .form-control {
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+  }
+  
+  .btn-secondary,
+  .btn-primary {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 1rem;
+    justify-content: center;
+    border-radius: 12px;
+  }
+  
+  /* Enhanced View User Modal */
+  .user-details-view {
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  
+  .user-avatar-large {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+  }
+  
+  .user-info-grid {
+    width: 100%;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .info-label {
+    font-size: 1rem;
+    color: #00ff80;
+    font-weight: 600;
+  }
+  
+  .info-value {
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    word-break: break-word;
+  }
+  
+  .balance-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #00ff80 !important;
+  }
+  
+  /* Enhanced KYC Section */
+  .kyc-images-section {
+    margin-top: 32px;
+    padding-top: 32px;
+  }
+  
+  .sub-section-title {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .kyc-image-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .kyc-image-item {
+    padding: 20px;
+    border-radius: 12px;
+  }
+  
+  .image-label {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  
+  .kyc-document-image {
+    max-height: 150px;
+    border-radius: 10px;
+  }
+  
+  /* Enhanced Bank Details */
+  .bank-details-section,
+  .kyc-details-section {
+    padding: 24px;
+    margin-top: 24px;
+    border-radius: 16px;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Enhanced Profile Upload */
+  .profile-upload-container {
+    text-align: center;
+  }
+  
+  .upload-preview {
+    display: block;
+    margin: 16px auto;
+  }
+  
+  .preview-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+  }
+  
+  .remove-image-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  /* Enhanced Pagination */
+  .pagination {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    margin-top: 32px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+  }
+  
+  .page-info {
+    text-align: center;
+    font-size: 1rem;
+  }
+  
+  .page-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-page {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-width: 44px;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  .user-management-screen {
+    padding: 16px;
+  }
+  
+  .page-header {
+    padding: 20px 16px;
+    margin-bottom: 20px;
+  }
+  
+  .header-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-content p {
+    font-size: 1rem;
+  }
+  
+  .btn-primary {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+  
+  .stats-grid {
+    gap: 12px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .stat-content h3 {
+    font-size: 1.6rem;
+  }
+  
+  .search-filters {
+    padding: 16px;
+  }
+  
+  .search-box,
+  .filter-select {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+  
+  .users-container {
+    padding: 16px;
+  }
+  
+  .table-header {
+    padding: 16px;
+  }
+  
+  .table-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .table-row {
+    padding: 16px;
+    gap: 8px;
+  }
+  
+  .user-avatar {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .user-details h4 {
+    font-size: 1rem;
+  }
+  
+  .user-details p {
+    font-size: 0.85rem;
+  }
+  
+  .btn-action {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+  
+  .modal-content {
+    width: 98%;
+    margin: 10px;
+  }
+  
+  .modal-header,
+  .modal-body {
+    padding: 20px 16px;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .user-avatar-large {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .info-row {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .info-label {
+    font-size: 0.9rem;
+  }
+  
+  .info-value {
+    font-size: 1rem;
+  }
+  
+  .kyc-image-item {
+    padding: 16px;
+  }
+  
+  .kyc-document-image {
+    max-height: 120px;
+  }
+  
+  .bank-details-section,
+  .kyc-details-section {
+    padding: 20px 16px;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+  }
+  
+  .preview-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .remove-image-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+  
+  .pagination {
+    padding: 20px 16px;
+  }
+  
+  .page-buttons {
+    gap: 6px;
+  }
+  
+  .btn-page {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 40px;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .user-management-screen {
+    padding: 16px 24px;
+  }
+  
+  .page-header {
+    flex-direction: row;
+    gap: 24px;
+    text-align: left;
+    padding: 20px 24px;
+  }
+  
+  .header-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-actions {
+    flex-direction: row;
+    gap: 20px;
+    width: auto;
+  }
+  
+  .btn-primary {
+    width: auto;
+    padding: 12px 24px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .search-filters {
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .search-box {
+    width: auto;
+    min-width: 200px;
+  }
+  
+  .filter-options {
+    flex-direction: row;
+    gap: 16px;
+    width: auto;
+  }
+  
+  .filter-select {
+    width: auto;
+    min-width: 120px;
+  }
+  
+  .btn-secondary {
+    width: auto;
+    padding: 12px 24px;
+  }
+  
+  .table-header {
+    flex-direction: row;
+    gap: 20px;
+    text-align: left;
+    align-items: center;
+  }
+  
+  .table-actions {
+    flex-direction: row;
+    gap: 16px;
+    width: auto;
+  }
+  
+  .btn-export {
+    width: auto;
+    padding: 10px 20px;
+  }
+  
+  .modal-content {
+    max-height: 80vh;
+  }
+  
+  .user-details-view {
+    flex-direction: row;
+    text-align: left;
+    gap: 24px;
+  }
+  
+  .info-row {
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  
+  .kyc-image-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .pagination {
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .page-buttons {
+    gap: 12px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .user-avatar,
+  .user-avatar-large img,
+  .kyc-document-image,
+  .preview-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn-action,
+  .btn-page,
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .table-row {
+    padding: 20px;
+    gap: 16px;
+  }
+  
+  .col-actions {
+    gap: 16px;
+  }
+  
+  .btn-action {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+  
+  .modal-content {
+    margin: 10px;
+  }
+  
+  .form-control {
+    padding: 16px 20px;
+    font-size: 1rem;
+  }
+  
+  .btn-page {
+    padding: 12px 18px;
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-action,
+  .btn-page,
+  .stat-card,
+  .modal-content,
+  .table-row,
+  .kyc-image-item {
+    transition: none;
+  }
+  
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-action:hover,
+  .btn-page:hover,
+  .stat-card:hover,
+  .kyc-image-item:hover {
+    transform: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .user-management-screen {
+    background: linear-gradient(135deg, #0d0d1a 0%, #101022 100%);
+  }
+  
+  .stat-card,
+  .table-row,
+  .modal-content,
+  .kyc-image-item,
+  .bank-details-section,
+  .kyc-details-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 </style>
