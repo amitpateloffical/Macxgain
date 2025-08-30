@@ -29,7 +29,7 @@
           :disabled="loading"
           @click="openRequestModal()"
         >
-          Create Request
+          Withdrawal Request
         </b-button>
         <b-button
           variant="primary"
@@ -348,24 +348,7 @@
               </div>
             </div>
 
-            <!-- Description Input -->
-            <div class="form-group-modern">
-              <label class="form-label-modern">
-                <i class="fas fa-comment-alt"></i>
-                Description
-              </label>
-              <div class="input-wrapper">
-                <textarea
-                  v-model="requestData.description"
-                  rows="3"
-                  placeholder="Optional description..."
-                  class="form-textarea-modern"
-                ></textarea>
-              </div>
-              <div class="input-help">
-                Provide additional details about this withdrawal (optional)
-              </div>
-            </div>
+
 
             <!-- Form Actions -->
             <div class="form-actions">
@@ -436,7 +419,6 @@ export default {
       balanceLoading: false,
       fields: [
         { key: "amount", label: "Amount", sortable: true },
-        { key: "description", label: "Description" },
         { key: "status", label: "Status", sortable: true },
         {
           key: "request_create_for",
@@ -454,7 +436,6 @@ export default {
       requestData: {
         transaction_id: "",
         amount: "",
-        description: "",
         image: null,
         request_create_for: null,
         image_path: null,
@@ -666,7 +647,6 @@ export default {
         this.requestData = {
           transaction_id: "",
           amount: "",
-          description: "",
           image: null,
           request_create_for: null,
           image_path: null,
@@ -692,8 +672,8 @@ export default {
           this.showRequestModal = false;
           this.fetchRequestss();
           this.successMessage = this.isEdit
-            ? "Request updated successfully!"
-            : "Request submitted successfully!";
+            ? "Withdrawal request updated successfully!"
+            : "Withdrawal request submitted successfully!";
           this.clearSuccessMessage();
           this.loading = false;
         })
@@ -713,7 +693,7 @@ export default {
           .then((response) => {
             this.fetchRequestss();
             this.successMessage =
-              response.data.message || "Request approved successfully!";
+              response.data.message || "Withdrawal request approved successfully!";
             this.clearSuccessMessage();
           })
           .catch((error) => {
@@ -794,7 +774,6 @@ export default {
       this.requestData = {
         transaction_id: "",
         amount: "",
-        description: "",
         image: null,
         request_create_for: null,
         image_path: null,

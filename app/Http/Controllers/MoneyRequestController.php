@@ -15,9 +15,7 @@ class MoneyRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'transaction_id' => 'required|string|unique:money_requests',
             'amount' => 'required|numeric|min:1',
-            'description' => 'nullable|string',
             'image' => 'required|image|max:2048',
             // 'request_create_for' => 'required|exists:users,id',
         ]);
@@ -25,9 +23,7 @@ class MoneyRequestController extends Controller
         $imagePath = $request->file('image')->store('money_requests', 'public');
 
         $moneyRequest = MoneyRequest::create([
-            'transaction_id' => $request->transaction_id,
             'amount' => $request->amount,
-            'description' => $request->description,
             'image_path' => $imagePath,
             'request_by' => Auth::guard('api')->user()->id,
             'request_create_for' => 1,
@@ -50,10 +46,7 @@ class MoneyRequestController extends Controller
             });
         }
 
-        // Apply filters
-        if ($request->has('transaction_id')) {
-            $query->where('transaction_id', 'like', '%'.$request->transaction_id.'%');
-        }
+
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -113,13 +106,11 @@ class MoneyRequestController extends Controller
         }
 
         $request->validate([
-            'transaction_id' => 'required|string|unique:money_requests,transaction_id,'.$id,
             'amount' => 'required|numeric|min:1',
-            'description' => 'nullable|string',
             'image' => 'sometimes|image|max:2048',
         ]);
 
-        $data = $request->only(['transaction_id', 'amount', 'description']);
+        $data = $request->only(['amount']);
         
         if ($request->hasFile('image')) {
             // Delete old image
@@ -185,7 +176,7 @@ class MoneyRequestController extends Controller
             'type'             => 'credit',
             'amount'           => $moneyRequest->amount,
             'running_balance'  => $lastBalance + $moneyRequest->amount,
-            'remark'           => 'Money request approved - ' . $moneyRequest->transaction_id,
+            'remark'           => 'Money request approved - ID: ' . $moneyRequest->id,
         ]);
     }
 

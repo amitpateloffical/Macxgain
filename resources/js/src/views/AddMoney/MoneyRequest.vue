@@ -3,8 +3,8 @@
     <!-- Header Section -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">💰 Money Requests</h1>
-        <p class="page-subtitle">Manage all money requests and transactions</p>
+              <h1 class="page-title">💰 Fund Requests</h1>
+      <p class="page-subtitle">Manage all fund requests and transactions</p>
       </div>
       <div class="header-actions">
         <button 
@@ -13,11 +13,9 @@
           :disabled="loading"
           @click="openRequestModal()"
         >
-          <i class="fa-solid fa-plus"></i> Create Request
+          <i class="fa-solid fa-plus"></i> Add Fund
         </button>
-        <button class="btn-secondary" @click="showfilter = !showfilter">
-          <i class="fa-solid fa-filter"></i> {{ showfilter ? 'Hide' : 'Show' }} Filters
-        </button>
+
       </div>
     </div>
 
@@ -73,74 +71,10 @@
       </div>
     </div>
 
-      <div v-if="showfilter">
-        <b-card class="filterBox mb-0">
-          <b-row>
-            <b-col md="4">
-              <b-form-group label="Transaction ID" label-for="transaction_id">
-                <b-form-input
-                  v-model="search.transaction_id"
-                  id="transaction_id"
-                  placeholder="Enter Transaction ID"
-                />
-              </b-form-group>
-            </b-col>
-            <b-col md="4">
-              <b-form-group label="Status" label-for="status">
-                <b-form-select
-                  v-model="search.status"
-                  :options="statusOptions"
-                  id="status"
-                >
-                  <template #first>
-                    <b-form-select-option :value="null"
-                      >All Status</b-form-select-option
-                    >
-                  </template>
-                </b-form-select>
-              </b-form-group>
-            </b-col>
-            <b-col md="4" v-if="isAdmin">
-              <b-form-group label="Recipient" label-for="recipient">
-                <v-select
-                  v-model="search.recipient"
-                  :options="userOptions"
-                  label="name"
-                  :reduce="(user) => user.id"
-                  placeholder="Select Recipient"
-                />
-              </b-form-group>
-            </b-col>
-          </b-row>
-          <b-row>
-            <b-col md="3">
-              <b-form-group label="From Date" label-for="from_date">
-                <b-form-datepicker v-model="search.from_date" id="from_date" />
-              </b-form-group>
-            </b-col>
-            <b-col md="3">
-              <b-form-group label="To Date" label-for="to_date">
-                <b-form-datepicker v-model="search.to_date" id="to_date" />
-              </b-form-group>
-            </b-col>
-            <b-col md="2">
-              <b-button @click="searchFilter" variant="primary mt-1 w-100">
-                Search
-              </b-button>
-            </b-col>
-            <b-col md="2">
-              <b-button @click="resetFilter" variant="primary mt-1 w-100">
-                Reset
-              </b-button>
-            </b-col>
-          </b-row>
-        </b-card>
-      </div>
-
     <!-- Requests Table -->
     <div class="requests-container">
       <div class="table-header">
-        <h3>Money Requests ({{ totalRequests || 0 }})</h3>
+        <h3>Fund Requests ({{ totalRequests || 0 }})</h3>
         <div class="table-actions">
                   <button class="btn-refresh" @click="fetchRequestss" :disabled="modalLoading">
           <i class="fa-solid fa-rotate" :class="{ 'fa-spin': modalLoading }"></i>
@@ -160,8 +94,8 @@
       
       <div v-else-if="!fetchRequests || fetchRequests.length === 0" class="no-data">
         <div class="no-data-icon">💰</div>
-        <h3>No Money Requests Found</h3>
-        <p>No requests match your current filters</p>
+        <h3>No Fund Requests Found</h3>
+        <p>No fund requests found</p>
       </div>
       
       <div v-else class="requests-table">
@@ -174,11 +108,7 @@
           responsive
           class="requests-table dark-table"
         >
-            <template #cell(transaction_id)="data">
-              <span class="font-weight-bold">{{
-                data.item.transaction_id
-              }}</span>
-            </template>
+
 
             <template #cell(amount)="data">
               ₹{{ data.item.amount.toLocaleString() }}
@@ -466,63 +396,33 @@
         <!-- Money Request Form -->
         <div v-if="!editmodalLoading" class="money-form-container">
           <form @submit.prevent="submitRequest" class="money-form">
-            <!-- Transaction ID and Amount Row -->
-            <div class="form-row">
-              <div class="form-group-modern">
-                <label class="form-label-modern">
-                  <i class="fas fa-hashtag"></i>
-                  Transaction ID
-                </label>
-                <div class="input-wrapper">
-                  <input
-                    type="text"
-                    v-model="requestData.transaction_id"
-                    required
-                    placeholder="Enter transaction ID"
-                    class="form-input-modern"
-                    :class="{ 'error': hasErrors('transaction_id') }"
-                    @input="removeError('transaction_id')"
-                  />
-                  <div class="input-icon">
-                    <i class="fas fa-hashtag"></i>
-                  </div>
-                </div>
-                <div class="input-help">
-                  Enter the unique transaction ID from your payment
-                </div>
-                <div v-if="hasErrors('transaction_id')" class="error-text">
-                  <i class="fas fa-exclamation-circle"></i>
-                  {{ getErrors("transaction_id") }}
+            <!-- Amount Input -->
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-rupee-sign"></i>
+                Amount (₹)
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  v-model="requestData.amount"
+                  required
+                  min="1"
+                  placeholder="Enter amount"
+                  class="form-input-modern"
+                  :class="{ 'error': hasErrors('amount') }"
+                  @input="removeError('amount')"
+                />
+                <div class="input-icon">
+                  <i class="fas fa-rupee-sign"></i>
                 </div>
               </div>
-
-              <div class="form-group-modern">
-                <label class="form-label-modern">
-                  <i class="fas fa-rupee-sign"></i>
-                  Amount (₹)
-                </label>
-                <div class="input-wrapper">
-                  <input
-                    type="number"
-                    v-model="requestData.amount"
-                    required
-                    min="1"
-                    placeholder="Enter amount"
-                    class="form-input-modern"
-                    :class="{ 'error': hasErrors('amount') }"
-                    @input="removeError('amount')"
-                  />
-                  <div class="input-icon">
-                    <i class="fas fa-rupee-sign"></i>
-                  </div>
-                </div>
-                <div class="input-help">
-                  Enter the exact amount you paid
-                </div>
-                <div v-if="hasErrors('amount')" class="error-text">
-                  <i class="fas fa-exclamation-circle"></i>
-                  {{ getErrors("amount") }}
-                </div>
+              <div class="input-help">
+                Enter the exact amount you paid
+              </div>
+              <div v-if="hasErrors('amount')" class="error-text">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getErrors("amount") }}
               </div>
             </div>
 
@@ -572,24 +472,7 @@
               </div>
             </div>
 
-            <!-- Description Input -->
-            <div class="form-group-modern">
-              <label class="form-label-modern">
-                <i class="fas fa-comment-alt"></i>
-                Description
-              </label>
-              <div class="input-wrapper">
-                <textarea
-                  v-model="requestData.description"
-                  rows="3"
-                  placeholder="Optional description..."
-                  class="form-textarea-modern"
-                ></textarea>
-              </div>
-              <div class="input-help">
-                Provide additional details about this payment (optional)
-              </div>
-            </div>
+
 
             <!-- Form Actions -->
             <div class="form-actions">
@@ -673,15 +556,18 @@ export default {
   data() {
     return {
       errors: {},
-      showfilter: false,
+
       fetchRequests: [],
       userBalance: 0,
       balanceLoading: false,
       fields: [
-        { key: "transaction_id", label: "Transaction ID", sortable: true },
         { key: "amount", label: "Amount", sortable: true },
-        { key: "description", label: "Description" },
         { key: "status", label: "Status", sortable: true },
+        {
+          key: "request_by",
+          label: "User Name",
+          formatter: (value, key, item) => item.requester?.name || 'N/A',
+        },
         {
           key: "request_create_for",
           label: "Recipient",
@@ -697,9 +583,7 @@ export default {
         { key: "actions", label: "Actions" },
       ],
       requestData: {
-        transaction_id: "",
         amount: "",
-        description: "",
         image: null,
         request_create_for: null,
         image_path: null,
@@ -710,12 +594,7 @@ export default {
       isEdit: false,
       loading: false,
       successMessage: "",
-      statusOptions: [
-        { value: "pending", text: "Pending" },
-        { value: "approved", text: "Approved" },
-        { value: "rejected", text: "Rejected" },
-      ],
-      userOptions: [],
+
       totalrows: 0,
       sortBy: "",
       sortDesc: true,
@@ -746,10 +625,14 @@ export default {
     },
     tableFields() {
       return [
-        { key: "transaction_id", label: "Transaction ID", sortable: true },
         { key: "amount", label: "Amount", sortable: true },
-        { key: "description", label: "Description" },
         { key: "status", label: "Status", sortable: true },
+        { 
+          key: "request_by", 
+          label: "User Name", 
+          sortable: true,
+          formatter: (value, key, item) => item.requester?.name || 'N/A'
+        },
         { key: "created_at", label: "Request Date", sortable: true },
         { key: "image_path", label: "Receipt" },
         { key: "actions", label: "Actions" }
@@ -757,19 +640,11 @@ export default {
     }
   },
   setup() {
-    const search = ref({
-      transaction_id: "",
-      status: null,
-      recipient: null,
-      from_date: null,
-      to_date: null,
-    });
     const currentPage = ref(1);
     const perPage = ref(10);
     const perPageOptions = [10, 25, 50, 100];
 
     return {
-      search,
       currentPage,
       perPage,
       perPageOptions,
@@ -778,7 +653,6 @@ export default {
   mounted() {
     this.fetchUserInfo();
     this.fetchRequestss();
-    this.fetchUsers();
     this.fetchUserBalance();
     this.fetchPrimaryPaymentDetails();
     
@@ -958,7 +832,6 @@ export default {
             perPage: this.perPage,
             sortBy: this.sortBy,
             sortDesc: this.sortDesc,
-            ...this.search,
           },
         })
         .then((response) => {
@@ -978,16 +851,7 @@ export default {
           this.modalLoading = false;
         });
     },
-    fetchUsers() {
-      axios
-        .get("/users")
-        .then((response) => {
-          this.userOptions = response.data;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    },
+
     openRequestModal(editId = null) {
       this.showRequestModal = true;
       this.isEdit = !!editId;
@@ -999,9 +863,7 @@ export default {
           .get(`/money-requests/${editId}`)
           .then((response) => {
             const res = response.data.data; 
-            this.requestData.transaction_id = res.transaction_id;
             this.requestData.amount = res.amount;
-            this.requestData.description = res.description;
             this.requestData.image_path = res.image_path;
             this.requestData.image = res.image;
 
@@ -1013,9 +875,7 @@ export default {
           });
       } else {
         this.requestData = {
-          transaction_id: "",
           amount: "",
-          description: "",
           image: null,
           request_create_for: null,
           image_path: null,
@@ -1041,8 +901,8 @@ export default {
           this.showRequestModal = false;
           this.fetchRequestss();
           this.successMessage = this.isEdit
-            ? "Request updated successfully!"
-            : "Request submitted successfully!";
+            ? "Fund request updated successfully!"
+            : "Fund request submitted successfully!";
           this.clearSuccessMessage();
           this.loading = false;
         })
@@ -1054,12 +914,12 @@ export default {
         });
     },
     approveRequest(request) {
-      if (confirm(`Are you sure you want to approve this request?`)) {
+              if (confirm(`Are you sure you want to approve this fund request?`)) {
         axios
           .patch(`/money-requests/${request.id}/status`, { status: "approved" })
           .then(() => {
             this.fetchRequestss();
-            this.successMessage = "Request approved successfully!";
+            this.successMessage = "Fund request approved successfully!";
             this.clearSuccessMessage();
           })
           .catch((error) => {
@@ -1117,21 +977,7 @@ export default {
     handleFileChange(event) {
       this.requestData.image = event.target.files[0];
     },
-    searchFilter() {
-      this.currentPage = 1;
-      this.fetchRequestss();
-    },
-    resetFilter() {
-      this.search = {
-        transaction_id: "",
-        status: null,
-        recipient: null,
-        from_date: null,
-        to_date: null,
-      };
-      this.currentPage = 1;
-      this.fetchRequestss();
-    },
+
     resetModal() {
       this.requestData = {
         transaction_id: "",

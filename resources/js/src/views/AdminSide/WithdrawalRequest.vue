@@ -123,10 +123,7 @@
                 {{ request.requester.ifsc_code }}
               </span>
             </div>
-            <div class="detail-row" v-if="request.description">
-              <span class="detail-label">Reason:</span>
-              <span class="detail-value">{{ request.description }}</span>
-            </div>
+
             <div class="detail-row" v-if="request.reject_reason">
               <span class="detail-label">Rejection Reason:</span>
               <span class="detail-value reject-reason">{{ request.reject_reason }}</span>
