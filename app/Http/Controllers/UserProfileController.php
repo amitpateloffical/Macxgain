@@ -37,6 +37,9 @@ class UserProfileController extends Controller
                     'aadhar_number'=>$user->aadhar_number,
                     'pan_number'=>$user->pan_number,
                     'address'=>$user->address,
+                    'aadhar_front_image'=>$user->aadhar_front_image,
+                    'aadhar_back_image'=>$user->aadhar_back_image,
+                    'pan_card_image'=>$user->pan_card_image,
                 ]
             ]);
         }
@@ -64,6 +67,9 @@ class UserProfileController extends Controller
         'aadhar_number'=> 'nullable|string|size:12',
         'pan_number'   => 'nullable|string|size:10',
         'address'      => 'nullable|string|max:500',
+        'aadhar_front_image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+        'aadhar_back_image'  => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+        'pan_card_image'     => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
     ]);
 
     if ($validator->fails()) {
@@ -86,6 +92,33 @@ class UserProfileController extends Controller
         }
         $path = $request->file('profile_image')->store('profile_images', 'public');
         $user->profile_image = $path;
+    }
+
+    // Handle Aadhar Front Image
+    if ($request->hasFile('aadhar_front_image')) {
+        if ($user->aadhar_front_image) {
+            Storage::delete($user->aadhar_front_image);
+        }
+        $path = $request->file('aadhar_front_image')->store('kyc_documents', 'public');
+        $user->aadhar_front_image = $path;
+    }
+
+    // Handle Aadhar Back Image
+    if ($request->hasFile('aadhar_back_image')) {
+        if ($user->aadhar_back_image) {
+            Storage::delete($user->aadhar_back_image);
+        }
+        $path = $request->file('aadhar_back_image')->store('kyc_documents', 'public');
+        $user->aadhar_back_image = $path;
+    }
+
+    // Handle PAN Card Image
+    if ($request->hasFile('pan_card_image')) {
+        if ($user->pan_card_image) {
+            Storage::delete($user->pan_card_image);
+        }
+        $path = $request->file('pan_card_image')->store('kyc_documents', 'public');
+        $user->pan_card_image = $path;
     }
 
     $user->save();

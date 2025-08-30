@@ -33,7 +33,10 @@ class User extends Authenticatable
         'ifsc_code',
         'aadhar_number',
         'pan_number',
-        'address'
+        'address',
+        'aadhar_front_image',
+        'aadhar_back_image',
+        'pan_card_image'
     ];
 
     /**

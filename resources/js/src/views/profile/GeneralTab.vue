@@ -213,6 +213,165 @@
               </b-col>
             </b-row>
 
+            <!-- KYC Document Images Row -->
+            <b-row>
+              <b-col md="12" class="mb-3">
+                <h6 class="fw-semibold text-primary mb-3">
+                  <i class="bi bi-file-earmark-image me-2"></i>KYC Documents
+                </h6>
+              </b-col>
+            </b-row>
+
+            <!-- Aadhar Images Row -->
+            <b-row>
+              <b-col md="6" class="mb-3">
+                <b-form-group label="Aadhar Front Image" label-class="fw-semibold">
+                  <div v-if="!isEditMode && options.aadhar_front_image" class="mb-2">
+                    <img 
+                      :src="getImageUrl(options.aadhar_front_image)" 
+                      alt="Aadhar Front" 
+                      class="img-thumbnail" 
+                      style="max-width: 200px; max-height: 150px;"
+                    />
+                  </div>
+                  <div class="file-input-wrapper">
+                    <input
+                      v-if="isEditMode"
+                      type="file"
+                      id="aadhar_front_image"
+                      @change="handleKYCImageUpload('aadhar_front_image', $event)"
+                      accept="image/*"
+                      class="form-control"
+                      :class="{ 'is-invalid': hasErrors('aadhar_front_image') }"
+                    />
+                    <label for="aadhar_front_image" class="file-input-label">
+                      <i class="bi bi-cloud-upload me-2"></i>Choose Aadhar Front Image
+                    </label>
+                  </div>
+                  
+                  <!-- Real-time Preview -->
+                  <div v-if="isEditMode && kycImagePreviews.aadhar_front_image" class="image-preview-container">
+                    <div class="preview-label">Selected Image Preview:</div>
+                    <img 
+                      :src="kycImagePreviews.aadhar_front_image" 
+                      alt="Aadhar Front Preview" 
+                      class="selected-image-preview"
+                    />
+                    <button 
+                      type="button" 
+                      class="btn-remove-image"
+                      @click="removeKYCImage('aadhar_front_image')"
+                    >
+                      <i class="bi bi-x-circle"></i> Remove
+                    </button>
+                  </div>
+                  <div class="text-danger small" v-if="hasErrors('aadhar_front_image')">
+                    {{ getErrors("aadhar_front_image") }}
+                  </div>
+                  <small class="text-muted">Max size: 2MB, Format: JPG, PNG, JPEG</small>
+                </b-form-group>
+              </b-col>
+
+              <b-col md="6" class="mb-3">
+                <b-form-group label="Aadhar Back Image" label-class="fw-semibold">
+                  <div v-if="!isEditMode && options.aadhar_back_image" class="mb-2">
+                    <img 
+                      :src="getImageUrl(options.aadhar_back_image)" 
+                      alt="Aadhar Back" 
+                      class="img-thumbnail" 
+                      style="max-width: 200px; max-height: 150px;"
+                    />
+                  </div>
+                  <div class="file-input-wrapper">
+                    <input
+                      v-if="isEditMode"
+                      type="file"
+                      id="aadhar_back_image"
+                      @change="handleKYCImageUpload('aadhar_back_image', $event)"
+                      accept="image/*"
+                      class="form-control"
+                      :class="{ 'is-invalid': hasErrors('aadhar_back_image') }"
+                    />
+                    <label for="aadhar_back_image" class="file-input-label">
+                      <i class="bi bi-cloud-upload me-2"></i>Choose Aadhar Back Image
+                    </label>
+                  </div>
+                  
+                  <!-- Real-time Preview -->
+                  <div v-if="isEditMode && kycImagePreviews.aadhar_back_image" class="image-preview-container">
+                    <div class="preview-label">Selected Image Preview:</div>
+                    <img 
+                      :src="kycImagePreviews.aadhar_back_image" 
+                      alt="Aadhar Back Preview" 
+                      class="selected-image-preview"
+                    />
+                    <button 
+                      type="button" 
+                      class="btn-remove-image"
+                      @click="removeKYCImage('aadhar_back_image')"
+                    >
+                      <i class="bi bi-x-circle"></i> Remove
+                    </button>
+                  </div>
+                  <div class="text-danger small" v-if="hasErrors('aadhar_back_image')">
+                    {{ getErrors("aadhar_back_image") }}
+                  </div>
+                  <small class="text-muted">Max size: 2MB, Format: JPG, PNG, JPEG</small>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
+            <!-- PAN Card Image Row -->
+            <b-row>
+              <b-col md="6" class="mb-3">
+                <b-form-group label="PAN Card Image" label-class="fw-semibold">
+                  <div v-if="!isEditMode && options.pan_card_image" class="mb-2">
+                    <img 
+                      :src="getImageUrl(options.pan_card_image)" 
+                      alt="PAN Card" 
+                      class="img-thumbnail" 
+                      style="max-width: 200px; max-height: 150px;"
+                    />
+                  </div>
+                  <div class="file-input-wrapper">
+                    <input
+                      v-if="isEditMode"
+                      type="file"
+                      id="pan_card_image"
+                      @change="handleKYCImageUpload('pan_card_image', $event)"
+                      accept="image/*"
+                      class="form-control"
+                      :class="{ 'is-invalid': hasErrors('pan_card_image') }"
+                    />
+                    <label for="pan_card_image" class="file-input-label">
+                      <i class="bi bi-cloud-upload me-2"></i>Choose PAN Card Image
+                    </label>
+                  </div>
+                  
+                  <!-- Real-time Preview -->
+                  <div v-if="isEditMode && kycImagePreviews.pan_card_image" class="image-preview-container">
+                    <div class="preview-label">Selected Image Preview:</div>
+                    <img 
+                      :src="kycImagePreviews.pan_card_image" 
+                      alt="PAN Card Preview" 
+                      class="selected-image-preview"
+                    />
+                    <button 
+                      type="button" 
+                      class="btn-remove-image"
+                      @click="removeKYCImage('pan_card_image')"
+                    >
+                      <i class="bi bi-x-circle"></i> Remove
+                    </button>
+                  </div>
+                  <div class="text-danger small" v-if="hasErrors('pan_card_image')">
+                    {{ getErrors("pan_card_image") }}
+                  </div>
+                  <small class="text-muted">Max size: 2MB, Format: JPG, PNG, JPEG</small>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
             <div class="mt-4">
               <!-- Edit Mode Buttons -->
               <template v-if="isEditMode">
@@ -273,7 +432,10 @@ export default {
         ifsc_code: "",
         aadhar_number: "",
         pan_number: "",
-        address: ""
+        address: "",
+        aadhar_front_image: "",
+        aadhar_back_image: "",
+        pan_card_image: ""
       },
       selectedFile: null,
       imagePreview: null,
@@ -281,6 +443,8 @@ export default {
       userBalance: 0,
       balanceLoading: false,
       isEditMode: false,
+      kycImages: {},
+      kycImagePreviews: {},
     };
   },
   created() {
@@ -374,6 +538,18 @@ export default {
       if (this.selectedFile) {
         formData.append("profile_image", this.selectedFile);
       }
+
+      // Append KYC images if they exist
+      if (this.kycImages.aadhar_front_image) {
+        formData.append("aadhar_front_image", this.kycImages.aadhar_front_image);
+      }
+      if (this.kycImages.aadhar_back_image) {
+        formData.append("aadhar_back_image", this.kycImages.aadhar_back_image);
+      }
+      if (this.kycImages.pan_card_image) {
+        formData.append("pan_card_image", this.kycImages.pan_card_image);
+      }
+
       axios
         .post(`/update-profile/${btoa(this.options.id)}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -382,6 +558,7 @@ export default {
           this.options = res.data.data;
           this.selectedFile = null;
           this.imagePreview = null;
+          this.kycImages = {}; // Clear KYC images
           this.isEditMode = false; // Switch back to view mode
           window.dispatchEvent(new Event("profileUpdated"));
 
@@ -399,6 +576,74 @@ export default {
             this.errors = err.response.data.errors;
           }
         });
+    },
+
+    // Handle KYC image uploads
+    handleKYCImageUpload(field, event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+          Swal.fire({
+            icon: "error",
+            title: "File too large",
+            text: "Please select a file smaller than 2MB",
+          });
+          event.target.value = ''; // Clear the input
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+          Swal.fire({
+            icon: "error",
+            title: "Invalid file type",
+            text: "Please select JPG, PNG, or JPEG files only",
+          });
+          event.target.value = ''; // Clear the input
+          return;
+        }
+
+        // Store the file for upload
+        if (!this.kycImages) {
+          this.kycImages = {};
+        }
+        this.kycImages[field] = file;
+
+        // Create preview URL
+        if (!this.kycImagePreviews) {
+          this.kycImagePreviews = {};
+        }
+        this.kycImagePreviews[field] = URL.createObjectURL(file);
+      }
+    },
+
+    // Get image URL for display
+    getImageUrl(imagePath) {
+      if (!imagePath) return '';
+      if (imagePath.startsWith('http')) return imagePath;
+      return `${window.location.origin}/storage/${imagePath}`;
+    },
+
+    // Remove selected KYC image
+    removeKYCImage(field) {
+      // Clear the file input
+      const fileInput = document.getElementById(field);
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      // Remove from kycImages
+      if (this.kycImages[field]) {
+        delete this.kycImages[field];
+      }
+      
+      // Remove from previews
+      if (this.kycImagePreviews[field]) {
+        URL.revokeObjectURL(this.kycImagePreviews[field]);
+        delete this.kycImagePreviews[field];
+      }
     },
   },
 };
@@ -924,5 +1169,108 @@ input[maxlength="12"]:not([readonly]) {
 textarea.form-control {
   min-height: 80px;
   line-height: 1.5;
+}
+
+/* File Input Styles */
+.file-input-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.file-input-wrapper input[type="file"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-input-label {
+  display: block;
+  padding: 12px 16px;
+  background: rgba(0, 255, 128, 0.1);
+  border: 2px dashed rgba(0, 255, 128, 0.3);
+  border-radius: 8px;
+  text-align: center;
+  color: #00ff80;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.file-input-label:hover {
+  background: rgba(0, 255, 128, 0.15);
+  border-color: rgba(0, 255, 128, 0.5);
+  transform: translateY(-1px);
+}
+
+.file-input-label i {
+  font-size: 1.1rem;
+}
+
+/* File input focus state */
+.file-input-wrapper input[type="file"]:focus + .file-input-label {
+  border-color: #00ff80;
+  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25);
+}
+
+/* Invalid state */
+.file-input-wrapper input[type="file"].is-invalid + .file-input-label {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Image Preview Styles */
+.image-preview-container {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 255, 128, 0.05);
+  border: 1px solid rgba(0, 255, 128, 0.2);
+  border-radius: 8px;
+}
+
+.preview-label {
+  font-weight: 600;
+  color: #00ff80;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.selected-image-preview {
+  max-width: 200px;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid rgba(0, 255, 128, 0.3);
+  margin-bottom: 10px;
+}
+
+.btn-remove-image {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-remove-image:hover {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-remove-image i {
+  font-size: 0.9rem;
 }
 </style>

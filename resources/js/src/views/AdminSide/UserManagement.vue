@@ -558,6 +558,57 @@
                     {{ viewingUser.address || 'Not provided' }}
                   </span>
                 </div>
+
+                <!-- KYC Document Images -->
+                <div class="kyc-images-section">
+                  <h5 class="sub-section-title">📸 Document Images</h5>
+                  
+                  <div class="kyc-image-grid">
+                    <!-- Aadhar Front Image -->
+                    <div class="kyc-image-item" v-if="viewingUser.aadhar_front_image">
+                      <div class="image-label">Aadhar Front</div>
+                      <div class="image-container">
+                        <img 
+                          :src="getImageUrl(viewingUser.aadhar_front_image)" 
+                          alt="Aadhar Front" 
+                          class="kyc-document-image"
+                          @click="viewImage(viewingUser.aadhar_front_image, 'Aadhar Front')"
+                        />
+                      </div>
+                    </div>
+                    
+                    <!-- Aadhar Back Image -->
+                    <div class="kyc-image-item" v-if="viewingUser.aadhar_back_image">
+                      <div class="image-label">Aadhar Back</div>
+                      <div class="image-container">
+                        <img 
+                          :src="getImageUrl(viewingUser.aadhar_back_image)" 
+                          alt="Aadhar Back" 
+                          class="kyc-document-image"
+                          @click="viewImage(viewingUser.aadhar_back_image, 'Aadhar Back')"
+                        />
+                      </div>
+                    </div>
+                    
+                    <!-- PAN Card Image -->
+                    <div class="kyc-image-item" v-if="viewingUser.pan_card_image">
+                      <div class="image-label">PAN Card</div>
+                      <div class="image-container">
+                        <img 
+                          :src="getImageUrl(viewingUser.pan_card_image)" 
+                          alt="PAN Card" 
+                          class="kyc-document-image"
+                          @click="viewImage(viewingUser.pan_card_image, 'PAN Card')"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="no-images-message" v-if="!viewingUser.aadhar_front_image && !viewingUser.aadhar_back_image && !viewingUser.pan_card_image">
+                    <i class="bi bi-image text-muted"></i>
+                    <span class="text-muted">No KYC document images uploaded yet</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1208,6 +1259,138 @@ const formatAadhar = (aadharNumber) => {
   if (!aadharNumber) return 'Not provided'
   // Format as XXXX XXXX XXXX for better readability
   return aadharNumber.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3')
+}
+
+// Get image URL for display
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${window.location.origin}/storage/${imagePath}`;
+}
+
+// View image in full size
+const viewImage = (imagePath, title) => {
+  const imageUrl = getImageUrl(imagePath);
+  if (imageUrl) {
+    // Create a modal to show the image in full size
+    const modal = document.createElement('div');
+    modal.className = 'image-view-modal';
+    modal.innerHTML = `
+      <div class="image-view-overlay" onclick="this.parentElement.remove()">
+        <div class="image-view-content" onclick="event.stopPropagation()">
+          <div class="image-view-header">
+            <h4>${title}</h4>
+            <button class="close-btn" onclick="this.closest('.image-view-modal').remove()">&times;</button>
+          </div>
+          <div class="image-view-body">
+            <img src="${imageUrl}" alt="${title}" class="full-size-image" />
+          </div>
+          <div class="image-view-footer">
+            <a href="${imageUrl}" download="${title}.jpg" class="btn-download">
+              <i class="bi bi-download"></i> Download
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .image-view-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+      }
+      .image-view-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .image-view-content {
+        background: #1a1a2e;
+        border-radius: 12px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: hidden;
+        border: 1px solid rgba(0, 255, 128, 0.3);
+      }
+      .image-view-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .image-view-header h4 {
+        margin: 0;
+        color: #00ff80;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.3s;
+      }
+      .close-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .image-view-body {
+        padding: 20px;
+        text-align: center;
+      }
+      .full-size-image {
+        max-width: 100%;
+        max-height: 60vh;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+      .image-view-footer {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+      }
+      .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #00ff80, #00cc66);
+        color: #000;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+        color: #000;
+      }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+  }
 }
 
 // Map frontend status to database status
@@ -2519,6 +2702,86 @@ const handleClickOutside = (event, modalRef) => {
   border: 3px solid #00ff80;
   overflow: hidden;
   flex-shrink: 0;
+}
+
+/* KYC Images Section Styles */
+.kyc-images-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-section-title {
+  color: #00ff80;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kyc-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.kyc-image-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(0, 255, 128, 0.2);
+  transition: all 0.3s ease;
+}
+
+.kyc-image-item:hover {
+  border-color: rgba(0, 255, 128, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.1);
+}
+
+.image-label {
+  font-weight: 600;
+  color: #00ff80;
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.image-container {
+  text-align: center;
+}
+
+.kyc-document-image {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.kyc-document-image:hover {
+  transform: scale(1.05);
+  border-color: rgba(0, 255, 128, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2);
+}
+
+.no-images-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.no-images-message i {
+  font-size: 2rem;
+  opacity: 0.5;
 }
 
 .user-avatar-large img {
