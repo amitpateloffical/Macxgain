@@ -12,25 +12,17 @@
               alt="User Avatar"
               @error="setDefaultImage"
             />
-          <!-- Edit Mode: Upload Button -->
+          <!-- Edit Mode: Camera Button Only -->
           <div v-if="isEditMode" class="profile-upload-overlay">
-            <input
-              type="file"
-              ref="fileInput"
-              @change="onFileChange"
-              id="profile_image"
-              accept=".jpg, .png, .gif, .jpeg"
-              style="display: none"
-            />
-            <b-button v-if="isEditMode" variant="primary" class="upload-btn" @click="triggerFileUpload">
-              <i class="bi bi-camera me-1"></i> Change Photo
+            <b-button variant="success" class="camera-btn" @click="openCamera">
+              <i class="bi bi-camera me-1"></i> Take Photo
             </b-button>
           </div>
           <!-- File Info - Only in Edit Mode -->
           <div v-if="isEditMode" class="file-info">
             <small class="text-muted">
               <i class="bi bi-info-circle me-1"></i>
-              JPG, PNG, GIF up to 2MB
+              Click to take a photo with your camera
             </small>
           </div>
           </div>
@@ -457,6 +449,7 @@ export default {
   created() {
     this.getUserProfile();
     this.fetchUserBalance();
+    this.checkCameraAvailability();
   },
   methods: {
     RemoveError(field) {
@@ -553,6 +546,313 @@ export default {
     triggerFileUpload() {
       this.$refs.fileInput.click();
     },
+    async openCamera() {
+      try {
+        // Check if camera is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          Swal.fire({
+            title: 'Camera Not Supported',
+            text: 'Your device or browser does not support camera access.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+
+        // Request camera permission and open camera
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'user', // Use front camera
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
+        });
+
+        // Create camera modal
+        this.showCameraModal(stream);
+
+      } catch (error) {
+        console.log('Camera error:', error);
+        
+        if (error.name === 'NotAllowedError') {
+          Swal.fire({
+            title: 'Camera Permission Denied',
+            text: 'Please allow camera access to take photos. You can enable it in your browser settings.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+          });
+        } else if (error.name === 'NotFoundError') {
+          Swal.fire({
+            title: 'Camera Not Found',
+            text: 'No camera detected on your device.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        } else {
+          Swal.fire({
+            title: 'Camera Error',
+            text: 'Unable to access camera. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      }
+    },
+
+    showCameraModal(stream) {
+      // Create camera modal HTML
+      const modalHtml = `
+        <div class="camera-modal">
+          <div class="camera-container">
+            <video id="camera-video" autoplay playsinline></video>
+            <div class="camera-controls">
+              <button id="capture-btn" class="capture-btn">
+                <i class="bi bi-camera"></i> Capture Photo
+              </button>
+              <button id="switch-camera-btn" class="switch-camera-btn">
+                <i class="bi bi-arrow-repeat"></i> Switch Camera
+              </button>
+              <button id="close-camera-btn" class="close-camera-btn">
+                <i class="bi bi-x-circle"></i> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add modal to body
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+      // Get video element and set stream
+      const video = document.getElementById('camera-video');
+      video.srcObject = stream;
+
+      // Add event listeners
+      document.getElementById('capture-btn').addEventListener('click', () => {
+        this.capturePhoto(video, stream);
+      });
+
+      document.getElementById('switch-camera-btn').addEventListener('click', () => {
+        this.switchCamera(stream);
+      });
+
+      document.getElementById('close-camera-btn').addEventListener('click', () => {
+        this.closeCamera(stream);
+      });
+
+      // Add camera modal styles
+      this.addCameraStyles();
+    },
+
+    async capturePhoto(video, stream) {
+      // Create canvas to capture photo
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      // Set canvas size to video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw video frame to canvas
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // Create file from blob
+          const file = new File([blob], 'profile-photo.jpg', { type: 'image/jpeg' });
+          
+          // Set the captured photo
+          this.selectedFile = file;
+          this.imagePreview = URL.createObjectURL(blob);
+          
+          // Close camera
+          this.closeCamera(stream);
+          
+          // Show success message
+          Swal.fire({
+            title: 'Photo Captured!',
+            text: 'Your photo has been captured successfully.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      }, 'image/jpeg', 0.8);
+    },
+
+    async switchCamera(stream) {
+      try {
+        // Stop current stream
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Get new stream with different facing mode
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: stream.getVideoTracks()[0].getSettings().facingMode === 'user' ? 'environment' : 'user'
+          }
+        });
+        
+        // Update video element
+        const video = document.getElementById('camera-video');
+        video.srcObject = newStream;
+        
+        // Update stream reference
+        stream = newStream;
+        
+      } catch (error) {
+        console.log('Error switching camera:', error);
+      }
+    },
+
+    closeCamera(stream) {
+      // Stop all tracks
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      
+      // Remove camera modal
+      const cameraModal = document.querySelector('.camera-modal');
+      if (cameraModal) {
+        cameraModal.remove();
+      }
+      
+      // Remove camera styles
+      this.removeCameraStyles();
+    },
+
+    addCameraStyles() {
+      const style = document.createElement('style');
+      style.id = 'camera-modal-styles';
+      style.textContent = `
+        .camera-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.9);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .camera-container {
+          background: #1a1a2e;
+          border-radius: 20px;
+          padding: 20px;
+          text-align: center;
+          max-width: 90vw;
+          max-height: 90vh;
+        }
+        
+        #camera-video {
+          width: 100%;
+          max-width: 640px;
+          height: auto;
+          border-radius: 15px;
+          margin-bottom: 20px;
+        }
+        
+        .camera-controls {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        
+        .capture-btn, .switch-camera-btn, .close-camera-btn {
+          padding: 12px 20px;
+          border: none;
+          border-radius: 25px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .capture-btn {
+          background: linear-gradient(135deg, #00ff80, #00cc66);
+          color: #000;
+        }
+        
+        .switch-camera-btn {
+          background: linear-gradient(135deg, #007bff, #0056b3);
+          color: white;
+        }
+        
+        .close-camera-btn {
+          background: linear-gradient(135deg, #dc3545, #c82333);
+          color: white;
+        }
+        
+        .capture-btn:hover, .switch-camera-btn:hover, .close-camera-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+          .camera-container {
+            padding: 15px;
+            margin: 10px;
+          }
+          
+          .camera-controls {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .capture-btn, .switch-camera-btn, .close-camera-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `;
+      
+      document.head.appendChild(style);
+    },
+
+    removeCameraStyles() {
+      const style = document.getElementById('camera-modal-styles');
+      if (style) {
+        style.remove();
+      }
+    },
+    
+    checkCameraAvailability() {
+      // Check if camera is available on this device
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.log('Camera not supported on this device/browser');
+        // You could disable the camera button here if needed
+        return false;
+      }
+      
+      // Check if camera permission is already granted (modern browsers)
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'camera' }).then((permissionStatus) => {
+          console.log('Camera permission status:', permissionStatus.state);
+          
+          if (permissionStatus.state === 'granted') {
+            console.log('Camera permission already granted');
+          } else if (permissionStatus.state === 'denied') {
+            console.log('Camera permission denied');
+          } else {
+            console.log('Camera permission not determined yet');
+          }
+        }).catch((error) => {
+          console.log('Permission query not supported:', error);
+        });
+      } else {
+        // Fallback for older browsers
+        console.log('Permission API not supported, will request on first use');
+      }
+      
+      return true;
+    },
+
     saveGeneralInfo() {
       const formData = new FormData();
       formData.append("id", this.options.id);
@@ -1349,6 +1649,23 @@ textarea.form-control {
   margin-bottom: 20px;
 }
 
+/* Responsive button adjustments */
+@media (max-width: 768px) {
+  .camera-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .camera-btn {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 14px;
+  }
+}
+
 .profile-avatar {
   width: 150px;
   height: 150px;
@@ -1379,10 +1696,12 @@ textarea.form-control {
   opacity: 1;
 }
 
-.upload-btn {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+
+
+.camera-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
   border: none;
-  color: #000;
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
   padding: 8px 16px;
@@ -1390,11 +1709,11 @@ textarea.form-control {
   transition: all 0.3s ease;
 }
 
-.upload-btn:hover {
-  background: linear-gradient(135deg, #00cc66, #00aa55);
+.camera-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3);
-  color: #000;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  color: #fff;
 }
 
 .file-info {

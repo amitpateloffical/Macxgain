@@ -69,17 +69,7 @@
                 </b-form-select>
               </b-form-group>
             </b-col>
-            <b-col md="4" v-if="isAdmin">
-              <b-form-group label="Recipient" label-for="recipient">
-                <v-select
-                  v-model="search.recipient"
-                  :options="userOptions"
-                  label="name"
-                  :reduce="(user) => user.id"
-                  placeholder="Select Recipient"
-                />
-              </b-form-group>
-            </b-col>
+
           </b-row>
           <b-row>
             <b-col md="3">
@@ -422,11 +412,6 @@ export default {
         { key: "amount", label: "Amount", sortable: true },
         { key: "status", label: "Status", sortable: true },
         {
-          key: "request_create_for",
-          label: "Recipient",
-          formatter: (value, key, item) => item.recipient.name,
-        },
-        {
           key: "created_at",
           label: "Request Date",
           sortable: true,
@@ -452,7 +437,7 @@ export default {
         { value: "approved", text: "Approved" },
         { value: "rejected", text: "Rejected" },
       ],
-      userOptions: [],
+
       totalrows: 0,
       sortBy: "",
       sortDesc: true,
@@ -486,7 +471,6 @@ export default {
     const search = ref({
       transaction_id: "",
       status: null,
-      recipient: null,
       from_date: null,
       to_date: null,
     });
@@ -504,7 +488,6 @@ export default {
   mounted() {
     this.fetchUserInfo();
     this.fetchRequestss();
-    this.fetchUsers();
     this.fetchUserBalance();
   },
   methods: {
@@ -587,16 +570,6 @@ export default {
         .catch((error) => {
           console.error(error);
           this.modalLoading = false;
-        });
-    },
-    fetchUsers() {
-      axios
-        .get("/users")
-        .then((response) => {
-          this.userOptions = response.data;
-        })
-        .catch((error) => {
-          console.error(error);
         });
     },
     openRequestModal(editId = null) {
@@ -764,7 +737,6 @@ export default {
       this.search = {
         transaction_id: "",
         status: null,
-        recipient: null,
         from_date: null,
         to_date: null,
       };
