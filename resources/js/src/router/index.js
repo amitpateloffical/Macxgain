@@ -47,43 +47,43 @@ const routes = [
   {
     path: "/admin/dashboard",
     name: "admin-dashboard",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/Dashboard/Dashboard.vue"),
   },
   {
     path: "/admin/ai-trading",
     name: "admin-ai-trading",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/AITrading.vue"),
   },
     {
     path: "/admin/payment-collector",
     name: "payment_collector",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/PaymentCollector.vue"),
   },
   {
     path: "/admin/stock-market",
     name: "stock_market",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/StockMarket.vue"),
   },
   {
     path: "/user/dashboard",
     name: "user-ashboard",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/AdminSide/Dashboard/UserDashboard.vue"),
   },
   {
     path: "/user/watchlist",
     name: "user-watchlist",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/UserWatchlist/UserWatchlist.vue"),
   },
   {
     path: "/user/orders",
     name: "user-orders",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/UserOrders/UserOrders.vue"),
   },
 
@@ -91,76 +91,76 @@ const routes = [
   {
     path: "/profile",
     name: "profile",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/profile/UserProfileTabs.vue"),
   },
     {
     path: "/AddMoney",
     name: "add_money",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/AddMoney/AddMoney.vue"),
   },
 
       {
     path: "/MoneyRequest",
     name: "money_request",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/AddMoney/MoneyRequest.vue"),
   },
    {
     path: "/Withdrawal/Request",
     name: "withdrawal_request_list",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/AddMoney/WithdrawalRequest.vue"),
   },
 
       {
         path: "/admin/withdrawal-request",
         name: "withdrawal_request",
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, requiresAdmin: true },
         component: () => import("../views/AdminSide/WithdrawalRequest.vue"),
       },
       {
         path: "/admin/money-request",
         name: "admin_money_request",
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, requiresAdmin: true },
         component: () => import("../views/AddMoney/MoneyRequest.vue"),
       },
 
           {
         path: "/admin/analytics",
         name: "analytics",
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, requiresAdmin: true },
         component: () => import("../views/AdminSide/Analytics.vue"),
       },
   {
     path: "/email-logs",
     name: "email-logs",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/logs/emailLog.vue"),
   },
   {
     path: "/login-logs",
     name: "login-logs",
-    meta: { requiresAuth:true},
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/logs/LoginLog.vue"),
   },
   {
     path: "/activity_log",
     name: "activity_log",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresUser: true },
     component: () => import("../views/activityLog/ActivityLog.vue"),
   },
 
   {
     path: "/admin/user-management",
     name: "user_management",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/UserManagement.vue"),
   },  {
     path: "/admin/register-request",
     name: "register_request",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/RegisterRequest.vue"),
   },
   
@@ -202,6 +202,24 @@ router.beforeEach((to, from, next) => {
       try {
         const user = JSON.parse(userData);
         console.log('🚨 Route Guard - User role:', user.is_admin ? 'Admin' : 'User');
+        
+        // Check if route requires admin privileges
+        if (to.matched.some(record => record.meta.requiresAdmin)) {
+          if (!user.is_admin) {
+            console.log('🚨 Non-admin user trying to access admin route, redirecting to user dashboard');
+            next({ name: 'user-ashboard' });
+            return;
+          }
+        }
+        
+        // Check if route requires user privileges (non-admin only)
+        if (to.matched.some(record => record.meta.requiresUser)) {
+          if (user.is_admin) {
+            console.log('🚨 Admin user trying to access user route, redirecting to admin dashboard');
+            next({ name: 'admin-dashboard' });
+            return;
+          }
+        }
         
         // If admin is trying to access login/register pages, redirect to admin dashboard
         if (user.is_admin && (to.path === '/login' || to.path === '/register' || to.path === '/')) {
