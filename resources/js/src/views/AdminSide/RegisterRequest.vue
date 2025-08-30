@@ -119,8 +119,10 @@
             <div class="user-info">
               <div class="user-avatar">
                 <img 
-                  :src="request.profile_image || '../assest/img/tableprofileimg.png'"
+                  :src="getProfileImageUrl(request.profile_image)"
                   :alt="request.name"
+                  @error="handleProfileImageError($event, request.name)"
+                  @load="() => console.log('Profile image loaded successfully for:', request.name)"
                 />
               </div>
               <div class="user-details">
@@ -340,6 +342,47 @@ const rejectedRequests = computed(() => {
 watch([searchQuery, statusFilter, dateFilter, sortBy], () => {
   currentPage.value = 1
 })
+
+// Helper Methods for Profile Images
+const getProfileImageUrl = (profileImagePath) => {
+  if (!profileImagePath) {
+    return '/build/assets/tableprofileimg-DaN7tIxX.png'
+  }
+  
+  // If it's already a full URL, return as is
+  if (profileImagePath.startsWith('http')) {
+    return profileImagePath
+  }
+  
+  // Construct full URL for stored images
+  return `${window.location.origin}/storage/${profileImagePath}`
+}
+
+const handleProfileImageError = (event, userName) => {
+  console.log(`Profile image failed to load for ${userName}, creating initials fallback`)
+  console.log('Failed image src:', event.target.src)
+  
+  event.target.style.display = 'none'
+  // Create initials fallback
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 3)
+  const fallbackDiv = document.createElement('div')
+  fallbackDiv.className = 'profile-initials-fallback'
+  fallbackDiv.textContent = initials
+  fallbackDiv.style.cssText = `
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff80, #00cc66);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 3px solid #00ff80;
+  `
+  event.target.parentNode.appendChild(fallbackDiv)
+}
 
 // Methods
 const fetchRegisterRequests = async () => {
@@ -1393,6 +1436,22 @@ onMounted(() => {
   .request-card {
     border-width: 0.5px;
   }
+}
+
+/* Profile Initials Fallback */
+.profile-initials-fallback {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 3px solid #00ff80;
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
 }
 
 /* Touch Device Optimizations */

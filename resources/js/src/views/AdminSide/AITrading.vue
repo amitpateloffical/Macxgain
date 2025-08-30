@@ -91,7 +91,14 @@
           <!-- User Card Header -->
           <div class="card-header">
             <div class="user-avatar">
-              <span class="avatar-text">{{ getUserInitials(user.name) }}</span>
+              <img 
+                v-if="user.profile_image"
+                :src="getProfileImageUrl(user.profile_image)"
+                :alt="user.name"
+                @error="handleProfileImageError($event, user.name)"
+                @load="() => console.log('Profile image loaded successfully for:', user.name)"
+              />
+              <span v-else class="avatar-text">{{ getUserInitials(user.name) }}</span>
             </div>
             <div class="user-status">
               <span class="status-badge" :class="getUserStatus(user.status)">
@@ -431,7 +438,8 @@ export default {
               status: user.status || 'I',
               created_at: user.created_at,
               phone: user.phone,
-              is_admin: user.is_admin || 0
+              is_admin: user.is_admin || 0,
+              profile_image: user.profile_image // Include profile image
             }));
         } else {
           throw new Error(result.message || 'Failed to fetch users');
@@ -450,6 +458,46 @@ export default {
     refreshUsers() {
       this.fetchUsers();
     },
+    getProfileImageUrl(profileImagePath) {
+      if (!profileImagePath) {
+        return '/build/assets/tableprofileimg-DaN7tIxX.png'
+      }
+      
+      // If it's already a full URL, return as is
+      if (profileImagePath.startsWith('http')) {
+        return profileImagePath
+      }
+      
+      // Construct full URL for stored images
+      return `${window.location.origin}/storage/${profileImagePath}`
+    },
+    
+    handleProfileImageError(event, userName) {
+      console.log(`Profile image failed to load for ${userName}, creating initials fallback`)
+      console.log('Failed image src:', event.target.src)
+      
+      event.target.style.display = 'none'
+      // Create initials fallback
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 3)
+      const fallbackDiv = document.createElement('div')
+      fallbackDiv.className = 'profile-initials-fallback'
+      fallbackDiv.textContent = initials
+      fallbackDiv.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00ff80, #00cc66);
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        border: 3px solid #00ff80;
+      `
+      event.target.parentNode.appendChild(fallbackDiv)
+    },
+    
     getUserInitials(name) {
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     },
@@ -796,20 +844,29 @@ export default {
 }
 
 .user-avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .avatar-text {
   font-weight: bold;
   color: #0d0d1a;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .user-status {
@@ -839,7 +896,7 @@ export default {
 }
 
 .user-info {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .user-name {
@@ -879,8 +936,8 @@ export default {
 .balance-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px;
   background: rgba(0, 255, 136, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(0, 255, 136, 0.1);
@@ -1538,5 +1595,21 @@ export default {
       padding: 14px 24px;
       font-size: 14px;
     }
+  }
+  
+  /* Profile Initials Fallback */
+  .profile-initials-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff80, #00cc66);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    border: 3px solid #00ff80;
+    box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
   }
 </style>
