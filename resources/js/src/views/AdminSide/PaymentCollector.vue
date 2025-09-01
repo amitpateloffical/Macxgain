@@ -34,49 +34,45 @@
           </button>
         </div>
 
-        <form @submit.prevent="submitForm" class="payment-form">
+        <form @submit.prevent="submitForm" class="payment-form" novalidate>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Bank Name *</label>
+              <label class="form-label">Bank Name</label>
               <input 
                 v-model="formData.bank_name" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., State Bank of India"
-                required
               >
             </div>
 
             <div class="form-group">
-              <label class="form-label">Account Holder Name *</label>
+              <label class="form-label">Account Holder Name</label>
               <input 
                 v-model="formData.account_holder_name" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., Macxgain Technologies"
-                required
               >
             </div>
 
             <div class="form-group">
-              <label class="form-label">Account Number *</label>
+              <label class="form-label">Account Number</label>
               <input 
                 v-model="formData.account_number" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., 1234567890123456"
-                required
               >
             </div>
 
             <div class="form-group">
-              <label class="form-label">IFSC Code *</label>
+              <label class="form-label">IFSC Code</label>
               <input 
                 v-model="formData.ifsc_code" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., SBIN0001234"
-                required
               >
             </div>
 
@@ -91,18 +87,19 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">QR Code/UPI ID</label>
+              <label class="form-label">QR Code/UPI ID *</label>
               <input 
                 v-model="formData.qr_code" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., macxgain@paytm or UPI QR code data"
+                required
               >
             </div>
           </div>
 
           <div class="form-group full-width">
-            <label class="form-label">Barcode/QR Image</label>
+            <label class="form-label">Barcode/QR Image *</label>
             <div class="file-upload-area">
               <input 
                 type="file" 
@@ -110,6 +107,7 @@
                 @change="handleFileUpload"
                 accept="image/*"
                 class="file-input"
+                required
               >
               <div class="upload-placeholder" v-if="!formData.barcode_image">
                 <i class="fas fa-cloud-upload-alt"></i>
@@ -344,6 +342,17 @@ export default {
     },
 
     async submitForm() {
+      // Custom validation for required fields
+      if (!this.formData.qr_code || !this.formData.qr_code.trim()) {
+        this.$toast?.error('QR Code/UPI ID is required');
+        return;
+      }
+      
+      if (!this.formData.barcode_image) {
+        this.$toast?.error('Barcode/QR Image is required');
+        return;
+      }
+
       try {
         this.loading = true;
         const token = localStorage.getItem('access_token');

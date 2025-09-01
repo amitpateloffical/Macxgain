@@ -9,7 +9,9 @@
           </button>
           <div class="header-info">
             <h1 class="page-title">📈 Stock Market</h1>
-            <p class="page-subtitle">Live market data powered by Upstox</p>
+            <p class="page-subtitle">
+              {{ marketStatus === 'OPEN' ? 'Live market data powered by Upstox' : 'Last available data (Market Closed)' }}
+            </p>
           </div>
         </div>
         <div class="header-right">
@@ -17,8 +19,16 @@
             <div class="status-indicator"></div>
             <span>{{ marketStatusText }}</span>
           </div>
+                      <div class="market-info">
+              <div class="trading-hours">{{ marketInfo.trading_hours }}</div>
+              <div class="trading-days">{{ marketInfo.trading_days }}</div>
+              <div class="next-session" v-if="marketInfo.next_session && marketStatus === 'CLOSED'">
+                <i class="fas fa-clock"></i> {{ marketInfo.next_session }}
+              </div>
+            </div>
           <div class="last-updated">
-            Last updated: {{ lastUpdated }}
+            <span v-if="marketStatus === 'OPEN'">Last updated: {{ lastUpdated }}</span>
+            <span v-else>Last trading data: {{ lastUpdated }}</span>
           </div>
         </div>
       </div>
@@ -343,6 +353,11 @@ export default {
       searchQuery: '',
       lastUpdated: '',
       marketStatus: 'CLOSED',
+      marketInfo: {
+        trading_hours: '9:00 AM - 3:30 PM IST',
+        trading_days: 'Monday to Friday',
+        next_session: ''
+      },
       liveStocks: [],
       marketIndices: [],
 
@@ -412,10 +427,8 @@ export default {
     this.loadMarketData();
     this.updateTimestamp();
     
-    // Auto refresh every 5 seconds for real-time updates
-    this.refreshInterval = setInterval(() => {
-      this.refreshStockData();
-    }, 5000);
+    // Initial interval setup
+    this.adjustRefreshInterval();
   },
   beforeUnmount() {
     if (this.refreshInterval) {
@@ -460,7 +473,13 @@ export default {
           // Process market status
           if (data.status && data.status.success && data.status.data) {
             this.marketStatus = data.status.data.market_status || 'CLOSED';
+            this.marketInfo = {
+              trading_hours: data.status.data.trading_hours || '9:00 AM - 3:30 PM IST',
+              trading_days: data.status.data.trading_days || 'Monday to Friday',
+              next_session: data.status.data.next_session || ''
+            };
             console.log('Market status:', this.marketStatus);
+            console.log('Market info:', this.marketInfo);
           }
         }
 
@@ -485,7 +504,30 @@ export default {
     async refreshStockData() {
       await this.loadMarketData();
       console.log('Market data refreshed');
-      // this.$toast.success('Market data refreshed');
+      
+      // Adjust refresh interval based on market status
+      this.adjustRefreshInterval();
+    },
+
+    adjustRefreshInterval() {
+      // Clear existing interval
+      if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+      }
+      
+      if (this.marketStatus === 'OPEN') {
+        // Market is open - refresh every 15 seconds
+        this.refreshInterval = setInterval(() => {
+          this.refreshStockData();
+        }, 15000);
+        console.log('Market is OPEN - refreshing every 15 seconds');
+      } else {
+        // Market is closed - just update timestamp every minute
+        this.refreshInterval = setInterval(() => {
+          this.updateTimestamp();
+        }, 60000); // 1 minute
+        console.log('Market is CLOSED - updating timestamp every minute');
+      }
     },
 
     async searchStocks() {
@@ -657,6 +699,13 @@ export default {
     },
     itemsPerPage() {
       this.currentPage = 1;
+    },
+    marketStatus(newStatus, oldStatus) {
+      // Adjust refresh interval when market status changes
+      if (newStatus !== oldStatus) {
+        console.log(`Market status changed from ${oldStatus} to ${newStatus}`);
+        this.adjustRefreshInterval();
+      }
     }
   }
 };
@@ -728,6 +777,27 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+}
+
+.market-info {
+  text-align: right;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.trading-hours {
+  font-weight: 600;
+  color: #00ff88;
+}
+
+.trading-days {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.next-session {
+  color: #ffaa00;
+  font-style: italic;
+  margin-top: 2px;
 }
 
 .market-status {

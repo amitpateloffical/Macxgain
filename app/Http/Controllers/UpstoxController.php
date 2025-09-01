@@ -297,6 +297,66 @@ class UpstoxController extends Controller
     }
 
     /**
+     * Get market status with detailed information
+     */
+    private function getDetailedMarketStatus()
+    {
+        $currentTime = now();
+        $istTime = $currentTime->setTimezone('Asia/Kolkata');
+        $dayOfWeek = (int)$istTime->format('N'); // 1=Monday, 7=Sunday
+        $hour = (int)$istTime->format('H');
+        $minute = (int)$istTime->format('i');
+        $currentTimeInMinutes = ($hour * 60) + $minute;
+        
+        // Market trading hours
+        $marketOpenStart = 9 * 60; // 9:00 AM in minutes
+        $marketOpenEnd = (15 * 60) + 30; // 3:30 PM in minutes (15:30)
+        
+        $isWeekday = ($dayOfWeek >= 1 && $dayOfWeek <= 5); // Monday to Friday
+        $isWithinTradingHours = ($currentTimeInMinutes >= $marketOpenStart && $currentTimeInMinutes <= $marketOpenEnd);
+        
+        $marketStatus = ($isWeekday && $isWithinTradingHours) ? 'OPEN' : 'CLOSED';
+        
+        // Get day name
+        $dayNames = [
+            1 => 'Monday',
+            2 => 'Tuesday', 
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday'
+        ];
+        
+        $currentDay = $dayNames[$dayOfWeek];
+        $currentTimeFormatted = $istTime->format('h:i A');
+        
+        // Calculate time until next session
+        $nextSessionTime = '';
+        if (!$isWeekday) {
+            $nextSessionTime = 'Next trading day: Monday 9:00 AM';
+        } elseif ($currentTimeInMinutes < $marketOpenStart) {
+            $minutesUntilOpen = $marketOpenStart - $currentTimeInMinutes;
+            $hoursUntilOpen = floor($minutesUntilOpen / 60);
+            $minsUntilOpen = $minutesUntilOpen % 60;
+            $nextSessionTime = "Market opens in: {$hoursUntilOpen}h {$minsUntilOpen}m";
+        } elseif ($currentTimeInMinutes > $marketOpenEnd) {
+            $nextSessionTime = 'Next trading day: ' . ($dayOfWeek == 5 ? 'Monday' : $dayNames[$dayOfWeek + 1]) . ' 9:00 AM';
+        }
+        
+        return [
+            'market_status' => $marketStatus,
+            'current_day' => $currentDay,
+            'current_time' => $currentTimeFormatted,
+            'trading_hours' => '9:00 AM - 3:30 PM IST',
+            'trading_days' => 'Monday to Friday',
+            'next_session' => $nextSessionTime,
+            'is_weekday' => $isWeekday,
+            'is_trading_hours' => $isWithinTradingHours
+        ];
+    }
+
+    /**
      * Get live data from Upstox API
      */
     private function getUpstoxLiveData()
@@ -330,10 +390,38 @@ class UpstoxController extends Controller
 
     /**
      * Get realistic simulated live stock data with dynamic price movements
+     * Only generates data when market is open
      */
     private function getRealStockData()
     {
         try {
+            // Get market status first
+            $marketStatusData = $this->getDetailedMarketStatus();
+            $marketStatus = $marketStatusData['market_status'];
+            
+            // If market is closed, return last cached data
+            if ($marketStatus === 'CLOSED') {
+                // Get last cached data
+                $lastCachedData = \Cache::get('last_market_data', []);
+                
+                return [
+                    'quotes' => [
+                        'success' => true,
+                        'data' => ['data' => $lastCachedData['quotes'] ?? []]
+                    ],
+                    'status' => [
+                        'success' => true,
+                        'data' => $marketStatusData
+                    ],
+                    'indices' => [
+                        'success' => true,
+                        'data' => ['data' => $lastCachedData['indices'] ?? []]
+                    ],
+                    'timestamp' => $lastCachedData['timestamp'] ?? now()->toISOString(),
+                    'message' => 'Market is closed - showing last available data'
+                ];
+            }
+            
             // Cache key for storing last prices
             $cacheKey = 'live_stock_prices';
             $lastPrices = \Cache::get($cacheKey, []);
@@ -913,10 +1001,17 @@ class UpstoxController extends Controller
                 ]
             ];
 
-            // Determine market status based on time (IST)
-            $istTime = $currentTime->setTimezone('Asia/Kolkata');
-            $hour = (int)$istTime->format('H');
-            $marketStatus = ($hour >= 9 && $hour < 16) ? 'OPEN' : 'CLOSED';
+            // Get detailed market status
+            $marketStatusData = $this->getDetailedMarketStatus();
+            $marketStatus = $marketStatusData['market_status'];
+
+            // Cache the complete market data for when market is closed
+            $marketDataToCache = [
+                'quotes' => $quotes,
+                'indices' => $indices,
+                'timestamp' => $currentTime->toISOString()
+            ];
+            \Cache::put('last_market_data', $marketDataToCache, 60 * 24 * 7); // Cache for 7 days
 
             return [
                 'quotes' => [
@@ -925,7 +1020,7 @@ class UpstoxController extends Controller
                 ],
                 'status' => [
                     'success' => true,
-                    'data' => ['market_status' => $marketStatus]
+                    'data' => $marketStatusData
                 ],
                 'indices' => [
                     'success' => true,

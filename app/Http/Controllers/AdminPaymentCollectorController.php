@@ -42,13 +42,13 @@ class AdminPaymentCollectorController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'bank_name' => 'required|string|max:255',
-                'account_holder_name' => 'required|string|max:255',
-                'account_number' => 'required|string|max:50',
-                'ifsc_code' => 'required|string|max:20',
+                'bank_name' => 'nullable|string|max:255',
+                'account_holder_name' => 'nullable|string|max:255',
+                'account_number' => 'nullable|string|max:50',
+                'ifsc_code' => 'nullable|string|max:20',
                 'branch_name' => 'nullable|string|max:255',
-                'barcode_image' => 'nullable|string', // Base64 image
-                'qr_code' => 'nullable|string',
+                'barcode_image' => 'required|string', // Base64 image - now required
+                'qr_code' => 'required|string|max:255', // QR code - now required
                 'is_primary' => 'boolean',
                 'notes' => 'nullable|string|max:1000'
             ]);
@@ -62,6 +62,14 @@ class AdminPaymentCollectorController extends Controller
             }
 
             $data = $validator->validated();
+            
+            // Convert empty strings to null for optional fields
+            $optionalFields = ['bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'branch_name', 'notes'];
+            foreach ($optionalFields as $field) {
+                if (isset($data[$field]) && empty(trim($data[$field]))) {
+                    $data[$field] = null;
+                }
+            }
             
             // Handle barcode image upload if provided
             if (isset($data['barcode_image']) && !empty($data['barcode_image'])) {
@@ -129,13 +137,13 @@ class AdminPaymentCollectorController extends Controller
             $paymentCollector = AdminPaymentCollector::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'bank_name' => 'required|string|max:255',
-                'account_holder_name' => 'required|string|max:255',
-                'account_number' => 'required|string|max:50',
-                'ifsc_code' => 'required|string|max:20',
+                'bank_name' => 'nullable|string|max:255',
+                'account_holder_name' => 'nullable|string|max:255',
+                'account_number' => 'nullable|string|max:50',
+                'ifsc_code' => 'nullable|string|max:20',
                 'branch_name' => 'nullable|string|max:255',
-                'barcode_image' => 'nullable|string',
-                'qr_code' => 'nullable|string',
+                'barcode_image' => 'required|string', // Base64 image - now required
+                'qr_code' => 'required|string|max:255', // QR code - now required
                 'is_primary' => 'boolean',
                 'is_active' => 'boolean',
                 'notes' => 'nullable|string|max:1000'
@@ -150,6 +158,14 @@ class AdminPaymentCollectorController extends Controller
             }
 
             $data = $validator->validated();
+            
+            // Convert empty strings to null for optional fields
+            $optionalFields = ['bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'branch_name', 'notes'];
+            foreach ($optionalFields as $field) {
+                if (isset($data[$field]) && empty(trim($data[$field]))) {
+                    $data[$field] = null;
+                }
+            }
 
             // Handle barcode image upload if provided
             if (isset($data['barcode_image']) && !empty($data['barcode_image'])) {
