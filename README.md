@@ -1,4 +1,17 @@
-# Macxgain AI Trading System - Server Deployment Guide
+# Macxgain AI Trading System - Complete Project Documentation
+
+## 📋 Project Overview
+**Macxgain AI Trading System** is a comprehensive web-based trading platform that provides real-time market data, AI-powered trading interface, and complete order management system. The system integrates with TrueData for live market feeds and offers a modern, responsive interface for both administrators and users.
+
+### 🎯 Key Features:
+- **Real-time Market Data** from TrueData WebSocket
+- **AI Trading Interface** for administrators
+- **Live Stock Prices** with Call/Put options
+- **User Balance Management** with wallet transactions
+- **Trade Execution** with P&L tracking
+- **Market Hours Validation** (9:15 AM - 3:30 PM IST)
+- **Order Management** with exit functionality
+- **Modern Dark Theme UI** with responsive design
 
 ## 🔐 Server Access Details
 ```
@@ -16,13 +29,13 @@ ssh -p 2642 root@103.235.106.85
 ## 🗄️ Database Setup
 ```sql
 CREATE USER 'webappssolution'@'localhost' IDENTIFIED BY 'webappssolution';
-GRANT ALL PRIVILEGES ON *.* TO 'webappssolution'@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'webappssolution'@'localhost' WITH GRANT OPTION;	
 ```
 
 ## 👤 Admin Login Credentials
 ```
 Email: admin@gmail.com
-Password: admin123
+Password: admin123	
 ```
 
 ## 🚀 Complete Server Deployment Commands
@@ -442,12 +455,87 @@ echo 'Last Update: ' . Cache::get('truedata_last_update', 'NEVER');
 "
 ```
 
-## 📞 Support
+## 🎯 How to Use the System
 
-For any issues or questions, contact the development team.
+### **For Administrators:**
+1. **Login** with admin credentials: `admin@gmail.com` / `admin123`
+2. **Go to AI Trading** section from admin panel
+3. **Select User** to trade on behalf of
+4. **View Live Market Data** with real-time stock prices
+5. **Execute Trades** by selecting Call/Put options
+6. **Manage Orders** and track P&L in real-time
+7. **Exit Trades** when market is open
+
+### **For Users:**
+1. **Register/Login** to the system
+2. **Add Money** to wallet for trading
+3. **View Trading History** and P&L
+4. **Monitor Live Balance** and transactions
+
+### **System Workflow:**
+```
+User Registration → Wallet Funding → Admin Trading → Order Execution → P&L Tracking → Trade Exit
+```
+
+## 🔧 Technical Stack
+
+### **Backend:**
+- **Laravel 10** - PHP Framework
+- **MySQL** - Database
+- **Redis/File Cache** - Data caching
+- **Python 3.6+** - WebSocket connection
+- **Laravel Queues** - Background job processing
+
+### **Frontend:**
+- **Vue.js 3** - JavaScript Framework
+- **Axios** - HTTP client
+- **Bootstrap 5** - CSS Framework
+- **Font Awesome** - Icons
+- **Vite** - Build tool
+
+### **External APIs:**
+- **TrueData WebSocket** - Real-time market data
+- **TrueData REST API** - Historical data and market status
+
+## 📱 System Screenshots & Demo
+
+### **Admin Panel:**
+- User management interface
+- AI Trading dashboard
+- Order management system
+- Real-time market data display
+
+### **Trading Interface:**
+- Live stock prices with Call/Put options
+- Trade execution modal
+- Order history with P&L tracking
+- Market status indicators
+
+## 🚀 Production Deployment Checklist
+
+- [ ] Server access configured
+- [ ] Database setup completed
+- [ ] Python dependencies installed
+- [ ] Laravel dependencies installed
+- [ ] Frontend assets built
+- [ ] Cache populated with initial data
+- [ ] Cron jobs configured
+- [ ] Queue worker running
+- [ ] SSL certificate installed
+- [ ] Environment variables configured
+- [ ] Backup strategy implemented
+
+## 📞 Support & Contact
+
+**Development Team:** Macxgain Development Team
+**Email:** support@macxgain.com
+**Documentation:** This README file
+**Version:** 1.0.0
+**Status:** Production Ready ✅
 
 ---
 
-**Last Updated:** $(date)
+**Last Updated:** December 2024
 **Version:** 1.0.0
 **Status:** Production Ready ✅
+**License:** Proprietary
