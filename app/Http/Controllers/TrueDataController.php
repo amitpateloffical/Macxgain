@@ -360,13 +360,22 @@ class TrueDataController extends Controller
                 // Trigger job to fetch fresh data
                 \App\Jobs\FetchTrueDataJob::dispatch();
                 
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No live data available. Fetching fresh data...',
-                    'data' => [],
-                    'last_update' => null,
-                    'market_status' => $marketStatus
-                ], 202);
+                // Wait a moment for the job to complete
+                sleep(2);
+                
+                // Try to get data again
+                $liveData = Cache::get('truedata_live_data', []);
+                $lastUpdate = Cache::get('truedata_last_update', null);
+                
+                if (empty($liveData)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No live data available. Please try again in a moment.',
+                        'data' => [],
+                        'last_update' => null,
+                        'market_status' => $marketStatus
+                    ], 202);
+                }
             }
             
             // Add market status to each data item

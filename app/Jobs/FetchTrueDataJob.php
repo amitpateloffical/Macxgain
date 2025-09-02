@@ -42,9 +42,9 @@ class FetchTrueDataJob implements ShouldQueue
                 $marketData = $this->parsePythonOutput($output);
                 
                 if (!empty($marketData)) {
-                    // Store in cache for 5 minutes
-                    Cache::put('truedata_live_data', $marketData, 300);
-                    Cache::put('truedata_last_update', now(), 300);
+                    // Store in cache for 1 hour (3600 seconds)
+                    Cache::put('truedata_live_data', $marketData, 3600);
+                    Cache::put('truedata_last_update', now(), 3600);
                     
                     Log::info('FetchTrueDataJob: Market data cached successfully - ' . count($marketData) . ' symbols');
                 } else {

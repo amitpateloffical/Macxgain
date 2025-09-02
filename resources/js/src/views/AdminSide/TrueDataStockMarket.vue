@@ -464,58 +464,67 @@ export default {
          console.log('Response status:', liveResponse.status);
          console.log('Data keys:', Object.keys(liveResponse.data.data || {}));
 
-        if (liveResponse.data.success) {
-          const liveData = liveResponse.data.data;
-          console.log('Processing Live Data:', liveData);
-          console.log('Data count:', liveResponse.data.data_count);
-          console.log('Last update:', liveResponse.data.last_update);
-          
-          // Update market status based on data availability
-          this.marketStatus = liveData && Object.keys(liveData).length > 0 ? 'OPEN' : 'CLOSED';
-          this.marketInfo = {
-            trading_hours: '9:00 AM - 3:30 PM IST',
-            trading_days: 'Monday to Friday',
-            next_session: this.marketStatus === 'CLOSED' ? 'Next session: Tomorrow 9:00 AM' : ''
-          };
-          
-          // Process live data
-          if (liveData && Object.keys(liveData).length > 0) {
-            this.liveStocks = this.formatStockData(liveData);
-            this.connectionStatus.cached_data_count = Object.keys(liveData).length;
-            this.connectionStatus.is_connected = true;
-            console.log('Live stocks processed:', this.liveStocks);
-            
-            // Extract market indices (first 5 stocks as indices)
-            const indices = Object.values(liveData).slice(0, 5);
-            this.marketIndices = indices.map(index => ({
-              symbol: index.symbol,
-              last: index.ltp || 0,
-              change: index.change || 0,
-              change_percent: index.change_percent || 0,
-              volume: index.volume || 0,
-              high: index.high || 0,
-              low: index.low || 0,
-              open: index.open || 0,
-              prev_close: index.prev_close || 0,
-              timestamp: index.timestamp || new Date().toISOString()
-            }));
-            console.log('Market indices processed:', this.marketIndices);
-            
-            this.lastUpdated = liveResponse.data.last_update || new Date().toLocaleTimeString();
-            this.showSuccess(`Live market data loaded! ${Object.keys(liveData).length} symbols updated`);
-          } else {
-            // No live data available, try to trigger fetch
-            console.log('No live data available, triggering fresh fetch...');
-            await this.triggerDataFetch();
-            this.connectionStatus.is_connected = true; // API is working
-            this.connectionStatus.cached_data_count = 0;
-            this.showInfo('Fetching fresh market data... Please wait a moment.');
-          }
-        } else {
-          // Live data API failed, try dashboard as fallback
-          console.log('Live data API failed, trying dashboard fallback...');
-          await this.loadDashboardFallback();
-        }
+                 // Handle both success and failure cases
+         if (liveResponse.data.success && liveResponse.data.data && Object.keys(liveResponse.data.data).length > 0) {
+           // Live data available
+           const liveData = liveResponse.data.data;
+           console.log('Processing Live Data:', liveData);
+           console.log('Data count:', liveResponse.data.data_count);
+           console.log('Last update:', liveResponse.data.last_update);
+           
+           this.marketStatus = 'OPEN';
+           this.marketInfo = {
+             trading_hours: '9:15 AM - 3:30 PM IST',
+             trading_days: 'Monday to Friday',
+             next_session: ''
+           };
+           
+           this.liveStocks = this.formatStockData(liveData);
+           this.connectionStatus.cached_data_count = Object.keys(liveData).length;
+           this.connectionStatus.is_connected = true;
+           console.log('Live stocks processed:', this.liveStocks);
+           
+           // Extract market indices (first 5 stocks as indices)
+           const indices = Object.values(liveData).slice(0, 5);
+           this.marketIndices = indices.map(index => ({
+             symbol: index.symbol,
+             last: index.ltp || 0,
+             change: index.change || 0,
+             change_percent: index.change_percent || 0,
+             volume: index.volume || 0,
+             high: index.high || 0,
+             low: index.low || 0,
+             open: index.open || 0,
+             prev_close: index.prev_close || 0,
+             timestamp: index.timestamp || new Date().toISOString()
+           }));
+           console.log('Market indices processed:', this.marketIndices);
+           
+           this.lastUpdated = liveResponse.data.last_update || new Date().toLocaleTimeString();
+           this.showSuccess(`Live market data loaded! ${Object.keys(liveData).length} symbols updated`);
+           
+         } else {
+           // No live data available (market closed or API issue)
+           console.log('No live data available, trying dashboard fallback for historical data...');
+           
+           // Update market status from response
+           if (liveResponse.data.market_status) {
+             this.marketStatus = liveResponse.data.market_status.status || 'CLOSED';
+             this.marketInfo = {
+               trading_hours: liveResponse.data.market_status.trading_hours || '9:15 AM - 3:30 PM IST',
+               trading_days: 'Monday to Friday',
+               next_session: liveResponse.data.market_status.next_open || 'Next session: Tomorrow 9:15 AM'
+             };
+           }
+           
+           // Try to get historical data from dashboard
+           await this.loadDashboardFallback();
+           
+           // If still no data, show message to user
+           if (this.liveStocks.length === 0) {
+             this.showWarning('Market data is being fetched. Please wait a moment and refresh the page.');
+           }
+         }
 
       } catch (error) {
         console.error('Error loading TrueData market data:', error);
@@ -761,49 +770,62 @@ export default {
       }
     },
 
-    async loadDashboardFallback() {
-      try {
-        const response = await axios.get('/api/truedata/dashboard', {
-          headers: {
-            'Accept': 'application/json'
-          },
-          params: { _t: Date.now() }
-        });
+         async loadDashboardFallback() {
+       try {
+         console.log('Loading dashboard fallback data...');
+         const response = await axios.get('/api/truedata/dashboard', {
+           headers: {
+             'Accept': 'application/json'
+           },
+           params: { _t: Date.now() }
+         });
 
-        if (response.data.success) {
-          const data = response.data.data;
-          
-          // Process quotes data
-          if (data.quotes) {
-            this.liveStocks = this.formatStockData(data.quotes);
-            this.connectionStatus.cached_data_count = Object.keys(data.quotes).length;
-            this.connectionStatus.is_connected = Object.keys(data.quotes).length > 0;
-          }
-          
-          // Process market indices
-          if (data.indices) {
-            this.marketIndices = Object.values(data.indices).map(index => ({
-              symbol: index.symbol,
-              last: index.ltp || index.last || 0,
-              change: index.change || 0,
-              change_percent: index.change_percent || 0,
-              volume: index.volume || 0,
-              high: index.high || 0,
-              low: index.low || 0,
-              open: index.open || 0,
-              prev_close: index.prev_close || 0,
-              timestamp: index.timestamp || new Date().toISOString()
-            }));
-          }
-          
-          this.lastUpdated = new Date().toLocaleTimeString();
-          this.showInfo('Using historical data (Market closed)');
-        }
-      } catch (error) {
-        console.error('Dashboard fallback failed:', error);
-        this.showError('Failed to load market data from both live and historical sources.');
-      }
-    },
+         console.log('Dashboard fallback response:', response.data);
+
+         if (response.data.success) {
+           const data = response.data.data;
+           
+           // Process quotes data
+           if (data.quotes && Object.keys(data.quotes).length > 0) {
+             this.liveStocks = this.formatStockData(data.quotes);
+             this.connectionStatus.cached_data_count = Object.keys(data.quotes).length;
+             this.connectionStatus.is_connected = true;
+             console.log('Dashboard stocks processed:', this.liveStocks.length);
+           }
+           
+           // Process market indices
+           if (data.indices && Object.keys(data.indices).length > 0) {
+             this.marketIndices = Object.values(data.indices).map(index => ({
+               symbol: index.symbol,
+               last: index.ltp || index.last || 0,
+               change: index.change || 0,
+               change_percent: index.change_percent || 0,
+               volume: index.volume || 0,
+               high: index.high || 0,
+               low: index.low || 0,
+               open: index.open || 0,
+               prev_close: index.prev_close || 0,
+               timestamp: index.timestamp || new Date().toISOString()
+             }));
+             console.log('Dashboard indices processed:', this.marketIndices.length);
+           }
+           
+           this.lastUpdated = new Date().toLocaleTimeString();
+           this.showInfo('Using historical data (Market closed)');
+           
+         } else {
+           console.log('Dashboard fallback also failed, showing empty state');
+           this.connectionStatus.is_connected = false;
+           this.connectionStatus.cached_data_count = 0;
+           this.showWarning('No market data available. Market is closed and no historical data found.');
+         }
+       } catch (error) {
+         console.error('Dashboard fallback failed:', error);
+         this.connectionStatus.is_connected = false;
+         this.connectionStatus.cached_data_count = 0;
+         this.showError('Failed to load market data from both live and historical sources.');
+       }
+     },
 
     // Market Status Methods
     async loadMarketStatus() {
@@ -1305,6 +1327,7 @@ export default {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .stocks-section {
@@ -1318,6 +1341,11 @@ export default {
   margin-bottom: 25px;
   flex-wrap: wrap;
   gap: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .section-title {
@@ -1375,22 +1403,24 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .search-icon {
   position: absolute;
   left: 12px;
   color: rgba(255, 255, 255, 0.5);
-  z-index: 1;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .filter-input,
 .filter-select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 10px;
   padding: 12px 15px;
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 0.9rem;
   transition: all 0.3s ease;
   width: 100%;
@@ -1398,18 +1428,27 @@ export default {
 
 .filter-input {
   padding-left: 40px;
+  position: relative;
+  z-index: 1;
+  cursor: text;
 }
 
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
-  border-color: #00ff88;
+  border-color: #00ff88 !important;
   box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
 }
 
 .filter-input::placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.filter-select option {
+  background: #1a1a2e !important;
+  color: #ffffff !important;
 }
 
 /* Stocks Grid */
@@ -2034,14 +2073,7 @@ export default {
   cursor: not-allowed;
 }
 
-.filters-section {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
+/* Removed conflicting light background CSS */
 
 .filter-group {
   display: flex;
@@ -2055,13 +2087,7 @@ export default {
   white-space: nowrap;
 }
 
-.filter-input,
-.filter-select {
-  padding: 8px 12px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-size: 14px;
-}
+/* Removed conflicting CSS rules */
 
 .stocks-grid {
   display: grid;

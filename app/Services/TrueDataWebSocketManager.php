@@ -111,7 +111,7 @@ class TrueDataWebSocketManager
             
             if (!empty($historicalData)) {
                 $this->marketData = $historicalData;
-                Cache::put('truedata_market_data', $historicalData, 300);
+                Cache::put('truedata_market_data', $historicalData, 3600);
                 Log::info('Real historical data fetched from TrueData API - ' . count($historicalData) . ' stocks');
                 return;
             }
@@ -121,7 +121,7 @@ class TrueDataWebSocketManager
 
         // No mock data - show empty state when market is closed
         $this->marketData = [];
-        Cache::put('truedata_market_data', [], 300);
+        Cache::put('truedata_market_data', [], 3600);
         Log::info('No historical data available - market closed, no mock data');
     }
 
@@ -342,7 +342,7 @@ class TrueDataWebSocketManager
         ];
 
         $this->marketData = $historicalData;
-        Cache::put('truedata_market_data', $historicalData, 300); // 5 minutes cache for fresh data
+        Cache::put('truedata_market_data', $historicalData, 3600); // 1 hour cache for fresh data
         Log::info('Historical data added (last closing prices) - ' . count($historicalData) . ' stocks');
     }
 
@@ -949,7 +949,7 @@ class TrueDataWebSocketManager
             ];
 
             // Cache the updated data
-            Cache::put('truedata_market_data', $this->marketData, 300); // 5 minutes
+            Cache::put('truedata_market_data', $this->marketData, 3600); // 1 hour
         }
     }
 
