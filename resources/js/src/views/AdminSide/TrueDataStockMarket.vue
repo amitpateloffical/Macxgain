@@ -138,6 +138,8 @@
             :key="stock.symbol"
             class="stock-card"
             :class="{ 'positive': stock.change > 0, 'negative': stock.change < 0 }"
+            @click="showOptionsModal(stock.symbol, stock)"
+            style="cursor: pointer;"
           >
             <div class="stock-header">
               <div class="stock-symbol">{{ stock.symbol }}</div>
@@ -208,6 +210,117 @@
       </button>
     </div>
   </div>
+
+  <!-- Options Modal -->
+  <div v-if="showOptions" class="options-modal-overlay" @click="closeOptionsModal">
+    <div class="options-modal" @click.stop>
+      <div class="options-header">
+        <h3>{{ selectedStock?.symbol }} Options</h3>
+        <div class="header-actions">
+          <div class="search-container">
+            <input 
+              v-model="optionsSearchQuery" 
+              type="text" 
+              placeholder="Search by strike price..."
+              class="options-search"
+              @input="filterOptions"
+            >
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <span class="esc-hint">Press ESC to close</span>
+          <button @click="closeOptionsModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="options-content">
+        <!-- Side-by-Side Options Layout -->
+        <div class="options-comparison">
+          <!-- Put Options (Left Side) -->
+          <div class="options-column put-column">
+            <h4 class="section-title put-title">
+              <i class="fas fa-arrow-down"></i> Put Options
+            </h4>
+            <div class="options-list">
+              <div 
+                v-for="option in filteredPutOptions" 
+                :key="option.strike"
+                class="option-row put-option"
+              >
+                <div class="option-strike">{{ option.strike }}</div>
+                <div class="option-price">₹{{ option.price || '--' }}</div>
+                <div class="option-details">
+                  <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
+                  <div class="option-oi">OI: {{ option.oi || '--' }}</div>
+                </div>
+                <div class="option-greeks" v-if="option.greeks">
+                  <div class="greeks-row">
+                    <span class="greek">Δ {{ option.greeks.delta || '--' }}</span>
+                    <span class="greek">Γ {{ option.greeks.gamma || '--' }}</span>
+                  </div>
+                  <div class="greeks-row">
+                    <span class="greek">Θ {{ option.greeks.theta || '--' }}</span>
+                    <span class="greek">ν {{ option.greeks.vega || '--' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Strike Price Column (Center) -->
+          <div class="strike-column">
+            <h4 class="section-title strike-title">
+              <i class="fas fa-bullseye"></i> Strike Price
+            </h4>
+            <div class="strike-list">
+              <div 
+                v-for="strike in filteredStrikes" 
+                :key="strike"
+                class="strike-row"
+              >
+                <div class="strike-price">{{ strike }}</div>
+                <div class="strike-indicator" :class="getStrikeIndicatorClass(strike)">
+                  {{ getStrikeIndicatorText(strike) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Call Options (Right Side) -->
+          <div class="options-column call-column">
+            <h4 class="section-title call-title">
+              <i class="fas fa-arrow-up"></i> Call Options
+            </h4>
+            <div class="options-list">
+              <div 
+                v-for="option in filteredCallOptions" 
+                :key="option.strike"
+                class="option-row call-option"
+              >
+                <div class="option-strike">{{ option.strike }}</div>
+                <div class="option-price">₹{{ option.price || '--' }}</div>
+                <div class="option-details">
+                  <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
+                  <div class="option-oi">OI: {{ option.oi || '--' }}</div>
+                </div>
+                <div class="option-greeks" v-if="option.greeks">
+                  <div class="greeks-row">
+                    <span class="greek">Δ {{ option.greeks.delta || '--' }}</span>
+                    <span class="greek">Γ {{ option.greeks.gamma || '--' }}</span>
+                  </div>
+                  <div class="greeks-row">
+                    <span class="greek">Θ {{ option.greeks.theta || '--' }}</span>
+                    <span class="greek">ν {{ option.greeks.vega || '--' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -238,7 +351,16 @@ export default {
       searchQuery: '',
       sortBy: 'symbol',
       toasts: [],
-      toastId: 0
+      toastId: 0,
+      // Options Modal Data
+      showOptions: false,
+      selectedStock: null,
+      callOptions: [],
+      putOptions: [],
+      optionsSearchQuery: '',
+      filteredCallOptions: [],
+      filteredPutOptions: [],
+      filteredStrikes: []
     };
   },
   computed: {
@@ -310,9 +432,14 @@ export default {
     this.loadMarketData();
     // Auto-refresh every 30 seconds when market is open
     this.startAutoRefresh();
+    
+    // Add ESC key listener for options modal
+    document.addEventListener('keydown', this.handleKeyPress);
   },
   beforeUnmount() {
     this.stopAutoRefresh();
+    // Remove ESC key listener
+    document.removeEventListener('keydown', this.handleKeyPress);
   },
   methods: {
     async loadMarketData() {
@@ -326,14 +453,16 @@ export default {
         // First try to get live data from Python script
         console.log('Loading live data from Python script...');
         
-        const liveResponse = await axios.get('/api/truedata/live-data', {
-          headers: {
-            'Accept': 'application/json'
-          },
-          params: { _t: Date.now() } // Cache busting parameter
-        });
+                 const liveResponse = await axios.get('/api/truedata/live-data', {
+           headers: {
+             'Accept': 'application/json'
+           },
+           params: { _t: Date.now() } // Cache busting parameter
+         });
 
-        console.log('TrueData Live Data API Response:', liveResponse.data);
+         console.log('TrueData Live Data API Response:', liveResponse.data);
+         console.log('Response status:', liveResponse.status);
+         console.log('Data keys:', Object.keys(liveResponse.data.data || {}));
 
         if (liveResponse.data.success) {
           const liveData = liveResponse.data.data;
@@ -732,6 +861,142 @@ export default {
         default:
           return 'unknown';
       }
+    },
+
+    // Options Modal Methods
+    async showOptionsModal(symbol, stock) {
+      this.selectedStock = { symbol, ...stock };
+      this.showOptions = true;
+      
+      // Load options data for this symbol
+      await this.loadOptionsData(symbol);
+    },
+
+    closeOptionsModal() {
+      this.showOptions = false;
+      this.selectedStock = null;
+      this.callOptions = [];
+      this.putOptions = [];
+    },
+
+    async loadOptionsData(symbol) {
+      try {
+        // Generate mock options data for demonstration
+        // In production, this would call the options API
+        this.generateMockOptions(symbol);
+        
+        // Uncomment below for real API call
+        // const response = await axios.get(`/api/truedata/options/chain/${symbol}`);
+        // if (response.data.success) {
+        //   this.processOptionsData(response.data.data);
+        // }
+      } catch (error) {
+        console.error('Error loading options data:', error);
+        this.showError('Failed to load options data');
+      }
+    },
+
+    generateMockOptions(symbol) {
+      const currentPrice = this.selectedStock?.last || 1000;
+      const strikes = this.generateStrikes(currentPrice);
+      
+      this.callOptions = strikes.map(strike => ({
+        strike,
+        price: this.calculateOptionPrice(currentPrice, strike, 'call'),
+        volume: Math.floor(Math.random() * 10000),
+        oi: Math.floor(Math.random() * 50000),
+        greeks: {
+          delta: (Math.random() * 0.8 + 0.1).toFixed(3),
+          gamma: (Math.random() * 0.1).toFixed(3),
+          theta: (-Math.random() * 5).toFixed(3),
+          vega: (Math.random() * 10).toFixed(3)
+        }
+      }));
+
+      this.putOptions = strikes.map(strike => ({
+        strike,
+        price: this.calculateOptionPrice(currentPrice, strike, 'put'),
+        volume: Math.floor(Math.random() * 10000),
+        oi: Math.floor(Math.random() * 50000),
+        greeks: {
+          delta: (-Math.random() * 0.8 - 0.1).toFixed(3),
+          gamma: (Math.random() * 0.1).toFixed(3),
+          theta: (-Math.random() * 5).toFixed(3),
+          vega: (Math.random() * 10).toFixed(3)
+        }
+      }));
+
+      // Initialize filtered arrays
+      this.filteredCallOptions = [...this.callOptions];
+      this.filteredPutOptions = [...this.putOptions];
+      this.filteredStrikes = strikes;
+      this.optionsSearchQuery = '';
+    },
+
+    generateStrikes(currentPrice) {
+      const strikes = [];
+      const start = Math.floor(currentPrice / 50) * 50 - 200;
+      const end = start + 800;
+      
+      for (let i = start; i <= end; i += 50) {
+        strikes.push(i);
+      }
+      return strikes;
+    },
+
+    calculateOptionPrice(spot, strike, type) {
+      const intrinsic = type === 'call' ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
+      const timeValue = Math.random() * 50 + 10;
+      return (intrinsic + timeValue).toFixed(2);
+    },
+
+    // Handle keyboard events
+    handleKeyPress(event) {
+      // Close options modal on ESC key press
+      if (event.key === 'Escape' && this.showOptions) {
+        this.closeOptionsModal();
+      }
+    },
+
+    // Filter options based on search query
+    filterOptions() {
+      if (!this.optionsSearchQuery) {
+        this.filteredCallOptions = [...this.callOptions];
+        this.filteredPutOptions = [...this.putOptions];
+        this.filteredStrikes = this.callOptions.map(opt => opt.strike);
+        return;
+      }
+
+      const searchTerm = this.optionsSearchQuery.toLowerCase();
+      
+      this.filteredCallOptions = this.callOptions.filter(option => 
+        option.strike.toString().includes(searchTerm)
+      );
+      
+      this.filteredPutOptions = this.putOptions.filter(option => 
+        option.strike.toString().includes(searchTerm)
+      );
+      
+      // Get common strikes from filtered options
+      const callStrikes = this.filteredCallOptions.map(opt => opt.strike);
+      const putStrikes = this.filteredPutOptions.map(opt => opt.strike);
+      this.filteredStrikes = [...new Set([...callStrikes, ...putStrikes])].sort((a, b) => a - b);
+    },
+
+    // Get strike indicator class based on current price
+    getStrikeIndicatorClass(strike) {
+      const currentPrice = this.selectedStock?.last || 0;
+      if (strike < currentPrice) return 'itm'; // In The Money
+      if (strike > currentPrice) return 'otm'; // Out The Money
+      return 'atm'; // At The Money
+    },
+
+    // Get strike indicator text
+    getStrikeIndicatorText(strike) {
+      const currentPrice = this.selectedStock?.last || 0;
+      if (strike < currentPrice) return 'ITM';
+      if (strike > currentPrice) return 'OTM';
+      return 'ATM';
     }
   }
 };
@@ -2037,5 +2302,421 @@ export default {
 @keyframes fa-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Options Modal Styles */
+.options-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+/* Search Container */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.options-search {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 35px 8px 12px;
+  color: #fff;
+  font-size: 0.9rem;
+  width: 200px;
+  transition: all 0.3s ease;
+}
+
+.options-search:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.options-search::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.options-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.options-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.esc-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.options-header h3 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.options-content {
+  padding: 30px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Side-by-Side Options Layout */
+.options-comparison {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.options-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.option-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.option-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.option-row.call-option {
+  border-left: 3px solid #00ff88;
+}
+
+.option-row.call-option:hover {
+  border-color: #00ff88;
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+}
+
+.option-row.put-option {
+  border-left: 3px solid #ff4444;
+}
+
+.option-row.put-option:hover {
+  border-color: #ff4444;
+  box-shadow: 0 4px 15px rgba(255, 68, 68, 0.2);
+}
+
+/* Strike Column */
+.strike-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.strike-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.strike-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.strike-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.strike-indicator {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.strike-indicator.itm {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.strike-indicator.otm {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.strike-indicator.atm {
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+/* Section Titles */
+.strike-title {
+  color: #00d4ff;
+  border-color: #00d4ff;
+}
+
+.options-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid;
+}
+
+.call-title {
+  color: #00ff88;
+  border-color: #00ff88;
+}
+
+.put-title {
+  color: #ff4444;
+  border-color: #ff4444;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.option-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.call-option {
+  border-left: 4px solid #00ff88;
+}
+
+.call-option:hover {
+  border-color: #00ff88;
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
+}
+
+.put-option {
+  border-left: 4px solid #ff4444;
+}
+
+.put-option:hover {
+  border-color: #ff4444;
+  box-shadow: 0 8px 25px rgba(255, 68, 68, 0.2);
+}
+
+.option-strike {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.option-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #00d4ff;
+  margin-bottom: 12px;
+}
+
+.option-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.option-greeks {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.greeks-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.greek {
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Scrollbar styling */
+.options-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.options-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.options-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.options-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .options-modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+  
+  .options-header {
+    padding: 15px 20px;
+  }
+  
+  .options-content {
+    padding: 20px;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .option-card {
+    padding: 15px;
+  }
+  
+  .header-actions {
+    gap: 10px;
+  }
+  
+  .esc-hint {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  
+  .options-search {
+    width: 150px;
+    font-size: 0.8rem;
+  }
+  
+  .options-comparison {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .strike-column {
+    order: -1;
+  }
+  
+  .strike-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
+    padding-bottom: 10px;
+  }
+  
+  .strike-row {
+    min-width: 80px;
+    flex-shrink: 0;
+  }
 }
 </style>
