@@ -62,6 +62,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/AITradingSession.vue"),
   },
+  {
+    path: "/admin/ai-trading-orders",
+    name: "ai_trading_orders",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/AITradingOrders.vue"),
+  },
     {
     path: "/admin/payment-collector",
     name: "payment_collector",

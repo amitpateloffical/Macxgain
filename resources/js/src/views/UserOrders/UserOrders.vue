@@ -13,46 +13,15 @@
           </div>
         </div>
         <div class="header-actions">
-          <button class="btn-place-order" @click="showPlaceOrderModal = true">
-            <i class="fas fa-plus"></i>
-            Place Order
+          <button class="btn-refresh" @click="loadOrders" :disabled="loading">
+            <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+            {{ loading ? 'Loading...' : 'Refresh' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Order Tabs -->
-    <div class="order-tabs-section">
-      <div class="tabs-container">
-        <div class="order-tabs">
-          <button 
-            :class="['tab-btn', { active: activeTab === 'all' }]"
-            @click="setActiveTab('all')"
-          >
-            All Orders
-          </button>
-          <button 
-            :class="['tab-btn', { active: activeTab === 'pending' }]"
-            @click="setActiveTab('pending')"
-          >
-            Pending
-          </button>
-          <button 
-            :class="['tab-btn', { active: activeTab === 'executed' }]"
-            @click="setActiveTab('executed')"
-          >
-            Executed
-          </button>
-          <button 
-            :class="['tab-btn', { active: activeTab === 'cancelled' }]"
-            @click="setActiveTab('cancelled')"
-          >
-            Cancelled
-          </button>
-        </div>
-        <div class="tab-indicator" :style="{ transform: `translateX(${tabIndicatorPosition}px)` }"></div>
-      </div>
-    </div>
+
 
     <!-- Orders Stats -->
     <div class="stats-section">
@@ -67,15 +36,6 @@
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon pending">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ pendingOrders }}</div>
-            <div class="stat-label">Pending</div>
-          </div>
-        </div>
-        <div class="stat-card">
           <div class="stat-icon executed">
             <i class="fas fa-check-circle"></i>
           </div>
@@ -84,13 +44,89 @@
             <div class="stat-label">Executed</div>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon cancelled">
-            <i class="fas fa-times-circle"></i>
+        <div class="stat-card profit">
+          <div class="stat-icon profit">
+            <i class="fas fa-arrow-up"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ cancelledOrders }}</div>
-            <div class="stat-label">Cancelled</div>
+            <div class="stat-value profit">+₹{{ totalProfit?.toLocaleString() }}</div>
+            <div class="stat-label">Total Profit</div>
+          </div>
+        </div>
+        <div class="stat-card loss">
+          <div class="stat-icon loss">
+            <i class="fas fa-arrow-down"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value loss">-₹{{ Math.abs(totalLoss)?.toLocaleString() }}</div>
+            <div class="stat-label">Total Loss</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L Analysis Section -->
+    <div class="pnl-analysis-section" v-if="closedTrades.length > 0">
+      <div class="section-header">
+        <h3>📊 Trading Performance Analysis</h3>
+        <button class="toggle-btn" @click="showDetailedAnalysis = !showDetailedAnalysis">
+          <i class="fas" :class="showDetailedAnalysis ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          {{ showDetailedAnalysis ? 'Hide Details' : 'Show Details' }}
+        </button>
+      </div>
+      
+      <div class="pnl-summary">
+        <div class="pnl-card profit">
+          <div class="pnl-icon">
+            <i class="fas fa-arrow-up"></i>
+          </div>
+          <div class="pnl-content">
+            <div class="pnl-value">+₹{{ totalProfit?.toLocaleString() }}</div>
+            <div class="pnl-label">Total Profit</div>
+            <div class="pnl-count">{{ profitableTrades.length }} trades</div>
+          </div>
+        </div>
+        
+        <div class="pnl-card loss">
+          <div class="pnl-icon">
+            <i class="fas fa-arrow-down"></i>
+          </div>
+          <div class="pnl-content">
+            <div class="pnl-value">-₹{{ Math.abs(totalLoss)?.toLocaleString() }}</div>
+            <div class="pnl-label">Total Loss</div>
+            <div class="pnl-count">{{ lossTrades.length }} trades</div>
+          </div>
+        </div>
+        
+        <div class="pnl-card" :class="overallPnL >= 0 ? 'profit' : 'loss'">
+          <div class="pnl-icon">
+            <i class="fas fa-balance-scale"></i>
+          </div>
+          <div class="pnl-content">
+            <div class="pnl-value">{{ overallPnL >= 0 ? '+' : '' }}₹{{ overallPnL?.toLocaleString() }}</div>
+            <div class="pnl-label">Net P&L</div>
+            <div class="pnl-count">{{ closedTrades.length }} total trades</div>
+          </div>
+        </div>
+      </div>
+      
+      <div v-if="showDetailedAnalysis" class="detailed-analysis">
+        <div class="analysis-grid">
+          <div class="analysis-item">
+            <span class="analysis-label">Total Invested:</span>
+            <span class="analysis-value">₹{{ totalInvested?.toLocaleString() }}</span>
+          </div>
+          <div class="analysis-item">
+            <span class="analysis-label">Total Return:</span>
+            <span class="analysis-value">₹{{ totalReturn?.toLocaleString() }}</span>
+          </div>
+          <div class="analysis-item">
+            <span class="analysis-label">Win Rate:</span>
+            <span class="analysis-value">{{ winRate }}%</span>
+          </div>
+          <div class="analysis-item">
+            <span class="analysis-label">Avg Profit per Trade:</span>
+            <span class="analysis-value">₹{{ avgProfitPerTrade?.toLocaleString() }}</span>
           </div>
         </div>
       </div>
@@ -98,6 +134,8 @@
 
     <!-- Orders Content -->
     <div class="orders-content">
+
+      
       <!-- Empty State -->
       <div v-if="filteredOrders.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">
@@ -105,12 +143,8 @@
         </div>
         <h3 class="empty-title">No orders found</h3>
         <p class="empty-subtitle">
-          {{ activeTab === 'all' ? 'You haven\'t placed any orders yet' : `No ${activeTab} orders found` }}
+          You haven't placed any orders yet
         </p>
-        <button class="btn-primary" @click="showPlaceOrderModal = true">
-          <i class="fas fa-plus"></i>
-          Place Your First Order
-        </button>
       </div>
 
       <!-- Loading State -->
@@ -161,44 +195,44 @@
                 <span class="detail-value">{{ order.quantity }}</span>
               </div>
               <div class="detail-group">
-                <span class="detail-label">Price</span>
+                <span class="detail-label">Strike Price</span>
                 <span class="detail-value">₹{{ order.price.toFixed(2) }}</span>
               </div>
               <div class="detail-group">
-                <span class="detail-label">Order Value</span>
-                <span class="detail-value">₹{{ (order.quantity * order.price).toFixed(2) }}</span>
+                <span class="detail-label">Total Amount</span>
+                <span class="detail-value">₹{{ order.totalAmount?.toFixed(2) || (order.quantity * order.price).toFixed(2) }}</span>
               </div>
             </div>
             
-            <div class="detail-row" v-if="order.status === 'EXECUTED'">
+            <div class="detail-row" v-if="order.optionType">
               <div class="detail-group">
-                <span class="detail-label">Executed Price</span>
+                <span class="detail-label">Option Type</span>
+                <span class="detail-value option-type" :class="order.optionType.toLowerCase()">
+                  <i :class="order.optionType === 'CALL' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                  {{ order.optionType }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="detail-row" v-if="order.status === 'EXECUTED' || order.status === 'CLOSED'">
+              <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
+                <span class="detail-label">Exit Price</span>
                 <span class="detail-value">₹{{ order.executedPrice.toFixed(2) }}</span>
               </div>
-              <div class="detail-group">
+              <div class="detail-group" v-if="order.pnl !== null && order.pnl !== undefined && order.status === 'CLOSED'">
                 <span class="detail-label">P&L</span>
                 <span class="detail-value" :class="{ 'profit': order.pnl > 0, 'loss': order.pnl < 0 }">
                   {{ order.pnl > 0 ? '+' : '' }}₹{{ order.pnl.toFixed(2) }}
                 </span>
               </div>
-              <div class="detail-group">
-                <span class="detail-label">Executed At</span>
+              <div class="detail-group" v-if="order.executedAt && order.status === 'CLOSED'">
+                <span class="detail-label">Closed At</span>
                 <span class="detail-value">{{ formatTime(order.executedAt) }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Order Actions -->
-          <div class="order-actions" v-if="order.status === 'PENDING'">
-            <button class="action-btn modify" @click="modifyOrder(order)">
-              <i class="fas fa-edit"></i>
-              Modify
-            </button>
-            <button class="action-btn cancel" @click="cancelOrder(order)">
-              <i class="fas fa-times"></i>
-              Cancel
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
@@ -329,81 +363,17 @@
 </template>
 
 <script>
+import axios from '@/axios';
+
 export default {
   name: 'UserOrders',
   data() {
     return {
       loading: false,
-      activeTab: 'all',
+
       showPlaceOrderModal: false,
-      orders: [
-        // Sample orders data
-        {
-          id: 1,
-          symbol: 'RELIANCE',
-          exchange: 'NSE',
-          type: 'BUY',
-          status: 'EXECUTED',
-          quantity: 10,
-          price: 2450.00,
-          executedPrice: 2455.50,
-          pnl: 55.00,
-          timestamp: new Date('2024-01-15T09:30:00'),
-          executedAt: new Date('2024-01-15T09:31:15')
-        },
-        {
-          id: 2,
-          symbol: 'TCS',
-          exchange: 'NSE',
-          type: 'SELL',
-          status: 'PENDING',
-          quantity: 5,
-          price: 3680.00,
-          executedPrice: 0,
-          pnl: 0,
-          timestamp: new Date('2024-01-15T10:15:00'),
-          executedAt: null
-        },
-        {
-          id: 3,
-          symbol: 'INFY',
-          exchange: 'NSE',
-          type: 'BUY',
-          status: 'CANCELLED',
-          quantity: 15,
-          price: 1570.00,
-          executedPrice: 0,
-          pnl: 0,
-          timestamp: new Date('2024-01-15T11:00:00'),
-          executedAt: null
-        },
-        {
-          id: 4,
-          symbol: 'HDFC',
-          exchange: 'NSE',
-          type: 'SELL',
-          status: 'EXECUTED',
-          quantity: 8,
-          price: 1680.00,
-          executedPrice: 1675.25,
-          pnl: -38.00,
-          timestamp: new Date('2024-01-15T14:20:00'),
-          executedAt: new Date('2024-01-15T14:22:30')
-        },
-        {
-          id: 5,
-          symbol: 'WIPRO',
-          exchange: 'NSE',
-          type: 'BUY',
-          status: 'PENDING',
-          quantity: 20,
-          price: 455.00,
-          executedPrice: 0,
-          pnl: 0,
-          timestamp: new Date('2024-01-15T15:10:00'),
-          executedAt: null
-        }
-      ],
+      showDetailedAnalysis: false,
+      orders: [],
       orderForm: {
         stockSearch: '',
         selectedStock: null,
@@ -425,11 +395,8 @@ export default {
     };
   },
   computed: {
-    filteredOrders() {
-      if (this.activeTab === 'all') {
-        return this.orders;
-      }
-      return this.orders.filter(order => order.status.toLowerCase() === this.activeTab);
+        filteredOrders() {
+      return this.orders;
     },
     totalOrders() {
       return this.orders.length;
@@ -443,11 +410,50 @@ export default {
     cancelledOrders() {
       return this.orders.filter(order => order.status === 'CANCELLED').length;
     },
-    tabIndicatorPosition() {
-      const tabs = ['all', 'pending', 'executed', 'cancelled'];
-      const index = tabs.indexOf(this.activeTab);
-      return index * 120; // Adjust based on tab width
+    
+    // P&L Analysis Computed Properties
+    closedTrades() {
+      return this.orders.filter(order => order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined);
     },
+    
+    profitableTrades() {
+      return this.closedTrades.filter(trade => trade.pnl > 0);
+    },
+    
+    lossTrades() {
+      return this.closedTrades.filter(trade => trade.pnl < 0);
+    },
+    
+    totalProfit() {
+      return this.profitableTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    },
+    
+    totalLoss() {
+      return this.lossTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    },
+    
+    overallPnL() {
+      return this.totalProfit + this.totalLoss;
+    },
+    
+    totalInvested() {
+      return this.orders.filter(order => order.status === 'CLOSED').reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    },
+    
+    totalReturn() {
+      return this.totalInvested + this.overallPnL;
+    },
+    
+    winRate() {
+      if (this.closedTrades.length === 0) return 0;
+      return Math.round((this.profitableTrades.length / this.closedTrades.length) * 100);
+    },
+    
+    avgProfitPerTrade() {
+      if (this.closedTrades.length === 0) return 0;
+      return this.overallPnL / this.closedTrades.length;
+    },
+
     orderValue() {
       return (this.orderForm.quantity || 0) * (this.orderForm.price || 0);
     },
@@ -458,10 +464,67 @@ export default {
              this.orderForm.type;
     }
   },
+  mounted() {
+    this.loadOrders();
+  },
   methods: {
-    setActiveTab(tab) {
-      this.activeTab = tab;
+    async loadOrders() {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+        const user = JSON.parse(localStorage.getItem('userData') || '{}');
+        
+        if (!user.id) {
+          this.showError('User not found. Please login again.');
+          return;
+        }
+        
+        if (!token) {
+          this.showError('Authentication token not found. Please login again.');
+          return;
+        }
+        
+        const response = await axios.get(`ai-trading/user-orders/${user.id}`);
+
+        if (response.data.success) {
+          // Transform AI trading orders to match the expected format
+          this.orders = response.data.orders.map(order => ({
+            id: order.id,
+            symbol: order.stock_symbol,
+            exchange: 'NSE',
+            type: order.action,
+            status: order.status === 'COMPLETED' ? 'EXECUTED' : (order.status === 'CLOSED' ? 'CLOSED' : order.status),
+            quantity: parseInt(order.quantity),
+            price: parseFloat(order.strike_price),
+            executedPrice: order.exit_price ? parseFloat(order.exit_price) : null,
+            pnl: order.pnl ? parseFloat(order.pnl) : 0,
+            timestamp: new Date(order.created_at),
+            executedAt: order.closed_at ? new Date(order.closed_at) : null,
+            optionType: order.option_type,
+            totalAmount: parseFloat(order.total_amount)
+          }));
+        } else {
+          this.showError(response.data.message || 'Failed to load orders');
+        }
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        
+        if (error.response?.status === 401) {
+          this.showError('Authentication failed. Please login again.');
+        } else if (error.response?.status === 403) {
+          this.showError('Access denied. You do not have permission to view orders.');
+        } else {
+          this.showError('Failed to load orders. Please try again.');
+        }
+      } finally {
+        this.loading = false;
+      }
     },
+    showError(message) {
+      // Simple error notification - you can enhance this with a proper notification system
+      alert(message);
+    },
+
     getStatusIcon(status) {
       switch (status) {
         case 'PENDING': return 'fas fa-clock';
@@ -534,35 +597,7 @@ export default {
       };
       this.stockSearchResults = [];
     },
-    modifyOrder(order) {
-      this.$bvToast.toast(`Modify functionality for order ${order.id} - Coming soon!`, {
-        title: 'Modify Order',
-        variant: 'info',
-        solid: true
-      });
-    },
-    cancelOrder(order) {
-      this.$bvModal.msgBoxConfirm(`Cancel ${order.type} order for ${order.quantity} ${order.symbol}?`, {
-        title: 'Cancel Order',
-        size: 'sm',
-        buttonSize: 'sm',
-        okVariant: 'danger',
-        okTitle: 'Cancel Order',
-        cancelTitle: 'Keep Order',
-        footerClass: 'p-2',
-        hideHeaderClose: false,
-        centered: true
-      }).then(value => {
-        if (value) {
-          order.status = 'CANCELLED';
-          this.$bvToast.toast(`Order for ${order.symbol} cancelled successfully`, {
-            title: 'Order Cancelled',
-            variant: 'warning',
-            solid: true
-          });
-        }
-      });
-    }
+
   }
 };
 </script>
@@ -623,6 +658,31 @@ export default {
   font-size: 1rem;
 }
 
+.btn-refresh {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-place-order {
   background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
   color: #0f0f23;
@@ -642,56 +702,7 @@ export default {
   box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
 }
 
-/* Order Tabs */
-.order-tabs-section {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
 
-.tabs-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.order-tabs {
-  display: flex;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 4px;
-  position: relative;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 12px 20px;
-  background: transparent;
-  border: none;
-  color: #a1a1a1;
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
-}
-
-.tab-btn.active {
-  color: #00ff80;
-}
-
-.tab-indicator {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: calc(25% - 4px);
-  height: calc(100% - 8px);
-  background: rgba(0, 255, 128, 0.2);
-  border-radius: 8px;
-  transition: transform 0.3s ease;
-  z-index: 1;
-}
 
 /* Stats Section */
 .stats-section {
@@ -970,42 +981,209 @@ export default {
   color: #ef4444;
 }
 
-.order-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.action-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.option-type {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  font-weight: 600;
 }
 
-.action-btn.modify {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
+.option-type.call {
+  color: #28a745;
 }
 
-.action-btn.modify:hover {
-  background: rgba(59, 130, 246, 0.3);
+.option-type.put {
+  color: #dc3545;
 }
 
-.action-btn.cancel {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+/* P&L Analysis Section */
+.pnl-analysis-section {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.action-btn.cancel:hover {
-  background: rgba(239, 68, 68, 0.3);
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
+
+.section-header h3 {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pnl-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pnl-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.pnl-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.pnl-card.profit {
+  border-color: rgba(40, 167, 69, 0.3);
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.pnl-card.loss {
+  border-color: rgba(220, 53, 69, 0.3);
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.pnl-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.pnl-card.profit .pnl-icon {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.pnl-card.loss .pnl-icon {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.pnl-content {
+  flex: 1;
+}
+
+.pnl-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pnl-card.profit .pnl-value {
+  color: #28a745;
+}
+
+.pnl-card.loss .pnl-value {
+  color: #dc3545;
+}
+
+.pnl-label {
+  color: #a0a0a0;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.pnl-count {
+  color: #666;
+  font-size: 12px;
+}
+
+.detailed-analysis {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.analysis-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.analysis-item:last-child {
+  border-bottom: none;
+}
+
+.analysis-label {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.analysis-value {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Stats Icons */
+.stat-icon.profit {
+  color: #28a745;
+}
+
+.stat-icon.loss {
+  color: #dc3545;
+}
+
+/* Stats Cards */
+.stat-card.profit {
+  border-color: rgba(40, 167, 69, 0.3);
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.stat-card.loss {
+  border-color: rgba(220, 53, 69, 0.3);
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.stat-value.profit {
+  color: #28a745;
+}
+
+.stat-value.loss {
+  color: #dc3545;
+}
+
+
 
 /* Place Order Modal - Force Dark Theme */
 .place-order-modal .modal-dialog {
@@ -1308,6 +1486,36 @@ export default {
     width: 100%;
     justify-content: center;
   }
+  
+  /* P&L Analysis Responsive */
+  .pnl-analysis-section {
+    margin: 16px;
+    padding: 16px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .section-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .pnl-summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .pnl-card {
+    padding: 16px;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1605,13 +1813,7 @@ export default {
     text-align: center;
   }
   
-  .order-tabs {
-    flex-direction: column;
-  }
-  
-  .tab-indicator {
-    display: none;
-  }
+
   
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1644,7 +1846,6 @@ export default {
   }
   
   .orders-header,
-  .order-tabs-section,
   .stats-section,
   .orders-content {
     padding: 16px;

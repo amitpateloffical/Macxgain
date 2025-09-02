@@ -1,0 +1,1878 @@
+<template>
+  <div class="ai-trading-orders">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <button class="back-btn" @click="goBack">
+          <i class="fas fa-arrow-left"></i>
+          Back to AI Trading Session
+        </button>
+        <div class="user-info">
+          <h1 class="page-title">📋 Trading Orders</h1>
+          <p class="page-subtitle">
+            Orders for: <strong>{{ user.name || 'Loading...' }}</strong> 
+            (Balance: ₹{{ user.balance?.toLocaleString() || '0' }})
+            <span v-if="overallPnL !== 0" class="balance-update" :class="overallPnL >= 0 ? 'profit' : 'loss'">
+              → ₹{{ updatedBalance?.toLocaleString() }}
+              ({{ overallPnL >= 0 ? '+' : '' }}₹{{ overallPnL?.toLocaleString() }})
+            </span>
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="refresh-btn" @click="refreshAllData" :disabled="loading">
+          <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+          {{ loading ? 'Loading...' : 'Refresh All' }}
+        </button>
+        <button class="refresh-btn" @click="loadUserBalance" :disabled="loading">
+          <i class="fas fa-wallet"></i>
+          Refresh Balance
+        </button>
+      </div>
+    </div>
+
+    <!-- Market Status -->
+    <div class="market-status">
+      <div class="status-indicator" :class="marketStatus.is_open ? 'open' : 'closed'">
+        <div class="status-dot"></div>
+        <span>{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
+        <span class="market-time">{{ marketStatus.current_time }} IST</span>
+      </div>
+      <div class="last-update">
+        Last Update: {{ lastUpdate || 'Never' }}
+      </div>
+    </div>
+
+    <!-- Orders Summary -->
+    <div class="orders-summary">
+      <div class="summary-card">
+        <div class="summary-item">
+          <span class="summary-label">Total Orders</span>
+          <span class="summary-value">{{ userOrders.length }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Completed</span>
+          <span class="summary-value completed">{{ getOrdersByStatus('COMPLETED').length }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Pending</span>
+          <span class="summary-value pending">{{ getOrdersByStatus('PENDING').length }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Closed</span>
+          <span class="summary-value closed">{{ getOrdersByStatus('CLOSED').length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L Analysis -->
+    <div class="pnl-analysis">
+      <div class="analysis-header">
+        <h2>📊 Profit & Loss Analysis</h2>
+        <div class="analysis-toggle">
+          <button 
+            class="toggle-btn" 
+            :class="{ active: showDetailedAnalysis }"
+            @click="showDetailedAnalysis = !showDetailedAnalysis"
+          >
+            <i class="fas fa-chart-line"></i>
+            {{ showDetailedAnalysis ? 'Hide Details' : 'Show Details' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Overall P&L Summary -->
+      <div class="pnl-summary">
+        <div class="pnl-card total-pnl" :class="overallPnL >= 0 ? 'profit' : 'loss'">
+          <div class="pnl-icon">
+            <i class="fas" :class="overallPnL >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+          </div>
+          <div class="pnl-info">
+            <span class="pnl-label">Overall P&L</span>
+            <span class="pnl-value">
+              {{ overallPnL >= 0 ? '+' : '' }}₹{{ overallPnL?.toLocaleString() }}
+            </span>
+            <span class="pnl-percentage">
+              ({{ overallPnLPercentage >= 0 ? '+' : '' }}{{ overallPnLPercentage?.toFixed(2) }}%)
+            </span>
+          </div>
+        </div>
+
+        <div class="pnl-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Invested</span>
+            <span class="stat-value">₹{{ totalInvested?.toLocaleString() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Return</span>
+            <span class="stat-value">₹{{ totalReturn?.toLocaleString() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Win Rate</span>
+            <span class="stat-value" :class="winRate >= 50 ? 'profit' : 'loss'">
+              {{ winRate?.toFixed(1) }}%
+            </span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Avg Profit per Trade</span>
+            <span class="stat-value" :class="avgProfitPerTrade >= 0 ? 'profit' : 'loss'">
+              {{ avgProfitPerTrade >= 0 ? '+' : '' }}₹{{ avgProfitPerTrade?.toLocaleString() }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Analysis -->
+      <div v-if="showDetailedAnalysis" class="detailed-analysis">
+        <div class="analysis-grid">
+          <!-- Profit Trades -->
+          <div class="analysis-section profit-section">
+            <div class="section-header">
+              <i class="fas fa-trophy"></i>
+              <h3>Profitable Trades ({{ profitableTrades.length }})</h3>
+            </div>
+            <div class="trades-list">
+              <div v-for="trade in profitableTrades" :key="trade.id" class="trade-item profit">
+                <div class="trade-info">
+                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
+                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
+                </div>
+                <div class="trade-pnl">
+                  <span class="pnl-amount">+₹{{ trade.pnl?.toLocaleString() }}</span>
+                  <span class="trade-date">{{ formatDate(trade.closed_at || trade.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="section-total">
+              <span>Total Profit: +₹{{ totalProfit?.toLocaleString() }}</span>
+            </div>
+          </div>
+
+          <!-- Loss Trades -->
+          <div class="analysis-section loss-section">
+            <div class="section-header">
+              <i class="fas fa-chart-line-down"></i>
+              <h3>Loss Trades ({{ lossTrades.length }})</h3>
+            </div>
+            <div class="trades-list">
+              <div v-for="trade in lossTrades" :key="trade.id" class="trade-item loss">
+                <div class="trade-info">
+                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
+                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
+                </div>
+                <div class="trade-pnl">
+                  <span class="pnl-amount">{{ trade.pnl >= 0 ? '+' : '' }}₹{{ trade.pnl?.toLocaleString() }}</span>
+                  <span class="trade-date">{{ formatDate(trade.closed_at || trade.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="section-total">
+              <span>Total Loss: ₹{{ Math.abs(totalLoss)?.toLocaleString() }}</span>
+            </div>
+          </div>
+
+          <!-- Active Trades -->
+          <div class="analysis-section active-section">
+            <div class="section-header">
+              <i class="fas fa-clock"></i>
+              <h3>Active Trades ({{ activeTrades.length }})</h3>
+            </div>
+            <div class="trades-list">
+              <div v-for="trade in activeTrades" :key="trade.id" class="trade-item active">
+                <div class="trade-info">
+                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
+                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
+                </div>
+                <div class="trade-pnl">
+                  <span class="pnl-amount">₹{{ trade.total_amount?.toLocaleString() }}</span>
+                  <span class="trade-date">{{ formatDate(trade.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="section-total">
+              <span>Total Invested: ₹{{ totalActiveInvestment?.toLocaleString() }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-container">
+      <div class="orders-header">
+        <h2>Trading Orders</h2>
+        <div class="filter-controls">
+          <select v-model="statusFilter" class="filter-select">
+            <option value="">All Status</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="PENDING">Pending</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+          <select v-model="sortBy" class="filter-select">
+            <option value="created_at">Date (Newest)</option>
+            <option value="created_at_old">Date (Oldest)</option>
+            <option value="total_amount">Amount (High to Low)</option>
+            <option value="total_amount_low">Amount (Low to High)</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading orders...</p>
+      </div>
+
+      <div v-else-if="filteredOrders.length === 0" class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Orders Found</h3>
+        <p>{{ statusFilter ? `No orders with status: ${statusFilter}` : 'This user hasn\'t placed any trades yet.' }}</p>
+      </div>
+
+      <div v-else class="orders-list">
+        <div 
+          v-for="order in filteredOrders" 
+          :key="order.id" 
+          class="order-card"
+          :class="order.status.toLowerCase()"
+        >
+          <div class="order-header">
+            <div class="order-info">
+              <h3 class="order-symbol">{{ order.stock_symbol }}</h3>
+              <span class="order-id">#{{ order.id }}</span>
+            </div>
+            <div class="order-status">
+              <i :class="getStatusIcon(order.status)"></i>
+              <span>{{ order.status }}</span>
+            </div>
+          </div>
+
+          <div class="order-details">
+            <div class="detail-row">
+              <span class="detail-label">Option Type:</span>
+              <span class="detail-value option-type" :class="order.option_type.toLowerCase()">
+                <i :class="getOptionIcon(order.option_type)"></i>
+                {{ order.option_type }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Action:</span>
+              <span class="detail-value action-type" :class="order.action.toLowerCase()">
+                <i :class="getActionIcon(order.action)"></i>
+                {{ order.action }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Strike Price:</span>
+              <span class="detail-value">₹{{ order.strike_price }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Quantity:</span>
+              <span class="detail-value">{{ order.quantity }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Total Amount:</span>
+              <span class="detail-value amount">₹{{ order.total_amount?.toLocaleString() }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Date:</span>
+              <span class="detail-value">{{ formatDateTime(order.created_at) }}</span>
+            </div>
+            <div v-if="order.exit_price" class="detail-row">
+              <span class="detail-label">Exit Price:</span>
+              <span class="detail-value">₹{{ order.exit_price }}</span>
+            </div>
+            <div v-if="order.pnl !== null && order.pnl !== undefined" class="detail-row">
+              <span class="detail-label">P&L:</span>
+              <span class="detail-value pnl" :class="order.pnl >= 0 ? 'profit' : 'loss'">
+                {{ order.pnl >= 0 ? '+' : '' }}₹{{ order.pnl?.toLocaleString() }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="order.status === 'COMPLETED'" class="order-actions">
+            <button 
+              class="exit-trade-btn" 
+              @click="exitTrade(order.id)"
+              :disabled="exitingTrade === order.id || !marketStatus.is_open"
+              :title="!marketStatus.is_open ? 'Trade exit only allowed during market hours' : ''"
+            >
+              <i class="fas fa-sign-out-alt" v-if="exitingTrade !== order.id"></i>
+              <i class="fas fa-spinner fa-spin" v-else></i>
+              {{ exitingTrade === order.id ? 'Exiting...' : 'Exit Trade' }}
+            </button>
+            <div v-if="!marketStatus.is_open" class="market-closed-notice">
+              <i class="fas fa-clock"></i>
+              <span>Exit trade available during market hours (9:15 AM - 3:30 PM IST)</span>
+            </div>
+          </div>
+          
+          <div v-else-if="order.status === 'CLOSED'" class="order-actions">
+            <div class="trade-closed-info">
+              <i class="fas fa-check-circle"></i>
+              <span>Trade Closed - {{ order.closed_at ? formatDateTime(order.closed_at) : 'Recently' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'AITradingOrders',
+  data() {
+    return {
+      user: {},
+      loading: false,
+      userOrders: [],
+      exitingTrade: null,
+      statusFilter: '',
+      sortBy: 'created_at',
+      showDetailedAnalysis: false,
+      liveStocks: {},
+      autoRefreshInterval: null,
+      marketStatus: {
+        is_open: false,
+        status: 'CLOSED',
+        current_time: '',
+        next_open_time: null
+      },
+      lastUpdate: null
+    }
+  },
+  computed: {
+    filteredOrders() {
+      let orders = [...this.userOrders];
+      
+      // Filter by status
+      if (this.statusFilter) {
+        orders = orders.filter(order => order.status === this.statusFilter);
+      }
+      
+      // Sort orders
+      orders.sort((a, b) => {
+        switch (this.sortBy) {
+          case 'created_at':
+            return new Date(b.created_at) - new Date(a.created_at);
+          case 'created_at_old':
+            return new Date(a.created_at) - new Date(b.created_at);
+          case 'total_amount':
+            return (b.total_amount || 0) - (a.total_amount || 0);
+          case 'total_amount_low':
+            return (a.total_amount || 0) - (b.total_amount || 0);
+          default:
+            return new Date(b.created_at) - new Date(a.created_at);
+        }
+      });
+      
+      return orders;
+    },
+    
+    // P&L Analysis Computed Properties
+    closedTrades() {
+      return this.userOrders.filter(order => order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined);
+    },
+    
+    profitableTrades() {
+      return this.closedTrades.filter(trade => trade.pnl > 0);
+    },
+    
+    lossTrades() {
+      return this.closedTrades.filter(trade => trade.pnl < 0);
+    },
+    
+    activeTrades() {
+      return this.userOrders.filter(order => order.status === 'COMPLETED');
+    },
+    
+    totalProfit() {
+      return this.profitableTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    },
+    
+    totalLoss() {
+      // Loss trades already have negative P&L, so we sum them as is
+      return this.lossTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    },
+    
+    overallPnL() {
+      // This will be positive if profit > loss, negative if loss > profit
+      return this.totalProfit + this.totalLoss;
+    },
+    
+    totalInvested() {
+      // Only count completed trades (money actually invested)
+      return this.userOrders
+        .filter(order => order.status === 'COMPLETED' || order.status === 'CLOSED')
+        .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    },
+    
+    totalReturn() {
+      // Total return = Initial investment + P&L
+      return this.totalInvested + this.overallPnL;
+    },
+    
+    overallPnLPercentage() {
+      if (this.totalInvested === 0) return 0;
+      return (this.overallPnL / this.totalInvested) * 100;
+    },
+    
+    winRate() {
+      const totalClosedTrades = this.closedTrades.length;
+      if (totalClosedTrades === 0) return 0;
+      return (this.profitableTrades.length / totalClosedTrades) * 100;
+    },
+    
+    avgProfitPerTrade() {
+      const totalClosedTrades = this.closedTrades.length;
+      if (totalClosedTrades === 0) return 0;
+      return this.overallPnL / totalClosedTrades;
+    },
+    
+    totalActiveInvestment() {
+      return this.activeTrades.reduce((sum, trade) => sum + (trade.total_amount || 0), 0);
+    },
+    
+    // Updated balance after P&L
+    updatedBalance() {
+      // Current balance + overall P&L from closed trades
+      return (this.user.balance || 0) + this.overallPnL;
+    }
+  },
+  mounted() {
+    // Get user data from route query parameters
+    this.user = {
+      id: this.$route.query.userId,
+      name: this.$route.query.userName,
+      balance: parseFloat(this.$route.query.userBalance) || 0,
+      email: this.$route.query.userEmail
+    };
+    
+    if (!this.user.id) {
+      this.showError('User data not found. Please go back and try again.');
+      this.goBack();
+      return;
+    }
+    
+    this.loadUserOrders();
+    this.loadUserBalance();
+    this.loadMarketStatus();
+    this.loadMarketData();
+    
+    // Auto-refresh every 30 seconds
+    this.startAutoRefresh();
+  },
+  methods: {
+    goBack() {
+      this.$router.push({
+        name: 'ai_trading_session',
+        query: {
+          userId: this.user.id,
+          userName: this.user.name,
+          userBalance: this.user.balance,
+          userEmail: this.user.email
+        }
+      });
+    },
+    async loadUserOrders() {
+      try {
+        this.loading = true;
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get(`/api/ai-trading/user-orders/${this.user.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.userOrders = response.data.orders || [];
+          this.lastUpdate = new Date().toLocaleTimeString();
+        }
+      } catch (error) {
+        console.error('Error loading user orders:', error);
+        this.showError('Failed to load orders');
+      } finally {
+        this.loading = false;
+      }
+    },
+    async loadUserBalance() {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get(`/api/ai-trading/user-balance/${this.user.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.user.balance = response.data.balance;
+        }
+      } catch (error) {
+        console.error('Error loading user balance:', error);
+      }
+    },
+    async loadMarketStatus() {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get('/api/ai-trading/market-status', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.marketStatus = response.data.data;
+        }
+      } catch (error) {
+        console.error('Error loading market status:', error);
+        // Use default market status
+        this.marketStatus = {
+          is_open: false,
+          status: 'CLOSED',
+          current_time: new Date().toLocaleTimeString('en-IN'),
+          next_open_time: null
+        };
+      }
+    },
+    async loadMarketData() {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get('/api/truedata/live-data', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          },
+          params: { _t: Date.now() } // Cache busting parameter
+        });
+
+        if (response.data.success && response.data.data) {
+          this.liveStocks = response.data.data;
+          this.lastUpdate = new Date().toLocaleTimeString();
+          console.log('Live market data loaded:', Object.keys(this.liveStocks).length, 'symbols');
+        }
+      } catch (error) {
+        console.error('Error loading live market data:', error);
+      }
+    },
+    async refreshMarketData() {
+      await this.loadMarketData();
+      this.showSuccess('Market data refreshed');
+    },
+    async refreshAllData() {
+      this.loading = true;
+      try {
+        await Promise.all([
+          this.loadUserOrders(),
+          this.loadUserBalance(),
+          this.loadMarketStatus(),
+          this.loadMarketData()
+        ]);
+        this.showSuccess('All data refreshed successfully');
+      } catch (error) {
+        this.showError('Failed to refresh some data');
+      } finally {
+        this.loading = false;
+      }
+    },
+    startAutoRefresh() {
+      // Auto-refresh every 30 seconds when market is open
+      this.autoRefreshInterval = setInterval(() => {
+        if (this.marketStatus.is_open) {
+          this.loadMarketData();
+          this.loadUserOrders(); // Also refresh orders to get updated P&L
+        }
+      }, 30000); // 30 seconds
+    },
+    async exitTrade(orderId) {
+      try {
+        this.exitingTrade = orderId;
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.post(`/api/ai-trading/orders/${orderId}/exit`, {}, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.showSuccess('Trade exited successfully');
+          await this.loadUserOrders();
+          await this.loadUserBalance();
+        } else {
+          this.showError(response.data.message || 'Failed to exit trade');
+        }
+      } catch (error) {
+        console.error('Error exiting trade:', error);
+        this.showError('Failed to exit trade');
+      } finally {
+        this.exitingTrade = null;
+      }
+    },
+    getOrdersByStatus(status) {
+      return this.userOrders.filter(order => order.status === status);
+    },
+    formatDateTime(dateString) {
+      return new Date(dateString).toLocaleString('en-IN');
+    },
+    formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-IN');
+    },
+    showSuccess(message) {
+      if (this.$toast && this.$toast.success) {
+        this.$toast.success(message);
+      } else {
+        console.log('Success:', message);
+      }
+    },
+    showError(message) {
+      if (this.$toast && this.$toast.error) {
+        this.$toast.error(message);
+      } else {
+        console.error('Error:', message);
+        alert(message);
+      }
+    },
+    getStatusIcon(status) {
+      switch (status) {
+        case 'COMPLETED': return 'fa-check-circle';
+        case 'PENDING': return 'fa-clock';
+        case 'CANCELLED': return 'fa-times-circle';
+        case 'CLOSED': return 'fa-lock';
+        default: return 'fa-question-circle';
+      }
+    },
+    getOptionIcon(optionType) {
+      switch (optionType) {
+        case 'CALL': return 'fa-arrow-up';
+        case 'PUT': return 'fa-arrow-down';
+        default: return 'fa-question';
+      }
+    },
+    getActionIcon(action) {
+      switch (action) {
+        case 'BUY': return 'fa-shopping-cart';
+        case 'SELL': return 'fa-money-bill-wave';
+        default: return 'fa-exchange-alt';
+      }
+    }
+  },
+  beforeUnmount() {
+    // Cleanup auto-refresh interval
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+    }
+  }
+}
+</script>
+
+<style scoped>
+/* AI Trading Orders Page Styles */
+.ai-trading-orders {
+  background-color: #0d0d1a;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 120px;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(145deg, #101022, #0d0d1a);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 16px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-btn {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: #00ff88;
+  border: 1px solid #00ff88;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn:hover {
+  background: #00ff88;
+  color: #0d0d1a;
+  transform: translateY(-2px);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #00ff88;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 16px;
+}
+
+.balance-update {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.balance-update.profit {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.balance-update.loss {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.refresh-btn {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: white;
+  border: 1px solid #333;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: linear-gradient(145deg, #16213e, #1a1a2e);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Market Status */
+.market-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff4444;
+}
+
+.status-indicator.open .status-dot {
+  background: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.market-time {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.last-update {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+/* Orders Summary */
+.orders-summary {
+  margin-bottom: 24px;
+}
+
+/* P&L Analysis */
+.pnl-analysis {
+  margin-bottom: 24px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 12px;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #333;
+  background: linear-gradient(145deg, #101022, #0d0d1a);
+}
+
+.analysis-header h2 {
+  margin: 0;
+  color: #00ff88;
+  font-size: 20px;
+}
+
+.toggle-btn {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: white;
+  border: 1px solid #333;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-btn:hover {
+  background: linear-gradient(145deg, #16213e, #1a1a2e);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  color: #0d0d1a;
+  border-color: #00ff88;
+}
+
+.pnl-summary {
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.pnl-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid;
+  flex: 1;
+}
+
+.pnl-card.profit {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.pnl-card.loss {
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.pnl-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.pnl-card.profit .pnl-icon {
+  background: #00ff88;
+  color: #0d0d1a;
+}
+
+.pnl-card.loss .pnl-icon {
+  background: #ff4444;
+  color: white;
+}
+
+.pnl-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pnl-label {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.pnl-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.pnl-card.profit .pnl-value {
+  color: #00ff88;
+}
+
+.pnl-card.loss .pnl-value {
+  color: #ff4444;
+}
+
+.pnl-percentage {
+  font-size: 14px;
+  color: #a0a0a0;
+}
+
+.pnl-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  flex: 1;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.stat-label {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.stat-value.profit {
+  color: #00ff88;
+}
+
+.stat-value.loss {
+  color: #ff4444;
+}
+
+/* Detailed Analysis */
+.detailed-analysis {
+  padding: 20px;
+  border-top: 1px solid #333;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.analysis-section {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+
+.profit-section {
+  border-color: #00ff88;
+}
+
+.loss-section {
+  border-color: #ff4444;
+}
+
+.active-section {
+  border-color: #ffaa00;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid #333;
+}
+
+.section-header i {
+  font-size: 18px;
+}
+
+.profit-section .section-header i {
+  color: #00ff88;
+}
+
+.loss-section .section-header i {
+  color: #ff4444;
+}
+
+.active-section .section-header i {
+  color: #ffaa00;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+}
+
+.trades-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.trade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid;
+}
+
+.trade-item.profit {
+  border-color: rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.trade-item.loss {
+  border-color: rgba(255, 68, 68, 0.3);
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.trade-item.active {
+  border-color: rgba(255, 170, 0, 0.3);
+  background: rgba(255, 170, 0, 0.05);
+}
+
+.trade-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trade-symbol {
+  font-weight: 600;
+  color: white;
+  font-size: 14px;
+}
+
+.trade-type {
+  color: #a0a0a0;
+  font-size: 12px;
+}
+
+.trade-pnl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.pnl-amount {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.trade-item.profit .pnl-amount {
+  color: #00ff88;
+}
+
+.trade-item.loss .pnl-amount {
+  color: #ff4444;
+}
+
+.trade-item.active .pnl-amount {
+  color: #ffaa00;
+}
+
+.trade-date {
+  color: #a0a0a0;
+  font-size: 11px;
+}
+
+.section-total {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid #333;
+  text-align: center;
+  font-weight: 600;
+  color: white;
+}
+
+.profit-section .section-total {
+  color: #00ff88;
+}
+
+.loss-section .section-total {
+  color: #ff4444;
+}
+
+.active-section .section-total {
+  color: #ffaa00;
+}
+
+.summary-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.summary-label {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.summary-value.completed {
+  color: #00ff88;
+}
+
+.summary-value.pending {
+  color: #ffaa00;
+}
+
+.summary-value.closed {
+  color: #ff4444;
+}
+
+/* Orders Container */
+.orders-container {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 12px;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.orders-header h2 {
+  margin: 0;
+  color: #00ff88;
+  font-size: 20px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-select {
+  background: #0d0d1a;
+  color: white;
+  border: 1px solid #333;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #00ff88;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #a0a0a0;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #333;
+  border-top: 3px solid #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #a0a0a0;
+  text-align: center;
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Orders List */
+.orders-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-card {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+}
+
+.order-card:hover {
+  border-color: #00ff88;
+  transform: translateY(-2px);
+}
+
+.order-card.completed {
+  border-left: 4px solid #00ff88;
+}
+
+.order-card.pending {
+  border-left: 4px solid #ffaa00;
+}
+
+.order-card.cancelled {
+  border-left: 4px solid #ff4444;
+}
+
+.order-card.closed {
+  border-left: 4px solid #666;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.order-info h3 {
+  margin: 0;
+  color: #00ff88;
+  font-size: 18px;
+}
+
+.order-id {
+  color: #a0a0a0;
+  font-size: 12px;
+}
+
+.order-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.order-status i {
+  font-size: 14px;
+}
+
+/* Order Details */
+.order-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-label {
+  color: #a0a0a0;
+  font-size: 14px;
+}
+
+.detail-value {
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.detail-value.amount {
+  color: #00ff88;
+  font-weight: bold;
+}
+
+.detail-value.pnl.profit {
+  color: #00ff88;
+  font-weight: bold;
+}
+
+.detail-value.pnl.loss {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.option-type.call {
+  color: #00ff88;
+}
+
+.option-type.put {
+  color: #ff4444;
+}
+
+.action-type.buy {
+  color: #00ff88;
+}
+
+.action-type.sell {
+  color: #ff4444;
+}
+
+/* Order Actions */
+.order-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.exit-trade-btn {
+  background: linear-gradient(145deg, #ff4444, #cc0000);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exit-trade-btn:hover:not(:disabled) {
+  background: linear-gradient(145deg, #cc0000, #ff4444);
+  transform: translateY(-1px);
+}
+
+.exit-trade-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.market-closed-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffaa00;
+  font-size: 12px;
+}
+
+.trade-closed-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .ai-trading-orders {
+    padding: 16px;
+  }
+  
+  .page-header {
+    padding: 16px;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .summary-card {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-trading-orders {
+    padding: 12px;
+    padding-bottom: 100px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+  
+  .page-title {
+    font-size: 22px;
+    text-align: center;
+  }
+  
+  .page-subtitle {
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .refresh-btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .market-status {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 12px 16px;
+  }
+  
+  .status-indicator {
+    justify-content: center;
+  }
+  
+  .summary-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .summary-item {
+    padding: 10px;
+  }
+  
+  .summary-value {
+    font-size: 16px;
+  }
+  
+  /* P&L Analysis Responsive */
+  .pnl-summary {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .pnl-card {
+    padding: 16px;
+  }
+  
+  .pnl-value {
+    font-size: 20px;
+  }
+  
+  .pnl-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .analysis-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    padding: 16px;
+  }
+  
+  .analysis-header h2 {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .toggle-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+  
+  .detailed-analysis {
+    padding: 16px;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .trades-list {
+    max-height: 200px;
+    padding: 12px;
+  }
+  
+  .trade-item {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .trade-pnl {
+    align-items: center;
+  }
+  
+  .orders-container {
+    margin: 0;
+  }
+  
+  .orders-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+  }
+  
+  .orders-header h2 {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .filter-controls {
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+  
+  .orders-list {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .order-card {
+    padding: 16px;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .order-info h3 {
+    font-size: 16px;
+    text-align: center;
+  }
+  
+  .order-status {
+    justify-content: center;
+    padding: 8px 12px;
+  }
+  
+  .order-details {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    padding: 6px 0;
+  }
+  
+  .detail-label {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .detail-value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+  }
+  
+  .exit-trade-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+  
+  .market-closed-notice {
+    text-align: center;
+    font-size: 11px;
+  }
+  
+  .trade-closed-info {
+    text-align: center;
+    font-size: 11px;
+  }
+  
+  .loading-container {
+    padding: 40px 16px;
+  }
+  
+  .empty-state {
+    padding: 40px 16px;
+  }
+  
+  .empty-state i {
+    font-size: 36px;
+  }
+  
+  .empty-state h3 {
+    font-size: 18px;
+  }
+  
+  .empty-state p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-trading-orders {
+    padding: 8px;
+    padding-bottom: 80px;
+  }
+  
+  .page-header {
+    padding: 12px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .page-subtitle {
+    font-size: 13px;
+  }
+  
+  .back-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .refresh-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-width: 120px;
+  }
+  
+  .market-status {
+    padding: 10px 12px;
+  }
+  
+  .summary-card {
+    padding: 12px;
+  }
+  
+  .summary-item {
+    padding: 8px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .orders-header {
+    padding: 12px;
+  }
+  
+  .orders-header h2 {
+    font-size: 16px;
+  }
+  
+  .orders-list {
+    padding: 12px;
+  }
+  
+  .order-card {
+    padding: 12px;
+  }
+  
+  .order-info h3 {
+    font-size: 14px;
+  }
+  
+  .detail-value {
+    font-size: 13px;
+  }
+  
+  .exit-trade-btn {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet Landscape */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ai-trading-orders {
+    padding: 16px;
+  }
+  
+  .page-header {
+    padding: 18px;
+  }
+  
+  .summary-card {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .order-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .orders-list {
+    padding: 18px;
+  }
+  
+  .order-card {
+    padding: 18px;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1400px) {
+  .ai-trading-orders {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .page-header {
+    padding: 24px;
+  }
+  
+  .summary-card {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .order-details {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>

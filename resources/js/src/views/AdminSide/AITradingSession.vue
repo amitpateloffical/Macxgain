@@ -13,7 +13,7 @@
             Trading for: <strong>{{ user.name || 'Loading...' }}</strong> 
             (Balance: ₹{{ user.balance?.toLocaleString() || '0' }})
           </p>
-          <p style="font-size: 12px; color: #a0a0a0;">Debug: User ID: {{ user.id }}, Balance: {{ user.balance }}</p>
+
         </div>
       </div>
       <div class="header-actions">
@@ -34,16 +34,23 @@
 
     <!-- Market Status -->
     <div class="market-status">
-      <div class="status-indicator" :class="marketStatus.is_open ? 'open' : 'closed'">
-        <div class="status-dot"></div>
-        <span>{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
-        <span class="market-time">{{ marketStatus.current_time }} IST</span>
+      <div class="market-status-top">
+        <div class="status-indicator" :class="marketStatus.is_open ? 'open' : 'closed'">
+          <div class="status-dot"></div>
+          <span>{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
+          <span class="market-time">{{ marketStatus.current_time }} IST</span>
+        </div>
+        <div class="last-update">
+          Last Update: {{ lastUpdate || 'Never' }}
+        </div>
       </div>
-      <div class="last-update">
-        Last Update: {{ lastUpdate || 'Never' }}
-        <span v-if="!marketStatus.is_open && marketStatus.next_open_time" class="next-open">
-          Next Open: {{ formatDateTime(marketStatus.next_open_time) }}
-        </span>
+      <div v-if="!marketStatus.is_open && marketStatus.next_open_time" class="next-open">
+        Next Open: {{ formatDateTime(marketStatus.next_open_time) }}
+      </div>
+      <!-- Trading Status Notice -->
+      <div v-if="!marketStatus.is_open" class="trading-disabled-notice">
+        <i class="fas fa-ban"></i>
+        <span>Trading is disabled when market is closed</span>
       </div>
     </div>
 
@@ -93,9 +100,9 @@
         </select>
       </div>
 
-      <!-- Stock Cards with Call/Put Options -->
+      <!-- Stock Cards - Simple List -->
       <div class="stocks-grid">
-        <div v-for="stock in filteredStocks" :key="stock.symbol" class="stock-card">
+        <div v-for="stock in filteredStocks" :key="stock.symbol" class="stock-card" @click="selectStock(stock)">
           <div class="stock-header">
             <div class="stock-info">
               <h3 class="stock-symbol">{{ stock.symbol }}</h3>
@@ -123,65 +130,10 @@
             </div>
           </div>
 
-          <!-- Call/Put Options -->
-          <div class="options-section">
-            <h4 class="options-title">Options Trading</h4>
-            
-            <!-- Call Options -->
-            <div class="option-type call-option">
-              <div class="option-header">
-                <span class="option-label">📈 CALL</span>
-                <span class="option-price">₹{{ (stock.ltp * 1.02).toFixed(2) }}</span>
-              </div>
-              <div class="option-actions">
-                <button 
-                  class="trade-btn buy-btn" 
-                  @click="openTradeModal(stock, 'CALL', 'BUY')"
-                  :disabled="!marketStatus.is_open"
-                  :title="!marketStatus.is_open ? 'Trading only allowed during market hours' : ''"
-                >
-                  <i class="fas fa-arrow-up"></i>
-                  Buy Call
-                </button>
-                <button 
-                  class="trade-btn sell-btn" 
-                  @click="openTradeModal(stock, 'CALL', 'SELL')"
-                  :disabled="!marketStatus.is_open"
-                  :title="!marketStatus.is_open ? 'Trading only allowed during market hours' : ''"
-                >
-                  <i class="fas fa-arrow-down"></i>
-                  Sell Call
-                </button>
-              </div>
-            </div>
-
-            <!-- Put Options -->
-            <div class="option-type put-option">
-              <div class="option-header">
-                <span class="option-label">📉 PUT</span>
-                <span class="option-price">₹{{ (stock.ltp * 0.98).toFixed(2) }}</span>
-              </div>
-              <div class="option-actions">
-                <button 
-                  class="trade-btn buy-btn" 
-                  @click="openTradeModal(stock, 'PUT', 'BUY')"
-                  :disabled="!marketStatus.is_open"
-                  :title="!marketStatus.is_open ? 'Trading only allowed during market hours' : ''"
-                >
-                  <i class="fas fa-arrow-up"></i>
-                  Buy Put
-                </button>
-                <button 
-                  class="trade-btn sell-btn" 
-                  @click="openTradeModal(stock, 'PUT', 'SELL')"
-                  :disabled="!marketStatus.is_open"
-                  :title="!marketStatus.is_open ? 'Trading only allowed during market hours' : ''"
-                >
-                  <i class="fas fa-arrow-down"></i>
-                  Sell Put
-                </button>
-              </div>
-            </div>
+          <!-- Click to View Options -->
+          <div class="click-hint">
+            <i class="fas fa-mouse-pointer"></i>
+            <span>Click to view Options Trading</span>
           </div>
         </div>
       </div>
@@ -200,6 +152,147 @@
           <i class="fas fa-sync-alt"></i>
           Try Again
         </button>
+      </div>
+    </div>
+
+    <!-- Stock Options Modal -->
+    <div v-if="selectedStock" class="modal-overlay" @click="closeStockOptions">
+      <div class="stock-options-modal" @click.stop>
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="fas fa-chart-line"></i>
+            Options Trading - {{ selectedStock.symbol }}
+          </h2>
+          <button class="close-btn" @click="closeStockOptions">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Stock Info -->
+          <div class="stock-info-section">
+            <div class="stock-price-large">₹{{ selectedStock.ltp?.toFixed(2) || '0.00' }}</div>
+            <div class="stock-change-large" :class="selectedStock.change >= 0 ? 'positive' : 'negative'">
+              <i :class="selectedStock.change >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+              {{ selectedStock.change >= 0 ? '+' : '' }}{{ selectedStock.change?.toFixed(2) || '0.00' }}
+              ({{ selectedStock.change_percent >= 0 ? '+' : '' }}{{ selectedStock.change_percent?.toFixed(2) || '0.00' }}%)
+            </div>
+          </div>
+
+          <!-- Options Trading Section -->
+          <div class="options-trading-section">
+            <h3 class="options-main-title">Options Trading</h3>
+            
+            <!-- Loading State -->
+            <div v-if="loadingOptions" class="loading-options">
+              <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+              </div>
+              <p>Loading options data...</p>
+            </div>
+            
+            <!-- Options Chain -->
+            <div v-else class="options-chain">
+              <!-- Call Options -->
+              <div class="options-section">
+                <h4 class="options-section-title call-title">
+                  <i class="fas fa-arrow-up"></i>
+                  CALL Options
+                </h4>
+                <div class="options-table">
+                  <div class="options-header">
+                    <div class="header-cell">Strike</div>
+                    <div class="header-cell">Bid</div>
+                    <div class="header-cell">Ask</div>
+                    <div class="header-cell">Volume</div>
+                    <div class="header-cell">OI</div>
+                    <div class="header-cell">Action</div>
+                  </div>
+                  <div 
+                    v-for="option in callOptions.slice(0, 5)" 
+                    :key="`call-${option.strike_price}`"
+                    class="option-row call-row"
+                  >
+                    <div class="option-cell strike">{{ option.strike_price }}</div>
+                    <div class="option-cell bid">{{ option.bid }}</div>
+                    <div class="option-cell ask">{{ option.ask }}</div>
+                    <div class="option-cell volume">{{ option.volume }}</div>
+                    <div class="option-cell oi">{{ option.open_interest }}</div>
+                    <div class="option-cell actions">
+                      <button 
+                        class="mini-btn buy-btn" 
+                        @click="openTradeModal(selectedStock, 'CALL', 'BUY', option)"
+                        :disabled="!marketStatus.is_open"
+                        :title="marketStatus.is_open ? 'Buy Call' : 'Market Closed - Trading Disabled'"
+                      >
+                        <i class="fas fa-arrow-up"></i>
+                        <span>BUY</span>
+                      </button>
+                      <button 
+                        class="mini-btn sell-btn" 
+                        @click="openTradeModal(selectedStock, 'CALL', 'SELL', option)"
+                        :disabled="!marketStatus.is_open"
+                        :title="marketStatus.is_open ? 'Sell Call' : 'Market Closed - Trading Disabled'"
+                      >
+                        <i class="fas fa-arrow-down"></i>
+                        <span>SELL</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Put Options -->
+              <div class="options-section">
+                <h4 class="options-section-title put-title">
+                  <i class="fas fa-arrow-down"></i>
+                  PUT Options
+                </h4>
+                <div class="options-table">
+                  <div class="options-header">
+                    <div class="header-cell">Strike</div>
+                    <div class="header-cell">Bid</div>
+                    <div class="header-cell">Ask</div>
+                    <div class="header-cell">Volume</div>
+                    <div class="header-cell">OI</div>
+                    <div class="header-cell">Action</div>
+                  </div>
+                  <div 
+                    v-for="option in putOptions.slice(0, 5)" 
+                    :key="`put-${option.strike_price}`"
+                    class="option-row put-row"
+                  >
+                    <div class="option-cell strike">{{ option.strike_price }}</div>
+                    <div class="option-cell bid">{{ option.bid }}</div>
+                    <div class="option-cell ask">{{ option.ask }}</div>
+                    <div class="option-cell volume">{{ option.volume }}</div>
+                    <div class="option-cell oi">{{ option.open_interest }}</div>
+                    <div class="option-cell actions">
+                      <button 
+                        class="mini-btn buy-btn" 
+                        @click="openTradeModal(selectedStock, 'PUT', 'BUY', option)"
+                        :disabled="!marketStatus.is_open"
+                        :title="marketStatus.is_open ? 'Buy Put' : 'Market Closed - Trading Disabled'"
+                      >
+                        <i class="fas fa-arrow-up"></i>
+                        <span>BUY</span>
+                      </button>
+                      <button 
+                        class="mini-btn sell-btn" 
+                        @click="openTradeModal(selectedStock, 'PUT', 'SELL', option)"
+                        :disabled="!marketStatus.is_open"
+                        :title="marketStatus.is_open ? 'Sell Put' : 'Market Closed - Trading Disabled'"
+                      >
+                        <i class="fas fa-arrow-down"></i>
+                        <span>SELL</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -291,183 +384,8 @@
       </div>
     </div>
 
-    <!-- Orders Modal (Vue-based - keeping for reference but not used) -->
-    <div v-if="showOrdersModal" class="modal-overlay" @click="closeOrdersModal">
-      <div class="modal-content orders-modal" @click.stop>
-        <div class="modal-header">
-          <div class="header-left">
-            <div class="user-avatar">
-              <i class="fas fa-user"></i>
-            </div>
-            <div class="header-info">
-              <h3 class="modal-title">Trading Orders</h3>
-              <p class="user-name">{{ user.name }}</p>
-            </div>
-          </div>
-          <button class="close-btn" @click="closeOrdersModal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
 
-        <div class="modal-body">
-          <div v-if="userOrders.length === 0" class="empty-orders">
-            <div class="empty-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h4>No Trading Orders</h4>
-            <p>This user hasn't made any trades yet.</p>
-            <button class="start-trading-btn" @click="closeOrdersModal">
-              <i class="fas fa-plus"></i>
-              Start Trading
-            </button>
-          </div>
 
-          <div v-else class="orders-container">
-            <div class="orders-stats">
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-list"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-number">{{ userOrders.length }}</span>
-                  <span class="stat-label">Total Orders</span>
-                </div>
-              </div>
-              
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-number">{{ userOrders.filter(o => o.status === 'COMPLETED').length }}</span>
-                  <span class="stat-label">Completed</span>
-                </div>
-              </div>
-              
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-number">{{ userOrders.filter(o => o.status === 'PENDING').length }}</span>
-                  <span class="stat-label">Pending</span>
-                </div>
-              </div>
-              
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-times-circle"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-number">{{ userOrders.filter(o => o.status === 'CLOSED').length }}</span>
-                  <span class="stat-label">Closed</span>
-                </div>
-              </div>
-              
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-rupee-sign"></i>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-number">₹{{ userOrders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0).toLocaleString() }}</span>
-                  <span class="stat-label">Total Volume</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="orders-list">
-              <div v-for="order in userOrders" :key="order.id" class="order-card">
-                <div class="order-header">
-                  <div class="order-id-section">
-                    <span class="order-id">#{{ order.id }}</span>
-                    <span class="order-date">{{ formatDateTime(order.created_at) }}</span>
-                  </div>
-                  <span class="order-status" :class="order.status.toLowerCase()">
-                    <i class="fas" :class="getStatusIcon(order.status)"></i>
-                    {{ order.status }}
-                  </span>
-                </div>
-                
-                <div class="order-content">
-                  <div class="trade-info">
-                    <div class="stock-info">
-                      <span class="stock-symbol">{{ order.stock_symbol }}</span>
-                      <span class="option-type" :class="order.option_type.toLowerCase()">
-                        <i class="fas" :class="getOptionIcon(order.option_type)"></i>
-                        {{ order.option_type }}
-                      </span>
-                    </div>
-                    
-                    <div class="action-info">
-                      <span class="action" :class="order.action.toLowerCase()">
-                        <i class="fas" :class="getActionIcon(order.action)"></i>
-                        {{ order.action }}
-                      </span>
-                      <span class="quantity">{{ order.quantity }} units</span>
-                    </div>
-                  </div>
-                  
-                  <div class="price-info">
-                    <div class="price-item">
-                      <span class="label">Strike Price</span>
-                      <span class="value">₹{{ order.strike_price }}</span>
-                    </div>
-                    <div class="price-item">
-                      <span class="label">Current Price</span>
-                      <span class="value">₹{{ getCurrentPrice(order.stock_symbol) }}</span>
-                    </div>
-                    <div class="price-item">
-                      <span class="label">Total Amount</span>
-                      <span class="value total">₹{{ order.total_amount }}</span>
-                    </div>
-                    <div v-if="order.status === 'COMPLETED'" class="price-item pnl-item">
-                      <span class="label">Unrealized P&L</span>
-                      <span class="value" :class="getPnLClass(calculateUnrealizedPnL(order))">
-                        {{ getPnLText(calculateUnrealizedPnL(order)) }}
-                      </span>
-                    </div>
-                    <div v-if="order.status === 'CLOSED'" class="price-item pnl-item">
-                      <span class="label">Realized P&L</span>
-                      <span class="value" :class="getPnLClass(order.pnl)">
-                        {{ getPnLText(order.pnl) }}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div v-if="order.notes" class="order-notes">
-                    <i class="fas fa-sticky-note"></i>
-                    <span>{{ order.notes }}</span>
-                  </div>
-                  
-                  <div v-if="order.status === 'COMPLETED'" class="order-actions">
-                    <button 
-                      class="exit-trade-btn" 
-                      @click="exitTrade(order.id)"
-                      :disabled="exitingTrade === order.id || !marketStatus.is_open"
-                      :title="!marketStatus.is_open ? 'Trade exit only allowed during market hours' : ''"
-                    >
-                      <i class="fas fa-sign-out-alt" v-if="exitingTrade !== order.id"></i>
-                      <i class="fas fa-spinner fa-spin" v-else></i>
-                      {{ exitingTrade === order.id ? 'Exiting...' : 'Exit Trade' }}
-                    </button>
-                    <div v-if="!marketStatus.is_open" class="market-closed-notice">
-                      <i class="fas fa-clock"></i>
-                      <span>Exit trade available during market hours (9:15 AM - 3:30 PM IST)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeOrdersModal">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -485,7 +403,7 @@ export default {
       searchQuery: '',
       sortBy: 'symbol',
       showTradeModal: false,
-      showOrdersModal: false,
+
       userOrders: [],
       exitingTrade: null,
       currentMarketPrices: {},
@@ -507,7 +425,12 @@ export default {
         action: '',
         strikePrice: 0,
         quantity: 1
-      }
+      },
+      selectedStock: null,
+      callOptions: [],
+      putOptions: [],
+      loadingOptions: false,
+      autoRefreshInterval: null
     }
   },
   computed: {
@@ -560,6 +483,12 @@ export default {
     this.loadUserBalance(); // Fetch live balance from database
     this.loadMarketStatus(); // Load market status
     
+    // Add ESC key listener for closing modals
+    document.addEventListener('keydown', this.handleKeyDown);
+    
+    // Start auto-refresh for market data and status
+    this.startAutoRefresh();
+    
     // Debug: Test balance loading immediately
     console.log('About to test balance loading...');
     setTimeout(() => {
@@ -567,7 +496,35 @@ export default {
       this.loadUserBalance();
     }, 2000);
   },
+  beforeUnmount() {
+    // Remove ESC key listener when component is destroyed
+    document.removeEventListener('keydown', this.handleKeyDown);
+    
+    // Clear auto-refresh interval
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+    }
+  },
   methods: {
+    handleKeyDown(event) {
+      // Close modals on ESC key press
+      if (event.key === 'Escape') {
+        if (this.selectedStock) {
+          this.closeStockOptions();
+        }
+        if (this.showTradeModal) {
+          this.closeTradeModal();
+        }
+      }
+    },
+    startAutoRefresh() {
+      // Auto-refresh market data and status every 30 seconds
+      this.autoRefreshInterval = setInterval(() => {
+        this.loadMarketStatus();
+        this.loadMarketData();
+        console.log('Auto-refresh: Market data and status updated');
+      }, 30000); // 30 seconds
+    },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
     },
@@ -602,13 +559,102 @@ export default {
     searchStocks() {
       // Search functionality is handled by computed property
     },
-    openTradeModal(stock, optionType, action) {
+    async selectStock(stock) {
+      this.selectedStock = stock;
+      this.loadingOptions = true;
+      
+      try {
+        // Load options data for this symbol
+        await this.loadOptionsData(stock.symbol);
+      } catch (error) {
+        console.error('Error loading options:', error);
+        this.showError('Failed to load options data');
+      } finally {
+        this.loadingOptions = false;
+      }
+    },
+    closeStockOptions() {
+      this.selectedStock = null;
+      this.callOptions = [];
+      this.putOptions = [];
+    },
+    async loadOptionsData(symbol) {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        const response = await axios.get(`/api/truedata/options/chain/${symbol}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log('Options API response:', response.data);
+        
+        if (response.data.success && response.data.data) {
+          this.processOptionsData(response.data.data);
+        } else {
+          // Fallback to mock data if API fails
+          console.log('API response not successful, using mock data');
+          this.generateMockOptions(symbol);
+        }
+      } catch (error) {
+        console.error('Error loading options data:', error);
+        // Fallback to mock data
+        this.generateMockOptions(symbol);
+      }
+    },
+    processOptionsData(data) {
+      // Process real API data
+      console.log('Processing options data:', data);
+      
+      // Check if we have Records array
+      if (data.Records && data.Records.length > 0) {
+        // Process real options data
+        this.callOptions = data.Records.filter(option => option.option_type === 'CE' || option.option_type === 'CALL');
+        this.putOptions = data.Records.filter(option => option.option_type === 'PE' || option.option_type === 'PUT');
+      } else {
+        // No real data available, use mock data
+        this.generateMockOptions(this.selectedStock?.symbol);
+      }
+    },
+    generateMockOptions(symbol) {
+      // Generate mock options data as fallback
+      const currentPrice = this.selectedStock?.ltp || 1000;
+      const strikes = [];
+      
+      // Generate strike prices around current price
+      for (let i = -5; i <= 5; i++) {
+        const strike = Math.round(currentPrice + (i * currentPrice * 0.02));
+        strikes.push(strike);
+      }
+      
+      this.callOptions = strikes.map(strike => ({
+        strike_price: strike,
+        bid: (strike * 0.01).toFixed(2),
+        ask: (strike * 0.015).toFixed(2),
+        volume: Math.floor(Math.random() * 1000),
+        open_interest: Math.floor(Math.random() * 5000),
+        implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3)
+      }));
+      
+      this.putOptions = strikes.map(strike => ({
+        strike_price: strike,
+        bid: (strike * 0.01).toFixed(2),
+        ask: (strike * 0.015).toFixed(2),
+        volume: Math.floor(Math.random() * 1000),
+        open_interest: Math.floor(Math.random() * 5000),
+        implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3)
+      }));
+    },
+    openTradeModal(stock, optionType, action, option = null) {
       this.tradeData = {
         stock: stock,
         optionType: optionType,
         action: action,
-        strikePrice: optionType === 'CALL' ? (stock.ltp * 1.02) : (stock.ltp * 0.98),
-        quantity: 1
+        strikePrice: option ? option.strike_price : (optionType === 'CALL' ? (stock.ltp * 1.02) : (stock.ltp * 0.98)),
+        quantity: 1,
+        option: option
       };
       this.showTradeModal = true;
     },
@@ -762,87 +808,12 @@ export default {
       }
     },
     viewOrders() {
-      console.log('View Orders clicked - using direct DOM approach');
+      console.log('View Orders clicked - navigating to orders page');
       
-      // Remove any existing orders modal
-      const existingModal = document.getElementById('orders-modal');
-      if (existingModal) {
-        existingModal.remove();
-      }
-      
-      // Create orders modal directly in DOM
-      const modal = document.createElement('div');
-      modal.id = 'orders-modal';
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 99999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      `;
-      
-      // Get user orders data
-      const orders = this.userOrders || [];
-      const ordersHtml = orders.length > 0 ? 
-        orders.map(order => `
-          <div style="background: #1a1a2e; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h4 style="color: white; margin: 0;">Order #${order.id}</h4>
-              <span style="background: ${order.status === 'COMPLETED' ? '#00ff88' : order.status === 'PENDING' ? '#ffc107' : '#ff4444'}; color: black; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${order.status}</span>
-            </div>
-            <div style="color: #e0e0e0; font-size: 14px;">
-              <p><strong>Stock:</strong> ${order.stock_symbol}</p>
-              <p><strong>Option:</strong> ${order.option_type} ${order.action}</p>
-              <p><strong>Strike Price:</strong> ₹${order.strike_price}</p>
-              <p><strong>Quantity:</strong> ${order.quantity}</p>
-              <p><strong>Total Amount:</strong> ₹${order.total_amount}</p>
-              <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString('en-IN')}</p>
-              ${order.pnl ? `<p><strong>P&L:</strong> <span style="color: ${order.pnl >= 0 ? '#00ff88' : '#ff4444'}">₹${order.pnl}</span></p>` : ''}
-            </div>
-          </div>
-        `).join('') :
-        `<div style="text-align: center; color: #a0a0a0; padding: 40px;">
-          <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px;"></i>
-          <h3>No Orders Found</h3>
-          <p>This user hasn't placed any trades yet.</p>
-        </div>`;
-      
-      modal.innerHTML = `
-        <div style="background: #1a1a2e; border-radius: 12px; max-width: 800px; width: 100%; max-height: 80vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #333;">
-            <div>
-              <h2 style="color: white; margin: 0;">Trading Orders - ${this.user.name}</h2>
-              <p style="color: #a0a0a0; margin: 4px 0 0 0;">Total Orders: ${orders.length}</p>
-            </div>
-            <button onclick="document.getElementById('orders-modal').remove()" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
-              <i class="fas fa-times"></i> Close
-            </button>
-          </div>
-          <div style="padding: 20px;">
-            ${ordersHtml}
-          </div>
-        </div>
-      `;
-      
-      // Add click outside to close
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-      
-      document.body.appendChild(modal);
-      console.log('Orders modal created with direct DOM');
+      // Force navigation to orders page (no popup)
+      window.location.href = `/admin/ai-trading-orders?userId=${this.user.id}&userName=${encodeURIComponent(this.user.name)}&userBalance=${this.user.balance}&userEmail=${encodeURIComponent(this.user.email)}`;
     },
-    closeOrdersModal() {
-      this.showOrdersModal = false;
-    },
+
 
     formatDateTime(dateString) {
       return new Date(dateString).toLocaleString('en-IN');
@@ -1065,13 +1036,36 @@ export default {
 /* Market Status */
 .market-status {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 24px;
   padding: 16px 20px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.market-status-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trading-disabled-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.trading-disabled-notice i {
+  font-size: 16px;
 }
 
 .status-indicator {
@@ -1207,11 +1201,13 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .stock-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 255, 136, 0.2);
+  border-color: rgba(0, 255, 136, 0.3);
 }
 
 .stock-header {
@@ -1262,6 +1258,377 @@ export default {
   justify-content: space-between;
   margin-bottom: 8px;
   color: #a0a0a0;
+}
+
+.click-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+  color: #00ff88;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.click-hint i {
+  font-size: 1rem;
+}
+
+/* Stock Options Modal */
+.stock-options-modal {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border: 2px solid rgba(0, 255, 136, 0.3);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  color: #00ff88;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-btn {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff4444;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.close-btn:hover {
+  background: rgba(255, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.modal-body {
+  padding: 30px;
+}
+
+.stock-info-section {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.stock-price-large {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #00ff88;
+  margin-bottom: 10px;
+}
+
+.stock-change-large {
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stock-change-large.positive {
+  color: #00ff88;
+}
+
+.stock-change-large.negative {
+  color: #ff4444;
+}
+
+.options-trading-section {
+  margin-top: 20px;
+}
+
+.options-main-title {
+  font-size: 1.5rem;
+  color: #00ff88;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.option-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.option-card.call-option {
+  border-color: rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.option-card.put-option {
+  border-color: rgba(255, 68, 68, 0.3);
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.option-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.option-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.option-icon {
+  font-size: 2rem;
+}
+
+.option-info {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  color: white;
+}
+
+.option-strike {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.option-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Loading Options */
+.loading-options {
+  text-align: center;
+  padding: 40px 20px;
+  color: #a0a0a0;
+}
+
+.loading-spinner {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: #00ff88;
+}
+
+/* Options Chain */
+.options-chain {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.options-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.options-section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.call-title {
+  color: #00ff88;
+}
+
+.put-title {
+  color: #ff4444;
+}
+
+.options-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.options-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.header-cell {
+  text-align: center;
+  color: #a0a0a0;
+}
+
+.option-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  align-items: center;
+}
+
+.call-row {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.put-row {
+  background: rgba(255, 68, 68, 0.05);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.option-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.option-cell {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.option-cell.strike {
+  font-weight: bold;
+  color: white;
+}
+
+.option-cell.bid {
+  color: #00ff88;
+}
+
+.option-cell.ask {
+  color: #ff4444;
+}
+
+.option-cell.volume,
+.option-cell.oi {
+  color: #a0a0a0;
+}
+
+.option-cell.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.mini-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 50px;
+  font-weight: 600;
+}
+
+.mini-btn i {
+  font-size: 0.7rem;
+}
+
+.mini-btn span {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.mini-btn.buy-btn {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.mini-btn.buy-btn:hover {
+  background: rgba(0, 255, 136, 0.3);
+  transform: scale(1.05);
+}
+
+.mini-btn.sell-btn {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.4);
+}
+
+.mini-btn.sell-btn:hover {
+  background: rgba(255, 68, 68, 0.3);
+  transform: scale(1.05);
+}
+
+.mini-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background: #444 !important;
+  color: #888 !important;
+  border: 1px solid #666 !important;
+  box-shadow: none !important;
+}
+
+.mini-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: #444 !important;
+  color: #888 !important;
+}
+
+.mini-btn:disabled i {
+  color: #888 !important;
 }
 
 /* Options Section */
@@ -2188,15 +2555,279 @@ export default {
   color: #666;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Large Desktop (1400px+) */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1400px;
+  }
+  
   .stocks-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .stock-options-modal {
+    max-width: 1200px;
+  }
+}
+
+/* Desktop (1200px - 1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+  .stocks-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .stock-options-modal {
+    max-width: 1000px;
+  }
+}
+
+/* Laptop (992px - 1199px) */
+@media (max-width: 1199px) and (min-width: 992px) {
+  .stocks-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .stock-options-modal {
+    max-width: 900px;
+  }
+  
+  .options-chain {
+    overflow-x: auto;
+  }
+}
+
+/* Tablet (768px - 991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .stocks-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .stock-card {
+    padding: 16px;
+  }
+  
+  .stock-symbol {
+    font-size: 1.1rem;
+  }
+  
+  .stock-price {
+    font-size: 1.3rem;
+  }
+  
+  .stock-change {
+    font-size: 0.9rem;
   }
   
   .filters-section {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
+  }
+  
+  .search-box {
+    width: 100%;
+  }
+  
+  .sort-dropdown {
+    width: 100%;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .btn {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Stock Options Modal */
+  .stock-options-modal {
+    width: 95%;
+    max-width: none;
+    margin: 20px auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .modal-title {
+    font-size: 1.3rem;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .stock-info-section {
+    padding: 16px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .stock-price-large {
+    font-size: 2.2rem;
+  }
+  
+  .stock-change-large {
+    font-size: 1.1rem;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .option-card {
+    padding: 16px;
+  }
+  
+  .option-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .option-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .trade-btn {
+    width: 100%;
+    padding: 12px;
+  }
+  
+  /* Options Chain Table */
+  .options-chain {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .options-table {
+    min-width: 600px;
+  }
+  
+  .options-header,
+  .option-row {
+    grid-template-columns: 80px 60px 60px 60px 60px 100px;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+  
+  .header-cell,
+  .option-cell {
+    font-size: 0.85rem;
+    padding: 8px 4px;
+  }
+  
+  .mini-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    min-width: 45px;
+    gap: 3px;
+  }
+  
+  .mini-btn i {
+    font-size: 0.65rem;
+  }
+  
+  .mini-btn span {
+    font-size: 0.65rem;
+  }
+  
+  .options-section {
+    padding: 16px;
+  }
+  
+  .options-section-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* Mobile Large (576px - 767px) */
+@media (max-width: 767px) and (min-width: 576px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .stocks-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .stock-card {
+    padding: 14px;
+  }
+  
+  .stock-symbol {
+    font-size: 1rem;
+  }
+  
+  .stock-price {
+    font-size: 1.2rem;
+  }
+  
+  .stock-change {
+    font-size: 0.85rem;
+  }
+  
+  .click-hint {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .search-box {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .sort-dropdown {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
   }
   
   .header-content {
@@ -2208,11 +2839,374 @@ export default {
   .header-actions {
     flex-direction: column;
     width: 100%;
+    gap: 8px;
   }
   
-  .modal-content {
-    margin: 10px;
+  .btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  /* Stock Options Modal */
+  .stock-options-modal {
+    width: 98%;
     max-width: none;
+    margin: 10px auto;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    padding: 8px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .stock-info-section {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .stock-price-large {
+    font-size: 1.8rem;
+  }
+  
+  .stock-change-large {
+    font-size: 1rem;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .option-card {
+    padding: 12px;
+  }
+  
+  .option-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .option-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .trade-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  /* Options Chain Table */
+  .options-chain {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+  
+  .options-table {
+    min-width: 500px;
+  }
+  
+  .options-header,
+  .option-row {
+    grid-template-columns: 70px 50px 50px 50px 50px 80px;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  
+  .header-cell,
+  .option-cell {
+    font-size: 0.8rem;
+    padding: 6px 3px;
+  }
+  
+  .mini-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    min-width: 40px;
+    gap: 2px;
+  }
+  
+  .mini-btn i {
+    font-size: 0.6rem;
+  }
+  
+  .mini-btn span {
+    font-size: 0.6rem;
+  }
+  
+  .options-section {
+    padding: 12px;
+  }
+  
+  .options-section-title {
+    font-size: 1rem;
+  }
+}
+
+/* Mobile Small (up to 575px) */
+@media (max-width: 575px) {
+  .container {
+    padding: 0 8px;
+  }
+  
+  .stocks-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stock-card {
+    padding: 12px;
+  }
+  
+  .stock-symbol {
+    font-size: 0.95rem;
+  }
+  
+  .stock-price {
+    font-size: 1.1rem;
+  }
+  
+  .stock-change {
+    font-size: 0.8rem;
+  }
+  
+  .click-hint {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .search-box {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .sort-dropdown {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  /* Stock Options Modal */
+  .stock-options-modal {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    max-height: 100vh;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .modal-title {
+    font-size: 1rem;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    padding: 6px;
+    font-size: 18px;
+  }
+  
+  .modal-body {
+    padding: 12px;
+  }
+  
+  .stock-info-section {
+    padding: 10px;
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+  
+  .stock-price-large {
+    font-size: 1.6rem;
+  }
+  
+  .stock-change-large {
+    font-size: 0.9rem;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .option-card {
+    padding: 10px;
+  }
+  
+  .option-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+  
+  .option-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .trade-btn {
+    width: 100%;
+    padding: 8px;
+    font-size: 13px;
+  }
+  
+  /* Options Chain Table */
+  .options-chain {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 6px;
+  }
+  
+  .options-table {
+    min-width: 450px;
+  }
+  
+  .options-header,
+  .option-row {
+    grid-template-columns: 60px 45px 45px 45px 45px 70px;
+    gap: 4px;
+    font-size: 0.75rem;
+  }
+  
+  .header-cell,
+  .option-cell {
+    font-size: 0.75rem;
+    padding: 4px 2px;
+  }
+  
+  .mini-btn {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+    min-width: 35px;
+    gap: 2px;
+  }
+  
+  .mini-btn i {
+    font-size: 0.55rem;
+  }
+  
+  .mini-btn span {
+    font-size: 0.55rem;
+  }
+  
+  .options-section {
+    padding: 10px;
+  }
+  
+  .options-section-title {
+    font-size: 0.9rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .stock-options-modal {
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .modal-body {
+    padding: 8px;
+  }
+  
+  .stock-info-section {
+    padding: 8px;
+  }
+  
+  .options-section {
+    padding: 8px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .stock-card {
+    border-width: 0.5px;
+  }
+  
+  .modal-overlay {
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .stock-options-modal {
+    position: static;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .modal-overlay {
+    display: none;
+  }
+  
+  .close-btn {
+    display: none;
   }
 }
 </style>
