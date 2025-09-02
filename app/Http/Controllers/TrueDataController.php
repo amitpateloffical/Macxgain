@@ -57,50 +57,18 @@ class TrueDataController extends Controller
             $marketStatus = $this->marketStatusService->getMarketStatus();
             $isMarketLive = $this->marketStatusService->isMarketLive();
             
-            // Get data from cache (live or historical based on market status)
-            $cachedData = Cache::get('truedata_live_data', []);
-            $dataType = Cache::get('truedata_data_type', 'UNKNOWN');
-            $lastUpdate = Cache::get('truedata_last_update', now());
-            
-            // Convert cached data to array format for frontend
-            $liveStocks = [];
-            foreach ($cachedData as $symbol => $stockData) {
-                $liveStocks[] = [
-                    'symbol' => $symbol,
-                    'ltp' => $stockData['ltp'] ?? 0,
-                    'change' => $stockData['change'] ?? 0,
-                    'change_percent' => $stockData['change_percent'] ?? 0,
-                    'high' => $stockData['high'] ?? 0,
-                    'low' => $stockData['low'] ?? 0,
-                    'open' => $stockData['open'] ?? 0,
-                    'prev_close' => $stockData['prev_close'] ?? 0,
-                    'volume' => $stockData['volume'] ?? 0,
-                    'timestamp' => $stockData['timestamp'] ?? $lastUpdate->toISOString()
-                ];
-            }
-            
-            // Determine data source message
-            $dataSourceMessage = $this->marketStatusService->getDataSourceMessage();
-            if ($dataType === 'HISTORICAL') {
-                $dataSourceMessage = 'TrueData Historical Data (Market Closed)';
-            } elseif ($dataType === 'LIVE') {
-                $dataSourceMessage = 'TrueData Live Market Data';
-            }
-            
+            // Get cached data
+            $cachedData = $this->trueDataService->getCachedMarketData();
             // Prepare response data
             $responseData = [
-                'market_status' => $marketStatus,
-                'is_market_live' => $isMarketLive,
-                'data_type' => $dataType,
-                'live_stocks' => $liveStocks,
-                'quotes' => $liveStocks,
-                'indices' => array_slice($liveStocks, 0, 5), // First 5 as indices
-                'top_gainers' => array_slice($liveStocks, 0, 10), // First 10 as gainers
-                'top_losers' => array_slice($liveStocks, 5, 10), // Next 10 as losers
-                'timestamp' => $lastUpdate->toISOString(),
-                'data_source' => $dataSourceMessage,
-                'last_updated' => $lastUpdate->format('H:i:s'),
-                'last_update' => $lastUpdate->toISOString()
+                'market_status' => $marketStatus['success'] ? $marketStatus['data'] : null,
+                'quotes' => $cachedData,
+                'indices' => array_slice($cachedData, 0, 5, true), // First 5 as indices
+                'top_gainers' => array_slice($cachedData, 0, 10, true), // First 10 as gainers
+                'top_losers' => array_slice($cachedData, 5, 10, true), // Next 10 as losers
+                'timestamp' => now()->toISOString(),
+                'data_source' => 'TrueData Historical Data (Market Closed)',
+                'last_updated' => now()->format('H:i:s')
             ];
 
             return response()->json([
@@ -393,22 +361,13 @@ class TrueDataController extends Controller
                 // Trigger job to fetch fresh data
                 \App\Jobs\FetchTrueDataJob::dispatch();
                 
-                // Wait a moment for the job to complete
-                sleep(2);
-                
-                // Try to get data again (direct from Python script)
-                $liveData = $this->getLiveDataFromPythonScript();
-                $lastUpdate = now();
-                
-                if (empty($liveData)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No live data available. Please try again in a moment.',
-                        'data' => [],
-                        'last_update' => null,
-                        'market_status' => $marketStatus
-                    ], 202);
-                }
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No live data available. Fetching fresh data...',
+                    'data' => [],
+                    'last_update' => null,
+                    'market_status' => $marketStatus
+                ], 202);
             }
             
             // Add market status to each data item
@@ -597,50 +556,6 @@ class TrueDataController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
                 'message' => 'Failed to fetch popular options'
-            ], 500);
-        }
-    }
-
-    /**
-     * Search for a specific stock and return its data
-     */
-    public function searchStock(Request $request): JsonResponse
-    {
-        try {
-            $symbol = $request->input('symbol');
-            
-            if (!$symbol) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Stock symbol is required'
-                ], 400);
-            }
-
-            // Try to get data from cache first
-            $cachedData = Cache::get('truedata_live_data', []);
-            
-            // Check if symbol exists in cached data
-            if (isset($cachedData[$symbol])) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $cachedData[$symbol],
-                    'message' => 'Stock data retrieved from cache'
-                ]);
-            }
-
-            // If not in cache, return error for now (can be enhanced later)
-            return response()->json([
-                'success' => false,
-                'message' => 'Stock not found in current data. Please try again when market is open.'
-            ], 404);
-
-        } catch (\Exception $e) {
-            Log::error('Error in searchStock: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to search for stock',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
