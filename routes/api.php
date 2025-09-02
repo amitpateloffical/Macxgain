@@ -20,6 +20,7 @@ use App\Http\Controllers\UpstoxController;
 use App\Http\Controllers\TrueDataController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminPaymentCollectorController;
+use App\Http\Controllers\AITradingController;
 
 
 
@@ -150,6 +151,18 @@ Route::middleware('auth:sanctum')->group(function() {
 
 // Public Payment Collector Routes (for users to see payment details)
 Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class, 'getPrimary']);
+
+// AI Trading API Routes
+Route::middleware('auth:api')->group(function() {
+    Route::post('/ai-trading/execute-trade', [AITradingController::class, 'executeTrade']);
+    Route::get('/ai-trading/user-orders/{userId}', [AITradingController::class, 'getUserOrders']);
+    Route::get('/ai-trading/user-balance/{userId}', [AITradingController::class, 'getUserBalance']);
+    Route::get('/ai-trading/orders', [AITradingController::class, 'getAllOrders']);
+    Route::patch('/ai-trading/orders/{orderId}/cancel', [AITradingController::class, 'cancelOrder']);
+    Route::post('/ai-trading/orders/{orderId}/exit', [AITradingController::class, 'exitTrade']);
+    Route::get('/ai-trading/market-status', [AITradingController::class, 'getMarketStatus']);
+    Route::get('/ai-trading/stats', [AITradingController::class, 'getTradingStats']);
+});
 
 
 

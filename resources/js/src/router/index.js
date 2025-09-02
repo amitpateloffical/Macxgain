@@ -52,9 +52,15 @@ const routes = [
   },
   {
     path: "/admin/ai-trading",
-    name: "admin-ai-trading",
+    name: "ai_trading",
     meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/AITrading.vue"),
+  },
+  {
+    path: "/admin/ai-trading-session",
+    name: "ai_trading_session",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/AITradingSession.vue"),
   },
     {
     path: "/admin/payment-collector",

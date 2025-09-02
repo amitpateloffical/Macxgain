@@ -543,17 +543,18 @@ export default {
     },
     tradeWithUser(user) {
       console.log('Trade with AI for user:', user);
-      // Professional AI Trading functionality
       this.$toast?.success?.(`Initiating AI Trading session for ${user.name}`);
       
-      // You can implement:
-      // 1. Redirect to AI Trading dashboard
-      // 2. Open AI Trading modal
-      // 3. Start AI Trading session
-      // 4. Show trading analytics
-      
-      // Example: Redirect to AI Trading page
-      // this.$router.push(`/admin/ai-trading-session/${user.id}`);
+      // Redirect to AI Trading Session page with user data
+      this.$router.push({
+        name: 'ai_trading_session',
+        query: { 
+          userId: user.id,
+          userName: user.name,
+          userBalance: user.balance,
+          userEmail: user.email
+        }
+      });
     },
     closeUserModal() {
       this.showUserModal = false;

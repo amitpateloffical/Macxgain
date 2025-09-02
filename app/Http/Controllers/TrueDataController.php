@@ -56,19 +56,39 @@ class TrueDataController extends Controller
             // Get market status
             $marketStatus = $this->trueDataService->getMarketStatus();
             
-            // Get cached data
-            $cachedData = $this->trueDataService->getCachedMarketData();
+            // Get cached data from the correct cache key
+            $cachedData = Cache::get('truedata_live_data', []);
+            $lastUpdate = Cache::get('truedata_last_update', now());
+            
+            // Convert cached data to array format for frontend
+            $liveStocks = [];
+            foreach ($cachedData as $symbol => $stockData) {
+                $liveStocks[] = [
+                    'symbol' => $symbol,
+                    'ltp' => $stockData['ltp'] ?? 0,
+                    'change' => $stockData['change'] ?? 0,
+                    'change_percent' => $stockData['change_percent'] ?? 0,
+                    'high' => $stockData['high'] ?? 0,
+                    'low' => $stockData['low'] ?? 0,
+                    'open' => $stockData['open'] ?? 0,
+                    'prev_close' => $stockData['prev_close'] ?? 0,
+                    'volume' => $stockData['volume'] ?? 0,
+                    'timestamp' => $stockData['timestamp'] ?? now()->toISOString()
+                ];
+            }
             
             // Prepare response data
             $responseData = [
                 'market_status' => $marketStatus['success'] ? $marketStatus['data'] : null,
-                'quotes' => $cachedData,
-                'indices' => array_slice($cachedData, 0, 5, true), // First 5 as indices
-                'top_gainers' => array_slice($cachedData, 0, 10, true), // First 10 as gainers
-                'top_losers' => array_slice($cachedData, 5, 10, true), // Next 10 as losers
+                'live_stocks' => $liveStocks,
+                'quotes' => $liveStocks,
+                'indices' => array_slice($liveStocks, 0, 5), // First 5 as indices
+                'top_gainers' => array_slice($liveStocks, 0, 10), // First 10 as gainers
+                'top_losers' => array_slice($liveStocks, 5, 10), // Next 10 as losers
                 'timestamp' => now()->toISOString(),
                 'data_source' => 'TrueData Historical Data (Market Closed)',
-                'last_updated' => now()->format('H:i:s')
+                'last_updated' => $lastUpdate->format('H:i:s'),
+                'last_update' => $lastUpdate->toISOString()
             ];
 
             return response()->json([
