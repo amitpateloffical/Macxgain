@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterRequestController;
 use App\Http\Controllers\WithdrawalRequestController;
 use App\Http\Controllers\UpstoxController;
+use App\Http\Controllers\TrueDataController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminPaymentCollectorController;
 
@@ -102,8 +103,21 @@ Route::middleware('auth:api')->group(function() {
     Route::patch('/register-requests/{id}/reject', [RegisterRequestController::class, 'reject']);
 });
 
-// Upstox API Routes
+// TrueData API Routes (replacing Upstox)
 Route::middleware('auth:sanctum')->group(function() {
+    Route::get('/truedata/test', [TrueDataController::class, 'testConnection']);
+    Route::get('/truedata/dashboard', [TrueDataController::class, 'getDashboardData']);
+    Route::get('/truedata/market-quotes', [TrueDataController::class, 'getMarketQuotes']);
+    Route::get('/truedata/market-status', [TrueDataController::class, 'getMarketStatus']);
+    Route::get('/truedata/historical-data', [TrueDataController::class, 'getHistoricalData']);
+    Route::get('/truedata/search-instruments', [TrueDataController::class, 'searchInstruments']);
+    Route::get('/truedata/top-gainers', [TrueDataController::class, 'getTopGainers']);
+    Route::get('/truedata/top-losers', [TrueDataController::class, 'getTopLosers']);
+    Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
+    Route::get('/truedata/live-stock-data', [TrueDataController::class, 'getLiveStockData']);
+    Route::post('/truedata/subscribe-symbols', [TrueDataController::class, 'subscribeToSymbols']);
+    
+    // Legacy Upstox routes (for backward compatibility)
     Route::get('/upstox/test', [UpstoxController::class, 'testConnection']);
     Route::get('/upstox/dashboard', [UpstoxController::class, 'getDashboardData']);
     Route::get('/upstox/market-quotes', [UpstoxController::class, 'getMarketQuotes']);

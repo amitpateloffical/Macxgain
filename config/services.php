@@ -40,6 +40,13 @@ return [
         'base_url' => env('UPSTOX_BASE_URL', 'https://api.upstox.com/v2'),
     ],
 
+    'truedata' => [
+        'username' => env('TRUEDATA_USERNAME'),
+        'password' => env('TRUEDATA_PASSWORD'),
+        'realtime_port' => env('TRUEDATA_PORT', 8086), // Using your actual port
+        'base_url' => env('TRUEDATA_HOST', 'stream.truedata.in'), // Using your actual host
+    ],
+
     'office365' => [
         'client_id' => env('O365_CLIENT_ID'),
         'client_secret' => env('O365_CLIENT_SECRET'),
