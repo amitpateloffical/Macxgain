@@ -13,6 +13,7 @@
             Trading for: <strong>{{ user.name || 'Loading...' }}</strong> 
             (Balance: ₹{{ user.balance?.toLocaleString() || '0' }})
           </p>
+          <p style="font-size: 12px; color: #a0a0a0;">Debug: User ID: {{ user.id }}, Balance: {{ user.balance }}</p>
         </div>
       </div>
       <div class="header-actions">
@@ -23,10 +24,6 @@
         <button class="orders-btn" @click="viewOrders">
           <i class="fas fa-list"></i>
           View Orders
-        </button>
-        <button class="orders-btn" @click="testModal" style="background: orange; margin-left: 10px;">
-          <i class="fas fa-bug"></i>
-          Test Modal
         </button>
         <button class="refresh-btn" @click="loadUserBalance" :disabled="loading">
           <i class="fas fa-wallet"></i>
@@ -50,13 +47,7 @@
       </div>
     </div>
 
-    <!-- Debug Info -->
-    <div style="position: fixed; top: 10px; right: 10px; background: yellow; color: black; padding: 10px; z-index: 10000; font-size: 12px;">
-      <strong>DEBUG:</strong><br>
-      showOrdersModal: {{ showOrdersModal }}<br>
-      showTradeModal: {{ showTradeModal }}<br>
-      userOrders.length: {{ userOrders.length }}
-    </div>
+
 
     <!-- Market Hours Notice -->
     <div v-if="!marketStatus.is_open" class="market-notice">
@@ -300,18 +291,9 @@
       </div>
     </div>
 
-    <!-- Test Simple Modal -->
-    <div v-if="showOrdersModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;" @click="closeOrdersModal">
-      <div style="background: red; color: white; padding: 50px; border: 5px solid yellow; font-size: 24px;" @click.stop>
-        <h1>TEST MODAL - CAN YOU SEE THIS?</h1>
-        <p>If you can see this, the modal system works!</p>
-        <button @click="closeOrdersModal" style="background: white; color: black; padding: 10px 20px; border: none; cursor: pointer;">Close</button>
-      </div>
-    </div>
-
-    <!-- Orders Modal -->
-    <div v-if="showOrdersModal" class="modal-overlay" @click="closeOrdersModal" style="z-index: 9999 !important;">
-      <div class="modal-content orders-modal" @click.stop style="background: red !important; border: 5px solid yellow !important;">
+    <!-- Orders Modal (Vue-based - keeping for reference but not used) -->
+    <div v-if="showOrdersModal" class="modal-overlay" @click="closeOrdersModal">
+      <div class="modal-content orders-modal" @click.stop>
         <div class="modal-header">
           <div class="header-left">
             <div class="user-avatar">
@@ -577,6 +559,13 @@ export default {
     this.loadUserOrders();
     this.loadUserBalance(); // Fetch live balance from database
     this.loadMarketStatus(); // Load market status
+    
+    // Debug: Test balance loading immediately
+    console.log('About to test balance loading...');
+    setTimeout(() => {
+      console.log('Testing balance load after 2 seconds...');
+      this.loadUserBalance();
+    }, 2000);
   },
   methods: {
     goBack() {
@@ -699,7 +688,15 @@ export default {
     },
     async loadUserBalance() {
       try {
+        console.log('Loading user balance for user ID:', this.user.id);
         const token = localStorage.getItem('access_token');
+        console.log('Token exists:', !!token);
+        
+        if (!token) {
+          console.error('No access token found');
+          this.showError('No access token found. Please login again.');
+          return;
+        }
         
         const response = await axios.get(`/api/ai-trading/user-balance/${this.user.id}`, {
           headers: {
@@ -708,15 +705,28 @@ export default {
           }
         });
 
+        console.log('Balance API response:', response.data);
+
         if (response.data.success) {
           // Update user balance with live data from wallet transactions
-          this.user.balance = parseFloat(response.data.balance) || 0;
-          console.log('Live user balance updated:', this.user.balance);
+          const newBalance = parseFloat(response.data.balance) || 0;
+          console.log('Live user balance updated:', newBalance);
+          console.log('Formatted balance:', response.data.formatted_balance);
+          
+          // Force Vue reactivity update
+          this.$set(this.user, 'balance', newBalance);
+          // Alternative approach
+          this.user = { ...this.user, balance: newBalance };
+          
+          console.log('User object after update:', this.user);
           this.showSuccess(`Balance updated: ${response.data.formatted_balance}`);
+        } else {
+          console.error('API returned success: false', response.data);
         }
       } catch (error) {
         console.error('Error loading user balance:', error);
-        this.showError('Failed to load user balance');
+        console.error('Error details:', error.response?.data);
+        this.showError('Failed to load user balance: ' + (error.response?.data?.message || error.message));
         // Keep the balance from URL params as fallback
       }
     },
@@ -735,7 +745,20 @@ export default {
         }
       } catch (error) {
         console.error('Error loading market status:', error);
-        this.showError('Failed to load market status');
+        // Set default market status if API fails
+        this.marketStatus = {
+          is_open: false,
+          status: 'CLOSED',
+          current_time: new Date().toLocaleTimeString('en-IN'),
+          next_open_time: null,
+          market_hours: {
+            open: '09:15',
+            close: '15:30',
+            timezone: 'Asia/Kolkata',
+            days: 'Monday to Friday'
+          }
+        };
+        console.log('Using default market status due to API error');
       }
     },
     viewOrders() {
@@ -820,41 +843,16 @@ export default {
     closeOrdersModal() {
       this.showOrdersModal = false;
     },
-    testModal() {
-      console.log('Test Modal clicked - Direct DOM manipulation');
-      
-      // Create modal directly in DOM
-      const modal = document.createElement('div');
-      modal.id = 'test-modal';
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 99999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `;
-      
-      modal.innerHTML = `
-        <div style="background: red; color: white; padding: 50px; border: 5px solid yellow; font-size: 24px; text-align: center;">
-          <h1>DIRECT DOM MODAL</h1>
-          <p>This modal was created directly in DOM!</p>
-          <button onclick="document.getElementById('test-modal').remove()" style="background: white; color: black; padding: 10px 20px; border: none; cursor: pointer; margin-top: 20px;">Close</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      console.log('Direct DOM modal created');
-    },
+
     formatDateTime(dateString) {
       return new Date(dateString).toLocaleString('en-IN');
     },
     showSuccess(message) {
-      this.$toast?.success?.(message);
+      if (this.$toast && this.$toast.success) {
+        this.$toast.success(message);
+      } else {
+        console.log('Success:', message);
+      }
     },
     getStatusIcon(status) {
       switch (status) {
@@ -968,7 +966,11 @@ export default {
       }
     },
     showError(message) {
-      this.$toast?.error?.(message);
+      if (this.$toast && this.$toast.error) {
+        this.$toast.error(message);
+      } else {
+        console.error('Error:', message);
+      }
     },
     formatDateTime(dateTimeString) {
       if (!dateTimeString) return '';
