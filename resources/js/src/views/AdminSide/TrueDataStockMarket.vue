@@ -429,6 +429,8 @@ export default {
     }
   },
   mounted() {
+    // Initialize with closed status
+    this.marketStatus = 'CLOSED';
     this.loadMarketData();
     // Auto-refresh every 30 seconds when market is open
     this.startAutoRefresh();
@@ -472,7 +474,8 @@ export default {
            console.log('Data count:', liveResponse.data.data_count);
            console.log('Last update:', liveResponse.data.last_update);
            
-           this.marketStatus = 'OPEN';
+           // Don't set market status here - let the API response determine it
+           // this.marketStatus = 'OPEN';
            this.marketInfo = {
              trading_hours: '9:15 AM - 3:30 PM IST',
              trading_days: 'Monday to Friday',
@@ -515,6 +518,9 @@ export default {
                trading_days: 'Monday to Friday',
                next_session: liveResponse.data.market_status.next_open || 'Next session: Tomorrow 9:15 AM'
              };
+           } else {
+             // If no market status in response, assume market is closed
+             this.marketStatus = 'CLOSED';
            }
            
            // Try to get historical data from dashboard
@@ -1944,19 +1950,7 @@ export default {
   cursor: not-allowed;
 }
 
-.indices-section {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.section-title {
-  margin: 0 0 20px 0;
-  color: #333;
-  font-size: 20px;
-}
+/* Removed conflicting light background CSS for indices section */
 
 .indices-grid {
   display: grid;
@@ -1964,33 +1958,7 @@ export default {
   gap: 15px;
 }
 
-.index-card {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  border-left: 4px solid #dee2e6;
-}
-
-.index-card.positive {
-  border-left-color: #28a745;
-}
-
-.index-card.negative {
-  border-left-color: #dc3545;
-}
-
-.index-name {
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-.index-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 5px;
-}
+/* Removed conflicting light background CSS for index cards */
 
 .index-change {
   font-size: 14px;
@@ -2095,45 +2063,7 @@ export default {
   gap: 15px;
 }
 
-.stock-card {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  border-left: 4px solid #dee2e6;
-  transition: transform 0.2s;
-}
-
-.stock-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.stock-card.positive {
-  border-left-color: #28a745;
-}
-
-.stock-card.negative {
-  border-left-color: #dc3545;
-}
-
-.stock-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.stock-symbol {
-  font-weight: 600;
-  color: #333;
-  font-size: 16px;
-}
-
-.stock-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #333;
-}
+/* Removed conflicting light background CSS for stock cards */
 
 .stock-details {
   display: flex;
@@ -2142,14 +2072,7 @@ export default {
   margin-bottom: 10px;
 }
 
-.stock-change {
-  font-size: 14px;
-}
-
-.stock-volume {
-  font-size: 12px;
-  color: #666;
-}
+/* Removed conflicting CSS for stock change and volume */
 
 .stock-ohlc {
   display: flex;
