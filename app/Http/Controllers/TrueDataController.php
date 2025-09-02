@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\TrueDataService;
+use App\Services\MarketStatusService;
+use App\Services\OptionsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -11,10 +13,38 @@ use Illuminate\Support\Facades\Cache;
 class TrueDataController extends Controller
 {
     private $trueDataService;
+    private $marketStatusService;
+    private $optionsService;
 
-    public function __construct(TrueDataService $trueDataService)
+    public function __construct(TrueDataService $trueDataService, MarketStatusService $marketStatusService, OptionsService $optionsService)
     {
         $this->trueDataService = $trueDataService;
+        $this->marketStatusService = $marketStatusService;
+        $this->optionsService = $optionsService;
+    }
+
+    /**
+     * Get market status (Open/Closed with trading hours)
+     */
+    public function getMarketStatus(): JsonResponse
+    {
+        try {
+            $marketStatus = $this->marketStatusService->getMarketStatus();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $marketStatus,
+                'message' => 'Market status retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting market status: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get market status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -134,37 +164,7 @@ class TrueDataController extends Controller
         }
     }
 
-    /**
-     * Get market status
-     */
-    public function getMarketStatus(): JsonResponse
-    {
-        try {
-            $result = $this->trueDataService->getMarketStatus();
 
-            if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $result['data'],
-                    'message' => 'Market status fetched successfully'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                    'message' => 'Failed to fetch market status'
-                ], 503);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('TrueData Market Status Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-                'message' => 'Failed to fetch market status'
-            ], 500);
-        }
-    }
 
     /**
      * Get market indices
@@ -354,6 +354,7 @@ class TrueDataController extends Controller
         try {
             $liveData = Cache::get('truedata_live_data', []);
             $lastUpdate = Cache::get('truedata_last_update', null);
+            $marketStatus = $this->marketStatusService->getMarketStatus();
             
             if (empty($liveData)) {
                 // Trigger job to fetch fresh data
@@ -363,8 +364,16 @@ class TrueDataController extends Controller
                     'success' => false,
                     'message' => 'No live data available. Fetching fresh data...',
                     'data' => [],
-                    'last_update' => null
+                    'last_update' => null,
+                    'market_status' => $marketStatus
                 ], 202);
+            }
+            
+            // Add market status to each data item
+            foreach ($liveData as $symbol => &$data) {
+                $data['market_status'] = $marketStatus['status'];
+                $data['is_live'] = $marketStatus['is_live'] ?? false;
+                $data['data_source'] = $this->marketStatusService->getDataSourceMessage();
             }
             
             return response()->json([
@@ -372,6 +381,7 @@ class TrueDataController extends Controller
                 'data' => $liveData,
                 'last_update' => $lastUpdate,
                 'data_count' => count($liveData),
+                'market_status' => $marketStatus,
                 'message' => 'Live data fetched successfully from Python script'
             ]);
             
@@ -446,6 +456,67 @@ class TrueDataController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
                 'message' => 'Failed to subscribe to symbols'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Option Chain for a specific symbol
+     */
+    public function getOptionChain($symbol): JsonResponse
+    {
+        try {
+            $result = $this->optionsService->getOptionChain($symbol);
+            
+            return response()->json($result);
+        } catch (\Exception $e) {
+            Log::error('Options Chain Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to fetch option chain'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Options Dashboard Data
+     */
+    public function getOptionsDashboard(): JsonResponse
+    {
+        try {
+            $result = $this->optionsService->getOptionsDashboard();
+            
+            return response()->json($result);
+        } catch (\Exception $e) {
+            Log::error('Options Dashboard Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to fetch options dashboard'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Popular Options
+     */
+    public function getPopularOptions(): JsonResponse
+    {
+        try {
+            $popularOptions = $this->optionsService->getPopularOptions();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $popularOptions,
+                'message' => 'Popular options retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Popular Options Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to fetch popular options'
             ], 500);
         }
     }

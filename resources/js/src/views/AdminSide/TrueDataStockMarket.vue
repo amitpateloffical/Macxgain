@@ -41,6 +41,10 @@
           </button>
           
           <div class="market-info">
+            <div class="market-status">
+              <span class="status-dot" :class="getMarketStatusClass()"></span>
+              <span class="status-text">{{ getMarketStatusText() }}</span>
+            </div>
             <div class="trading-hours">{{ marketInfo.trading_hours }}</div>
             <div class="trading-days">{{ marketInfo.trading_days }}</div>
             <div class="next-session" v-if="marketInfo.next_session && marketStatus === 'CLOSED'">
@@ -670,6 +674,64 @@ export default {
         console.error('Dashboard fallback failed:', error);
         this.showError('Failed to load market data from both live and historical sources.');
       }
+    },
+
+    // Market Status Methods
+    async loadMarketStatus() {
+      try {
+        const response = await axios.get('/api/truedata/market-status', {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.marketStatus = response.data.data.status;
+          this.marketInfo = {
+            trading_hours: response.data.data.trading_hours || '9:15 AM - 3:30 PM IST',
+            trading_days: 'Monday to Friday',
+            next_session: response.data.data.next_open || response.data.data.next_change || ''
+          };
+        }
+      } catch (error) {
+        console.error('Error loading market status:', error);
+        // Fallback to default values
+        this.marketStatus = 'UNKNOWN';
+        this.marketInfo = {
+          trading_hours: '9:15 AM - 3:30 PM IST',
+          trading_days: 'Monday to Friday',
+          next_session: ''
+        };
+      }
+    },
+
+    getMarketStatusText() {
+      switch (this.marketStatus) {
+        case 'OPEN':
+          return '🟢 Market LIVE';
+        case 'PRE_OPEN':
+          return '🟡 Pre-Market';
+        case 'POST_CLOSE':
+          return '🟡 Post-Market';
+        case 'CLOSED':
+          return '🔴 Market CLOSED';
+        default:
+          return '⚪ Status Unknown';
+      }
+    },
+
+    getMarketStatusClass() {
+      switch (this.marketStatus) {
+        case 'OPEN':
+          return 'live';
+        case 'PRE_OPEN':
+        case 'POST_CLOSE':
+          return 'pre-open';
+        case 'CLOSED':
+          return 'closed';
+        default:
+          return 'unknown';
+      }
     }
   }
 };
@@ -1241,6 +1303,53 @@ export default {
   text-align: right;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.market-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.live {
+  background: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  animation: pulse-live 2s infinite;
+}
+
+.status-dot.pre-open {
+  background: #ffaa00;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+}
+
+.status-dot.closed {
+  background: #ff4444;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.status-dot.unknown {
+  background: #888;
+  box-shadow: 0 0 10px rgba(136, 136, 136, 0.5);
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+@keyframes pulse-live {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 .trading-hours {

@@ -103,24 +103,27 @@ Route::middleware('auth:api')->group(function() {
     Route::patch('/register-requests/{id}/reject', [RegisterRequestController::class, 'reject']);
 });
 
-// TrueData API Routes (replacing Upstox)
-Route::middleware('auth:sanctum')->group(function() {
-    Route::get('/truedata/test', [TrueDataController::class, 'testConnection']);
-    Route::get('/truedata/dashboard', [TrueDataController::class, 'getDashboardData']);
-    Route::get('/truedata/market-quotes', [TrueDataController::class, 'getMarketQuotes']);
-    Route::get('/truedata/market-status', [TrueDataController::class, 'getMarketStatus']);
-    Route::get('/truedata/historical-data', [TrueDataController::class, 'getHistoricalData']);
-    Route::get('/truedata/search-instruments', [TrueDataController::class, 'searchInstruments']);
-    Route::get('/truedata/top-gainers', [TrueDataController::class, 'getTopGainers']);
-    Route::get('/truedata/top-losers', [TrueDataController::class, 'getTopLosers']);
-    Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
-    Route::get('/truedata/live-stock-data', [TrueDataController::class, 'getLiveStockData']);
-    Route::post('/truedata/subscribe-symbols', [TrueDataController::class, 'subscribeToSymbols']);
-});
+// TrueData API Routes (temporarily without auth for testing)
+Route::get('/truedata/test', [TrueDataController::class, 'testConnection']);
+Route::get('/truedata/dashboard', [TrueDataController::class, 'getDashboardData']);
+Route::get('/truedata/market-quotes', [TrueDataController::class, 'getMarketQuotes']);
+Route::get('/truedata/market-status', [TrueDataController::class, 'getMarketStatus']);
+Route::get('/truedata/historical-data', [TrueDataController::class, 'getHistoricalData']);
+Route::get('/truedata/search-instruments', [TrueDataController::class, 'searchInstruments']);
+Route::get('/truedata/top-gainers', [TrueDataController::class, 'getTopGainers']);
+Route::get('/truedata/top-losers', [TrueDataController::class, 'getTopLosers']);
+Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
+Route::get('/truedata/live-stock-data', [TrueDataController::class, 'getLiveStockData']);
+Route::post('/truedata/subscribe-symbols', [TrueDataController::class, 'subscribeToSymbols']);
 
 // New Python-based live data routes (temporarily without auth for testing)
 Route::get('/truedata/live-data', [TrueDataController::class, 'getLiveDataFromPython']);
 Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataFetch']);
+
+// Options API Routes
+Route::get('/truedata/options/chain/{symbol}', [TrueDataController::class, 'getOptionChain']);
+Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
+Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
 
 // Legacy Upstox routes (for backward compatibility)
 Route::middleware('auth:sanctum')->group(function() {
