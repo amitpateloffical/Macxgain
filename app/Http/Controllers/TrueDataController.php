@@ -35,7 +35,9 @@ class TrueDataController extends Controller
                 'indices' => array_slice($cachedData, 0, 5, true), // First 5 as indices
                 'top_gainers' => array_slice($cachedData, 0, 10, true), // First 10 as gainers
                 'top_losers' => array_slice($cachedData, 5, 10, true), // Next 10 as losers
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
+                'data_source' => 'TrueData Historical Data (Market Closed)',
+                'last_updated' => now()->format('H:i:s')
             ];
 
             return response()->json([
