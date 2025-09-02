@@ -116,7 +116,16 @@
                 type="text" 
                 placeholder="Search stocks..."
                 class="filter-input"
+                @keyup.enter="searchAndAddStock"
               >
+              <button 
+                class="search-btn" 
+                @click="searchAndAddStock"
+                :disabled="loading || !searchQuery.trim()"
+                title="Search and add stock"
+              >
+                <i class="fas fa-plus"></i>
+              </button>
             </div>
           </div>
           
@@ -756,6 +765,75 @@ export default {
       }
     },
 
+    async searchAndAddStock() {
+      if (!this.searchQuery.trim()) {
+        this.showWarning('Please enter a stock symbol to search');
+        return;
+      }
+
+      try {
+        this.loading = true;
+        console.log('Searching for stock:', this.searchQuery);
+        
+        const token = localStorage.getItem('access_token');
+        const response = await axios.post('/api/truedata/search-stock', {
+          symbol: this.searchQuery.trim().toUpperCase()
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Search stock response:', response.data);
+
+        if (response.data.success && response.data.data) {
+          const stockData = response.data.data;
+          
+          // Check if stock already exists
+          const existingStock = this.liveStocks.find(stock => 
+            stock.symbol === stockData.symbol
+          );
+
+          if (existingStock) {
+            this.showInfo(`Stock ${stockData.symbol} is already in the list`);
+            this.searchQuery = '';
+            return;
+          }
+
+          // Add new stock to the list
+          const newStock = {
+            symbol: stockData.symbol,
+            price: stockData.ltp || stockData.last || 0,
+            change: stockData.change || 0,
+            change_percent: stockData.change_percent || 0,
+            volume: stockData.volume || 0,
+            high: stockData.high || 0,
+            low: stockData.low || 0,
+            open: stockData.open || 0,
+            prev_close: stockData.prev_close || 0,
+            timestamp: stockData.timestamp || new Date().toISOString()
+          };
+
+          this.liveStocks.unshift(newStock); // Add to beginning of list
+          this.connectionStatus.cached_data_count = this.liveStocks.length;
+          
+          this.showSuccess(`Stock ${stockData.symbol} added successfully!`);
+          this.searchQuery = '';
+          
+        } else {
+          this.showError(response.data.message || 'Stock not found or data unavailable');
+        }
+
+      } catch (error) {
+        console.error('Error searching for stock:', error);
+        this.showError('Failed to search for stock. Please try again.');
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async triggerDataFetch() {
       try {
         const response = await axios.post('/api/truedata/trigger-fetch', {}, {
@@ -1101,6 +1179,10 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   gap: 15px;
+  text-align: right;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
 }
 
 .market-status {
@@ -1147,7 +1229,8 @@ export default {
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  margin-right: 10px;
+  align-self: flex-end;
+  width: fit-content;
 }
 
 .fetch-btn:hover:not(:disabled) {
@@ -1171,6 +1254,8 @@ export default {
   color: #000000;
   border: none;
   border-radius: 25px;
+  align-self: flex-end;
+  width: fit-content;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -1410,6 +1495,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
+  gap: 8px;
 }
 
 .search-icon {
@@ -1450,6 +1536,34 @@ export default {
 
 .filter-input::placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  color: #000000;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.search-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+}
+
+.search-btn:disabled {
+  background: rgba(108, 117, 125, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
 }
 
 .filter-select option {
@@ -1613,6 +1727,12 @@ export default {
   text-align: right;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  width: 100%;
+  min-width: 200px;
 }
 
 .market-status {
@@ -1665,10 +1785,14 @@ export default {
 .trading-hours {
   font-weight: 600;
   color: #00ff88;
+  text-align: right;
+  width: 100%;
 }
 
 .trading-days {
   color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+  width: 100%;
 }
 
 .next-session {
@@ -1681,6 +1805,8 @@ export default {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
   margin-top: 5px;
+  text-align: right;
+  width: 100%;
 }
 
 /* Toast Notifications */
@@ -2228,16 +2354,7 @@ export default {
   margin-top: 5px;
 }
 
-.market-info {
-  text-align: right;
-  font-size: 12px;
-  color: #666;
-}
-
-.trading-hours,
-.trading-days {
-  margin-bottom: 2px;
-}
+/* Removed conflicting CSS for market-info alignment */
 
 .next-session {
   margin-top: 5px;

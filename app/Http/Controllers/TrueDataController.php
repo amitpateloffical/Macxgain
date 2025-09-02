@@ -529,4 +529,48 @@ class TrueDataController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Search for a specific stock and return its data
+     */
+    public function searchStock(Request $request): JsonResponse
+    {
+        try {
+            $symbol = $request->input('symbol');
+            
+            if (!$symbol) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stock symbol is required'
+                ], 400);
+            }
+
+            // Try to get data from cache first
+            $cachedData = Cache::get('truedata_live_data', []);
+            
+            // Check if symbol exists in cached data
+            if (isset($cachedData[$symbol])) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $cachedData[$symbol],
+                    'message' => 'Stock data retrieved from cache'
+                ]);
+            }
+
+            // If not in cache, return error for now (can be enhanced later)
+            return response()->json([
+                'success' => false,
+                'message' => 'Stock not found in current data. Please try again when market is open.'
+            ], 404);
+
+        } catch (\Exception $e) {
+            Log::error('Error in searchStock: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search for stock',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

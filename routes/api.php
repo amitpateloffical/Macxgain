@@ -110,6 +110,7 @@ Route::get('/truedata/market-quotes', [TrueDataController::class, 'getMarketQuot
 Route::get('/truedata/market-status', [TrueDataController::class, 'getMarketStatus']);
 Route::get('/truedata/historical-data', [TrueDataController::class, 'getHistoricalData']);
 Route::get('/truedata/search-instruments', [TrueDataController::class, 'searchInstruments']);
+Route::post('/truedata/search-stock', [TrueDataController::class, 'searchStock']);
 Route::get('/truedata/top-gainers', [TrueDataController::class, 'getTopGainers']);
 Route::get('/truedata/top-losers', [TrueDataController::class, 'getTopLosers']);
 Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
