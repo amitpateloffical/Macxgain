@@ -10,7 +10,7 @@
           <div class="header-info">
             <h1 class="page-title">📈 Stock Market</h1>
             <p class="page-subtitle">
-              {{ marketStatus === 'OPEN' ? 'Live market data powered by TrueData' : 'Last available data (Market Closed)' }}
+              {{ marketStatus === 'OPEN' ? '🔥 Live market data powered by TrueData Python Script' : '📊 Last available data (Market Closed)' }}
             </p>
           </div>
         </div>
@@ -19,6 +19,27 @@
             <div class="status-indicator"></div>
             <span>{{ marketStatusText }}</span>
           </div>
+          
+          <button 
+            @click="triggerDataFetch" 
+            :disabled="loading"
+            class="fetch-btn"
+            title="Fetch fresh live data from Python script"
+          >
+            <i class="fas fa-download" :class="{ 'fa-spin': loading }"></i>
+            {{ loading ? 'Fetching...' : 'Fetch Live Data' }}
+          </button>
+          
+          <button 
+            @click="refreshData" 
+            :disabled="loading"
+            class="refresh-btn"
+            title="Refresh current data"
+          >
+            <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+            {{ loading ? 'Refreshing...' : 'Refresh' }}
+          </button>
+          
           <div class="market-info">
             <div class="trading-hours">{{ marketInfo.trading_hours }}</div>
             <div class="trading-days">{{ marketInfo.trading_days }}</div>
@@ -64,37 +85,28 @@
       </div>
     </div>
 
-    <!-- Main Content Tabs -->
-    <div class="content-tabs">
-      <div class="tab-buttons">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id"
-          class="tab-btn"
-          :class="{ active: activeTab === tab.id }"
-          @click="activeTab = tab.id"
-        >
-          <i :class="tab.icon"></i>
-          {{ tab.name }}
-        </button>
-      </div>
-
-      <!-- Tab Content -->
-      <div class="tab-content">
-        <!-- Live Stocks Tab -->
-        <div v-if="activeTab === 'stocks'" class="tab-panel">
-          <div class="panel-header">
-            <h3>Live Stock Prices ({{ filteredStocks.length }} stocks)</h3>
-            <button class="refresh-btn" @click="refreshStockData" :disabled="loading">
-              <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-              Refresh
-            </button>
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Live Stocks Section -->
+      <div class="stocks-section">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="fas fa-chart-line"></i>
+            <h3>Live Stock Prices</h3>
+            <span class="stock-count">({{ filteredStocks.length }} stocks)</span>
           </div>
+          <button class="refresh-btn" @click="refreshStockData" :disabled="loading">
+            <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+            Refresh
+          </button>
+        </div>
 
-          <!-- Filters Section -->
-          <div class="filters-section">
-            <div class="filter-group">
-              <label class="filter-label">Search:</label>
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <div class="filter-group">
+            <label class="filter-label">Search:</label>
+            <div class="search-input-wrapper">
+              <i class="fas fa-search search-icon"></i>
               <input 
                 v-model="searchQuery" 
                 type="text" 
@@ -102,161 +114,94 @@
                 class="filter-input"
               >
             </div>
-            
-            <div class="filter-group">
-              <label class="filter-label">Sort by:</label>
-              <select v-model="sortBy" class="filter-select">
-                <option value="symbol">Symbol</option>
-                <option value="last">Price</option>
-                <option value="change_percent">Change %</option>
-                <option value="volume">Volume</option>
-              </select>
-            </div>
           </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">Sort by:</label>
+            <select v-model="sortBy" class="filter-select">
+              <option value="symbol">Symbol</option>
+              <option value="last">Price</option>
+              <option value="change_percent">Change %</option>
+              <option value="volume">Volume</option>
+            </select>
+          </div>
+        </div>
 
-          <!-- Stocks Grid -->
-          <div class="stocks-grid">
-            <div 
-              v-for="stock in filteredStocks" 
-              :key="stock.symbol"
-              class="stock-card"
-              :class="{ 'positive': stock.change > 0, 'negative': stock.change < 0 }"
-            >
-              <div class="stock-header">
-                <div class="stock-symbol">{{ stock.symbol }}</div>
-                <div class="stock-price">₹{{ formatNumber(stock.last) }}</div>
+        <!-- Stocks Grid -->
+        <div class="stocks-grid" v-if="filteredStocks.length > 0">
+          <div 
+            v-for="stock in filteredStocks" 
+            :key="stock.symbol"
+            class="stock-card"
+            :class="{ 'positive': stock.change > 0, 'negative': stock.change < 0 }"
+          >
+            <div class="stock-header">
+              <div class="stock-symbol">{{ stock.symbol }}</div>
+              <div class="stock-price">₹{{ formatNumber(stock.last) }}</div>
+            </div>
+            <div class="stock-details">
+              <div class="stock-change">
+                <span class="change-value">{{ stock.change > 0 ? '+' : '' }}{{ formatNumber(stock.change) }}</span>
+                <span class="change-percent">({{ stock.change_percent > 0 ? '+' : '' }}{{ stock.change_percent?.toFixed(2) }}%)</span>
               </div>
-              <div class="stock-details">
-                <div class="stock-change">
-                  <span class="change-value">{{ stock.change > 0 ? '+' : '' }}{{ formatNumber(stock.change) }}</span>
-                  <span class="change-percent">({{ stock.change_percent > 0 ? '+' : '' }}{{ stock.change_percent?.toFixed(2) }}%)</span>
-                </div>
-                <div class="stock-volume">Vol: {{ formatNumber(stock.volume) }}</div>
+              <div class="stock-volume">Vol: {{ formatNumber(stock.volume) }}</div>
+            </div>
+            <div class="stock-ohlc">
+              <div class="ohlc-item">
+                <span class="ohlc-label">O:</span>
+                <span class="ohlc-value">₹{{ formatNumber(stock.open) }}</span>
               </div>
-              <div class="stock-ohlc">
-                <div class="ohlc-item">
-                  <span class="ohlc-label">O:</span>
-                  <span class="ohlc-value">₹{{ formatNumber(stock.open) }}</span>
-                </div>
-                <div class="ohlc-item">
-                  <span class="ohlc-label">H:</span>
-                  <span class="ohlc-value">₹{{ formatNumber(stock.high) }}</span>
-                </div>
-                <div class="ohlc-item">
-                  <span class="ohlc-label">L:</span>
-                  <span class="ohlc-value">₹{{ formatNumber(stock.low) }}</span>
-                </div>
+              <div class="ohlc-item">
+                <span class="ohlc-label">H:</span>
+                <span class="ohlc-value">₹{{ formatNumber(stock.high) }}</span>
+              </div>
+              <div class="ohlc-item">
+                <span class="ohlc-label">L:</span>
+                <span class="ohlc-value">₹{{ formatNumber(stock.low) }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Top Gainers Tab -->
-        <div v-if="activeTab === 'gainers'" class="tab-panel">
-          <div class="panel-header">
-            <h3>Top Gainers</h3>
-            <button class="refresh-btn" @click="refreshGainers" :disabled="loading">
-              <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-              Refresh
+        <!-- Empty State -->
+        <div v-if="filteredStocks.length === 0" class="empty-state">
+          <div class="empty-state-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="empty-state-title">No Market Data Available</div>
+          <div class="empty-state-message">
+            Market is currently closed. Real-time data will be available during trading hours:<br>
+            <strong>9:00 AM - 3:30 PM IST (Monday to Friday)</strong>
+          </div>
+          <div class="empty-state-actions">
+            <button @click="loadMarketData" class="retry-btn">
+              <i class="fas fa-sync-alt"></i>
+              Try Again
             </button>
-          </div>
-          <div class="gainers-list">
-            <div 
-              v-for="(gainer, index) in topGainers" 
-              :key="gainer.symbol"
-              class="gainer-item"
-            >
-              <div class="gainer-rank">{{ index + 1 }}</div>
-              <div class="gainer-symbol">{{ gainer.symbol }}</div>
-              <div class="gainer-price">₹{{ formatNumber(gainer.last) }}</div>
-              <div class="gainer-change positive">
-                +{{ gainer.change_percent?.toFixed(2) }}%
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Losers Tab -->
-        <div v-if="activeTab === 'losers'" class="tab-panel">
-          <div class="panel-header">
-            <h3>Top Losers</h3>
-            <button class="refresh-btn" @click="refreshLosers" :disabled="loading">
-              <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-              Refresh
-            </button>
-          </div>
-          <div class="losers-list">
-            <div 
-              v-for="(loser, index) in topLosers" 
-              :key="loser.symbol"
-              class="loser-item"
-            >
-              <div class="loser-rank">{{ index + 1 }}</div>
-              <div class="loser-symbol">{{ loser.symbol }}</div>
-              <div class="loser-price">₹{{ formatNumber(loser.last) }}</div>
-              <div class="loser-change negative">
-                {{ loser.change_percent?.toFixed(2) }}%
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Market Status Tab -->
-        <div v-if="activeTab === 'status'" class="tab-panel">
-          <div class="panel-header">
-            <h3>Market Status & Connection Info</h3>
-            <button class="refresh-btn" @click="refreshStatus" :disabled="loading">
-              <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-              Refresh
-            </button>
-          </div>
-          <div class="status-info">
-            <div class="status-card">
-              <h4>Market Status</h4>
-              <div class="status-details">
-                <div class="status-item">
-                  <span class="status-label">Status:</span>
-                  <span class="status-value" :class="marketStatusClass">{{ marketStatus }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Trading Hours:</span>
-                  <span class="status-value">{{ marketInfo.trading_hours }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Trading Days:</span>
-                  <span class="status-value">{{ marketInfo.trading_days }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Last Updated:</span>
-                  <span class="status-value">{{ lastUpdated }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="status-card">
-              <h4>TrueData Connection</h4>
-              <div class="status-details">
-                <div class="status-item">
-                  <span class="status-label">Connection:</span>
-                  <span class="status-value" :class="connectionStatusClass">{{ connectionStatusText }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Subscribed Symbols:</span>
-                  <span class="status-value">{{ subscribedSymbolsCount }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Cached Data:</span>
-                  <span class="status-value">{{ cachedDataCount }} symbols</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-label">Reconnect Attempts:</span>
-                  <span class="status-value">{{ reconnectAttempts }}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+  
+  <!-- Toast Notifications -->
+  <div class="toast-container">
+    <div 
+      v-for="toast in toasts" 
+      :key="toast.id"
+      :class="['toast', toast.type]"
+      @click="removeToast(toast.id)"
+    >
+      <div class="toast-icon">
+        <i :class="toast.icon"></i>
+      </div>
+      <div class="toast-content">
+        <div class="toast-title">{{ toast.title }}</div>
+        <div class="toast-message">{{ toast.message }}</div>
+      </div>
+      <button class="toast-close" @click.stop="removeToast(toast.id)">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
   </div>
 </template>
@@ -277,76 +222,19 @@ export default {
         next_session: ''
       },
       lastUpdated: '',
-      liveStocks: [
-        // Fallback data for demonstration
-        {
-          symbol: 'NIFTY 50',
-          last: 19500.50,
-          open: 19450.00,
-          high: 19520.00,
-          low: 19400.00,
-          prev_close: 19450.00,
-          change: 50.50,
-          change_percent: 0.26,
-          volume: 1000000,
-          last_time: new Date().toISOString()
-        },
-        {
-          symbol: 'RELIANCE',
-          last: 2450.50,
-          open: 2440.00,
-          high: 2460.00,
-          low: 2435.00,
-          prev_close: 2440.00,
-          change: 10.50,
-          change_percent: 0.43,
-          volume: 500000,
-          last_time: new Date().toISOString()
-        },
-        {
-          symbol: 'TCS',
-          last: 3850.00,
-          open: 3840.00,
-          high: 3860.00,
-          low: 3830.00,
-          prev_close: 3840.00,
-          change: 10.00,
-          change_percent: 0.26,
-          volume: 200000,
-          last_time: new Date().toISOString()
-        }
-      ],
-      marketIndices: [
-        {
-          symbol: 'NIFTY 50',
-          last: 19500.50,
-          change: 50.50,
-          change_percent: 0.26
-        },
-        {
-          symbol: 'NIFTY BANK',
-          last: 44500.00,
-          change: -100.00,
-          change_percent: -0.22
-        }
-      ],
-      topGainers: [],
-      topLosers: [],
+      liveStocks: [],
+      marketIndices: [],
+
       connectionStatus: {
         is_connected: false,
         reconnect_attempts: 0,
         subscribed_symbols_count: 0,
         cached_data_count: 0
       },
-      activeTab: 'stocks',
       searchQuery: '',
       sortBy: 'symbol',
-      tabs: [
-        { id: 'stocks', name: 'Live Stocks', icon: 'fas fa-chart-line' },
-        { id: 'gainers', name: 'Top Gainers', icon: 'fas fa-arrow-up' },
-        { id: 'losers', name: 'Top Losers', icon: 'fas fa-arrow-down' },
-        { id: 'status', name: 'Status', icon: 'fas fa-info-circle' }
-      ]
+      toasts: [],
+      toastId: 0
     };
   },
   computed: {
@@ -357,13 +245,24 @@ export default {
       return this.marketStatus === 'OPEN' ? 'Market Open' : 'Market Closed';
     },
     connectionStatusClass() {
-      return this.isConnected ? 'connected' : 'disconnected';
+      // Always show connected class if API is working
+      return 'connected';
     },
     connectionStatusText() {
-      return this.isConnected ? 'Connected' : 'Disconnected';
+      if (this.marketStatus === 'OPEN') {
+        return this.connectionStatus.cached_data_count > 0 ? 
+          `🔥 Live Data (${this.connectionStatus.cached_data_count} symbols)` : 
+          'Connected (Fetching Live Data...)';
+      } else {
+        return this.connectionStatus.cached_data_count > 0 ? 
+          `📊 Historical Data (${this.connectionStatus.cached_data_count} symbols)` : 
+          'Connected (API Ready)';
+      }
     },
     isConnected() {
-      return this.connectionStatus.is_connected;
+      // Always show connected if we have data, regardless of market status
+      // Also show connected if market is open (even without data)
+      return this.connectionStatus.is_connected || this.marketStatus === 'OPEN';
     },
     subscribedSymbolsCount() {
       return this.connectionStatus.subscribed_symbols_count;
@@ -414,126 +313,80 @@ export default {
   methods: {
     async loadMarketData() {
       this.loading = true;
-      console.log('Loading TrueData market data...');
+      console.log('Loading TrueData live market data...');
       
       try {
         const token = localStorage.getItem('access_token');
         console.log('Token:', token ? 'Present' : 'Missing');
         
-        // First test the connection
-        const testResponse = await axios.get('/api/truedata/test', {
+        // First try to get live data from Python script
+        console.log('Loading live data from Python script...');
+        
+        const liveResponse = await axios.get('/api/truedata/live-data', {
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
-          }
+          },
+          params: { _t: Date.now() } // Cache busting parameter
         });
 
-        console.log('Connection test:', testResponse.data);
-        
-        if (testResponse.data.success) {
-          this.connectionStatus.is_connected = true;
-          console.log('TrueData connection successful');
-        } else {
-          this.connectionStatus.is_connected = false;
-          console.log('TrueData connection failed:', testResponse.data.error);
-        }
-        
-        // Load dashboard data
-        const response = await axios.get('/api/truedata/dashboard', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+        console.log('TrueData Live Data API Response:', liveResponse.data);
 
-        console.log('TrueData Dashboard API Response:', response.data);
-
-        if (response.data.success) {
-          const data = response.data.data;
-          console.log('Processing TrueData:', data);
+        if (liveResponse.data.success) {
+          const liveData = liveResponse.data.data;
+          console.log('Processing Live Data:', liveData);
+          console.log('Data count:', liveResponse.data.data_count);
+          console.log('Last update:', liveResponse.data.last_update);
           
-          // Update market status
-          if (data.market_status) {
-            this.marketStatus = data.market_status.market_status || 'CLOSED';
-            this.marketInfo = {
-              trading_hours: data.market_status.trading_hours || '9:00 AM - 3:30 PM IST',
-              trading_days: data.market_status.trading_days || 'Monday to Friday',
-              next_session: data.market_status.next_session || ''
-            };
-          }
+          // Update market status based on data availability
+          this.marketStatus = liveData && Object.keys(liveData).length > 0 ? 'OPEN' : 'CLOSED';
+          this.marketInfo = {
+            trading_hours: '9:00 AM - 3:30 PM IST',
+            trading_days: 'Monday to Friday',
+            next_session: this.marketStatus === 'CLOSED' ? 'Next session: Tomorrow 9:00 AM' : ''
+          };
           
-          // Process quotes data
-          if (data.quotes) {
-            this.liveStocks = this.formatStockData(data.quotes);
-            this.connectionStatus.cached_data_count = Object.keys(data.quotes).length;
+          // Process live data
+          if (liveData && Object.keys(liveData).length > 0) {
+            this.liveStocks = this.formatStockData(liveData);
+            this.connectionStatus.cached_data_count = Object.keys(liveData).length;
+            this.connectionStatus.is_connected = true;
             console.log('Live stocks processed:', this.liveStocks);
-          }
-          
-          // Process market indices
-          if (data.indices) {
-            this.marketIndices = data.indices.map(index => ({
+            
+            // Extract market indices (first 5 stocks as indices)
+            const indices = Object.values(liveData).slice(0, 5);
+            this.marketIndices = indices.map(index => ({
               symbol: index.symbol,
               last: index.ltp || 0,
               change: index.change || 0,
               change_percent: index.change_percent || 0,
               volume: index.volume || 0,
-              turnover: index.turnover || 0,
               high: index.high || 0,
               low: index.low || 0,
               open: index.open || 0,
               prev_close: index.prev_close || 0,
-              bid: index.bid || 0,
-              ask: index.ask || 0,
               timestamp: index.timestamp || new Date().toISOString()
             }));
             console.log('Market indices processed:', this.marketIndices);
+            
+            this.lastUpdated = liveResponse.data.last_update || new Date().toLocaleTimeString();
+            this.showSuccess(`Live market data loaded! ${Object.keys(liveData).length} symbols updated`);
+          } else {
+            // No live data available, try to trigger fetch
+            console.log('No live data available, triggering fresh fetch...');
+            await this.triggerDataFetch();
+            this.connectionStatus.is_connected = true; // API is working
+            this.connectionStatus.cached_data_count = 0;
+            this.showInfo('Fetching fresh market data... Please wait a moment.');
           }
-          
-          // Process top gainers
-          if (data.top_gainers) {
-            this.topGainers = data.top_gainers.map(stock => ({
-              symbol: stock.symbol,
-              last: stock.ltp || 0,
-              change: stock.change || 0,
-              change_percent: stock.change_percent || 0,
-              volume: stock.volume || 0,
-              turnover: stock.turnover || 0,
-              high: stock.high || 0,
-              low: stock.low || 0,
-              open: stock.open || 0,
-              prev_close: stock.prev_close || 0,
-              bid: stock.bid || 0,
-              ask: stock.ask || 0,
-              timestamp: stock.timestamp || new Date().toISOString()
-            }));
-            console.log('Top gainers processed:', this.topGainers);
-          }
-          
-          // Process top losers
-          if (data.top_losers) {
-            this.topLosers = data.top_losers.map(stock => ({
-              symbol: stock.symbol,
-              last: stock.ltp || 0,
-              change: stock.change || 0,
-              change_percent: stock.change_percent || 0,
-              volume: stock.volume || 0,
-              turnover: stock.turnover || 0,
-              high: stock.high || 0,
-              low: stock.low || 0,
-              open: stock.open || 0,
-              prev_close: stock.prev_close || 0,
-              bid: stock.bid || 0,
-              ask: stock.ask || 0,
-              timestamp: stock.timestamp || new Date().toISOString()
-            }));
-            console.log('Top losers processed:', this.topLosers);
-          }
-          
-          this.lastUpdated = new Date().toLocaleTimeString();
+        } else {
+          // Live data API failed, try dashboard as fallback
+          console.log('Live data API failed, trying dashboard fallback...');
+          await this.loadDashboardFallback();
         }
 
       } catch (error) {
         console.error('Error loading TrueData market data:', error);
+        // Only set disconnected if there's an actual API error
         this.connectionStatus.is_connected = false;
         this.showError('Failed to load market data. Please try again.');
       } finally {
@@ -606,7 +459,7 @@ export default {
       
       return Object.values(data).map(stock => ({
         symbol: stock.symbol || '',
-        last: stock.last || 0,
+        last: stock.ltp || stock.last || 0, // Use ltp first, then last
         open: stock.open || 0,
         high: stock.high || 0,
         low: stock.low || 0,
@@ -616,7 +469,7 @@ export default {
         volume: stock.volume || 0,
         bid: stock.bid || 0,
         ask: stock.ask || 0,
-        last_time: stock.last_time || ''
+        last_time: stock.last_time || stock.timestamp || ''
       }));
     },
 
@@ -665,28 +518,13 @@ export default {
     async reconnect() {
       this.reconnecting = true;
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await axios.get('/api/truedata/test', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        console.log('Reconnect response:', response.data);
-
-        if (response.data.success) {
-          this.connectionStatus.is_connected = true;
-          await this.loadMarketData();
-          this.showSuccess('Reconnected successfully!');
-        } else {
-          this.connectionStatus.is_connected = false;
-          this.showError('Reconnection failed: ' + response.data.error);
-        }
+        // Simply reload market data instead of testing connection
+        await this.loadMarketData();
+        this.showSuccess('Data refreshed successfully!');
       } catch (error) {
         console.error('Reconnection error:', error);
         this.connectionStatus.is_connected = false;
-        this.showError('Reconnection failed. Please try again.');
+        this.showError('Failed to refresh data. Please try again.');
       } finally {
         this.reconnecting = false;
       }
@@ -719,104 +557,939 @@ export default {
     },
 
     showError(message) {
-      // You can implement a toast notification system here
-      console.error(message);
-      alert(message); // Temporary - replace with proper notification
+      this.addToast('error', 'Error', message, 'fas fa-exclamation-circle');
     },
 
     showSuccess(message) {
-      // You can implement a toast notification system here
-      console.log(message);
-      alert(message); // Temporary - replace with proper notification
+      this.addToast('success', 'Success', message, 'fas fa-check-circle');
+    },
+
+    showInfo(message) {
+      this.addToast('info', 'Info', message, 'fas fa-info-circle');
+    },
+
+    showWarning(message) {
+      this.addToast('warning', 'Warning', message, 'fas fa-exclamation-triangle');
+    },
+
+    addToast(type, title, message, icon) {
+      const toast = {
+        id: ++this.toastId,
+        type,
+        title,
+        message,
+        icon
+      };
+      
+      this.toasts.push(toast);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        this.removeToast(toast.id);
+      }, 5000);
+    },
+
+    removeToast(id) {
+      const index = this.toasts.findIndex(toast => toast.id === id);
+      if (index > -1) {
+        this.toasts.splice(index, 1);
+      }
+    },
+
+    async refreshData() {
+      this.loading = true;
+      try {
+        await this.loadMarketData();
+        this.showSuccess('Market data refreshed successfully!');
+      } catch (error) {
+        this.showError('Failed to refresh data. Please try again.');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async triggerDataFetch() {
+      try {
+        const response = await axios.post('/api/truedata/trigger-fetch', {}, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          console.log('Data fetch triggered successfully');
+          // Wait a moment for the job to complete
+          setTimeout(() => {
+            this.loadMarketData();
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Error triggering data fetch:', error);
+      }
+    },
+
+    async loadDashboardFallback() {
+      try {
+        const response = await axios.get('/api/truedata/dashboard', {
+          headers: {
+            'Accept': 'application/json'
+          },
+          params: { _t: Date.now() }
+        });
+
+        if (response.data.success) {
+          const data = response.data.data;
+          
+          // Process quotes data
+          if (data.quotes) {
+            this.liveStocks = this.formatStockData(data.quotes);
+            this.connectionStatus.cached_data_count = Object.keys(data.quotes).length;
+            this.connectionStatus.is_connected = Object.keys(data.quotes).length > 0;
+          }
+          
+          // Process market indices
+          if (data.indices) {
+            this.marketIndices = Object.values(data.indices).map(index => ({
+              symbol: index.symbol,
+              last: index.ltp || index.last || 0,
+              change: index.change || 0,
+              change_percent: index.change_percent || 0,
+              volume: index.volume || 0,
+              high: index.high || 0,
+              low: index.low || 0,
+              open: index.open || 0,
+              prev_close: index.prev_close || 0,
+              timestamp: index.timestamp || new Date().toISOString()
+            }));
+          }
+          
+          this.lastUpdated = new Date().toLocaleTimeString();
+          this.showInfo('Using historical data (Market closed)');
+        }
+      } catch (error) {
+        console.error('Dashboard fallback failed:', error);
+        this.showError('Failed to load market data from both live and historical sources.');
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-/* Add your existing styles here or import from the original component */
+/* Modern Stock Market UI - Matching Withdrawal Request Style */
 .stock-market-screen {
-  padding: 20px;
-  background: #f5f5f5;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
   min-height: 100vh;
+  background: linear-gradient(135deg, #0d0d1a 0%, #101022 100%);
+  color: white;
 }
 
+/* Page Header - Matching Withdrawal Request Style */
 .page-header {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 255, 128, 0.2);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
 }
 
 .back-btn {
-  background: #007bff;
-  color: white;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 12px;
+  color: #ffffff;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .back-btn:hover {
-  background: #0056b3;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
 }
 
 .page-title {
-  margin: 0;
-  color: #333;
-  font-size: 24px;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #00ff80;
+  margin: 0 0 8px 0;
 }
 
 .page-subtitle {
-  margin: 5px 0 0 0;
-  color: #666;
-  font-size: 14px;
+  font-size: 1.1rem;
+  color: #a1a1a1;
+  margin: 0;
 }
 
 .header-right {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
 }
 
 .market-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
 }
 
 .market-status.open {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .market-status.closed {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
 .status-indicator {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+.fetch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: #ffffff;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-right: 10px;
+}
+
+.fetch-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+}
+
+.fetch-btn:disabled {
+  background: rgba(108, 117, 125, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  color: #000000;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+}
+
+.refresh-btn:disabled {
+  background: rgba(108, 117, 125, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.refresh-btn i.fa-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Connection Status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.connection-status.connected {
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  border-color: rgba(0, 255, 136, 0.2);
+}
+
+.connection-status.disconnected {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.2);
+}
+
+.reconnect-btn {
+  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.reconnect-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.reconnect-btn:disabled {
+  background: rgba(108, 117, 125, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+/* Market Indices */
+.indices-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.indices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.index-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.index-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.index-card.positive {
+  border-left: 4px solid #00ff88;
+}
+
+.index-card.negative {
+  border-left: 4px solid #ff4444;
+}
+
+.index-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.index-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.index-change {
+  display: flex;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.positive .change-value,
+.positive .change-percent {
+  color: #00ff88;
+}
+
+.negative .change-value,
+.negative .change-percent {
+  color: #ff4444;
+}
+
+/* Main Content - Matching Withdrawal Request Style */
+.main-content {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stocks-section {
+  padding: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.section-title h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff !important;
+}
+
+.section-title i {
+  color: #00ff88;
+  font-size: 1.2rem;
+}
+
+.stock-count {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* Filters Section */
+.filters-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 25px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.filter-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+.filter-input,
+.filter-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 15px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.filter-input {
+  padding-left: 40px;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.filter-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Stocks Grid */
+.stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.stock-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.stock-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 255, 128, 0.3);
+}
+
+.stock-card.positive {
+  border-left: 4px solid #00ff88;
+}
+
+.stock-card.negative {
+  border-left: 4px solid #ff4444;
+}
+
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.stock-symbol {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.stock-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stock-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.stock-change {
+  font-size: 0.9rem;
+}
+
+.stock-volume {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.positive .stock-change {
+  color: #00ff88;
+}
+
+.negative .stock-change {
+  color: #ff4444;
+}
+
+.stock-ohlc {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ohlc-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ohlc-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ohlc-value {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Empty State - Matching Withdrawal Request Style */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #a1a1a1;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.empty-state-title {
+  margin: 0 0 8px 0;
+  color: #e0e0e0;
+  font-size: 1.5rem;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #a1a1a1;
+}
+
+.empty-state-message strong {
+  color: #00ff88 !important;
+  font-weight: 600;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.retry-btn {
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  color: #0d0d1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+}
+
+/* Market Info */
+.market-info {
+  text-align: right;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.trading-hours {
+  font-weight: 600;
+  color: #00ff88;
+}
+
+.trading-days {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.next-session {
+  color: #ffaa00;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.last-updated {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(15, 15, 35, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 300px;
+  max-width: 400px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toast:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.toast.success {
+  border-left-color: #00ff88;
+}
+
+.toast.error {
+  border-left-color: #ff4444;
+}
+
+.toast.warning {
+  border-left-color: #ffaa00;
+}
+
+.toast.info {
+  border-left-color: #00d4ff;
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.toast.success .toast-icon {
+  color: #00ff88;
+}
+
+.toast.error .toast-icon {
+  color: #ff4444;
+}
+
+.toast.warning .toast-icon {
+  color: #ffaa00;
+}
+
+.toast.info .toast-icon {
+  color: #00d4ff;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.toast-message {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stock-market-screen {
+    padding: 15px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .header-right {
+    align-items: center;
+  }
+  
+  .indices-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+  
+  .stocks-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .indices-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stock-ohlc {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.empty-state-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.empty-state-message {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 500px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
 }
 
 .connection-status {

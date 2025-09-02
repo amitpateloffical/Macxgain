@@ -5,6 +5,9 @@ namespace App\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Exception;
+use Ratchet\Client\WebSocket;
+use Ratchet\Client\Connector;
+use React\EventLoop\Loop;
 
 class TrueDataWebSocketManager
 {
@@ -21,14 +24,18 @@ class TrueDataWebSocketManager
     private $reconnectDelay = 5; // seconds
     private $lastHeartbeat;
     private $heartbeatInterval = 30; // seconds
+    private $loop;
+    private $connector;
 
     public function __construct()
     {
         $this->username = config('services.truedata.username');
         $this->password = config('services.truedata.password');
-        $this->realtimePort = config('services.truedata.realtime_port', 8084);
+        $this->realtimePort = config('services.truedata.realtime_port', 8086);
         $this->baseUrl = config('services.truedata.base_url', 'push.truedata.in');
         $this->lastHeartbeat = time();
+        $this->loop = Loop::get();
+        $this->connector = new Connector($this->loop);
     }
 
     /**
@@ -73,14 +80,11 @@ class TrueDataWebSocketManager
      */
     private function connectWebSocket()
     {
-        // Try real WebSocket connection first
-        if (extension_loaded('sockets')) {
-            try {
-                $this->connectWithSockets();
-                return;
-            } catch (Exception $e) {
-                Log::warning('Socket connection failed, trying fallback: ' . $e->getMessage());
-            }
+        try {
+            $this->connectWithRatchet();
+            return;
+        } catch (Exception $e) {
+            Log::warning('Ratchet WebSocket connection failed, trying fallback: ' . $e->getMessage());
         }
         
         // Fallback to stream connection
@@ -100,7 +104,30 @@ class TrueDataWebSocketManager
      */
     private function addHistoricalData()
     {
-        // Realistic historical data based on recent market closing prices
+        // Try to fetch real historical data from TrueData History API
+        try {
+            $historyService = new \App\Services\TrueDataHistoryService();
+            $historicalData = $historyService->getLastClosingPrices();
+            
+            if (!empty($historicalData)) {
+                $this->marketData = $historicalData;
+                Cache::put('truedata_market_data', $historicalData, 300);
+                Log::info('Real historical data fetched from TrueData API - ' . count($historicalData) . ' stocks');
+                return;
+            }
+        } catch (Exception $e) {
+            Log::warning('Failed to fetch historical data from TrueData API: ' . $e->getMessage());
+        }
+
+        // No mock data - show empty state when market is closed
+        $this->marketData = [];
+        Cache::put('truedata_market_data', [], 300);
+        Log::info('No historical data available - market closed, no mock data');
+    }
+
+    private function addMockData()
+    {
+        // This method is kept for reference but not used
         $historicalData = [
             'NIFTY 50' => [
                 'symbol' => 'NIFTY 50',
@@ -317,6 +344,59 @@ class TrueDataWebSocketManager
         $this->marketData = $historicalData;
         Cache::put('truedata_market_data', $historicalData, 300); // 5 minutes cache for fresh data
         Log::info('Historical data added (last closing prices) - ' . count($historicalData) . ' stocks');
+    }
+
+    /**
+     * Connect using Ratchet WebSocket client (proper WebSocket implementation)
+     */
+    private function connectWithRatchet()
+    {
+        try {
+            $url = "wss://{$this->baseUrl}:{$this->realtimePort}?user={$this->username}&password={$this->password}";
+            
+            Log::info("Connecting to TrueData WebSocket: {$url}");
+            
+            $promise = $this->connector->__invoke($url);
+            
+            $promise->then(function (WebSocket $conn) {
+                $this->wsConnection = $conn;
+                $this->isConnected = true;
+                $this->lastHeartbeat = time();
+                
+                Log::info('TrueData WebSocket connected successfully using Ratchet');
+                
+                // Handle incoming messages
+                $conn->on('message', function ($msg) {
+                    $this->processIncomingMessage($msg->getPayload());
+                });
+                
+                // Handle connection close
+                $conn->on('close', function ($code = null, $reason = null) {
+                    Log::warning("TrueData WebSocket connection closed: {$code} - {$reason}");
+                    $this->isConnected = false;
+                });
+                
+                // Handle connection errors
+                $conn->on('error', function ($error) {
+                    Log::error("TrueData WebSocket error: " . $error->getMessage());
+                    $this->isConnected = false;
+                });
+                
+            }, function (Exception $e) {
+                Log::error('TrueData WebSocket connection failed: ' . $e->getMessage());
+                throw $e;
+            });
+            
+            // Run the event loop for a short time to establish connection
+            $this->loop->addTimer(2, function() {
+                $this->loop->stop();
+            });
+            $this->loop->run();
+            
+        } catch (Exception $e) {
+            Log::error('Ratchet WebSocket connection failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -649,7 +729,11 @@ class TrueDataWebSocketManager
         }
 
         // Handle different connection types
-        if (is_resource($this->wsConnection)) {
+        if ($this->wsConnection instanceof WebSocket) {
+            // Ratchet WebSocket
+            $this->wsConnection->send($message);
+            return strlen($message);
+        } elseif (is_resource($this->wsConnection)) {
             // Stream resource
             $result = fwrite($this->wsConnection, $message);
         } elseif (is_object($this->wsConnection) && get_class($this->wsConnection) === 'Socket') {
@@ -776,7 +860,11 @@ class TrueDataWebSocketManager
         }
 
         // Handle different connection types
-        if (is_resource($this->wsConnection)) {
+        if ($this->wsConnection instanceof WebSocket) {
+            // Ratchet WebSocket - messages are handled via event callbacks
+            // This method is mainly for fallback connections
+            return false;
+        } elseif (is_resource($this->wsConnection)) {
             $message = fread($this->wsConnection, 8192);
             
             if ($message === false) {
@@ -813,6 +901,21 @@ class TrueDataWebSocketManager
         } catch (Exception $e) {
             Log::error('Heartbeat failed: ' . $e->getMessage());
             $this->isConnected = false;
+        }
+    }
+
+    /**
+     * Process incoming WebSocket messages
+     */
+    private function processIncomingMessage($message)
+    {
+        try {
+            $data = json_decode($message, true);
+            if ($data) {
+                $this->processMarketData($data);
+            }
+        } catch (Exception $e) {
+            Log::error('Error processing incoming message: ' . $e->getMessage());
         }
     }
 
@@ -896,7 +999,10 @@ class TrueDataWebSocketManager
     {
         if ($this->wsConnection && $this->isConnected) {
             // Handle different connection types
-            if (is_resource($this->wsConnection)) {
+            if ($this->wsConnection instanceof WebSocket) {
+                // Ratchet WebSocket
+                $this->wsConnection->close();
+            } elseif (is_resource($this->wsConnection)) {
                 fclose($this->wsConnection);
             } elseif (is_object($this->wsConnection) && get_class($this->wsConnection) === 'Socket') {
                 socket_close($this->wsConnection);

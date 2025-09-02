@@ -116,8 +116,14 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
     Route::get('/truedata/live-stock-data', [TrueDataController::class, 'getLiveStockData']);
     Route::post('/truedata/subscribe-symbols', [TrueDataController::class, 'subscribeToSymbols']);
-    
-    // Legacy Upstox routes (for backward compatibility)
+});
+
+// New Python-based live data routes (temporarily without auth for testing)
+Route::get('/truedata/live-data', [TrueDataController::class, 'getLiveDataFromPython']);
+Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataFetch']);
+
+// Legacy Upstox routes (for backward compatibility)
+Route::middleware('auth:sanctum')->group(function() {
     Route::get('/upstox/test', [UpstoxController::class, 'testConnection']);
     Route::get('/upstox/dashboard', [UpstoxController::class, 'getDashboardData']);
     Route::get('/upstox/market-quotes', [UpstoxController::class, 'getMarketQuotes']);

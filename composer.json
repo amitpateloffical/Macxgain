@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^1.1",
         "microsoft/microsoft-graph": "^2.21",
+        "ratchet/pawl": "^0.4.1",
         "textalk/websocket": "^1.6",
         "vlucas/phpdotenv": "^5.6"
     },

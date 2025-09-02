@@ -6,6 +6,7 @@ use App\Services\TrueDataService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class TrueDataController extends Controller
 {
@@ -203,22 +204,14 @@ class TrueDataController extends Controller
     public function getTopGainers(): JsonResponse
     {
         try {
-            $result = $this->trueDataService->getTopGainers();
-
-            if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $result['data'],
-                    'message' => 'Top gainers fetched successfully'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                    'message' => 'Failed to fetch top gainers'
-                ], 503);
-            }
-
+            $historyService = new \App\Services\TrueDataHistoryService();
+            $gainers = $historyService->getTopGainers();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $gainers,
+                'message' => 'Top gainers loaded successfully from TrueData API'
+            ]);
         } catch (\Exception $e) {
             Log::error('TrueData Top Gainers Error: ' . $e->getMessage());
             return response()->json([
@@ -235,21 +228,14 @@ class TrueDataController extends Controller
     public function getTopLosers(): JsonResponse
     {
         try {
-            $result = $this->trueDataService->getTopLosers();
-
-            if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $result['data'],
-                    'message' => 'Top losers fetched successfully'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'error' => $result['error'],
-                    'message' => 'Failed to fetch top losers'
-                ], 503);
-            }
+            $historyService = new \App\Services\TrueDataHistoryService();
+            $losers = $historyService->getTopLosers();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $losers,
+                'message' => 'Top losers loaded successfully from TrueData API'
+            ]);
 
         } catch (\Exception $e) {
             Log::error('TrueData Top Losers Error: ' . $e->getMessage());
@@ -356,6 +342,68 @@ class TrueDataController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
                 'message' => 'Failed to fetch historical data'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get live data from Python script (cached)
+     */
+    public function getLiveDataFromPython(): JsonResponse
+    {
+        try {
+            $liveData = Cache::get('truedata_live_data', []);
+            $lastUpdate = Cache::get('truedata_last_update', null);
+            
+            if (empty($liveData)) {
+                // Trigger job to fetch fresh data
+                \App\Jobs\FetchTrueDataJob::dispatch();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No live data available. Fetching fresh data...',
+                    'data' => [],
+                    'last_update' => null
+                ], 202);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $liveData,
+                'last_update' => $lastUpdate,
+                'data_count' => count($liveData),
+                'message' => 'Live data fetched successfully from Python script'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('TrueData Live Data Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to fetch live data'
+            ], 500);
+        }
+    }
+
+    /**
+     * Trigger manual data fetch
+     */
+    public function triggerDataFetch(): JsonResponse
+    {
+        try {
+            \App\Jobs\FetchTrueDataJob::dispatch();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data fetch job dispatched successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Trigger Data Fetch Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to trigger data fetch'
             ], 500);
         }
     }
