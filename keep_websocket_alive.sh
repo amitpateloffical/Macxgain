@@ -15,6 +15,6 @@ while true; do
         echo "✅ WebSocket is running - $(date)"
     fi
     
-    # Wait 30 seconds before next check
-    sleep 30
+    # Wait 5 seconds before next check
+    sleep 5
 done

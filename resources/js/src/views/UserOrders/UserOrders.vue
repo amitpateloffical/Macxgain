@@ -391,7 +391,8 @@ export default {
         { symbol: 'WIPRO', name: 'Wipro Limited', price: 456.78 },
         { symbol: 'MARUTI', name: 'Maruti Suzuki India Ltd', price: 9876.54 },
         { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', price: 987.65 }
-      ]
+      ],
+      autoRefreshInterval: null
     };
   },
   computed: {
@@ -466,6 +467,15 @@ export default {
   },
   mounted() {
     this.loadOrders();
+    
+    // Start auto-refresh for live data updates
+    this.startAutoRefresh();
+  },
+  beforeUnmount() {
+    // Clear auto-refresh interval when component is destroyed
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+    }
   },
   methods: {
     async loadOrders() {
@@ -520,6 +530,15 @@ export default {
         this.loading = false;
       }
     },
+    
+    startAutoRefresh() {
+      // Auto-refresh orders every 10 seconds for live P&L updates
+      this.autoRefreshInterval = setInterval(() => {
+        this.loadOrders();
+        console.log('Auto-refresh: Orders updated at', new Date().toLocaleTimeString());
+      }, 10000); // 10 seconds for faster updates
+    },
+    
     showError(message) {
       // Simple error notification - you can enhance this with a proper notification system
       alert(message);

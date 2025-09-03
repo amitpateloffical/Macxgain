@@ -283,7 +283,7 @@ nohup php artisan queue:work --daemon > /dev/null 2>&1 &
 ### **Frontend Data Consumption:**
 - **Component:** `TrueDataStockMarket.vue`
 - **API Calls:** Axios requests to Laravel API endpoints
-- **Real-time Updates:** Polling every 30 seconds
+- **Real-time Updates:** Polling every 5 seconds
 - **Data Display:** Live stock prices, market status, trading interface
 
 ### **Trading System Data:**

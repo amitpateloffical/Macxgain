@@ -462,7 +462,7 @@ export default {
     this.loadMarketStatus();
     this.loadMarketData();
     
-    // Auto-refresh every 30 seconds
+    // Auto-refresh every 10 seconds
     this.startAutoRefresh();
   },
   methods: {

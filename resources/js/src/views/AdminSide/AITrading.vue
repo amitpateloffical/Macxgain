@@ -551,7 +551,7 @@ export default {
         query: { 
           userId: user.id,
           userName: user.name,
-          userBalance: user.balance,
+          userBalance: user.total_balance,
           userEmail: user.email
         }
       });

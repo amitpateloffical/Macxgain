@@ -49,9 +49,9 @@ while true; do
         echo "✅ WebSocket is running - $(date)"
     fi
     
-    # Populate cache every 30 seconds
+    # Populate cache every 5 seconds
     populate_cache
     
-    # Wait 30 seconds before next check
-    sleep 30
+    # Wait 5 seconds before next check
+    sleep 5
 done

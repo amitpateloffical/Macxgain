@@ -447,7 +447,7 @@ export default {
     // Initialize with closed status
     this.marketStatus = 'CLOSED';
     this.loadMarketData();
-    // Auto-refresh every 30 seconds when market is open
+    // Auto-refresh every 10 seconds when market is open
     this.startAutoRefresh();
     
     // Add ESC key listener for options modal
