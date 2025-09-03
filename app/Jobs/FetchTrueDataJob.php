@@ -32,7 +32,7 @@ class FetchTrueDataJob implements ShouldQueue
             Log::info('FetchTrueDataJob: Starting TrueData fetch...');
             
             // Run Python script to fetch data
-            $result = Process::timeout(15)->run('python3 truedata_fetch.py');
+            $result = Process::timeout(10)->run('python3 truedata_test.py');
             
             if ($result->successful()) {
                 $output = $result->output();
@@ -42,11 +42,11 @@ class FetchTrueDataJob implements ShouldQueue
                 $marketData = $this->parsePythonOutput($output);
                 
                 if (!empty($marketData)) {
-                    // Store in cache with short expiry (30 seconds) for real-time data
-                    Cache::put('truedata_live_data', $marketData, 30);
-                    Cache::put('truedata_last_update', now(), 30);
+                    // Store in cache with short expiry (5 seconds) for real-time data
+                    Cache::put('truedata_live_data', $marketData, 5);
+                    Cache::put('truedata_last_update', now(), 5);
                     
-                    Log::info('FetchTrueDataJob: Market data cached for 30 seconds - ' . count($marketData) . ' symbols');
+                    Log::info('FetchTrueDataJob: Market data cached for 5 seconds - ' . count($marketData) . ' symbols');
                 } else {
                     Log::warning('FetchTrueDataJob: No market data parsed from Python output');
                 }
@@ -68,16 +68,7 @@ class FetchTrueDataJob implements ShouldQueue
         $marketData = [];
         
         try {
-            // Try to parse the entire output as JSON first (for truedata_fetch.py)
-            $data = json_decode($output, true);
-            if ($data && is_array($data)) {
-                // Direct JSON output from truedata_fetch.py
-                $marketData = $data;
-                Log::info('FetchTrueDataJob: Parsed direct JSON output - ' . count($marketData) . ' symbols');
-                return $marketData;
-            }
-            
-            // Fallback: Split output into lines and look for JSON data lines (for truedata_test.py)
+            // Split output into lines
             $lines = explode("\n", $output);
             
             foreach ($lines as $line) {
@@ -178,53 +169,17 @@ class FetchTrueDataJob implements ShouldQueue
     private function mapSymbolIdToName($symbolId): ?string
     {
         $mapping = [
-            // Major Indices
             '200000001' => 'NIFTY 50',
             '200000004' => 'NIFTY BANK',
-            '200000002' => 'NIFTY IT',
-            '400000001' => 'SENSEX',
-            '400000012' => 'BANKEX',
-            '200000013' => 'NIFTY FMCG',
-            '200000019' => 'NIFTY AUTO',
-            '200000015' => 'NIFTY PHARMA',
-            '200000021' => 'NIFTY METAL',
-            '200000012' => 'NIFTY ENERGY',
-            '200000009' => 'NIFTY REALTY',
-            '200000017' => 'NIFTY PSU BANK',
-            '200000039' => 'NIFTY PVT BANK',
-            '200000020' => 'NIFTY MEDIA',
-            '200000010' => 'NIFTY INFRA',
-            '200000025' => 'NIFTY COMMODITIES',
-            
-            // Large Cap Stocks
-            '100001262' => 'RELIANCE',
-            '100001528' => 'TCS',
-            '100000589' => 'HDFCBANK',
-            '100000647' => 'ICICIBANK',
-            '100001337' => 'SBIN',
-            '100000213' => 'BHARTIARTL',
-            '100000737' => 'ITC',
-            '100000854' => 'KOTAKBANK',
-            '100000908' => 'LT',
-            '100000619' => 'HINDUNILVR',
-            '100000129' => 'ASIANPAINT',
-            '100000961' => 'MARUTI',
-            '100000154' => 'AXISBANK',
-            '100001061' => 'NESTLEIND',
-            '100001600' => 'ULTRACEMCO',
-            '100001474' => 'SUNPHARMA',
-            '100001562' => 'TITAN',
-            '100001194' => 'POWERGRID',
-            '100001099' => 'NTPC',
-            '100001116' => 'ONGC',
-            
-            // Mid Cap Stocks
+            '800000372' => 'MCXCOMPDEX',
             '100000011' => 'AARTIIND',
             '100000243' => 'BRITANNIA',
             '100000310' => 'COLPAL',
             '100000382' => 'DMART',
             '100000409' => 'EICHERMOT',
             '100000508' => 'GILLETTE',
+            '100000589' => 'HDFCBANK',
+            '100000647' => 'ICICIBANK',
             '100000781' => 'JKTYRE',
             '100000807' => 'KAJARIACER',
             '100000893' => 'LICHSGFIN',
@@ -232,7 +187,24 @@ class FetchTrueDataJob implements ShouldQueue
             '100001105' => 'OFSS',
             '100001182' => 'PNB',
             '100001229' => 'QUICKHEAL',
+            '100001262' => 'RELIANCE',
+            '100001337' => 'SBIN',
+            '100001528' => 'TCS',
             '100001598' => 'UJJIVAN',
+            '100001692' => 'WIPRO',
+            '100001700' => 'YESBANK',
+            '100001701' => 'ZEEL',
+            '900000596' => 'NIFTY-I',
+            '900000110' => 'BANKNIFTY-I',
+            '900000840' => 'UPL-I',
+            '900000846' => 'VEDL-I',
+            '900000852' => 'VOLTAS-I',
+            '900000870' => 'ZEEL-I',
+            '950000072' => 'CRUDEOIL-I',
+            '950000114' => 'GOLDM-I',
+            '950000182' => 'SILVERM-I',
+            '950000026' => 'COPPER-I',
+            '950000172' => 'SILVER-I',
         ];
         
         return $mapping[$symbolId] ?? null;

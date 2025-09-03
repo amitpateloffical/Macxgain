@@ -11,7 +11,7 @@
           <h1 class="page-title">🤖 AI Trading Session</h1>
           <p class="page-subtitle">
             Trading for: <strong>{{ user.name || 'Loading...' }}</strong> 
-            (Balance: ₹{{ user.balance?.toLocaleString() || '0' }})
+            (Available: ₹{{ user.balance?.toLocaleString() || '0' }} | Total: ₹{{ user.total_balance?.toLocaleString() || '0' }} | Blocked: ₹{{ user.blocked_amount?.toLocaleString() || '0' }})
           </p>
 
         </div>
@@ -1074,18 +1074,29 @@ export default {
 
         if (response.data.success) {
           // Update user balance with live data from wallet transactions
-          const newBalance = parseFloat(response.data.balance) || 0;
-          console.log('Live user balance updated:', newBalance);
-          console.log('Formatted balance:', response.data.formatted_balance);
+          const availableBalance = parseFloat(response.data.balance) || 0;
+          const totalBalance = parseFloat(response.data.total_balance) || 0;
+          const blockedAmount = parseFloat(response.data.blocked_amount) || 0;
+          
+          console.log('Live user balance updated:', {
+            available: availableBalance,
+            total: totalBalance,
+            blocked: blockedAmount
+          });
           
           // Update user balance (Vue 3 reactive approach)
-          this.user = { ...this.user, balance: newBalance };
+          this.user = { 
+            ...this.user, 
+            balance: availableBalance,
+            total_balance: totalBalance,
+            blocked_amount: blockedAmount
+          };
           
           console.log('User object after update:', this.user);
           
           // Only show toast when manually refreshing balance
           if (showToast) {
-            this.showSuccess(`Balance updated: ${response.data.formatted_balance}`);
+            this.showSuccess(`Balance updated: ${response.data.formatted_balance} (Available) | Total: ${response.data.formatted_total_balance} | Blocked: ${response.data.formatted_blocked_amount}`);
           }
         } else {
           console.error('API returned success: false', response.data);

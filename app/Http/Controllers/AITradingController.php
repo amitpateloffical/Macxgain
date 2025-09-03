@@ -96,15 +96,24 @@ class AITradingController extends Controller
             }
 
             // Get user's current balance from wallet transactions
-            $currentBalance = DB::table('wallet_transactions')
+            $totalBalance = DB::table('wallet_transactions')
                 ->where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->value('running_balance');
 
-            if (($currentBalance ?? 0) < $totalAmount) {
+            // Calculate blocked amount from active trades
+            $blockedAmount = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED') // Active trades
+                ->sum('total_amount');
+
+            // Available balance = Total balance - Blocked amount
+            $availableBalance = ($totalBalance ?? 0) - ($blockedAmount ?? 0);
+
+            if ($availableBalance < $totalAmount) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Insufficient balance. Available: ₹' . number_format($currentBalance ?? 0, 2)
+                    'message' => 'Insufficient available balance. Available: ₹' . number_format($availableBalance, 2) . ' (Total: ₹' . number_format($totalBalance ?? 0, 2) . ', Blocked: ₹' . number_format($blockedAmount ?? 0, 2) . ')'
                 ], 400);
             }
 
@@ -126,15 +135,15 @@ class AITradingController extends Controller
                     'updated_at' => now()
                 ]);
 
-                // Create wallet transaction record (debit)
-                $newBalance = $currentBalance - $totalAmount;
+                // Create wallet transaction record (block amount - don't deduct from balance)
+                // Balance remains same, but amount is blocked for trading
                 DB::table('wallet_transactions')->insert([
                     'user_id' => $userId,
-                    'transaction_code' => 'AI_TRADE_' . $orderId,
-                    'type' => 'debit',
+                    'transaction_code' => 'AI_TRADE_BLOCK_' . $orderId,
+                    'type' => 'block',
                     'amount' => $totalAmount,
-                    'running_balance' => $newBalance,
-                    'remark' => "AI Trading: {$action} {$quantity} {$optionType} {$stockSymbol} @ ₹{$strikePrice}",
+                    'running_balance' => $totalBalance, // Balance stays same
+                    'remark' => "AI Trading Block: {$action} {$quantity} {$optionType} {$stockSymbol} @ ₹{$strikePrice} (Amount: ₹{$totalAmount})",
                     'approved_by' => auth()->id() ?? 1, // Admin who executed the trade
                     'approved_at' => now(),
                     'created_at' => now(),
@@ -341,21 +350,34 @@ class AITradingController extends Controller
     }
 
     /**
-     * Get user's current wallet balance
+     * Get user's current wallet balance (excluding blocked amounts)
      */
     public function getUserBalance($userId): JsonResponse
     {
         try {
-            // Get the latest running balance from wallet transactions
-            $balance = DB::table('wallet_transactions')
+            // Get total balance from all transactions
+            $totalBalance = DB::table('wallet_transactions')
                 ->where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->value('running_balance');
 
+            // Calculate blocked amount from active trades
+            $blockedAmount = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED') // Active trades
+                ->sum('total_amount');
+
+            // Available balance = Total balance - Blocked amount
+            $availableBalance = ($totalBalance ?? 0) - ($blockedAmount ?? 0);
+
             return response()->json([
                 'success' => true,
-                'balance' => floatval($balance ?? 0),
-                'formatted_balance' => '₹' . number_format($balance ?? 0, 2)
+                'balance' => floatval($availableBalance),
+                'total_balance' => floatval($totalBalance ?? 0),
+                'blocked_amount' => floatval($blockedAmount ?? 0),
+                'formatted_balance' => '₹' . number_format($availableBalance, 2),
+                'formatted_total_balance' => '₹' . number_format($totalBalance ?? 0, 2),
+                'formatted_blocked_amount' => '₹' . number_format($blockedAmount ?? 0, 2)
             ]);
 
         } catch (\Exception $e) {
@@ -427,26 +449,24 @@ class AITradingController extends Controller
                         'updated_at' => now()
                     ]);
 
-                // Get user's current balance
-                $currentBalance = DB::table('wallet_transactions')
+                // Get user's current total balance
+                $currentTotalBalance = DB::table('wallet_transactions')
                     ->where('user_id', $order->user_id)
                     ->orderBy('created_at', 'desc')
                     ->value('running_balance');
 
-                // Calculate new balance (add P&L)
-                $newBalance = $currentBalance + $pnl;
+                // Calculate final balance: current total balance + P&L
+                $blockedAmount = $order->total_amount; // Amount that was blocked
+                $finalBalance = $currentTotalBalance + $pnl;
 
-                // Create wallet transaction for P&L
-                $transactionType = $pnl >= 0 ? 'credit' : 'debit';
-                $transactionAmount = abs($pnl);
-
+                // Create wallet transaction for trade exit (unblock + P&L)
                 DB::table('wallet_transactions')->insert([
                     'user_id' => $order->user_id,
                     'transaction_code' => 'AI_TRADE_EXIT_' . $orderId,
-                    'type' => $transactionType,
-                    'amount' => $transactionAmount,
-                    'running_balance' => $newBalance,
-                    'remark' => "AI Trading Exit: Order #{$orderId} - " . ($pnl >= 0 ? 'Profit' : 'Loss') . " of ₹" . abs($pnl),
+                    'type' => 'unblock',
+                    'amount' => $blockedAmount + $pnl, // Return blocked amount + P&L
+                    'running_balance' => $finalBalance,
+                    'remark' => "AI Trading Exit: Order #{$orderId} - Returned ₹{$blockedAmount} + " . ($pnl >= 0 ? 'Profit' : 'Loss') . " ₹" . abs($pnl) . " = Final: ₹" . ($blockedAmount + $pnl),
                     'approved_by' => auth()->id() ?? 1,
                     'approved_at' => now(),
                     'created_at' => now(),
