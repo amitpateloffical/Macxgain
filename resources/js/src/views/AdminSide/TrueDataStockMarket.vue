@@ -10,7 +10,7 @@
           <div class="header-info">
             <h1 class="page-title">📈 Stock Market</h1>
             <p class="page-subtitle">
-              {{ marketStatus === 'OPEN' ? '🔥 Live market data powered by TrueData Python Script' : '📊 Last available data (Market Closed)' }}
+              {{ dataSourceMessage || (marketStatus === 'OPEN' ? '🔥 Live market data powered by TrueData Python Script' : '📊 Last available data (Market Closed)') }}
             </p>
           </div>
         </div>
@@ -24,10 +24,10 @@
             @click="triggerDataFetch" 
             :disabled="loading"
             class="fetch-btn"
-            title="Fetch fresh live data from Python script"
+            :title="isMarketLive ? 'Fetch fresh live data from Python script' : 'Market closed - Historical data cached'"
           >
             <i class="fas fa-download" :class="{ 'fa-spin': loading }"></i>
-            {{ loading ? 'Fetching...' : 'Fetch Live Data' }}
+            {{ loading ? 'Fetching...' : (isMarketLive ? 'Fetch Live Data' : 'Historical Data') }}
           </button>
           
           <button 
@@ -249,8 +249,16 @@
       </div>
       
       <div class="options-content">
+        <!-- Loading Indicator -->
+        <div v-if="loadingOptions" class="options-loading">
+          <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+          </div>
+          <p>Loading options data...</p>
+        </div>
+        
         <!-- Side-by-Side Options Layout -->
-        <div class="options-comparison">
+        <div v-else class="options-comparison">
           <!-- Put Options (Left Side) -->
           <div class="options-column put-column">
             <h4 class="section-title put-title">
@@ -348,6 +356,9 @@ export default {
       reconnecting: false,
       isRefreshing: false,
       marketStatus: 'CLOSED',
+      isMarketLive: false,
+      dataType: 'UNKNOWN',
+      dataSourceMessage: '',
       marketInfo: {
         trading_hours: '9:00 AM - 3:30 PM IST',
         trading_days: 'Monday to Friday',
@@ -375,7 +386,8 @@ export default {
       optionsSearchQuery: '',
       filteredCallOptions: [],
       filteredPutOptions: [],
-      filteredStrikes: []
+      filteredStrikes: [],
+      loadingOptions: false
     };
   },
   computed: {
@@ -491,8 +503,12 @@ export default {
            console.log('Data count:', liveResponse.data.data_count);
            console.log('Last update:', liveResponse.data.last_update);
            
-           // Don't set market status here - let the API response determine it
-           // this.marketStatus = 'OPEN';
+           // Set market status and data type from API response
+           this.marketStatus = liveResponse.data.market_status?.status || 'CLOSED';
+           this.isMarketLive = liveResponse.data.is_market_live || false;
+           this.dataType = liveResponse.data.data_type || 'UNKNOWN';
+           this.dataSourceMessage = liveResponse.data.data_source || '';
+           
            this.marketInfo = {
              trading_hours: '9:15 AM - 3:30 PM IST',
              trading_days: 'Monday to Friday',
@@ -504,20 +520,25 @@ export default {
            this.connectionStatus.is_connected = true;
            console.log('Live stocks processed:', this.liveStocks);
            
-           // Extract market indices (first 5 stocks as indices)
-           const indices = Object.values(liveData).slice(0, 5);
-           this.marketIndices = indices.map(index => ({
-             symbol: index.symbol,
-             last: index.ltp || 0,
-             change: index.change || 0,
-             change_percent: index.change_percent || 0,
-             volume: index.volume || 0,
-             high: index.high || 0,
-             low: index.low || 0,
-             open: index.open || 0,
-             prev_close: index.prev_close || 0,
-             timestamp: index.timestamp || new Date().toISOString()
-           }));
+           // Extract specific major indices (FINNIFTY and NIFTY MIDCAP available with paid TrueData account)
+           const majorIndices = ['NIFTY 50', 'NIFTY BANK', 'SENSEX', 'FINNIFTY', 'NIFTY MIDCAP'];
+           this.marketIndices = majorIndices
+             .filter(symbol => liveData[symbol]) // Only include if data exists
+             .map(symbol => {
+               const index = liveData[symbol];
+               return {
+                 symbol: index.symbol,
+                 last: index.ltp || 0,
+                 change: index.change || 0,
+                 change_percent: index.change_percent || 0,
+                 volume: index.volume || 0,
+                 high: index.high || 0,
+                 low: index.low || 0,
+                 open: index.open || 0,
+                 prev_close: index.prev_close || 0,
+                 timestamp: index.timestamp || new Date().toISOString()
+               };
+             });
            console.log('Market indices processed:', this.marketIndices);
            
            this.lastUpdated = liveResponse.data.last_update || new Date().toLocaleTimeString();
@@ -843,6 +864,11 @@ export default {
 
     async triggerDataFetch() {
       try {
+        if (!this.isMarketLive) {
+          this.showError('Market is closed. Historical data is already cached and will not refresh.');
+          return;
+        }
+        
         const response = await axios.post('/api/truedata/trigger-fetch', {}, {
           headers: {
             'Accept': 'application/json'
@@ -850,7 +876,8 @@ export default {
         });
 
         if (response.data.success) {
-          console.log('Data fetch triggered successfully');
+          console.log('Live data fetch triggered successfully');
+          this.showSuccess('Live data fetch triggered successfully');
           // Wait a moment for the job to complete
           setTimeout(() => {
             this.loadMarketData();
@@ -858,6 +885,7 @@ export default {
         }
       } catch (error) {
         console.error('Error triggering data fetch:', error);
+        this.showError('Failed to trigger data fetch');
       }
     },
 
@@ -884,20 +912,26 @@ export default {
              console.log('Dashboard stocks processed:', this.liveStocks.length);
            }
            
-           // Process market indices
+           // Process market indices - show only major indices
            if (data.indices && Object.keys(data.indices).length > 0) {
-             this.marketIndices = Object.values(data.indices).map(index => ({
-               symbol: index.symbol,
-               last: index.ltp || index.last || 0,
-               change: index.change || 0,
-               change_percent: index.change_percent || 0,
-               volume: index.volume || 0,
-               high: index.high || 0,
-               low: index.low || 0,
-               open: index.open || 0,
-               prev_close: index.prev_close || 0,
-               timestamp: index.timestamp || new Date().toISOString()
-             }));
+             const majorIndices = ['NIFTY 50', 'NIFTY BANK', 'SENSEX', 'FINNIFTY', 'NIFTY MIDCAP'];
+             this.marketIndices = majorIndices
+               .filter(symbol => data.indices[symbol]) // Only include if data exists
+               .map(symbol => {
+                 const index = data.indices[symbol];
+                 return {
+                   symbol: index.symbol,
+                   last: index.ltp || index.last || 0,
+                   change: index.change || 0,
+                   change_percent: index.change_percent || 0,
+                   volume: index.volume || 0,
+                   high: index.high || 0,
+                   low: index.low || 0,
+                   open: index.open || 0,
+                   prev_close: index.prev_close || 0,
+                   timestamp: index.timestamp || new Date().toISOString()
+                 };
+               });
              console.log('Dashboard indices processed:', this.marketIndices.length);
            }
            
@@ -978,11 +1012,21 @@ export default {
 
     // Options Modal Methods
     async showOptionsModal(symbol, stock) {
+      console.log('🎯 showOptionsModal called with:', symbol, stock);
       this.selectedStock = { symbol, ...stock };
       this.showOptions = true;
+      this.loadingOptions = true;
       
-      // Load options data for this symbol
-      await this.loadOptionsData(symbol);
+      try {
+        // Load options data for this symbol
+        console.log('🔄 About to call loadOptionsData for:', symbol);
+        await this.loadOptionsData(symbol);
+        console.log('✅ loadOptionsData completed for:', symbol);
+      } catch (error) {
+        console.error('❌ Error in showOptionsModal:', error);
+      } finally {
+        this.loadingOptions = false;
+      }
     },
 
     closeOptionsModal() {
@@ -994,24 +1038,102 @@ export default {
 
     async loadOptionsData(symbol) {
       try {
-        // Generate mock options data for demonstration
-        // In production, this would call the options API
-        this.generateMockOptions(symbol);
+        console.log(`🔄 Loading options data for ${symbol}`);
+        console.log(`🌐 API URL: /api/truedata/options/chain/${encodeURIComponent(symbol)}`);
         
-        // Uncomment below for real API call
-        // const response = await axios.get(`/api/truedata/options/chain/${symbol}`);
-        // if (response.data.success) {
-        //   this.processOptionsData(response.data.data);
-        // }
+        // Check if symbol has options trading
+        if (symbol === 'SENSEX') {
+          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or NIFTY BANK for options trading.');
+          this.closeOptionsModal();
+          return;
+        }
+        
+        // Call the real options API
+        const response = await axios.get(`/api/truedata/options/chain/${encodeURIComponent(symbol)}`);
+        console.log('📡 Options API response:', response);
+        console.log('📊 Response data:', response.data);
+        console.log('✅ Response status:', response.status);
+        
+        if (response.data.success && response.data.data) {
+          console.log('🎯 Processing real API data...');
+          this.processOptionsData(response.data.data);
+        } else {
+          console.log('⚠️ API response not successful, using mock data');
+          console.log('Response success:', response.data.success);
+          console.log('Response data exists:', !!response.data.data);
+          this.generateMockOptions(symbol);
+        }
       } catch (error) {
-        console.error('Error loading options data:', error);
-        this.showError('Failed to load options data');
+        console.error('❌ Error loading options data:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        console.log('🔄 Using mock data as fallback');
+        this.generateMockOptions(symbol);
       }
     },
 
+    processOptionsData(apiData) {
+      console.log('🔄 Processing options data:', apiData);
+      console.log('📊 Data length:', apiData.length);
+      
+      // Separate CALL and PUT options
+      const callOptions = [];
+      const putOptions = [];
+      
+      apiData.forEach((option, index) => {
+        console.log(`Processing option ${index + 1}:`, option);
+        
+        const optionData = {
+          strike: option.strike_price,
+          price: option.ltp,
+          volume: option.volume,
+          oi: option.oi,
+          bid: option.bid,
+          ask: option.ask,
+          bid_qty: option.bid_qty,
+          ask_qty: option.ask_qty,
+          greeks: {
+            delta: option.delta || 0,
+            gamma: option.gamma || 0,
+            theta: option.theta || 0,
+            vega: option.vega || 0
+          }
+        };
+        
+        if (option.option_type === 'CALL') {
+          callOptions.push(optionData);
+          console.log('✅ Added CALL option:', optionData);
+        } else if (option.option_type === 'PUT') {
+          putOptions.push(optionData);
+          console.log('✅ Added PUT option:', optionData);
+        } else {
+          console.log('⚠️ Unknown option type:', option.option_type);
+        }
+      });
+      
+      // Sort by strike price
+      callOptions.sort((a, b) => a.strike - b.strike);
+      putOptions.sort((a, b) => a.strike - b.strike);
+      
+      this.callOptions = callOptions;
+      this.putOptions = putOptions;
+      
+      // Initialize filtered arrays
+      this.filteredCallOptions = [...this.callOptions];
+      this.filteredPutOptions = [...this.putOptions];
+      this.filteredStrikes = [...new Set([...callOptions.map(opt => opt.strike), ...putOptions.map(opt => opt.strike)])].sort((a, b) => a - b);
+      this.optionsSearchQuery = '';
+      
+      console.log(`🎯 Processed ${callOptions.length} CALL options and ${putOptions.length} PUT options`);
+      console.log('📈 Final callOptions:', this.callOptions);
+      console.log('📉 Final putOptions:', this.putOptions);
+    },
+
     generateMockOptions(symbol) {
-      const currentPrice = this.selectedStock?.last || 1000;
+      console.log('🔄 Generating mock options for:', symbol);
+      const currentPrice = this.selectedStock?.last || this.selectedStock?.ltp || 1000;
+      console.log('💰 Current price for mock data:', currentPrice);
       const strikes = this.generateStrikes(currentPrice);
+      console.log('🎯 Generated strikes:', strikes);
       
       this.callOptions = strikes.map(strike => ({
         strike,
@@ -1048,10 +1170,12 @@ export default {
 
     generateStrikes(currentPrice) {
       const strikes = [];
-      const start = Math.floor(currentPrice / 50) * 50 - 200;
-      const end = start + 800;
+      // Generate strikes around current price with 2% intervals
+      const interval = Math.round(currentPrice * 0.02);
+      const start = Math.round(currentPrice - (5 * interval));
+      const end = Math.round(currentPrice + (5 * interval));
       
-      for (let i = start; i <= end; i += 50) {
+      for (let i = start; i <= end; i += interval) {
         strikes.push(i);
       }
       return strikes;
@@ -1059,7 +1183,7 @@ export default {
 
     calculateOptionPrice(spot, strike, type) {
       const intrinsic = type === 'call' ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
-      const timeValue = Math.random() * 50 + 10;
+      const timeValue = Math.max(1, spot * (0.008 + Math.random() * 0.004)); // More realistic time value
       return (intrinsic + timeValue).toFixed(2);
     },
 
@@ -2407,6 +2531,25 @@ export default {
   align-items: center;
   z-index: 9999;
   backdrop-filter: blur(4px);
+}
+
+.options-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #00ff88;
+}
+
+.loading-spinner {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.options-loading p {
+  font-size: 1.1rem;
+  margin: 0;
 }
 
 /* Search Container */

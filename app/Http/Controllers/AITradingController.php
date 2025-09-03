@@ -48,7 +48,9 @@ class AITradingController extends Controller
     public function executeTrade(Request $request): JsonResponse
     {
         try {
-            // Check if market is open before allowing trades
+            // 24/7 Trading enabled for testing purposes
+            // Commented out market hours check
+            /*
             if (!$this->isMarketOpen()) {
                 return response()->json([
                     'success' => false,
@@ -56,6 +58,7 @@ class AITradingController extends Controller
                     'market_status' => 'CLOSED'
                 ], 400);
             }
+            */
 
             $validator = Validator::make($request->all(), [
                 'user_id' => 'required|integer|exists:users,id',
@@ -372,7 +375,9 @@ class AITradingController extends Controller
     public function exitTrade(Request $request, $orderId): JsonResponse
     {
         try {
-            // Check if market is open before allowing trade exit
+            // 24/7 Trading enabled for testing purposes
+            // Commented out market hours check for trade exit
+            /*
             if (!$this->isMarketOpen()) {
                 return response()->json([
                     'success' => false,
@@ -380,6 +385,7 @@ class AITradingController extends Controller
                     'market_status' => 'CLOSED'
                 ], 400);
             }
+            */
 
             $order = DB::table('ai_trading_orders')
                 ->where('id', $orderId)

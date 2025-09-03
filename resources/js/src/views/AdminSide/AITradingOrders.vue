@@ -294,16 +294,16 @@
             <button 
               class="exit-trade-btn" 
               @click="exitTrade(order.id)"
-              :disabled="exitingTrade === order.id || !marketStatus.is_open"
-              :title="!marketStatus.is_open ? 'Trade exit only allowed during market hours' : ''"
+              :disabled="exitingTrade === order.id"
+              :title="'Exit trade - 24/7 trading enabled'"
             >
               <i class="fas fa-sign-out-alt" v-if="exitingTrade !== order.id"></i>
               <i class="fas fa-spinner fa-spin" v-else></i>
               {{ exitingTrade === order.id ? 'Exiting...' : 'Exit Trade' }}
             </button>
-            <div v-if="!marketStatus.is_open" class="market-closed-notice">
-              <i class="fas fa-clock"></i>
-              <span>Exit trade available during market hours (9:15 AM - 3:30 PM IST)</span>
+            <div class="trading-enabled-notice">
+              <i class="fas fa-rocket"></i>
+              <span>24/7 trading enabled - Exit anytime!</span>
             </div>
           </div>
           
@@ -321,6 +321,7 @@
 
 <script>
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'AITradingOrders',
@@ -390,12 +391,12 @@ export default {
     },
     
     totalProfit() {
-      return this.profitableTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+      return this.profitableTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || 0), 0);
     },
     
     totalLoss() {
       // Loss trades already have negative P&L, so we sum them as is
-      return this.lossTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+      return this.lossTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || 0), 0);
     },
     
     overallPnL() {
@@ -407,7 +408,7 @@ export default {
       // Only count completed trades (money actually invested)
       return this.userOrders
         .filter(order => order.status === 'COMPLETED' || order.status === 'CLOSED')
-        .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+        .reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
     },
     
     totalReturn() {
@@ -417,7 +418,8 @@ export default {
     
     overallPnLPercentage() {
       if (this.totalInvested === 0) return 0;
-      return (this.overallPnL / this.totalInvested) * 100;
+      const percentage = (this.overallPnL / this.totalInvested) * 100;
+      return isNaN(percentage) ? 0 : percentage;
     },
     
     winRate() {
@@ -429,17 +431,18 @@ export default {
     avgProfitPerTrade() {
       const totalClosedTrades = this.closedTrades.length;
       if (totalClosedTrades === 0) return 0;
-      return this.overallPnL / totalClosedTrades;
+      const average = this.overallPnL / totalClosedTrades;
+      return isNaN(average) ? 0 : average;
     },
     
     totalActiveInvestment() {
-      return this.activeTrades.reduce((sum, trade) => sum + (trade.total_amount || 0), 0);
+      return this.activeTrades.reduce((sum, trade) => sum + parseFloat(trade.total_amount || 0), 0);
     },
     
     // Updated balance after P&L
     updatedBalance() {
       // Current balance + overall P&L from closed trades
-      return (this.user.balance || 0) + this.overallPnL;
+      return parseFloat(this.user.balance || 0) + this.overallPnL;
     }
   },
   mounted() {
@@ -629,18 +632,37 @@ export default {
       return new Date(dateString).toLocaleDateString('en-IN');
     },
     showSuccess(message) {
-      if (this.$toast && this.$toast.success) {
-        this.$toast.success(message);
+      // Use SweetAlert2 for success notifications
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Success!',
+          text: message,
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
       } else {
         console.log('Success:', message);
+        alert('Success: ' + message);
       }
     },
     showError(message) {
-      if (this.$toast && this.$toast.error) {
-        this.$toast.error(message);
+      // Use SweetAlert2 for error notifications
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Error!',
+          text: message,
+          icon: 'error',
+          timer: 4000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
       } else {
         console.error('Error:', message);
-        alert(message);
+        alert('Error: ' + message);
       }
     },
     getStatusIcon(status) {
@@ -1462,12 +1484,13 @@ export default {
   cursor: not-allowed;
 }
 
-.market-closed-notice {
+.trading-enabled-notice {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #ffaa00;
+  color: #22c55e;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .trade-closed-info {
@@ -1723,7 +1746,7 @@ export default {
     font-size: 16px;
   }
   
-  .market-closed-notice {
+  .trading-enabled-notice {
     text-align: center;
     font-size: 11px;
   }

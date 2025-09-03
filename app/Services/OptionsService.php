@@ -217,14 +217,47 @@ class OptionsService
     }
     
     /**
+     * Get current stock price from live data
+     */
+    private function getCurrentStockPrice($symbol)
+    {
+        try {
+            // Get live data from cache
+            $liveData = Cache::get('truedata_live_data', []);
+            
+            if (isset($liveData[$symbol])) {
+                return floatval($liveData[$symbol]['ltp'] ?? 0);
+            }
+            
+            // Fallback to default prices for common symbols
+            $defaultPrices = [
+                'NIFTY 50' => 24700,
+                'NIFTY BANK' => 54000,
+                'NIFTY IT' => 35000,
+                'RELIANCE' => 1370,
+                'TCS' => 3100,
+                'HDFCBANK' => 950,
+                'ICICIBANK' => 1400,
+                'SBIN' => 810,
+            ];
+            
+            return $defaultPrices[$symbol] ?? 1000;
+        } catch (\Exception $e) {
+            Log::error("Error getting current price for {$symbol}: " . $e->getMessage());
+            return 1000; // Fallback
+        }
+    }
+
+    /**
      * Generate mock options data as fallback
      */
     private function generateMockOptionsData($symbol)
     {
-        $currentPrice = 1000; // Default price
+        // Get real current price from live data
+        $currentPrice = $this->getCurrentStockPrice($symbol);
         $strikes = [];
         
-        // Generate strike prices around current price
+        // Generate strike prices around current price (2% intervals)
         for ($i = -5; $i <= 5; $i++) {
             $strikes[] = round($currentPrice + ($i * $currentPrice * 0.02));
         }
@@ -233,24 +266,28 @@ class OptionsService
         
         // Generate CALL options
         foreach ($strikes as $strike) {
+            $intrinsicValue = max(0, $currentPrice - $strike);
+            $timeValue = max(1, $currentPrice * (0.008 + rand(0, 4) / 1000)); // Varied time value
+            $optionPrice = $intrinsicValue + $timeValue;
+            
             $mockOptions[] = [
                 'symbol' => "{$symbol}{$strike}CE",
                 'symbol_id' => rand(100000000, 999999999),
                 'timestamp' => now()->toISOString(),
-                'ltp' => round($strike * 0.01, 2),
+                'ltp' => round($optionPrice, 2),
                 'volume' => rand(100, 1000),
-                'atp' => round($strike * 0.012, 2),
+                'atp' => round($optionPrice * 1.02, 2),
                 'total_volume' => rand(1000, 10000),
-                'open' => round($strike * 0.009, 2),
-                'high' => round($strike * 0.015, 2),
-                'low' => round($strike * 0.008, 2),
-                'prev_close' => round($strike * 0.01, 2),
+                'open' => round($optionPrice * 0.95, 2),
+                'high' => round($optionPrice * 1.1, 2),
+                'low' => round($optionPrice * 0.9, 2),
+                'prev_close' => round($optionPrice * 0.98, 2),
                 'oi' => rand(1000, 5000),
                 'prev_oi' => rand(1000, 5000),
-                'turnover' => round($strike * rand(100, 1000), 2),
-                'bid' => round($strike * 0.009, 2),
+                'turnover' => round($optionPrice * rand(100, 1000), 2),
+                'bid' => round($optionPrice * 0.99, 2),
                 'bid_qty' => rand(50, 500),
-                'ask' => round($strike * 0.011, 2),
+                'ask' => round($optionPrice * 1.01, 2),
                 'ask_qty' => rand(50, 500),
                 'strike_price' => $strike,
                 'option_type' => 'CALL',
@@ -260,24 +297,28 @@ class OptionsService
         
         // Generate PUT options
         foreach ($strikes as $strike) {
+            $intrinsicValue = max(0, $strike - $currentPrice);
+            $timeValue = max(1, $currentPrice * (0.008 + rand(0, 4) / 1000)); // Varied time value
+            $optionPrice = $intrinsicValue + $timeValue;
+            
             $mockOptions[] = [
                 'symbol' => "{$symbol}{$strike}PE",
                 'symbol_id' => rand(100000000, 999999999),
                 'timestamp' => now()->toISOString(),
-                'ltp' => round($strike * 0.01, 2),
+                'ltp' => round($optionPrice, 2),
                 'volume' => rand(100, 1000),
-                'atp' => round($strike * 0.012, 2),
+                'atp' => round($optionPrice * 1.02, 2),
                 'total_volume' => rand(1000, 10000),
-                'open' => round($strike * 0.009, 2),
-                'high' => round($strike * 0.015, 2),
-                'low' => round($strike * 0.008, 2),
-                'prev_close' => round($strike * 0.01, 2),
+                'open' => round($optionPrice * 0.95, 2),
+                'high' => round($optionPrice * 1.1, 2),
+                'low' => round($optionPrice * 0.9, 2),
+                'prev_close' => round($optionPrice * 0.98, 2),
                 'oi' => rand(1000, 5000),
                 'prev_oi' => rand(1000, 5000),
-                'turnover' => round($strike * rand(100, 1000), 2),
-                'bid' => round($strike * 0.009, 2),
+                'turnover' => round($optionPrice * rand(100, 1000), 2),
+                'bid' => round($optionPrice * 0.99, 2),
                 'bid_qty' => rand(50, 500),
-                'ask' => round($strike * 0.011, 2),
+                'ask' => round($optionPrice * 1.01, 2),
                 'ask_qty' => rand(50, 500),
                 'strike_price' => $strike,
                 'option_type' => 'PUT',

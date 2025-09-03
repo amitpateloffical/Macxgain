@@ -54,10 +54,12 @@ class TrueDataController extends Controller
     {
         try {
             // Get market status
-            $marketStatus = $this->trueDataService->getMarketStatus();
+            $marketStatus = $this->marketStatusService->getMarketStatus();
+            $isMarketLive = $this->marketStatusService->isMarketLive();
             
-            // Get cached data from the correct cache key
+            // Get data from cache (live or historical based on market status)
             $cachedData = Cache::get('truedata_live_data', []);
+            $dataType = Cache::get('truedata_data_type', 'UNKNOWN');
             $lastUpdate = Cache::get('truedata_last_update', now());
             
             // Convert cached data to array format for frontend
@@ -73,20 +75,30 @@ class TrueDataController extends Controller
                     'open' => $stockData['open'] ?? 0,
                     'prev_close' => $stockData['prev_close'] ?? 0,
                     'volume' => $stockData['volume'] ?? 0,
-                    'timestamp' => $stockData['timestamp'] ?? now()->toISOString()
+                    'timestamp' => $stockData['timestamp'] ?? $lastUpdate->toISOString()
                 ];
+            }
+            
+            // Determine data source message
+            $dataSourceMessage = $this->marketStatusService->getDataSourceMessage();
+            if ($dataType === 'HISTORICAL') {
+                $dataSourceMessage = 'TrueData Historical Data (Market Closed)';
+            } elseif ($dataType === 'LIVE') {
+                $dataSourceMessage = 'TrueData Live Market Data';
             }
             
             // Prepare response data
             $responseData = [
-                'market_status' => $marketStatus['success'] ? $marketStatus['data'] : null,
+                'market_status' => $marketStatus,
+                'is_market_live' => $isMarketLive,
+                'data_type' => $dataType,
                 'live_stocks' => $liveStocks,
                 'quotes' => $liveStocks,
                 'indices' => array_slice($liveStocks, 0, 5), // First 5 as indices
                 'top_gainers' => array_slice($liveStocks, 0, 10), // First 10 as gainers
                 'top_losers' => array_slice($liveStocks, 5, 10), // Next 10 as losers
-                'timestamp' => now()->toISOString(),
-                'data_source' => 'TrueData Historical Data (Market Closed)',
+                'timestamp' => $lastUpdate->toISOString(),
+                'data_source' => $dataSourceMessage,
                 'last_updated' => $lastUpdate->format('H:i:s'),
                 'last_update' => $lastUpdate->toISOString()
             ];
@@ -372,8 +384,9 @@ class TrueDataController extends Controller
     public function getLiveDataFromPython(): JsonResponse
     {
         try {
-            $liveData = Cache::get('truedata_live_data', []);
-            $lastUpdate = Cache::get('truedata_last_update', null);
+            // Get live data directly from Python script (no cache)
+            $liveData = $this->getLiveDataFromPythonScript();
+            $lastUpdate = now();
             $marketStatus = $this->marketStatusService->getMarketStatus();
             
             if (empty($liveData)) {
@@ -383,9 +396,9 @@ class TrueDataController extends Controller
                 // Wait a moment for the job to complete
                 sleep(2);
                 
-                // Try to get data again
-                $liveData = Cache::get('truedata_live_data', []);
-                $lastUpdate = Cache::get('truedata_last_update', null);
+                // Try to get data again (direct from Python script)
+                $liveData = $this->getLiveDataFromPythonScript();
+                $lastUpdate = now();
                 
                 if (empty($liveData)) {
                     return response()->json([
@@ -421,6 +434,44 @@ class TrueDataController extends Controller
                 'error' => $e->getMessage(),
                 'message' => 'Failed to fetch live data'
             ], 500);
+        }
+    }
+
+    /**
+     * Get live data directly from Python script (minimal caching for performance)
+     */
+    private function getLiveDataFromPythonScript(): array
+    {
+        try {
+            // Check if we have very recent data (last 2 seconds)
+            $cachedData = Cache::get('truedata_live_data', []);
+            $lastUpdate = Cache::get('truedata_last_update', null);
+            
+            // If data is very recent (less than 30 seconds old), use it
+            if (!empty($cachedData) && $lastUpdate && $lastUpdate->diffInSeconds(now()) < 30) {
+                Log::info('Using very recent cached data - ' . count($cachedData) . ' symbols');
+                return $cachedData;
+            }
+            
+            // Otherwise, trigger fresh data fetch
+            \App\Jobs\FetchTrueDataJob::dispatch();
+            
+            // Wait briefly for job to complete
+            usleep(500000); // 0.5 seconds
+            
+            // Try to get fresh data
+            $freshData = Cache::get('truedata_live_data', []);
+            if (!empty($freshData)) {
+                Log::info('Fresh data fetched - ' . count($freshData) . ' symbols');
+                return $freshData;
+            }
+            
+            Log::warning('No live data available');
+            return [];
+            
+        } catch (\Exception $e) {
+            Log::error('Error getting live data: ' . $e->getMessage());
+            return [];
         }
     }
 
