@@ -199,7 +199,7 @@
                   class="option-row put-option"
                 >
                   <div class="option-strike">{{ option.strike }}</div>
-                  <div class="option-price">₹{{ option.price || '--' }}</div>
+                  <div class="option-price">₹{{ option.price || option.ltp || '--' }}</div>
                   <div class="option-details">
                     <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
                     <div class="option-oi">OI: {{ option.oi || '--' }}</div>
@@ -270,7 +270,7 @@
                   class="option-row call-option"
                 >
                   <div class="option-strike">{{ option.strike }}</div>
-                  <div class="option-price">₹{{ option.price || '--' }}</div>
+                  <div class="option-price">₹{{ option.price || option.ltp || '--' }}</div>
                   <div class="option-details">
                     <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
                     <div class="option-oi">OI: {{ option.oi || '--' }}</div>
@@ -483,9 +483,14 @@
 
 <script>
 import axios from 'axios';
+  import { useToast } from 'vue-toastification';
 
 export default {
   name: 'AITradingSession',
+    setup() {
+      const toast = useToast();
+      return { toast };
+    },
   data() {
     return {
       user: {},
@@ -846,41 +851,63 @@ export default {
         strikes.push(strike);
       }
       
-      this.callOptions = strikes.map(strike => ({
-        strike: strike,
-        strike_price: strike,
-        price: (strike * 0.01).toFixed(2),
-        bid: (strike * 0.01).toFixed(2),
-        ask: (strike * 0.015).toFixed(2),
-        volume: Math.floor(Math.random() * 1000),
-        oi: Math.floor(Math.random() * 5000),
-        open_interest: Math.floor(Math.random() * 5000),
-        implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3),
-        greeks: {
-          delta: (Math.random() * 0.8 + 0.1).toFixed(3),
-          gamma: (Math.random() * 0.1).toFixed(3),
-          theta: (-Math.random() * 0.5).toFixed(3),
-          vega: (Math.random() * 0.3).toFixed(3)
-        }
-      }));
+      this.callOptions = strikes.map(strike => {
+        const distanceFromATM = Math.abs(strike - currentPrice);
+        const basePrice = Math.max(10, distanceFromATM * 0.1); // Minimum ₹10
+        const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+        const finalPrice = (basePrice * randomFactor).toFixed(2);
+        
+        const optionData = {
+          strike: strike,
+          strike_price: strike,
+          price: finalPrice,
+          ltp: finalPrice,
+          bid: (parseFloat(finalPrice) * 0.98).toFixed(2),
+          ask: (parseFloat(finalPrice) * 1.02).toFixed(2),
+          volume: Math.floor(Math.random() * 1000),
+          oi: Math.floor(Math.random() * 5000),
+          open_interest: Math.floor(Math.random() * 5000),
+          implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3),
+          greeks: {
+            delta: (Math.random() * 0.8 + 0.1).toFixed(3),
+            gamma: (Math.random() * 0.1).toFixed(3),
+            theta: (-Math.random() * 0.5).toFixed(3),
+            vega: (Math.random() * 0.3).toFixed(3)
+          }
+        };
+        
+        console.log('Generated CALL option:', optionData);
+        return optionData;
+      });
       
-      this.putOptions = strikes.map(strike => ({
-        strike: strike,
-        strike_price: strike,
-        price: (strike * 0.01).toFixed(2),
-        bid: (strike * 0.01).toFixed(2),
-        ask: (strike * 0.015).toFixed(2),
-        volume: Math.floor(Math.random() * 1000),
-        oi: Math.floor(Math.random() * 5000),
-        open_interest: Math.floor(Math.random() * 5000),
-        implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3),
-        greeks: {
-          delta: (-Math.random() * 0.8 - 0.1).toFixed(3),
-          gamma: (Math.random() * 0.1).toFixed(3),
-          theta: (-Math.random() * 0.5).toFixed(3),
-          vega: (Math.random() * 0.3).toFixed(3)
-        }
-      }));
+      this.putOptions = strikes.map(strike => {
+        const distanceFromATM = Math.abs(strike - currentPrice);
+        const basePrice = Math.max(10, distanceFromATM * 0.1); // Minimum ₹10
+        const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+        const finalPrice = (basePrice * randomFactor).toFixed(2);
+        
+        const optionData = {
+          strike: strike,
+          strike_price: strike,
+          price: finalPrice,
+          ltp: finalPrice,
+          bid: (parseFloat(finalPrice) * 0.98).toFixed(2),
+          ask: (parseFloat(finalPrice) * 1.02).toFixed(2),
+          volume: Math.floor(Math.random() * 1000),
+          oi: Math.floor(Math.random() * 5000),
+          open_interest: Math.floor(Math.random() * 5000),
+          implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3),
+          greeks: {
+            delta: (-Math.random() * 0.8 - 0.1).toFixed(3),
+            gamma: (Math.random() * 0.1).toFixed(3),
+            theta: (-Math.random() * 0.5).toFixed(3),
+            vega: (Math.random() * 0.3).toFixed(3)
+          }
+        };
+        
+        console.log('Generated PUT option:', optionData);
+        return optionData;
+      });
       
       // Update filtered options
       this.filterOptions();
@@ -1046,17 +1073,38 @@ export default {
         });
 
         if (response.data.success) {
-          this.showSuccess(`Trade executed successfully! Order #${response.data.order_id}`);
+            // Show success toast
+            this.toast.success(`🎯 Trade Executed Successfully!`, {
+              timeout: 5000,
+              closeOnClick: true,
+              pauseOnFocusLoss: true,
+              pauseOnHover: true,
+              draggable: true,
+              draggablePercent: 0.6,
+              showCloseButtonOnHover: false,
+              hideProgressBar: false,
+              icon: true
+            });
+
+            // Show detailed success message
+            this.toast.info(`Order #${response.data.order_id} | ${this.tradeData.action} ${this.tradeData.optionType} ${this.tradeData.stock.symbol} @ ₹${this.tradeData.strikePrice}`, {
+              timeout: 7000
+            });
+
           this.closeTradeModal();
           this.loadUserOrders();
           // Refresh live user balance from database
           this.loadUserBalance();
         } else {
-          this.showError(response.data.message || 'Failed to execute trade');
+            this.toast.error(response.data.message || 'Failed to execute trade', {
+              timeout: 5000
+            });
         }
       } catch (error) {
         console.error('Error executing trade:', error);
-        this.showError('Failed to execute trade');
+          this.toast.error('❌ Failed to execute trade. Please try again.', {
+            timeout: 5000
+          });
       }
     },
     async loadUserOrders() {
@@ -2120,7 +2168,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 20px;
 }
 
