@@ -17,10 +17,7 @@ class AITradingController extends Controller
     private function isMarketOpen(): bool
     {
         try {
-            // Get market status from cache
-            $marketStatus = Cache::get('truedata_market_status', 'CLOSED');
-            
-            // Also check current time (Indian market hours: 9:15 AM to 3:30 PM IST)
+            // Use the same logic as MarketStatusService for consistency
             $currentTime = now('Asia/Kolkata');
             $currentHour = $currentTime->hour;
             $currentMinute = $currentTime->minute;
@@ -36,8 +33,8 @@ class AITradingController extends Controller
             // Check if current time is within market hours
             $isWithinHours = $currentTimeMinutes >= $marketOpenTime && $currentTimeMinutes <= $marketCloseTime;
             
-            // Market is open if: status is OPEN AND it's weekday AND within hours
-            return $marketStatus === 'OPEN' && $isWeekday && $isWithinHours;
+            // Market is open if: it's weekday AND within hours
+            return $isWeekday && $isWithinHours;
             
         } catch (\Exception $e) {
             Log::error('Error checking market status: ' . $e->getMessage());

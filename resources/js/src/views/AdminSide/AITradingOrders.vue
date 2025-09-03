@@ -585,13 +585,13 @@ export default {
       }
     },
     startAutoRefresh() {
-      // Auto-refresh every 30 seconds when market is open
+      // Auto-refresh every 10 seconds when market is open
       this.autoRefreshInterval = setInterval(() => {
         if (this.marketStatus.is_open) {
           this.loadMarketData();
           this.loadUserOrders(); // Also refresh orders to get updated P&L
         }
-      }, 30000); // 30 seconds
+      }, 10000); // 10 seconds for faster updates
     },
     async exitTrade(orderId) {
       try {

@@ -36,9 +36,14 @@
             class="refresh-btn"
             title="Refresh current data"
           >
-            <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-            {{ loading ? 'Refreshing...' : 'Refresh' }}
+            <i class="fas fa-sync-alt" :class="{ 'fa-spin': isRefreshing }"></i>
+            {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
           </button>
+          
+          <div v-if="isRefreshing" class="refresh-indicator">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>Auto-refreshing data...</span>
+          </div>
           
           <div class="market-info">
             <div class="market-status">
@@ -341,6 +346,7 @@ export default {
     return {
       loading: false,
       reconnecting: false,
+      isRefreshing: false,
       marketStatus: 'CLOSED',
       marketInfo: {
         trading_hours: '9:00 AM - 3:30 PM IST',
@@ -455,14 +461,15 @@ export default {
   methods: {
     async loadMarketData() {
       this.loading = true;
-      console.log('Loading TrueData live market data...');
+      this.isRefreshing = true;
+      console.log('📊 Loading TrueData live market data at:', new Date().toLocaleTimeString());
       
       try {
         const token = localStorage.getItem('access_token');
         console.log('Token:', token ? 'Present' : 'Missing');
         
         // First try to get live data from Python script
-        console.log('Loading live data from Python script...');
+        console.log('🔄 Loading live data from Python script...');
         
                  const liveResponse = await axios.get('/api/truedata/live-data', {
            headers: {
@@ -471,14 +478,15 @@ export default {
            params: { _t: Date.now() } // Cache busting parameter
          });
 
-         console.log('TrueData Live Data API Response:', liveResponse.data);
-         console.log('Response status:', liveResponse.status);
-         console.log('Data keys:', Object.keys(liveResponse.data.data || {}));
+         console.log('✅ TrueData Live Data API Response:', liveResponse.data);
+         console.log('📈 Response status:', liveResponse.status);
+         console.log('🔢 Data keys count:', Object.keys(liveResponse.data.data || {}).length);
 
                  // Handle both success and failure cases
          if (liveResponse.data.success && liveResponse.data.data && Object.keys(liveResponse.data.data).length > 0) {
            // Live data available
            const liveData = liveResponse.data.data;
+           console.log('🎯 Live data received:', Object.keys(liveData).length, 'symbols');
            console.log('Processing Live Data:', liveData);
            console.log('Data count:', liveResponse.data.data_count);
            console.log('Last update:', liveResponse.data.last_update);
@@ -689,10 +697,9 @@ export default {
 
     startAutoRefresh() {
       this.autoRefreshInterval = setInterval(() => {
-        if (this.marketStatus === 'OPEN') {
-          this.loadMarketData();
-        }
-      }, 30000); // 30 seconds
+        console.log('🔄 Auto-refresh triggered at:', new Date().toLocaleTimeString(), 'Market status:', this.marketStatus);
+        this.loadMarketData();
+      }, 10000); // 10 seconds for faster updates
     },
 
     stopAutoRefresh() {
@@ -1117,6 +1124,23 @@ export default {
   min-height: 100vh;
   background: linear-gradient(135deg, #0d0d1a 0%, #101022 100%);
   color: white;
+}
+
+.refresh-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4CAF50;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.refresh-indicator i {
+  color: #4CAF50;
 }
 
 /* Page Header - Matching Withdrawal Request Style */

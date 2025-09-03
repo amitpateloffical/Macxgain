@@ -518,12 +518,12 @@ export default {
       }
     },
     startAutoRefresh() {
-      // Auto-refresh market data and status every 30 seconds
+      // Auto-refresh market data and status every 10 seconds
       this.autoRefreshInterval = setInterval(() => {
         this.loadMarketStatus();
         this.loadMarketData();
         console.log('Auto-refresh: Market data and status updated');
-      }, 30000); // 30 seconds
+      }, 10000); // 10 seconds for faster updates
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
