@@ -282,7 +282,21 @@ if __name__ == "__main__":
     data = fetch_live_data()
     if data:
         print(json.dumps(data, indent=2))
+        # Write real data to JSON file
+        try:
+            with open('market_data.json', 'w') as f:
+                json.dump(data, f, indent=2)
+            print(f"Real data written to market_data.json", file=sys.stderr)
+        except Exception as e:
+            print(f"Error writing real data to JSON file: {e}", file=sys.stderr)
     else:
         # Generate fallback data if connection fails
         fallback_data = generate_fallback_data()
         print(json.dumps(fallback_data, indent=2))
+        # Write fallback data to JSON file
+        try:
+            with open('market_data.json', 'w') as f:
+                json.dump(fallback_data, f, indent=2)
+            print(f"Fallback data written to market_data.json", file=sys.stderr)
+        except Exception as e:
+            print(f"Error writing fallback data to JSON file: {e}", file=sys.stderr)

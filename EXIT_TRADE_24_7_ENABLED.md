@@ -125,3 +125,4 @@ The issue was in the frontend `AITradingOrders.vue` file:
 
 
 
+
