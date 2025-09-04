@@ -31,32 +31,97 @@ class FetchTrueDataJob implements ShouldQueue
         try {
             Log::info('FetchTrueDataJob: Starting TrueData fetch...');
             
-            // Run Python script to fetch data
-            $result = Process::timeout(10)->run('python3 truedata_test.py');
+            // Try to get data from the running WebSocket daemon first
+            $webSocketData = $this->getDataFromWebSocketDaemon();
             
-            if ($result->successful()) {
-                $output = $result->output();
-                Log::info('FetchTrueDataJob: Python script executed successfully');
+            if (!empty($webSocketData)) {
+                // Store in cache with short expiry (30 seconds) for real-time data
+                Cache::put('truedata_live_data', $webSocketData, 30);
+                Cache::put('truedata_last_update', now(), 30);
+                Cache::put('truedata_data_type', 'LIVE', 30);
                 
-                // Parse the output and extract market data
-                $marketData = $this->parsePythonOutput($output);
-                
-                if (!empty($marketData)) {
-                    // Store in cache with short expiry (5 seconds) for real-time data
-                    Cache::put('truedata_live_data', $marketData, 5);
-                    Cache::put('truedata_last_update', now(), 5);
-                    
-                    Log::info('FetchTrueDataJob: Market data cached for 5 seconds - ' . count($marketData) . ' symbols');
-                } else {
-                    Log::warning('FetchTrueDataJob: No market data parsed from Python output');
-                }
-                
+                Log::info('FetchTrueDataJob: WebSocket data cached for 30 seconds - ' . count($webSocketData) . ' symbols');
             } else {
-                Log::error('FetchTrueDataJob: Python script failed - ' . $result->errorOutput());
+                // Fallback: Run Python script to fetch data
+                $result = Process::timeout(5)->run('python3 truedata_fetch.py');
+                
+                if ($result->successful()) {
+                    $output = $result->output();
+                    Log::info('FetchTrueDataJob: Python script executed successfully');
+                    
+                    // Parse the output and extract market data
+                    $marketData = $this->parsePythonOutput($output);
+                    
+                    if (!empty($marketData)) {
+                        // Store in cache with short expiry (30 seconds) for real-time data
+                        Cache::put('truedata_live_data', $marketData, 30);
+                        Cache::put('truedata_last_update', now(), 30);
+                        Cache::put('truedata_data_type', 'LIVE', 30);
+                        
+                        Log::info('FetchTrueDataJob: Market data cached for 30 seconds - ' . count($marketData) . ' symbols');
+                    } else {
+                        Log::warning('FetchTrueDataJob: No market data parsed from Python output');
+                    }
+                    
+                } else {
+                    Log::error('FetchTrueDataJob: Python script failed - ' . $result->errorOutput());
+                }
             }
             
         } catch (\Exception $e) {
             Log::error('FetchTrueDataJob: Error - ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get data from the running WebSocket daemon
+     */
+    private function getDataFromWebSocketDaemon(): array
+    {
+        try {
+            // Check if market_data.json file exists and is recent (less than 30 seconds old)
+            $jsonFile = base_path('market_data.json');
+            
+            if (file_exists($jsonFile)) {
+                $fileTime = filemtime($jsonFile);
+                $currentTime = time();
+                
+                // Only use file if it's less than 30 seconds old
+                if (($currentTime - $fileTime) < 30) {
+                    $jsonContent = file_get_contents($jsonFile);
+                    $webSocketData = json_decode($jsonContent, true);
+                    
+                    if (!empty($webSocketData) && is_array($webSocketData)) {
+                        // Convert WebSocket data format to our expected format
+                        $marketData = [];
+                        foreach ($webSocketData as $symbol => $data) {
+                            $marketData[$symbol] = [
+                                'symbol' => $data['symbol'] ?? $symbol,
+                                'ltp' => $data['ltp'] ?? 0,
+                                'high' => $data['high'] ?? 0,
+                                'low' => $data['low'] ?? 0,
+                                'open' => $data['open'] ?? 0,
+                                'prev_close' => $data['prev_close'] ?? 0,
+                                'change' => $data['change'] ?? 0,
+                                'change_percent' => $data['change_percent'] ?? 0,
+                                'volume' => $data['volume'] ?? 0,
+                                'timestamp' => $data['timestamp'] ?? now()->toISOString(),
+                                'source' => 'TrueData WebSocket Live'
+                            ];
+                        }
+                        
+                        Log::info('FetchTrueDataJob: Retrieved ' . count($marketData) . ' symbols from WebSocket JSON file');
+                        return $marketData;
+                    }
+                } else {
+                    Log::info('FetchTrueDataJob: JSON file is too old (' . ($currentTime - $fileTime) . ' seconds)');
+                }
+            }
+            
+            return [];
+        } catch (\Exception $e) {
+            Log::error('FetchTrueDataJob: Error getting WebSocket data - ' . $e->getMessage());
+            return [];
         }
     }
     

@@ -216,6 +216,14 @@ def fetch_live_data():
                 
         print(f"Collected {data_count} messages, {len(market_data)} symbols", file=sys.stderr)
         
+        # Write data to JSON file for Laravel to read
+        try:
+            with open('market_data.json', 'w') as f:
+                json.dump(market_data, f, indent=2)
+            print(f"Data written to market_data.json", file=sys.stderr)
+        except Exception as e:
+            print(f"Error writing to JSON file: {e}", file=sys.stderr)
+        
     except Exception as e:
         print(f"WebSocket error: {e}", file=sys.stderr)
         return None

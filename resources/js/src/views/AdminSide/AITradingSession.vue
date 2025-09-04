@@ -474,7 +474,7 @@ export default {
       // Search filter
       if (this.searchQuery) {
         stocks = stocks.filter(stock => 
-          stock.symbol.toLowerCase().includes(this.searchQuery.toLowerCase())
+          (stock.symbol || '').toString().toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
       
@@ -488,7 +488,10 @@ export default {
           case 'volume':
             return (b.volume || 0) - (a.volume || 0);
           default:
-            return a.symbol.localeCompare(b.symbol);
+            // Safe symbol comparison with fallback
+            const symbolA = (a.symbol || '').toString();
+            const symbolB = (b.symbol || '').toString();
+            return symbolA.localeCompare(symbolB);
         }
       });
       
@@ -575,9 +578,14 @@ export default {
         });
 
         if (response.data.success && response.data.data) {
+          console.log('Market data received:', response.data.data);
           this.liveStocks = response.data.data.live_stocks || [];
           this.marketStatus = response.data.data.market_status || { is_open: false, status: 'CLOSED' };
           this.lastUpdate = response.data.data.last_update;
+          console.log('Live stocks loaded:', this.liveStocks.length, 'stocks');
+          console.log('First stock sample:', this.liveStocks[0]);
+        } else {
+          console.log('No market data received:', response.data);
         }
       } catch (error) {
         console.error('Error loading market data:', error);

@@ -105,3 +105,7 @@ this.loadUserBalance(); // showToast = false (default)
 - ✅ **Professional**: Focused, relevant notifications
 
 **Test karo: Execute trade karo aur dekho sirf trade success toast aayega!** 🎉
+
+
+
+

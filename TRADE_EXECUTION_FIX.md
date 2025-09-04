@@ -132,3 +132,7 @@ async executeTrade() {
 - ✅ **Success Flow**: Trade executes, modal closes, data refreshes
 
 **Test karo: JKTYRE pe BUY CALL karo aur "Execute Trade" button pe click karo!** 🚀
+
+
+
+

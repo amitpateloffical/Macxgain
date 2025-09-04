@@ -128,3 +128,7 @@ avgProfitPerTrade() {
 - ✅ **Professional Look**: Clean, formatted financial data
 
 **Test karo: AI Trading Orders page pe jaao aur dekho sab numbers properly formatted hain!** 🎉
+
+
+
+

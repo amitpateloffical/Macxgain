@@ -40,3 +40,7 @@ When you upgrade to a **paid TrueData account**, the following additional indice
 - **Trial Account**: 3 major indices available
 - **Paid Account**: 5 major indices available
 - **UI Ready**: Already configured to show all 5 indices when available
+
+
+
+

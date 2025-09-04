@@ -110,3 +110,7 @@ if (!$this->isMarketOpen()) {
 - ✅ Clean, professional trading experience
 
 **Ab bilkul koi market hours ka message nahi aayega! Pure 24/7 trading enabled hai!** 🎉
+
+
+
+

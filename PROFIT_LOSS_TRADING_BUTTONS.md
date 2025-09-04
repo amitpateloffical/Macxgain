@@ -165,3 +165,7 @@ async executeTradeWithLoss() {
 - ✅ **Clear Feedback**: Toast notifications with profit/loss amounts
 
 **Test karo: Option chain pe click karo aur dekho 2 buttons - Trade with Profit aur Trade with Loss!** 🎉
+
+
+
+

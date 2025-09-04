@@ -154,3 +154,7 @@ $availableBalance = $totalBalance - $blockedAmount;
 - ✅ **Real-time Updates**: Balance updates immediately
 
 **Test karo: Trade lagao aur dekho balance sahi se block ho raha hai, exit pe sahi se return ho raha hai!** 🎉
+
+
+
+
