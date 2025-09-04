@@ -59,15 +59,16 @@ class TrueDataController extends Controller
             
             // Get cached data
             $cachedData = $this->trueDataService->getCachedMarketData();
+            
             // Prepare response data
             $responseData = [
-                'market_status' => $marketStatus['success'] ? $marketStatus['data'] : null,
+                'market_status' => $marketStatus, // MarketStatusService returns the status directly
                 'quotes' => $cachedData,
                 'indices' => array_slice($cachedData, 0, 5, true), // First 5 as indices
                 'top_gainers' => array_slice($cachedData, 0, 10, true), // First 10 as gainers
                 'top_losers' => array_slice($cachedData, 5, 10, true), // Next 10 as losers
                 'timestamp' => now()->toISOString(),
-                'data_source' => 'TrueData Historical Data (Market Closed)',
+                'data_source' => $isMarketLive ? 'TrueData Live Market Data' : 'TrueData Historical Data (Market Closed)',
                 'last_updated' => now()->format('H:i:s')
             ];
 

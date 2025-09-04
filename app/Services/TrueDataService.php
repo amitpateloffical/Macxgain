@@ -44,6 +44,13 @@ class TrueDataService
      */
     public function getCachedMarketData()
     {
+        // First try to get live data from Python script
+        $liveData = Cache::get('truedata_live_data', []);
+        if (!empty($liveData)) {
+            return $liveData;
+        }
+        
+        // Fallback to WebSocket manager data
         return $this->webSocketManager->getCachedMarketData();
     }
 

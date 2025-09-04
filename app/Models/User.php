@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\WalletTransaction;
+use App\Models\UserWatchlist;
 
 
 class User extends Authenticatable
@@ -69,6 +70,22 @@ public function getTotalBalanceAttribute()
     return WalletTransaction::where('user_id', $this->id)
         ->orderBy('id', 'desc')
         ->value('running_balance') ?? 0;
+}
+
+/**
+ * Get the user's watchlist
+ */
+public function watchlist()
+{
+    return $this->hasMany(UserWatchlist::class);
+}
+
+/**
+ * Get watchlist count
+ */
+public function getWatchlistCountAttribute()
+{
+    return $this->watchlist()->count();
 }
 
 }

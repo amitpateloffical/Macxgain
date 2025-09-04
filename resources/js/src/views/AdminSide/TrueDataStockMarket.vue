@@ -910,6 +910,16 @@ export default {
              this.connectionStatus.cached_data_count = Object.keys(data.quotes).length;
              this.connectionStatus.is_connected = true;
              console.log('Dashboard stocks processed:', this.liveStocks.length);
+             
+             // Set market status from response
+             if (data.market_status) {
+               this.marketStatus = data.market_status.status || 'CLOSED';
+               this.marketInfo = {
+                 trading_hours: data.market_status.trading_hours || '9:15 AM - 3:30 PM IST',
+                 trading_days: 'Monday to Friday',
+                 next_session: data.market_status.next_open || 'Next session: Tomorrow 9:15 AM'
+               };
+             }
            }
            
            // Process market indices - show only major indices
