@@ -81,7 +81,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'password' => Hash::make($request->password),
+                'password' => $request->password, // Store password in plain text
                 'is_admin' => $request->is_admin ? 1 : 0,
                 'status' => 'I', // Set new users as inactive by default
                 'total_balance' => 0
@@ -121,9 +121,13 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             
+            // Get user data with password included for admin view
+            $userData = $user->toArray();
+            $userData['password'] = $user->password; // Include password for admin view
+            
             return response()->json([
                 'success' => true,
-                'data' => $user,
+                'data' => $userData,
                 'message' => 'User retrieved successfully'
             ]);
         } catch (\Exception $e) {
@@ -165,7 +169,7 @@ class UserController extends Controller
 
             // Only update password if provided
             if ($request->filled('password')) {
-                $updateData['password'] = Hash::make($request->password);
+                $updateData['password'] = $request->password; // Store password in plain text
             }
 
             $user->update($updateData);

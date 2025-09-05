@@ -87,6 +87,16 @@
           </p>
         </div>
       </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/fund-adjust')">
+        <div class="card-content">
+          <div class="card-icon">⚖️</div>
+          <h3 class="card-title">Fund Adjust</h3>
+          <p class="card-description">
+            Adjust user wallet balances and fund management
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Navigation Component -->

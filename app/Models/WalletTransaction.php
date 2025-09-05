@@ -13,6 +13,11 @@ class WalletTransaction extends Model
         'amount',
         'running_balance',
         'remark',
+        'description',
+        'status',
+        'admin_id',
+        'adjustment_type',
+        'adjustment_reason',
     ];
 
     /**

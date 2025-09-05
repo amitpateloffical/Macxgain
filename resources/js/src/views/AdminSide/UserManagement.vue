@@ -556,6 +556,14 @@
               </div>
               
               <div class="info-row">
+                <span class="info-label">Password:</span>
+                <span class="info-value password-value">
+                  <span v-if="viewingUser.password" class="password-text">{{ viewingUser.password }}</span>
+                  <span v-else class="no-password">Not available</span>
+                </span>
+              </div>
+              
+              <div class="info-row">
                 <span class="info-label">Role:</span>
                 <span class="info-value">
                   <span class="role-badge" :class="getRoleClass(viewingUser.role)">
@@ -3031,6 +3039,25 @@ const handleClickOutside = (event, modalRef) => {
 .info-value {
   font-weight: 400;
   color: #a1a1a1;
+}
+
+.password-value {
+  font-family: 'Courier New', monospace;
+  background: rgba(0, 255, 128, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 128, 0.3);
+}
+
+.password-text {
+  color: #00ff80;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.no-password {
+  color: #ff6b6b;
+  font-style: italic;
 }
 
 .balance-value {

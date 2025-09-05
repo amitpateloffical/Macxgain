@@ -167,7 +167,24 @@ class UserProfileController extends Controller
         return response(['errors' => $validator->errors()->messages(), 'code' => 422], 422);
     }
 
-    if (!(Hash::check($request->get('current_password'), $user->password))) {
+    // Check if current password matches (handle both plain text and hashed passwords)
+    $currentPassword = $request->get('current_password');
+    $storedPassword = $user->password;
+    
+    // Check if stored password is hashed (starts with $2y$)
+    $isStoredPasswordHashed = str_starts_with($storedPassword, '$2y$');
+    
+    $passwordMatches = false;
+    
+    if ($isStoredPasswordHashed) {
+        // If stored password is hashed, use Hash::check
+        $passwordMatches = Hash::check($currentPassword, $storedPassword);
+    } else {
+        // If stored password is plain text, do direct comparison
+        $passwordMatches = ($currentPassword === $storedPassword);
+    }
+    
+    if (!$passwordMatches) {
         return response()->json([
             'errors' => ['Your Current Password does not match with the password you provided.']
         ], 422);
@@ -178,7 +195,8 @@ class UserProfileController extends Controller
             'errors' => ['New Password cannot be the same as your Current Password.']
         ], 422);
     }
-    $user->password = bcrypt($request->get('new_password'));
+    // Store password in plain text (not hashed)
+    $user->password = $request->get('new_password');
     $user->save();
     return response()->json([
         'data' => [],

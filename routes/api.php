@@ -21,6 +21,7 @@ use App\Http\Controllers\TrueDataController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminPaymentCollectorController;
 use App\Http\Controllers\AITradingController;
+use App\Http\Controllers\FundAdjustController;
 
 
 
@@ -102,6 +103,11 @@ Route::middleware('auth:api')->group(function() {
     Route::get('/register-requests', [RegisterRequestController::class, 'index']);
     Route::patch('/register-requests/{id}/approve', [RegisterRequestController::class, 'approve']);
     Route::patch('/register-requests/{id}/reject', [RegisterRequestController::class, 'reject']);
+    
+    // Fund Adjustment API Routes
+    Route::get('/users/search', [FundAdjustController::class, 'searchUsers']);
+    Route::post('/admin/fund-adjust', [FundAdjustController::class, 'adjustFund']);
+    Route::get('/admin/fund-adjustments', [FundAdjustController::class, 'getRecentAdjustments']);
 });
 
 // TrueData API Routes (temporarily without auth for testing)
