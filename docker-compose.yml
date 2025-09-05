@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: macxgain-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./public/files:/var/www/html/public/files
+      - ./logs:/var/log
+      - cache_data:/var/cache/laravel
+      - redis_cache:/var/cache/redis
+      - websocket_logs:/var/log/websocket
+      - truedata_logs:/var/log/truedata
+      - scheduler_logs:/var/log/scheduler
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=macxgain
+      - DB_USERNAME=macxgain
+      - DB_PASSWORD=macxgain123
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - macxgain-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mysql:
+    image: mysql:8.0
+    container_name: macxgain-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: macxgain
+      MYSQL_USER: macxgain
+      MYSQL_PASSWORD: macxgain123
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - macxgain-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: macxgain-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - macxgain-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: macxgain-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: macxgain
+      PMA_PASSWORD: macxgain123
+    depends_on:
+      - mysql
+    networks:
+      - macxgain-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  cache_data:
+    driver: local
+  redis_cache:
+    driver: local
+  websocket_logs:
+    driver: local
+  truedata_logs:
+    driver: local
+  scheduler_logs:
+    driver: local
+
+networks:
+  macxgain-network:
+    driver: bridge
