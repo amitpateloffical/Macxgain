@@ -1,5 +1,14 @@
 <template>
   <div class="dashboard-screen">
+    <!-- Floating Particles -->
+    <div class="floating-particles">
+      <div class="particle" v-for="i in 15" :key="i" :style="{ 
+        left: Math.random() * 100 + '%', 
+        animationDelay: Math.random() * 15 + 's',
+        animationDuration: (Math.random() * 8 + 8) + 's'
+      }"></div>
+    </div>
+
     <!-- Dashboard Title -->
     <div class="dashboard-header">
       <h1 class="dashboard-title">Dashboard</h1>
@@ -181,71 +190,177 @@ export default {
 <style scoped>
 /* Mobile-First Responsive Design - NO HORIZONTAL SCROLLING */
 .dashboard-screen {
-  background-color: #0d0d1a;
+  background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+  background-attachment: fixed;
   color: white;
   min-height: 100vh;
-  padding: 16px;
+  padding: 20px;
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
   box-sizing: border-box;
+  position: relative;
+}
+
+.dashboard-screen::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 128, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 255, 128, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(0, 255, 128, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Floating Particles */
+.floating-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgba(0, 255, 128, 0.5);
+  border-radius: 50%;
+  animation: float linear infinite;
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.4);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
 }
 
 .dashboard-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   text-align: left;
   width: 100%;
+  background: linear-gradient(145deg, rgba(0, 255, 128, 0.05), rgba(0, 255, 128, 0.02));
+  border: 1px solid rgba(0, 255, 128, 0.1);
+  border-radius: 20px;
+  padding: 24px 32px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 32px rgba(0, 255, 128, 0.1);
 }
 
 .dashboard-title {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 800;
   color: #00ff80;
   margin: 0 0 8px 0;
   line-height: 1.2;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  text-shadow: 0 0 20px rgba(0, 255, 128, 0.3);
+  background: linear-gradient(135deg, #00ff80, #00cc66);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .dashboard-subtitle {
   font-size: 16px;
-  color: #9ca3af;
+  color: #b0b0b0;
   margin: 0;
   line-height: 1.4;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-weight: 400;
 }
 
 .dashboard-cards {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .dashboard-card {
-  background: linear-gradient(145deg, #101022, #0d0d1a);
+  background: linear-gradient(145deg, rgba(16, 16, 34, 0.8), rgba(13, 13, 26, 0.9));
   border: 1px solid rgba(0, 255, 128, 0.2);
-  border-radius: 12px;
-  padding: 20px 16px;
+  border-radius: 16px;
+  padding: 24px 20px;
   text-decoration: none;
   color: white;
   width: 100%;
-  min-height: 140px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 255, 128, 0.05);
+  min-height: 160px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   overflow: hidden;
   cursor: pointer;
   user-select: none;
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 255, 128, 0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
 }
 
 .dashboard-card:hover {
-  background: linear-gradient(145deg, #0f172a, #0b0b16);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(11, 11, 22, 0.95));
   border-color: #00ff80;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 255, 128, 0.2);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 255, 128, 0.3);
+}
+
+.dashboard-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s;
+  pointer-events: none;
+}
+
+.dashboard-card:hover::after {
+  left: 100%;
 }
 
 .card-content {
@@ -257,39 +372,60 @@ export default {
   justify-content: center;
   align-items: center;
   padding: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .card-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-size: 36px;
+  margin-bottom: 16px;
   display: block;
   line-height: 1;
   flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-shadow: 0 0 15px rgba(0, 255, 128, 0.3);
+}
+
+.dashboard-card:hover .card-icon {
+  transform: scale(1.1) rotate(5deg);
+  text-shadow: 0 0 25px rgba(0, 255, 128, 0.5);
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
   color: white;
   line-height: 1.3;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
   max-width: 100%;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .card-title {
+  color: #00ff80;
+  text-shadow: 0 0 15px rgba(0, 255, 128, 0.4);
 }
 
 .card-description {
-  font-size: 14px;
-  color: #9ca3af;
+  font-size: 15px;
+  color: #b0b0b0;
   line-height: 1.4;
   margin: 0;
-  padding: 0 8px;
+  padding: 0 12px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
   max-width: 100%;
   text-align: center;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .card-description {
+  color: #d0d0d0;
 }
 
 /* Tablet Breakpoint (768px and up) */
