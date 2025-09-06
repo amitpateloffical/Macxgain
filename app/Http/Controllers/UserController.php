@@ -18,7 +18,7 @@ class UserController extends Controller
     public function getUserInfo()
     {
         $user = Auth::guard('api')->user();
-        
+
         if (!$user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
@@ -39,11 +39,20 @@ class UserController extends Controller
     public function index()
     {
         try {
-                    $users = User::select([
-            'id', 'name', 'email', 'phone', 'is_admin', 'status',
-            'created_at', 'last_login_at', 'bank_name', 'account_no', 'ifsc_code',
-            'profile_image'
-        ])->get();
+            $users = User::select([
+                'id',
+                'name',
+                'email',
+                'phone',
+                'is_admin',
+                'status',
+                'created_at',
+                'last_login_at',
+                'bank_name',
+                'account_no',
+                'ifsc_code',
+                'profile_image'
+            ])->get();
 
             return response()->json([
                 'success' => true,
@@ -84,7 +93,8 @@ class UserController extends Controller
                 'password' => $request->password, // Store password in plain text
                 'is_admin' => $request->is_admin ? 1 : 0,
                 'status' => 'I', // Set new users as inactive by default
-                'total_balance' => 0
+                'total_balance' => 0,
+                'mobile_code'   => 91, // ✅ Default mobile code
             ];
 
             // Handle profile image upload
@@ -120,11 +130,11 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            
+
             // Get user data with password included for admin view
             $userData = $user->toArray();
             $userData['password'] = $user->password; // Include password for admin view
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $userData,
@@ -149,7 +159,7 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            
+
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => ['required', 'email', Rule::unique('users')->ignore($id)],
@@ -198,7 +208,7 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             $user->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'User deleted successfully'
@@ -227,7 +237,7 @@ class UserController extends Controller
 
             $user = User::findOrFail($id);
             $user->update(['status' => $request->status]);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $user,
@@ -254,6 +264,4 @@ class UserController extends Controller
             'total_balance' => $user->total_balance
         ]);
     }
-
-
 }

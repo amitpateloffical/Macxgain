@@ -36,7 +36,8 @@ class User extends Authenticatable
         'address',
         'aadhar_front_image',
         'aadhar_back_image',
-        'pan_card_image'
+        'pan_card_image',
+        'mobile_code'
     ];
 
     /**

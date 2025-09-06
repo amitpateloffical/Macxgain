@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\TrueDataService;
 use App\Services\MarketStatusService;
 use App\Services\OptionsService;
+use App\Models\MarketData;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -57,14 +58,14 @@ class TrueDataController extends Controller
             $marketStatus = $this->marketStatusService->getMarketStatus();
             $isMarketLive = $this->marketStatusService->isMarketLive();
             
-            // Get data from cache (live or historical based on market status)
-            $cachedData = Cache::get('truedata_live_data', []);
-            $dataType = Cache::get('truedata_data_type', 'UNKNOWN');
-            $lastUpdate = Cache::get('truedata_last_update', now());
+            // Get data from database (with caching)
+            $marketData = MarketData::getAllMarketData(true);
+            $dataType = $isMarketLive ? 'LIVE' : 'HISTORICAL';
+            $lastUpdate = MarketData::getLatestDataTimestamp() ?? now();
             
-            // Convert cached data to array format for frontend
+            // Convert database data to array format for frontend
             $liveStocks = [];
-            foreach ($cachedData as $symbol => $stockData) {
+            foreach ($marketData as $symbol => $stockData) {
                 $liveStocks[] = [
                     'symbol' => $symbol,
                     'ltp' => $stockData['ltp'] ?? 0,
@@ -75,7 +76,9 @@ class TrueDataController extends Controller
                     'open' => $stockData['open'] ?? 0,
                     'prev_close' => $stockData['prev_close'] ?? 0,
                     'volume' => $stockData['volume'] ?? 0,
-                    'timestamp' => $stockData['timestamp'] ?? $lastUpdate->toISOString()
+                    'timestamp' => $stockData['timestamp'] ?? $lastUpdate->toISOString(),
+                    'is_live' => $stockData['is_live'] ?? false,
+                    'market_status' => $stockData['market_status'] ?? 'UNKNOWN'
                 ];
             }
             
@@ -106,7 +109,7 @@ class TrueDataController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $responseData,
-                'message' => 'Market data loaded successfully'
+                'message' => 'Market data loaded successfully from database'
             ]);
         } catch (\Exception $e) {
             Log::error('TrueData Dashboard Error: ' . $e->getMessage());
@@ -379,26 +382,32 @@ class TrueDataController extends Controller
     }
 
     /**
-     * Get live data from Python script (cached)
+     * Get live data from database (with fallback to Python script)
      */
     public function getLiveDataFromPython(): JsonResponse
     {
         try {
-            // Get live data directly from Python script (no cache)
-            $liveData = $this->getLiveDataFromPythonScript();
-            $lastUpdate = now();
+            // Get market status
             $marketStatus = $this->marketStatusService->getMarketStatus();
+            $isMarketLive = $this->marketStatusService->isMarketLive();
             
-            if (empty($liveData)) {
+            // First try to get data from database
+            $liveData = MarketData::getAllMarketData(true);
+            $lastUpdate = MarketData::getLatestDataTimestamp() ?? now();
+            
+            // If no data in database or data is stale, trigger fresh fetch
+            if (empty($liveData) || !MarketData::isDataFresh()) {
+                Log::info('No fresh data in database, triggering fresh fetch...');
+                
                 // Trigger job to fetch fresh data
                 \App\Jobs\FetchTrueDataJob::dispatch();
                 
                 // Wait a moment for the job to complete
                 sleep(2);
                 
-                // Try to get data again (direct from Python script)
-                $liveData = $this->getLiveDataFromPythonScript();
-                $lastUpdate = now();
+                // Try to get fresh data from database
+                $liveData = MarketData::getAllMarketData(false); // Skip cache for fresh data
+                $lastUpdate = MarketData::getLatestDataTimestamp() ?? now();
                 
                 if (empty($liveData)) {
                     return response()->json([
@@ -414,7 +423,7 @@ class TrueDataController extends Controller
             // Add market status to each data item
             foreach ($liveData as $symbol => &$data) {
                 $data['market_status'] = $marketStatus['status'];
-                $data['is_live'] = $marketStatus['is_live'] ?? false;
+                $data['is_live'] = $isMarketLive;
                 $data['data_source'] = $this->marketStatusService->getDataSourceMessage();
             }
             
@@ -424,7 +433,7 @@ class TrueDataController extends Controller
                 'last_update' => $lastUpdate,
                 'data_count' => count($liveData),
                 'market_status' => $marketStatus,
-                'message' => 'Live data fetched successfully from Python script'
+                'message' => 'Live data fetched successfully from database'
             ]);
             
         } catch (\Exception $e) {
@@ -616,19 +625,19 @@ class TrueDataController extends Controller
                 ], 400);
             }
 
-            // Try to get data from cache first
-            $cachedData = Cache::get('truedata_live_data', []);
+            // Try to get data from database first
+            $marketData = MarketData::getMarketDataForSymbols([$symbol], true);
             
-            // Check if symbol exists in cached data
-            if (isset($cachedData[$symbol])) {
+            // Check if symbol exists in database
+            if (isset($marketData[$symbol])) {
                 return response()->json([
                     'success' => true,
-                    'data' => $cachedData[$symbol],
-                    'message' => 'Stock data retrieved from cache'
+                    'data' => $marketData[$symbol],
+                    'message' => 'Stock data retrieved from database'
                 ]);
             }
 
-            // If not in cache, return error for now (can be enhanced later)
+            // If not in database, return error for now (can be enhanced later)
             return response()->json([
                 'success' => false,
                 'message' => 'Stock not found in current data. Please try again when market is open.'

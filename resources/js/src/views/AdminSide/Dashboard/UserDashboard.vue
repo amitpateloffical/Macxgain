@@ -8,8 +8,18 @@
       </div>
       <div class="header-stats">
         <div class="stat-item">
+          <span class="stat-label">Market Status</span>
+          <span class="stat-value" :class="marketStatus.is_live ? 'market-open' : 'market-closed'">
+            {{ marketStatus.status || 'Loading...' }}
+          </span>
+        </div>
+        <div class="stat-item">
           <span class="stat-label">Last Updated</span>
           <span class="stat-value">{{ lastUpdated }}</span>
+        </div>
+        <div class="stat-item" v-if="marketData.data_source">
+          <span class="stat-label">Data Source</span>
+          <span class="stat-value">{{ marketData.data_source }}</span>
         </div>
       </div>
     </div>
@@ -20,19 +30,11 @@
         <div class="stat-icon">📈</div>
         <div class="stat-content">
           <h3 class="stat-title">Market Trend</h3>
-          <p class="stat-number">Bullish</p>
-          <span class="stat-change">+2.4% today</span>
+          <p class="stat-number">{{ marketTrend }}</p>
+          <span class="stat-change">{{ marketTrendChange }} today</span>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <h3 class="stat-title">Active IPOs</h3>
-          <p class="stat-number">{{ activeIPOCount }}</p>
-          <span class="stat-change">{{ upcomingIPOCount }} upcoming</span>
-        </div>
-      </div>
       
       <div class="stat-card">
         <div class="stat-icon">🎯</div>
@@ -49,6 +51,16 @@
           <h3 class="stat-title">Volume Leaders</h3>
           <p class="stat-number">{{ volumeLeadersCount }}</p>
           <span class="stat-change">High activity</span>
+        </div>
+      </div>
+      
+      <div class="dashboard-card" @click="navigateTo('/admin/stock-market')">
+        <div class="card-content">
+          <div class="card-icon">📈</div>
+          <h3 class="card-title">Stock Market</h3>
+          <p class="card-description">
+            Live stock prices and market data via Upstox
+          </p>
         </div>
       </div>
     </div>
@@ -138,18 +150,6 @@
       </div>
     </div>
 
-    <!-- IPO Section -->
-    <div class="section-container ipo-section" id="ipo">
-      <div class="section-header">
-        <h2 class="section-title">🏢 IPO Updates</h2>
-        <div class="section-actions">
-          <button class="view-all-btn">View All IPOs</button>
-        </div>
-      </div>
-      <div class="component-wrapper">
-        <ipo/>
-      </div>
-    </div>
 
     <!-- Stock Details Section -->
     <div class="section-container featured-stock" id="portfolio">
@@ -181,27 +181,9 @@
           </div>
         </div>
         
-        <div class="exchange-card">
-          <div class="exchange-header">
-            <h3 class="exchange-title">NSE Most Active</h3>
-            <span class="exchange-badge nse">NSE</span>
-          </div>
-          <div class="component-wrapper">
-            <NseMostActiveStock/>
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- 52-Week High/Low Section -->
-    <div class="section-container">
-      <div class="section-header">
-        <h2 class="section-title">📅 52-Week Performance</h2>
-      </div>
-      <div class="component-wrapper">
-        <yearWeekHighLow/>
-      </div>
-    </div>
 
 
   </div>
@@ -209,16 +191,18 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
-import ipo from "./ipo.vue";
 import stockDetails from "./stockDetails.vue";
 import BseMostActive from "./BseMostActive.vue";
-import NseMostActiveStock from "./NseMostActiveStock.vue";
-import yearWeekHighLow from "./52-WeekHighLow.vue";
+
+const router = useRouter();
 
 // Reactive data
 const loading = ref(false);
 const lastUpdated = ref('');
+const marketData = ref({});
+const marketStatus = ref({});
 const allStocks = ref({
   top_gainers: [],
   top_losers: [],
@@ -226,10 +210,19 @@ const allStocks = ref({
 });
 
 // Computed stats
-const activeIPOCount = ref(8);
-const upcomingIPOCount = ref(12);
 const topGainersCount = computed(() => allStocks.value.top_gainers?.length || 0);
 const volumeLeadersCount = ref(15);
+const marketTrend = computed(() => {
+  if (!marketData.value.live_stocks?.length) return 'Neutral';
+  const gains = marketData.value.live_stocks.filter(stock => stock.change_percent > 0).length;
+  const losses = marketData.value.live_stocks.filter(stock => stock.change_percent < 0).length;
+  return gains > losses ? 'Bullish' : losses > gains ? 'Bearish' : 'Neutral';
+});
+const marketTrendChange = computed(() => {
+  if (!marketData.value.live_stocks?.length) return '0%';
+  const avgChange = marketData.value.live_stocks.reduce((sum, stock) => sum + stock.change_percent, 0) / marketData.value.live_stocks.length;
+  return `${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}%`;
+});
 
 
 // Utility functions
@@ -250,75 +243,82 @@ const updateLastUpdated = () => {
   });
 };
 
+// Navigation function
+const navigateTo = (path) => {
+  router.push(path);
+};
 
 
-// Fetch market movers data
+
+// Fetch market data from database
 const fetchMarketMovers = async () => {
   loading.value = true;
   try {
-    const res = await axios.get("https://stock.indianapi.in/trending", {
+    const token = localStorage.getItem('access_token');
+    const response = await axios.get('/api/truedata/dashboard', {
       headers: {
-        "x-api-key": "sk-live-dO2pc2cIt3N2ZVUMJEnGqiIP1NXu1be88iWGXEVX",
-      },
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
     });
-    
-    if (res.data && res.data.trending_stocks) {
-      allStocks.value = res.data.trending_stocks;
+
+    if (response.data.success && response.data.data) {
+      marketData.value = response.data.data;
+      marketStatus.value = response.data.data.market_status;
+      
+      // Process live stocks data to create gainers and losers
+      const liveStocks = response.data.data.live_stocks || [];
+      
+      // Sort by change percentage to get gainers and losers
+      const sortedStocks = liveStocks.sort((a, b) => b.change_percent - a.change_percent);
+      
+      allStocks.value = {
+        top_gainers: sortedStocks
+          .filter(stock => stock.change_percent > 0)
+          .slice(0, 25)
+          .map(stock => ({
+            company_name: stock.symbol,
+            symbol: stock.symbol,
+            price: stock.ltp,
+            percent_change: stock.change_percent,
+            net_change: stock.change
+          })),
+        top_losers: sortedStocks
+          .filter(stock => stock.change_percent < 0)
+          .slice(-25)
+          .reverse()
+          .map(stock => ({
+            company_name: stock.symbol,
+            symbol: stock.symbol,
+            price: stock.ltp,
+            percent_change: stock.change_percent,
+            net_change: stock.change
+          })),
+        volume_shockers: sortedStocks
+          .sort((a, b) => b.volume - a.volume)
+          .slice(0, 15)
+          .map(stock => ({
+            company_name: stock.symbol,
+            symbol: stock.symbol,
+            price: stock.ltp,
+            percent_change: stock.change_percent,
+            net_change: stock.change,
+            volume: stock.volume
+          }))
+      };
+      
+      // Update volume leaders count
+      volumeLeadersCount.value = allStocks.value.volume_shockers.length;
+      
       updateLastUpdated();
     }
   } catch (error) {
-    console.error("Market Movers API error:", error.response?.data || error.message);
-    // Set dummy data for demo purposes
+    console.error("Market Data API error:", error.response?.data || error.message);
+    // Fallback to empty data
     allStocks.value = {
-      top_gainers: [
-        { company_name: "Reliance Industries", symbol: "RELIANCE", price: 2456.75, percent_change: 3.45, net_change: 82.15 },
-        { company_name: "TCS", symbol: "TCS", price: 3890.20, percent_change: 2.78, net_change: 105.30 },
-        { company_name: "Infosys", symbol: "INFY", price: 1678.90, percent_change: 2.15, net_change: 35.40 },
-        { company_name: "HDFC Bank", symbol: "HDFCBANK", price: 1534.60, percent_change: 1.89, net_change: 28.45 },
-        { company_name: "ICICI Bank", symbol: "ICICIBANK", price: 987.30, percent_change: 1.67, net_change: 16.20 },
-        { company_name: "Wipro", symbol: "WIPRO", price: 445.80, percent_change: 2.34, net_change: 10.20 },
-        { company_name: "HCL Tech", symbol: "HCLTECH", price: 1245.60, percent_change: 2.12, net_change: 25.80 },
-        { company_name: "Tech Mahindra", symbol: "TECHM", price: 1567.40, percent_change: 1.98, net_change: 30.50 },
-        { company_name: "L&T", symbol: "LT", price: 3456.20, percent_change: 1.87, net_change: 63.40 },
-        { company_name: "Bharti Airtel", symbol: "BHARTIARTL", price: 1234.50, percent_change: 1.76, net_change: 21.30 },
-        { company_name: "SBI", symbol: "SBIN", price: 789.60, percent_change: 1.65, net_change: 12.80 },
-        { company_name: "Axis Bank", symbol: "AXISBANK", price: 1098.40, percent_change: 1.54, net_change: 16.70 },
-        { company_name: "Kotak Bank", symbol: "KOTAKBANK", price: 1876.30, percent_change: 1.43, net_change: 26.40 },
-        { company_name: "ITC", symbol: "ITC", price: 456.70, percent_change: 1.32, net_change: 5.90 },
-        { company_name: "Hindustan Unilever", symbol: "HINDUNILVR", price: 2345.80, percent_change: 1.21, net_change: 28.10 },
-        { company_name: "Nestle India", symbol: "NESTLEIND", price: 23456.90, percent_change: 1.10, net_change: 255.20 },
-        { company_name: "HDFC Life", symbol: "HDFCLIFE", price: 678.50, percent_change: 0.98, net_change: 6.60 },
-        { company_name: "SBI Life", symbol: "SBILIFE", price: 1432.70, percent_change: 0.87, net_change: 12.30 },
-        { company_name: "ICICI Prudential", symbol: "ICICIPRULI", price: 567.80, percent_change: 0.76, net_change: 4.30 },
-        { company_name: "Bajaj Auto", symbol: "BAJAJ-AUTO", price: 9876.40, percent_change: 0.65, net_change: 63.70 },
-        { company_name: "Hero MotoCorp", symbol: "HEROMOTOCO", price: 4567.20, percent_change: 0.54, net_change: 24.50 },
-        { company_name: "Mahindra & Mahindra", symbol: "M&M", price: 2890.60, percent_change: 0.43, net_change: 12.30 },
-        { company_name: "Tata Motors", symbol: "TATAMOTORS", price: 987.40, percent_change: 0.32, net_change: 3.10 },
-        { company_name: "Eicher Motors", symbol: "EICHERMOT", price: 4321.80, percent_change: 0.21, net_change: 9.00 },
-        { company_name: "TVS Motor", symbol: "TVSMOTOR", price: 2134.50, percent_change: 0.15, net_change: 3.20 }
-      ],
-      top_losers: [
-        { company_name: "Adani Enterprises", symbol: "ADANIENT", price: 2234.50, percent_change: -2.45, net_change: -56.10 },
-        { company_name: "Bajaj Finance", symbol: "BAJFINANCE", price: 6789.40, percent_change: -1.98, net_change: -137.20 },
-        { company_name: "Asian Paints", symbol: "ASIANPAINT", price: 3456.80, percent_change: -1.76, net_change: -61.90 },
-        { company_name: "Maruti Suzuki", symbol: "MARUTI", price: 9876.50, percent_change: -1.45, net_change: -145.30 },
-        { company_name: "Titan Company", symbol: "TITAN", price: 2987.60, percent_change: -1.23, net_change: -37.20 },
-        { company_name: "UPL", symbol: "UPL", price: 567.80, percent_change: -2.10, net_change: -12.20 },
-        { company_name: "JSW Steel", symbol: "JSWSTEEL", price: 890.40, percent_change: -1.87, net_change: -16.90 },
-        { company_name: "Tata Steel", symbol: "TATASTEEL", price: 1234.60, percent_change: -1.65, net_change: -20.70 },
-        { company_name: "Hindalco", symbol: "HINDALCO", price: 456.30, percent_change: -1.43, net_change: -6.60 },
-        { company_name: "Coal India", symbol: "COALINDIA", price: 345.70, percent_change: -1.21, net_change: -4.20 },
-        { company_name: "NTPC", symbol: "NTPC", price: 234.80, percent_change: -0.98, net_change: -2.30 },
-        { company_name: "Power Grid", symbol: "POWERGRID", price: 267.50, percent_change: -0.87, net_change: -2.30 },
-        { company_name: "ONGC", symbol: "ONGC", price: 189.60, percent_change: -0.76, net_change: -1.40 },
-        { company_name: "IOC", symbol: "IOC", price: 123.40, percent_change: -0.65, net_change: -0.80 },
-        { company_name: "BPCL", symbol: "BPCL", price: 456.70, percent_change: -0.54, net_change: -2.50 },
-        { company_name: "Grasim", symbol: "GRASIM", price: 1876.30, percent_change: -0.43, net_change: -8.10 },
-        { company_name: "UltraTech Cement", symbol: "ULTRACEMCO", price: 8765.40, percent_change: -0.32, net_change: -28.20 },
-        { company_name: "Shree Cement", symbol: "SHREECEM", price: 23456.80, percent_change: -0.21, net_change: -49.60 },
-        { company_name: "ACC", symbol: "ACC", price: 2134.50, percent_change: -0.15, net_change: -3.20 },
-        { company_name: "Ambuja Cements", symbol: "AMBUJACEM", price: 567.80, percent_change: -0.12, net_change: -0.70 }
-      ]
+      top_gainers: [],
+      top_losers: [],
+      volume_shockers: []
     };
     updateLastUpdated();
   } finally {
@@ -333,6 +333,9 @@ onMounted(() => {
   
   // Update time every minute
   setInterval(updateLastUpdated, 60000);
+  
+  // Auto-refresh market data every 30 seconds
+  setInterval(fetchMarketMovers, 30000);
 });
 </script>
 
@@ -376,8 +379,15 @@ onMounted(() => {
   margin: 4px 0 0 0;
 }
 
+.header-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
 .header-stats .stat-item {
   text-align: right;
+  min-width: 120px;
 }
 
 .stat-label {
@@ -394,6 +404,14 @@ onMounted(() => {
   font-weight: 600;
   color: #00ff80;
   margin-top: 4px;
+}
+
+.stat-value.market-open {
+  color: #10b981;
+}
+
+.stat-value.market-closed {
+  color: #ef4444;
 }
 
 /* Quick Stats Grid */
@@ -468,6 +486,64 @@ onMounted(() => {
 .stat-change {
   font-size: 12px;
   color: #64748b;
+}
+
+/* Dashboard Card */
+.dashboard-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(0, 255, 128, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ff80, #00cc66);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 255, 128, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 255, 128, 0.1);
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
+}
+
+.dashboard-card .card-content {
+  text-align: center;
+}
+
+.dashboard-card .card-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.dashboard-card .card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #00ff80;
+  margin: 0 0 8px 0;
+}
+
+.dashboard-card .card-description {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
 }
 
 /* Section Containers */

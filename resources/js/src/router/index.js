@@ -77,7 +77,7 @@ const routes = [
   {
     path: "/admin/stock-market",
     name: "stock_market",
-    meta: { requiresAuth: true, requiresAdmin: true },
+    meta: { requiresAuth: true },
     component: () => import("../views/AdminSide/TrueDataStockMarket.vue"),
   },
   {

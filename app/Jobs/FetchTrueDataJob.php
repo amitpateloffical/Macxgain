@@ -10,6 +10,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use App\Models\MarketData;
+use App\Services\MarketStatusService;
 
 class FetchTrueDataJob implements ShouldQueue
 {
@@ -31,16 +33,24 @@ class FetchTrueDataJob implements ShouldQueue
         try {
             Log::info('FetchTrueDataJob: Starting TrueData fetch...');
             
+            // Get market status
+            $marketStatusService = new MarketStatusService();
+            $isMarketLive = $marketStatusService->isMarketLive();
+            $marketStatus = $isMarketLive ? 'OPEN' : 'CLOSED';
+            
             // Try to get data from the running WebSocket daemon first
             $webSocketData = $this->getDataFromWebSocketDaemon();
             
             if (!empty($webSocketData)) {
-                // Store in cache with short expiry (30 seconds) for real-time data
+                // Store in database
+                $storedCount = MarketData::storeMarketData($webSocketData, $isMarketLive, $marketStatus);
+                
+                // Also store in cache with short expiry (30 seconds) for real-time data
                 Cache::put('truedata_live_data', $webSocketData, 30);
                 Cache::put('truedata_last_update', now(), 30);
-                Cache::put('truedata_data_type', 'LIVE', 30);
+                Cache::put('truedata_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 30);
                 
-                Log::info('FetchTrueDataJob: WebSocket data cached for 30 seconds - ' . count($webSocketData) . ' symbols');
+                Log::info("FetchTrueDataJob: WebSocket data stored in database ({$storedCount} symbols) and cached for 30 seconds");
             } else {
                 // Fallback: Run Python script to fetch data
                 $result = Process::timeout(5)->run('python3 truedata_fetch.py');
@@ -53,12 +63,15 @@ class FetchTrueDataJob implements ShouldQueue
                     $marketData = $this->parsePythonOutput($output);
                     
                     if (!empty($marketData)) {
-                        // Store in cache with short expiry (30 seconds) for real-time data
+                        // Store in database
+                        $storedCount = MarketData::storeMarketData($marketData, $isMarketLive, $marketStatus);
+                        
+                        // Also store in cache with short expiry (30 seconds) for real-time data
                         Cache::put('truedata_live_data', $marketData, 30);
                         Cache::put('truedata_last_update', now(), 30);
-                        Cache::put('truedata_data_type', 'LIVE', 30);
+                        Cache::put('truedata_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 30);
                         
-                        Log::info('FetchTrueDataJob: Market data cached for 30 seconds - ' . count($marketData) . ' symbols');
+                        Log::info("FetchTrueDataJob: Market data stored in database ({$storedCount} symbols) and cached for 30 seconds");
                     } else {
                         Log::warning('FetchTrueDataJob: No market data parsed from Python output');
                     }
