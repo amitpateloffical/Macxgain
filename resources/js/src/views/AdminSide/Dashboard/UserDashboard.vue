@@ -147,7 +147,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import axios from "axios";
+import axios from "@axios";
 
 // Reactive data
 const loading = ref(false);
@@ -214,7 +214,7 @@ const fetchLiveData = async () => {
   }
   
   try {
-    const response = await axios.get('http://localhost:8000/api/truedata/live-data');
+    const response = await axios.get('truedata/live-data');
     
     if (response.data.success) {
       const data = response.data.data;
@@ -283,7 +283,7 @@ const fetchLiveData = async () => {
 // Fetch market status
 const fetchMarketStatus = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/truedata/market-status');
+    const response = await axios.get('truedata/market-status');
     if (response.data.success) {
       marketStatus.value = response.data.data;
     }
