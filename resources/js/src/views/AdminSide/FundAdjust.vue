@@ -288,7 +288,7 @@ const fetchUsers = async () => {
       throw new Error('No access token found. Please login again.')
     }
 
-    const response = await fetch(`http://localhost:8000/api/users`, {
+    const response = await fetch(`${window.location.origin}/api/users`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -357,7 +357,7 @@ const submitAdjustment = async () => {
       throw new Error('No access token found. Please login again.')
     }
 
-    const response = await fetch(`http://localhost:8000/api/admin/fund-adjust`, {
+    const response = await fetch(`${window.location.origin}/api/admin/fund-adjust`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -445,7 +445,7 @@ const fetchRecentAdjustments = async () => {
     const token = localStorage.getItem('access_token')
     if (!token) return
 
-    const response = await fetch(`http://localhost:8000/api/admin/fund-adjustments`, {
+    const response = await fetch(`${window.location.origin}/api/admin/fund-adjustments`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -479,7 +479,7 @@ const getProfileImageUrl = (profileImage) => {
   }
   
   // Only return local URL if profile image exists
-  const url = `http://localhost:8000/${profileImage}`
+  const url = `${window.location.origin}/${profileImage}`
   console.log('Constructed local URL:', url)
   return url
 }
