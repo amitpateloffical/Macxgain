@@ -7,10 +7,10 @@ echo "🚀 Starting TrueData WebSocket Daemon..."
 
 # Function to start WebSocket
 start_websocket() {
-    echo "📡 Starting WebSocket script..."
-    nohup python3 truedata_websocket.py > websocket.log 2>&1 &
+    echo "📡 Starting Continuous WebSocket script..."
+    nohup python3 truedata_continuous_websocket.py > websocket.log 2>&1 &
     echo $! > websocket.pid
-    echo "✅ WebSocket started with PID: $(cat websocket.pid)"
+    echo "✅ Continuous WebSocket started with PID: $(cat websocket.pid)"
 }
 
 # Function to check if WebSocket is running
@@ -49,9 +49,9 @@ while true; do
         echo "✅ WebSocket is running - $(date)"
     fi
     
-    # Populate cache every 5 seconds
+    # Populate cache every 30 seconds for fresh data
     populate_cache
     
-    # Wait 5 seconds before next check
-    sleep 5
+    # Wait 30 seconds before next check
+    sleep 30
 done

@@ -129,11 +129,13 @@ def fetch_live_data():
         except Exception as e:
             print(f"Error processing symbol list: {e}", file=sys.stderr)
         
-        # Collect data for 3 seconds
+        # Collect data continuously for real-time updates
         start_time = time.time()
         data_count = 0
+        last_update_time = time.time()
         
-        while (time.time() - start_time) < 3:
+        # Run for 30 seconds to get fresh real-time data
+        while (time.time() - start_time) < 30:
             try:
                 result = ws.recv()
                 data_count += 1
@@ -193,19 +195,37 @@ def fetch_live_data():
                         change = ltp - prev_close
                         change_percent = (change / prev_close) * 100 if prev_close > 0 else 0
                         
-                        market_data[symbol] = {
-                            'symbol': symbol,
-                            'ltp': ltp,
-                            'change': change,
-                            'change_percent': round(change_percent, 2),
-                            'high': float(trade[7]) if len(trade) > 7 else ltp,
-                            'low': float(trade[8]) if len(trade) > 8 else ltp,
-                            'open': float(trade[7]) if len(trade) > 7 else ltp,
-                            'prev_close': prev_close,
-                            'volume': float(trade[6]) if len(trade) > 6 else 0,
-                            'timestamp': trade[1] if len(trade) > 1 else time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
-                            'data_source': 'TrueData Real WebSocket'
-                        }
+                        # Update existing data or create new entry
+                        if symbol in market_data:
+                            # Update with new trade data
+                            market_data[symbol].update({
+                                'ltp': ltp,
+                                'change': change,
+                                'change_percent': round(change_percent, 2),
+                                'high': max(market_data[symbol].get('high', ltp), float(trade[7]) if len(trade) > 7 else ltp),
+                                'low': min(market_data[symbol].get('low', ltp), float(trade[8]) if len(trade) > 8 else ltp),
+                                'volume': float(trade[6]) if len(trade) > 6 else market_data[symbol].get('volume', 0),
+                                'timestamp': trade[1] if len(trade) > 1 else time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+                                'data_source': 'TrueData Real WebSocket Live'
+                            })
+                        else:
+                            # Create new entry
+                            market_data[symbol] = {
+                                'symbol': symbol,
+                                'ltp': ltp,
+                                'change': change,
+                                'change_percent': round(change_percent, 2),
+                                'high': float(trade[7]) if len(trade) > 7 else ltp,
+                                'low': float(trade[8]) if len(trade) > 8 else ltp,
+                                'open': float(trade[7]) if len(trade) > 7 else ltp,
+                                'prev_close': prev_close,
+                                'volume': float(trade[6]) if len(trade) > 6 else 0,
+                                'timestamp': trade[1] if len(trade) > 1 else time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+                                'data_source': 'TrueData Real WebSocket Live'
+                            }
+                        
+                        # Update last update time
+                        last_update_time = time.time()
                         
                 except json.JSONDecodeError:
                     pass  # Skip non-JSON messages
