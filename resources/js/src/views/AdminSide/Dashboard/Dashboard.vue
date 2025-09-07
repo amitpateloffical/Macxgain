@@ -12,7 +12,7 @@
     <!-- Dashboard Title -->
     <div class="dashboard-header">
       <h1 class="dashboard-title">Dashboard</h1>
-      <p class="dashboard-subtitle">Welcome back 👋</p>
+      <p class="dashboard-subtitle">Welcome Back 👋</p>
     </div>
 
     <!-- Cards -->
