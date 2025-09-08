@@ -1326,24 +1326,32 @@ export default {
   color: white;
   min-height: 100vh;
   padding: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
 }
 
 /* Page Header */
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 24px;
   padding: 20px;
   background: linear-gradient(145deg, #101022, #0d0d1a);
   border: 1px solid rgba(0, 255, 136, 0.2);
   border-radius: 16px;
+  gap: 16px;
 }
 
 .header-content {
   display: flex;
   align-items: center;
   gap: 20px;
+  flex: 1;
+  min-width: 0;
 }
 
 .back-btn {
@@ -1354,10 +1362,20 @@ export default {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 44px;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.back-btn:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
 }
 
 .page-title {
@@ -1370,11 +1388,18 @@ export default {
 .page-subtitle {
   color: #a0a0a0;
   margin: 4px 0 0 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.4;
 }
 
 .header-actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
 }
 
 .refresh-btn, .orders-btn {
@@ -1391,6 +1416,11 @@ export default {
 .refresh-btn:hover, .orders-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+}
+
+.refresh-btn:focus, .orders-btn:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
 }
 
 /* Market Status */
@@ -1535,6 +1565,12 @@ export default {
   color: #a0a0a0 !important;
 }
 
+.filter-input:focus {
+  outline: none;
+  border-color: #00ff88 !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+}
+
 .search-btn {
   background: linear-gradient(135deg, #00ff88, #00d4ff);
   color: #000000;
@@ -1547,6 +1583,11 @@ export default {
 
 .search-btn:hover {
   transform: translateY(-1px);
+}
+
+.search-btn:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
 }
 
 .filter-select {
@@ -1564,11 +1605,17 @@ export default {
   color: #ffffff !important;
 }
 
+.filter-select:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
+}
+
 /* Stocks Grid */
 .stocks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
+  width: 100%;
 }
 
 .stock-card {
@@ -1579,6 +1626,9 @@ export default {
   padding: 20px;
   transition: all 0.3s ease;
   cursor: pointer;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stock-card:hover {
@@ -1587,11 +1637,28 @@ export default {
   border-color: rgba(0, 255, 136, 0.3);
 }
 
+.stock-card:focus {
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
+  transform: translateY(-2px);
+}
+
 .stock-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 60px;
+}
+
+.stock-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stock-info h3 {
@@ -1599,12 +1666,17 @@ export default {
   font-weight: bold;
   color: #00ff88;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.2;
 }
 
 .stock-price {
   font-size: 18px;
   font-weight: 600;
   color: white;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .stock-change {
@@ -1614,6 +1686,11 @@ export default {
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 120px;
+  justify-content: center;
+  text-align: center;
 }
 
 .stock-change.positive {
@@ -1667,6 +1744,7 @@ export default {
   overflow-y: auto;
   position: relative;
   animation: modalSlideIn 0.3s ease-out;
+  margin: 20px auto;
 }
 
 @keyframes modalSlideIn {
@@ -1869,6 +1947,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .options-header {
@@ -1880,6 +1960,7 @@ export default {
   border-radius: 8px;
   font-weight: bold;
   font-size: 0.9rem;
+  min-width: 600px;
 }
 
 .header-cell {
@@ -1895,6 +1976,7 @@ export default {
   border-radius: 8px;
   transition: all 0.3s ease;
   align-items: center;
+  min-width: 600px;
 }
 
 .call-row {
@@ -1954,6 +2036,8 @@ export default {
   gap: 4px;
   min-width: 50px;
   font-weight: 600;
+  min-height: 32px;
+  touch-action: manipulation;
 }
 
 .mini-btn i {
@@ -2144,6 +2228,8 @@ export default {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
@@ -2154,6 +2240,8 @@ export default {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  margin: 20px auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .orders-modal {
@@ -2786,6 +2874,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .lot-input {
@@ -2803,6 +2892,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .qty-btn {
@@ -2815,6 +2905,12 @@ export default {
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qty-btn:hover {
@@ -2869,6 +2965,7 @@ export default {
   display: flex;
   gap: 12px;
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -2879,6 +2976,12 @@ export default {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
+  min-height: 44px;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-secondary {
@@ -3073,8 +3176,26 @@ export default {
 
 /* Tablet (768px - 991px) */
 @media (max-width: 991px) and (min-width: 768px) {
-  .container {
-    padding: 0 16px;
+  .ai-trading-session {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
   
   .stocks-grid {
@@ -3243,13 +3364,54 @@ export default {
 
 /* Mobile Large (576px - 767px) */
 @media (max-width: 767px) and (min-width: 576px) {
-  .container {
-    padding: 0 12px;
+  .ai-trading-session {
+    padding: 12px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .refresh-btn, .orders-btn {
+    width: 100%;
+    justify-content: center;
   }
   
   .stocks-grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  
+  .stock-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-height: auto;
+  }
+  
+  .stock-info {
+    width: 100%;
+  }
+  
+  .stock-change {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: auto;
   }
   
   .stock-card {
@@ -3431,13 +3593,57 @@ export default {
 
 /* Mobile Small (up to 575px) */
 @media (max-width: 575px) {
-  .container {
-    padding: 0 8px;
+  .ai-trading-session {
+    padding: 8px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .refresh-btn, .orders-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 13px;
   }
   
   .stocks-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  
+  .stock-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-height: auto;
+  }
+  
+  .stock-info {
+    width: 100%;
+  }
+  
+  .stock-change {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: auto;
+    padding: 6px 8px;
   }
   
   .stock-card {
@@ -3619,6 +3825,85 @@ export default {
   }
 }
 
+/* Very Small Screens (up to 400px) */
+@media (max-width: 400px) {
+  .ai-trading-session {
+    padding: 4px;
+  }
+  
+  .page-header {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .page-subtitle {
+    font-size: 12px;
+  }
+  
+  .stock-card {
+    padding: 10px;
+  }
+  
+  .stock-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    min-height: auto;
+  }
+  
+  .stock-info {
+    width: 100%;
+  }
+  
+  .stock-symbol {
+    font-size: 16px;
+  }
+  
+  .stock-price {
+    font-size: 16px;
+  }
+  
+  .stock-change {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: auto;
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+  
+  .click-hint {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .filters-section {
+    gap: 8px;
+  }
+  
+  .search-input-wrapper {
+    padding: 0 12px;
+  }
+  
+  .filter-input {
+    padding: 10px 0;
+    font-size: 14px;
+  }
+  
+  .filter-select {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .refresh-btn, .orders-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
 /* Landscape Mobile */
 @media (max-height: 500px) and (orientation: landscape) {
   .stock-options-modal {
@@ -3648,6 +3933,17 @@ export default {
   
   .modal-overlay {
     backdrop-filter: blur(2px);
+  }
+}
+
+/* Mobile Viewport Fixes */
+@supports (-webkit-touch-callout: none) {
+  .ai-trading-session {
+    min-height: -webkit-fill-available;
+  }
+  
+  .modal-overlay {
+    min-height: -webkit-fill-available;
   }
 }
 
