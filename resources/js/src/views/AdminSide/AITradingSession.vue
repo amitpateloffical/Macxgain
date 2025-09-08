@@ -208,7 +208,7 @@
                     <div class="header-cell">Action</div>
                   </div>
                   <div 
-                    v-for="option in callOptions.slice(0, 5)" 
+                    v-for="option in callOptions.slice(0, 10)" 
                     :key="`call-${option.strike_price}`"
                     class="option-row call-row"
                   >
@@ -255,7 +255,7 @@
                     <div class="header-cell">Action</div>
                   </div>
                   <div 
-                    v-for="option in putOptions.slice(0, 5)" 
+                    v-for="option in putOptions.slice(0, 10)" 
                     :key="`put-${option.strike_price}`"
                     class="option-row put-row"
                   >
@@ -570,7 +570,7 @@ export default {
         this.loading = true;
         const token = localStorage.getItem('access_token');
         
-        const response = await axios.get('/api/truedata/dashboard', {
+        const response = await axios.get('/api/truedata/live-data', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -579,9 +579,21 @@ export default {
 
         if (response.data.success && response.data.data) {
           console.log('Market data received:', response.data.data);
-          this.liveStocks = response.data.data.live_stocks || [];
-          this.marketStatus = response.data.data.market_status || { is_open: false, status: 'CLOSED' };
-          this.lastUpdate = response.data.data.last_update;
+          
+          // Convert object data to array format
+          const dataObject = response.data.data;
+          this.liveStocks = Object.values(dataObject).filter(item => 
+            item && typeof item === 'object' && item.symbol && item.ltp
+          );
+          
+          // Get market status from first stock or default
+          const firstStock = this.liveStocks[0];
+          this.marketStatus = {
+            is_open: firstStock?.is_live || false,
+            status: firstStock?.market_status || 'CLOSED'
+          };
+          
+          this.lastUpdate = firstStock?.timestamp || new Date().toISOString();
           console.log('Live stocks loaded:', this.liveStocks.length, 'stocks');
           console.log('First stock sample:', this.liveStocks[0]);
         } else {
@@ -645,13 +657,15 @@ export default {
           console.log('🎯 Processing real API data...');
           this.processOptionsData(response.data.data);
         } else {
-          console.log('⚠️ API response not successful, using mock data');
-          this.generateMockOptions(symbol);
+          console.log('⚠️ API response not successful');
+          this.showError('No options data available for this symbol. Please try another stock.');
+          this.closeStockOptions();
+          return;
         }
       } catch (error) {
         console.error('❌ Error loading options data:', error);
-        console.log('🔄 Falling back to mock data...');
-        this.generateMockOptions(symbol);
+        this.showError('Failed to load options data. Please check your connection and try again.');
+        this.closeStockOptions();
       }
     },
     processOptionsData(data) {
@@ -661,98 +675,77 @@ export default {
       this.callOptions = [];
       this.putOptions = [];
       
-      // Check if we have Records array (TrueData API format)
-      if (data.Records && data.Records.length > 0) {
-        console.log('📊 Processing TrueData API format with', data.Records.length, 'records');
+      // Check if we have data array (TrueData API format)
+      if (data && Array.isArray(data) && data.length > 0) {
+        console.log('📊 Processing TrueData API format with', data.length, 'records');
         
-        // Process real options data
-        this.callOptions = data.Records
-          .filter(option => option.option_type === 'CE' || option.option_type === 'CALL')
-          .map(option => ({
-            symbol: option.symbol_id || option.symbol,
-            strike_price: option.strike_price || 0,
-            ltp: option.ltp || 0,
-            bid: option.bid || 0,
-            ask: option.ask || 0,
-            volume: option.volume || 0,
-            open_interest: option.oi || option.open_interest || 0,
-            option_type: 'CALL',
-            implied_volatility: option.implied_volatility || 0
-          }));
+        // Get current stock price
+        const currentPrice = this.selectedStock?.ltp || this.selectedStock?.last || 24000;
+        console.log('💰 Current stock price:', currentPrice);
+        
+        // Process all real options data
+        const allOptions = data.map(option => ({
+          symbol: option.symbol_id || option.symbol,
+          strike_price: option.strike_price || 0,
+          ltp: option.ltp || 0,
+          bid: option.bid || 0,
+          ask: option.ask || 0,
+          volume: option.volume || 0,
+          open_interest: option.oi || option.open_interest || 0,
+          option_type: option.option_type,
+          implied_volatility: option.implied_volatility || 0
+        }));
+        
+        // Get all available strikes and sort them
+        const allStrikes = [...new Set(allOptions.map(option => option.strike_price))].sort((a, b) => a - b);
+        console.log('📊 All available strikes:', allStrikes);
+        
+        // Find strikes around current price (within reasonable range)
+        const currentPriceRounded = Math.round(currentPrice / 100) * 100; // Round to nearest 100
+        const relevantStrikes = allStrikes.filter(strike => 
+          strike >= currentPriceRounded - 3000 && strike <= currentPriceRounded + 3000
+        );
+        console.log('🎯 Relevant strikes around current price:', relevantStrikes);
+        
+        // Get CALL options for relevant strikes
+        this.callOptions = allOptions
+          .filter(option => (option.option_type === 'CE' || option.option_type === 'CALL') && relevantStrikes.includes(option.strike_price))
+          .sort((a, b) => a.strike_price - b.strike_price);
           
-        this.putOptions = data.Records
-          .filter(option => option.option_type === 'PE' || option.option_type === 'PUT')
-          .map(option => ({
-            symbol: option.symbol_id || option.symbol,
-            strike_price: option.strike_price || 0,
-            ltp: option.ltp || 0,
-            bid: option.bid || 0,
-            ask: option.ask || 0,
-            volume: option.volume || 0,
-            open_interest: option.oi || option.open_interest || 0,
-            option_type: 'PUT',
-            implied_volatility: option.implied_volatility || 0
-          }));
+        // Get PUT options for relevant strikes
+        this.putOptions = allOptions
+          .filter(option => (option.option_type === 'PE' || option.option_type === 'PUT') && relevantStrikes.includes(option.strike_price))
+          .sort((a, b) => a.strike_price - b.strike_price);
+          
+        // If still no options, use all available options
+        if (this.callOptions.length === 0 && this.putOptions.length === 0) {
+          console.log('⚠️ No options found for relevant strikes, using all available options');
+          this.callOptions = allOptions
+            .filter(option => option.option_type === 'CE' || option.option_type === 'CALL')
+            .sort((a, b) => a.strike_price - b.strike_price);
+          this.putOptions = allOptions
+            .filter(option => option.option_type === 'PE' || option.option_type === 'PUT')
+            .sort((a, b) => a.strike_price - b.strike_price);
+        }
           
         console.log('✅ Processed', this.callOptions.length, 'CALL options and', this.putOptions.length, 'PUT options');
-      } else {
-        console.log('⚠️ No Records array found, using mock data');
-        this.generateMockOptions(this.selectedStock?.symbol);
-      }
-    },
-    generateMockOptions(symbol) {
-      console.log('🎭 Generating mock options data for', symbol);
-      
-      // Get current price from selected stock
-      const currentPrice = this.selectedStock?.last || this.selectedStock?.ltp || 1000;
-      console.log('💰 Current price for mock data:', currentPrice);
-      
-      // Generate realistic strike prices around current price
-      const strikes = this.generateStrikes(currentPrice);
-      console.log('🎯 Generated strikes:', strikes);
-      
-      // Generate CALL options
-      this.callOptions = strikes.map(strike => {
-        const optionPrice = this.calculateOptionPrice(currentPrice, strike, 'CALL');
-        return {
-          symbol: `${symbol}${strike}CE`,
-          strike_price: strike,
-          ltp: optionPrice,
-          bid: (optionPrice * 0.99).toFixed(2),
-          ask: (optionPrice * 1.01).toFixed(2),
-          volume: Math.floor(Math.random() * 1000),
-          open_interest: Math.floor(Math.random() * 5000),
-          option_type: 'CALL',
-          implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3)
-        };
-      });
-      
-      // Generate PUT options
-      this.putOptions = strikes.map(strike => {
-        const optionPrice = this.calculateOptionPrice(currentPrice, strike, 'PUT');
-        return {
-          symbol: `${symbol}${strike}PE`,
-          strike_price: strike,
-          ltp: optionPrice,
-          bid: (optionPrice * 0.99).toFixed(2),
-          ask: (optionPrice * 1.01).toFixed(2),
-          volume: Math.floor(Math.random() * 1000),
-          open_interest: Math.floor(Math.random() * 5000),
-          option_type: 'PUT',
-          implied_volatility: (Math.random() * 0.5 + 0.2).toFixed(3)
-        };
-      });
-      
-      console.log('✅ Generated', this.callOptions.length, 'CALL options and', this.putOptions.length, 'PUT options');
+        } else {
+          console.log('⚠️ No data array found');
+          this.showError('No options data available for this symbol. Please try another stock.');
+          this.closeStockOptions();
+        }
     },
     
-    generateStrikes(currentPrice) {
+    generateAngelOneStrikes(currentPrice) {
       const strikes = [];
-      const step = Math.round(currentPrice * 0.02); // 2% intervals
+      const step = 50; // Angel One style: 50 points for NIFTY 50
       
-      // Generate strikes around current price
+      // Round current price to nearest 50
+      const roundedPrice = Math.round(currentPrice / step) * step;
+      
+      // Generate 10 strikes around current price (5 above, 5 below) - Angel One style
       for (let i = -5; i <= 5; i++) {
-        const strike = Math.round(currentPrice + (i * step));
+        const strike = roundedPrice + (i * step);
         if (strike > 0) {
           strikes.push(strike);
         }
@@ -761,16 +754,31 @@ export default {
       return strikes.sort((a, b) => a - b);
     },
     
-    calculateOptionPrice(spot, strike, type) {
-      if (type === 'CALL') {
-        const intrinsicValue = Math.max(0, spot - strike);
-        const timeValue = spot * (0.008 + Math.random() * 0.004); // Realistic time value
-        return (intrinsicValue + timeValue).toFixed(2);
+    generateProperStrikes(currentPrice, symbol) {
+      const strikes = [];
+      let step = 500; // Default step - API uses 500 point intervals
+      
+      // Set step based on symbol type
+      if (symbol === 'NIFTY 50' || symbol === 'NIFTY BANK' || symbol === 'NIFTY IT' || symbol === 'FINNIFTY') {
+        step = 500; // 500 points for indices (as per API data)
+      } else if (symbol === 'SENSEX' || symbol === 'BANKEX') {
+        step = 1000; // 1000 points for SENSEX
       } else {
-        const intrinsicValue = Math.max(0, strike - spot);
-        const timeValue = spot * (0.008 + Math.random() * 0.004); // Realistic time value
-        return (intrinsicValue + timeValue).toFixed(2);
+        step = 100; // 100 points for individual stocks
       }
+      
+      // Round current price to nearest step
+      const roundedPrice = Math.round(currentPrice / step) * step;
+      
+      // Generate 10 strikes around current price (5 above, 5 below)
+      for (let i = -5; i <= 5; i++) {
+        const strike = roundedPrice + (i * step);
+        if (strike > 0) {
+          strikes.push(strike);
+        }
+      }
+      
+      return strikes.sort((a, b) => a - b);
     },
     openTradeModal(stock, optionType, action, option = null) {
       this.tradeData = {
