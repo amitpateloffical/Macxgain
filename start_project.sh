@@ -16,7 +16,7 @@ fi
 
 # Start Laravel development server
 echo "🌐 Starting Laravel development server..."
-php artisan serve --host=127.0.0.1 --port=8000 &
+php artisan serve --host=127.0.0.1 --port=8005 &
 LARAVEL_PID=$!
 
 # Wait for Laravel to start
@@ -52,7 +52,7 @@ echo ""
 echo "✅ Macxgain Trading Platform started successfully!"
 echo ""
 echo "📊 Services Running:"
-echo "   🌐 Laravel Server: http://127.0.0.1:8000 (PID: $LARAVEL_PID)"
+echo "   🌐 Laravel Server: http://127.0.0.1:8005 (PID: $LARAVEL_PID)"
 echo "   📅 Laravel Scheduler: Running (PID: $SCHEDULER_PID)"
 echo ""
 echo "🎯 Features:"
