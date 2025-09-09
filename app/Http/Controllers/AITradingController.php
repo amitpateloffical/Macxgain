@@ -543,17 +543,20 @@ class AITradingController extends Controller
         $quantity = $order->quantity;
         $optionType = $order->option_type;
         $action = $order->action;
+        $premiumPaid = $order->total_amount; // Amount paid for the option
 
         // For CALL options
         if ($optionType === 'CALL') {
             if ($action === 'BUY') {
                 // Bought CALL: Profit if current price > strike price
                 $intrinsicValue = max(0, $currentPrice - $strikePrice);
-                $pnl = ($intrinsicValue - $strikePrice) * $quantity;
+                $grossPnL = $intrinsicValue * $quantity;
+                $netPnL = $grossPnL - $premiumPaid; // Subtract premium paid
             } else {
                 // Sold CALL: Profit if current price < strike price
                 $intrinsicValue = max(0, $currentPrice - $strikePrice);
-                $pnl = ($strikePrice - $intrinsicValue) * $quantity;
+                $grossPnL = ($strikePrice - $intrinsicValue) * $quantity;
+                $netPnL = $grossPnL + $premiumPaid; // Add premium received
             }
         }
         // For PUT options
@@ -561,15 +564,17 @@ class AITradingController extends Controller
             if ($action === 'BUY') {
                 // Bought PUT: Profit if current price < strike price
                 $intrinsicValue = max(0, $strikePrice - $currentPrice);
-                $pnl = ($intrinsicValue - $strikePrice) * $quantity;
+                $grossPnL = $intrinsicValue * $quantity;
+                $netPnL = $grossPnL - $premiumPaid; // Subtract premium paid
             } else {
                 // Sold PUT: Profit if current price > strike price
                 $intrinsicValue = max(0, $strikePrice - $currentPrice);
-                $pnl = ($strikePrice - $intrinsicValue) * $quantity;
+                $grossPnL = ($intrinsicValue - $strikePrice) * $quantity;
+                $netPnL = $grossPnL + $premiumPaid; // Add premium received
             }
         }
 
-        return round($pnl, 2);
+        return round($netPnL, 2);
     }
 
     /**

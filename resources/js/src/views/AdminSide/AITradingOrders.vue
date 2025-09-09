@@ -182,15 +182,27 @@
                 <div class="trade-info">
                   <span class="trade-symbol">{{ trade.stock_symbol }}</span>
                   <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
+                  <span class="strike-price">Strike: ₹{{ trade.strike_price }}</span>
                 </div>
                 <div class="trade-pnl">
-                  <span class="pnl-amount">₹{{ trade.total_amount?.toLocaleString() }}</span>
+                  <div class="price-info">
+                    <span class="current-price" v-if="getCurrentPrice(trade.stock_symbol) > 0">
+                      Current: ₹{{ getCurrentPrice(trade.stock_symbol).toFixed(2) }}
+                    </span>
+                    <span class="invested-amount">Invested: ₹{{ trade.total_amount?.toLocaleString() }}</span>
+                  </div>
+                  <div class="live-pnl" :class="getLivePnL(trade) >= 0 ? 'profit' : 'loss'">
+                    Live P&L: {{ getLivePnL(trade) >= 0 ? '+' : '' }}₹{{ getLivePnL(trade).toFixed(2) }}
+                  </div>
                   <span class="trade-date">{{ formatDate(trade.created_at) }}</span>
                 </div>
               </div>
             </div>
             <div class="section-total">
               <span>Total Invested: ₹{{ totalActiveInvestment?.toLocaleString() }}</span>
+              <span class="live-total-pnl" :class="calculateActiveTradesPnL() >= 0 ? 'profit' : 'loss'">
+                Live P&L: {{ calculateActiveTradesPnL() >= 0 ? '+' : '' }}₹{{ calculateActiveTradesPnL().toFixed(2) }}
+              </span>
             </div>
           </div>
         </div>
@@ -282,10 +294,25 @@
               <span class="detail-label">Exit Price:</span>
               <span class="detail-value">₹{{ order.exit_price }}</span>
             </div>
-            <div v-if="order.pnl !== null && order.pnl !== undefined" class="detail-row">
-              <span class="detail-label">P&L:</span>
+            <!-- P&L Display - Live for active trades, Final for closed trades -->
+            <div v-if="order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined" class="detail-row">
+              <span class="detail-label">P&L (Final):</span>
               <span class="detail-value pnl" :class="order.pnl >= 0 ? 'profit' : 'loss'">
                 {{ order.pnl >= 0 ? '+' : '' }}₹{{ order.pnl?.toLocaleString() }}
+              </span>
+            </div>
+            <div v-else-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
+              <span class="detail-label">P&L (Live):</span>
+              <span class="detail-value pnl live-pnl" :class="getLivePnL(order) >= 0 ? 'profit' : 'loss'">
+                {{ getLivePnL(order) >= 0 ? '+' : '' }}₹{{ getLivePnL(order).toFixed(2) }}
+                <span class="live-indicator">●</span>
+              </span>
+            </div>
+            <!-- Current Market Price for active trades -->
+            <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
+              <span class="detail-label">Current Price:</span>
+              <span class="detail-value current-price">
+                ₹{{ getCurrentPrice(order.stock_symbol).toFixed(2) }}
               </span>
             </div>
           </div>
@@ -400,8 +427,10 @@ export default {
     },
     
     overallPnL() {
-      // This will be positive if profit > loss, negative if loss > profit
-      return this.totalProfit + this.totalLoss;
+      // Calculate P&L including live prices for active trades
+      const closedPnL = this.totalProfit + this.totalLoss;
+      const activePnL = this.calculateActiveTradesPnL();
+      return closedPnL + activePnL;
     },
     
     totalInvested() {
@@ -412,7 +441,7 @@ export default {
     },
     
     totalReturn() {
-      // Total return = Initial investment + P&L
+      // Total return = Initial investment + P&L (including live prices for active trades)
       return this.totalInvested + this.overallPnL;
     },
     
@@ -571,6 +600,97 @@ export default {
       await this.loadMarketData();
       this.showSuccess('Market data refreshed');
     },
+    updateLivePrices() {
+      // Update live prices without reloading orders
+      // This method will be called by auto-refresh to update prices only
+      console.log('Updating live prices for active trades...');
+      // The liveStocks data is already updated by loadMarketData()
+      // P&L will be recalculated automatically through computed properties
+    },
+    getCurrentPrice(symbol) {
+      // Get current market price for a symbol
+      if (this.liveStocks && this.liveStocks[symbol]) {
+        return parseFloat(this.liveStocks[symbol].ltp || 0);
+      }
+      return 0;
+    },
+    calculateActiveTradesPnL() {
+      // Calculate P&L for active trades using live market prices
+      let totalActivePnL = 0;
+      
+      this.activeTrades.forEach(trade => {
+        const currentPrice = this.getCurrentPrice(trade.stock_symbol);
+        if (currentPrice > 0) {
+          // Calculate P&L based on option type and action
+          let pnl = 0;
+          
+          if (trade.option_type === 'CALL') {
+            if (trade.action === 'BUY') {
+              // Bought CALL: Profit if current price > strike price
+              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = grossPnL - trade.total_amount; // Subtract premium paid
+            } else if (trade.action === 'SELL') {
+              // Sold CALL: Profit if current price < strike price
+              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+              const grossPnL = (trade.strike_price - intrinsicValue) * trade.quantity;
+              pnl = grossPnL + trade.total_amount; // Add premium received
+            }
+          } else if (trade.option_type === 'PUT') {
+            if (trade.action === 'BUY') {
+              // Bought PUT: Profit if current price < strike price
+              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = grossPnL - trade.total_amount; // Subtract premium paid
+            } else if (trade.action === 'SELL') {
+              // Sold PUT: Profit if current price > strike price
+              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+              const grossPnL = (intrinsicValue - trade.strike_price) * trade.quantity;
+              pnl = grossPnL + trade.total_amount; // Add premium received
+            }
+          }
+          
+          totalActivePnL += pnl;
+        }
+      });
+      
+      return totalActivePnL;
+    },
+    getLivePnL(trade) {
+      // Calculate live P&L for a specific trade
+      const currentPrice = this.getCurrentPrice(trade.stock_symbol);
+      if (currentPrice <= 0) return 0;
+      
+      let pnl = 0;
+      
+      if (trade.option_type === 'CALL') {
+        if (trade.action === 'BUY') {
+          // Bought CALL: Profit if current price > strike price
+          const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+          const grossPnL = intrinsicValue * trade.quantity;
+          pnl = grossPnL - trade.total_amount; // Subtract premium paid
+        } else if (trade.action === 'SELL') {
+          // Sold CALL: Profit if current price < strike price
+          const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+          const grossPnL = (trade.strike_price - intrinsicValue) * trade.quantity;
+          pnl = grossPnL + trade.total_amount; // Add premium received
+        }
+      } else if (trade.option_type === 'PUT') {
+        if (trade.action === 'BUY') {
+          // Bought PUT: Profit if current price < strike price
+          const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+          const grossPnL = intrinsicValue * trade.quantity;
+          pnl = grossPnL - trade.total_amount; // Subtract premium paid
+        } else if (trade.action === 'SELL') {
+          // Sold PUT: Profit if current price > strike price
+          const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+          const grossPnL = (intrinsicValue - trade.strike_price) * trade.quantity;
+          pnl = grossPnL + trade.total_amount; // Add premium received
+        }
+      }
+      
+      return pnl;
+    },
     async refreshAllData() {
       this.loading = true;
       try {
@@ -592,7 +712,8 @@ export default {
       this.autoRefreshInterval = setInterval(() => {
         if (this.marketStatus.is_open) {
           this.loadMarketData();
-          this.loadUserOrders(); // Also refresh orders to get updated P&L
+          // Only update live prices, don't reload orders to prevent page refresh
+          this.updateLivePrices();
         }
       }, 10000); // 10 seconds for faster updates
     },
@@ -1896,6 +2017,157 @@ export default {
   
   .order-details {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Live Price Display Styles */
+.strike-price {
+  font-size: 12px;
+  color: #666;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.current-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c5aa0;
+  background: #e3f2fd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #2196f3;
+}
+
+.invested-amount {
+  font-size: 12px;
+  color: #666;
+}
+
+.live-pnl {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.live-pnl.profit {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.live-pnl.loss {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #f44336;
+}
+
+.section-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.live-total-pnl {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.live-total-pnl.profit {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.live-total-pnl.loss {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #f44336;
+}
+
+/* Live P&L in orders list */
+.detail-row .live-pnl {
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.detail-row .live-pnl.profit {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.detail-row .live-pnl.loss {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #f44336;
+}
+
+.detail-row .current-price {
+  font-weight: 600;
+  color: #2c5aa0;
+  background: #e3f2fd;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border-left: 2px solid #2196f3;
+}
+
+.live-indicator {
+  color: #4caf50;
+  font-size: 12px;
+  margin-left: 4px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Responsive adjustments for live price display */
+@media (max-width: 768px) {
+  .price-info {
+    gap: 2px;
+  }
+  
+  .current-price {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+  
+  .live-pnl {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .section-total {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .live-total-pnl {
+    font-size: 14px;
+    padding: 6px 10px;
   }
 }
 </style>

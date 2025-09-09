@@ -560,7 +560,7 @@ export default {
         this.loadMarketStatus();
         this.loadMarketData();
         console.log('Auto-refresh: Market data and status updated');
-      }, 3000); // 3 seconds for live market data (reduced toast spam)
+      }, 10000); // 10 seconds for live market data (reduced frequency to prevent page refresh)
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
