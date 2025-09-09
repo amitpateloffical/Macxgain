@@ -257,83 +257,90 @@
           <p>Loading options data...</p>
         </div>
         
-        <!-- Side-by-Side Options Layout -->
-        <div v-else class="options-comparison">
-          <!-- Put Options (Left Side) -->
-          <div class="options-column put-column">
-            <h4 class="section-title put-title">
-              <i class="fas fa-arrow-down"></i> Put Options
-            </h4>
-            <div class="options-list">
-              <div 
-                v-for="option in filteredPutOptions" 
-                :key="option.strike"
-                class="option-row put-option"
-              >
-                <div class="option-strike">{{ option.strike }}</div>
-                <div class="option-price">₹{{ option.price || '--' }}</div>
-                <div class="option-details">
-                  <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
-                  <div class="option-oi">OI: {{ option.oi || '--' }}</div>
+        <!-- Angel One Style Options Table -->
+        <div v-else class="angel-options-container">
+          <div class="options-table">
+            <div class="options-header">
+              <div class="header-cell call-section">
+                <div class="section-label">CALL</div>
+                <div class="sub-headers">
+                  <div class="sub-header">LTP Chng%</div>
+                  <div class="sub-header">Call LTP</div>
                 </div>
-                <div class="option-greeks" v-if="option.greeks">
-                  <div class="greeks-row">
-                    <span class="greek">Δ {{ option.greeks.delta || '--' }}</span>
-                    <span class="greek">Γ {{ option.greeks.gamma || '--' }}</span>
-                  </div>
-                  <div class="greeks-row">
-                    <span class="greek">Θ {{ option.greeks.theta || '--' }}</span>
-                    <span class="greek">ν {{ option.greeks.vega || '--' }}</span>
-                  </div>
+              </div>
+              <div class="header-cell strike-section">
+                <div class="section-label">Strike Price</div>
+              </div>
+              <div class="header-cell put-section">
+                <div class="section-label">PUT</div>
+                <div class="sub-headers">
+                  <div class="sub-header">Put LTP</div>
+                  <div class="sub-header">LTP Chng%</div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Strike Price Column (Center) -->
-          <div class="strike-column">
-            <h4 class="section-title strike-title">
-              <i class="fas fa-bullseye"></i> Strike Price
-            </h4>
-            <div class="strike-list">
+            <div class="options-body">
               <div 
                 v-for="strike in filteredStrikes" 
                 :key="strike"
-                class="strike-row"
+                class="option-row"
               >
-                <div class="strike-price">{{ strike }}</div>
-                <div class="strike-indicator" :class="getStrikeIndicatorClass(strike)">
-                  {{ getStrikeIndicatorText(strike) }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Call Options (Right Side) -->
-          <div class="options-column call-column">
-            <h4 class="section-title call-title">
-              <i class="fas fa-arrow-up"></i> Call Options
-            </h4>
-            <div class="options-list">
-              <div 
-                v-for="option in filteredCallOptions" 
-                :key="option.strike"
-                class="option-row call-option"
-              >
-                <div class="option-strike">{{ option.strike }}</div>
-                <div class="option-price">₹{{ option.price || '--' }}</div>
-                <div class="option-details">
-                  <div class="option-volume">Vol: {{ option.volume || '--' }}</div>
-                  <div class="option-oi">OI: {{ option.oi || '--' }}</div>
-                </div>
-                <div class="option-greeks" v-if="option.greeks">
-                  <div class="greeks-row">
-                    <span class="greek">Δ {{ option.greeks.delta || '--' }}</span>
-                    <span class="greek">Γ {{ option.greeks.gamma || '--' }}</span>
+                <!-- Call Section with Action Buttons -->
+                <div class="cell call-section">
+                  <div class="call-ltp-with-actions">
+                    <div class="call-change" :class="getChangeClass(getCallChange(strike))">
+                      {{ getCallChange(strike) }}
+                    </div>
+                    <div class="call-ltp">
+                      ₹{{ getCallLTP(strike) }}
+                    </div>
                   </div>
-                  <div class="greeks-row">
-                    <span class="greek">Θ {{ option.greeks.theta || '--' }}</span>
-                    <span class="greek">ν {{ option.greeks.vega || '--' }}</span>
+                  <div class="action-buttons" v-if="getCallOption(strike)">
+                    <button 
+                      class="action-btn buy-btn" 
+                      @click="openTradeModal(selectedStock, 'CALL', 'BUY', getCallOption(strike))"
+                      :title="'Buy Call'"
+                    >
+                      B
+                    </button>
+                    <button 
+                      class="action-btn sell-btn" 
+                      @click="openTradeModal(selectedStock, 'CALL', 'SELL', getCallOption(strike))"
+                      :title="'Sell Call'"
+                    >
+                      S
+                    </button>
+                  </div>
+                </div>
+                <!-- Strike Price -->
+                <div class="cell strike-section">
+                  <div class="strike-price">{{ strike }}</div>
+                </div>
+                <!-- Put Section with Action Buttons -->
+                <div class="cell put-section">
+                  <div class="put-ltp-with-actions">
+                    <div class="put-ltp">
+                      ₹{{ getPutLTP(strike) }}
+                    </div>
+                    <div class="put-change" :class="getChangeClass(getPutChange(strike))">
+                      {{ getPutChange(strike) }}
+                    </div>
+                  </div>
+                  <div class="action-buttons" v-if="getPutOption(strike)">
+                    <button 
+                      class="action-btn buy-btn" 
+                      @click="openTradeModal(selectedStock, 'PUT', 'BUY', getPutOption(strike))"
+                      :title="'Buy Put'"
+                    >
+                      B
+                    </button>
+                    <button 
+                      class="action-btn sell-btn" 
+                      @click="openTradeModal(selectedStock, 'PUT', 'SELL', getPutOption(strike))"
+                      :title="'Sell Put'"
+                    >
+                      S
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1084,13 +1091,16 @@ export default {
         
         const optionData = {
           strike: option.strike_price,
+          ltp: option.ltp,
           price: option.ltp,
+          prev_close: option.prev_close || 0,
           volume: option.volume,
           oi: option.oi,
           bid: option.bid,
           ask: option.ask,
           bid_qty: option.bid_qty,
           ask_qty: option.ask_qty,
+          change_percent: this.calculateChangePercent(option.ltp, option.prev_close),
           greeks: {
             delta: option.delta || 0,
             gamma: option.gamma || 0,
@@ -1185,6 +1195,49 @@ export default {
       const intrinsic = type === 'call' ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
       const timeValue = Math.max(1, spot * (0.008 + Math.random() * 0.004)); // More realistic time value
       return (intrinsic + timeValue).toFixed(2);
+    },
+
+    // Helper methods for Angel One style display
+    getCallLTP(strike) {
+      const option = this.callOptions.find(opt => opt.strike === strike);
+      return option ? option.ltp?.toFixed(2) || '0.00' : '--';
+    },
+
+    getPutLTP(strike) {
+      const option = this.putOptions.find(opt => opt.strike === strike);
+      return option ? option.ltp?.toFixed(2) || '0.00' : '--';
+    },
+
+    getCallChange(strike) {
+      const option = this.callOptions.find(opt => opt.strike === strike);
+      return option ? option.change_percent : '--';
+    },
+
+    getPutChange(strike) {
+      const option = this.putOptions.find(opt => opt.strike === strike);
+      return option ? option.change_percent : '--';
+    },
+
+    getChangeClass(change) {
+      if (change === '--') return '';
+      const num = parseFloat(change);
+      if (num > 0) return 'positive';
+      if (num < 0) return 'negative';
+      return '';
+    },
+
+    calculateChangePercent(ltp, prevClose) {
+      if (!ltp || !prevClose || prevClose === 0) return '--';
+      const change = ((ltp - prevClose) / prevClose) * 100;
+      return change.toFixed(2) + '%';
+    },
+
+    getCallOption(strike) {
+      return this.callOptions.find(opt => opt.strike === strike);
+    },
+
+    getPutOption(strike) {
+      return this.putOptions.find(opt => opt.strike === strike);
     },
 
     // Handle keyboard events
@@ -2951,5 +3004,181 @@ export default {
     min-width: 80px;
     flex-shrink: 0;
   }
+}
+
+/* Angel One Style Options Table */
+.angel-options-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.options-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1f2937;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.options-header {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  background: #374151;
+  border-bottom: 2px solid #4b5563;
+}
+
+.header-cell {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  border-right: 1px solid #4b5563;
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+.section-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #f3f4f6;
+  margin-bottom: 0.5rem;
+}
+
+.sub-headers {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sub-header {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.strike-section .section-label {
+  color: #fbbf24;
+}
+
+.options-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  border-bottom: 1px solid #374151;
+  transition: background-color 0.2s ease;
+}
+
+.option-row:hover {
+  background: #374151;
+}
+
+.option-row:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  padding: 0.75rem;
+  text-align: center;
+  border-right: 1px solid #374151;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.cell:last-child {
+  border-right: none;
+}
+
+.strike-section {
+  background: #1f2937;
+}
+
+.strike-price {
+  font-weight: 600;
+  color: #fbbf24;
+  font-size: 0.875rem;
+}
+
+.call-section, .put-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.call-change, .put-change {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.call-change.positive, .put-change.positive {
+  color: #10b981;
+}
+
+.call-change.negative, .put-change.negative {
+  color: #ef4444;
+}
+
+.call-change:not(.positive):not(.negative), 
+.put-change:not(.positive):not(.negative) {
+  color: #9ca3af;
+}
+
+.call-ltp, .put-ltp {
+  color: #f3f4f6;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.call-ltp-with-actions, .put-ltp-with-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.action-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.action-btn.buy-btn {
+  background: #10b981;
+  color: white;
+}
+
+.action-btn.buy-btn:hover {
+  background: #059669;
+}
+
+.action-btn.sell-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn.sell-btn:hover {
+  background: #dc2626;
 }
 </style>
