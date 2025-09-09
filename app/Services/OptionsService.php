@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use App\Models\OptionChain;
 
 class OptionsService
 {
@@ -22,66 +23,134 @@ class OptionsService
     /**
      * Get Option Chain for a symbol
      */
-    public function getOptionChain($symbol, $expiry = null)
+    public function getOptionChain($symbol, $expiry = null, array $options = [])
     {
         try {
-            // If no expiry provided, use current month's last Thursday
-            if (!$expiry) {
-                $expiry = $this->getCurrentMonthExpiry();
-            }
+            $forceSource = strtolower($options['force_source'] ?? '') ?: null; // 'nse' or 'truedata'
+            $forwardHeaders = $options['forward_headers'] ?? [];
+            // Normalize symbol and prepare candidates
+            $normalizedSymbol = $this->normalizeSymbol($symbol);
+            $altSymbols = $this->alternateSymbols($normalizedSymbol);
 
-            // Check cache first
-            $cacheKey = "options_chain_{$symbol}_{$expiry}";
-            $cachedData = Cache::get($cacheKey);
-            if ($cachedData) {
-                Log::info("Returning cached options data for {$symbol}");
-                return [
-                    'success' => true,
-                    'data' => $cachedData,
-                    'symbol' => $symbol,
-                    'expiry' => $expiry,
-                    'cached' => true
-                ];
+            // Build expiry candidates
+            $expiryCandidates = [];
+            if ($expiry) {
+                $expiryCandidates[] = $expiry;
+            } else {
+                $isIndex = in_array($normalizedSymbol, ['NIFTY', 'BANKNIFTY', 'FINNIFTY', 'MIDCPNIFTY']);
+                $nearest = $this->getNearestThursdayExpiry();
+                $nextWeek = $this->getNearestThursdayExpiry(1);
+                $currentMonthly = $this->getCurrentMonthExpiry();
+                $nextMonthly = $this->getNextMonthExpiry();
+                $expiryCandidates = $isIndex
+                    ? array_unique([$nearest, $nextWeek, $currentMonthly, $nextMonthly])
+                    : array_unique([$currentMonthly, $nearest, $nextWeek, $nextMonthly]);
             }
 
             $url = "{$this->baseUrl}/getOptionChain";
-            $params = [
-                'user' => $this->username,
-                'password' => $this->password,
-                'symbol' => $symbol,
-                'expiry' => $expiry,
-                'response' => 'json'
-            ];
+            $http = Http::timeout(8);
+            $startedAt = microtime(true);
+            $hardDeadlineSec = 18; // keep well under PHP 30s limit
 
-            Log::info("Fetching options chain for {$symbol} with expiry {$expiry}");
-            $response = Http::timeout(30)->get($url, $params);
+            foreach ($altSymbols as $sym) {
+                foreach ($expiryCandidates as $exp) {
+                    $cacheKey = "options_chain_{$sym}_{$exp}";
+                    $negKey = $cacheKey . "_neg";
+                    if (Cache::has($negKey)) {
+                        Log::info("Skipping {$sym} {$exp} due to negative cache");
+                        continue;
+                    }
 
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                // Process the data according to TrueData format
-                $processedData = $this->processOptionsData($data, $symbol);
-                
-                // Cache for 5 minutes
-                Cache::put($cacheKey, $processedData, 300);
-                
-                Log::info("Successfully fetched and processed options data for {$symbol}");
-                
-                return [
-                    'success' => true,
-                    'data' => $processedData,
-                    'symbol' => $symbol,
-                    'expiry' => $expiry,
-                    'cached' => false
-                ];
-            } else {
-                Log::error("Options API failed for {$symbol}: " . $response->body());
-                return [
-                    'success' => false,
-                    'error' => 'Failed to fetch options data',
-                    'status_code' => $response->status()
-                ];
+                    if (Cache::get($cacheKey)) {
+                        Log::info("Returning cached options data for {$sym} {$exp}");
+                        return [
+                            'success' => true,
+                            'data' => Cache::get($cacheKey),
+                            'symbol' => $sym,
+                            'expiry' => $exp,
+                            'cached' => true
+                        ];
+                    }
+
+                    $params = [
+                        'user' => $this->username,
+                        'password' => $this->password,
+                        'symbol' => $sym,
+                        'expiry' => $exp,
+                        'response' => 'json'
+                    ];
+
+                    if ((microtime(true) - $startedAt) > $hardDeadlineSec) {
+                        Log::warning("Options request exceeded deadline before trying {$sym} {$exp}");
+                        break 2;
+                    }
+
+                    if ($forceSource === 'nse') {
+                        Log::info("Skipping TrueData due to force_source=nse");
+                    } else {
+                        Log::info("Options API request: symbol={$sym} expiry={$exp}");
+                        $response = $http->get($url, $params);
+
+                        if (!$response->successful()) {
+                            Log::error("Options API HTTP error for {$sym} {$exp}: status=" . $response->status());
+                            Cache::put($negKey, true, 60);
+                        } else {
+                            $data = $response->json();
+                            $processedData = $this->processOptionsData($data, $sym);
+                            if (!empty($processedData)) {
+                                try { OptionChain::storeChain($sym, $exp, $processedData, 'TrueData'); } catch (\Exception $e) { Log::error('Persist option chain failed: ' . $e->getMessage()); }
+                                Cache::put($cacheKey, $processedData, 90);
+                                Log::info("Options API success for {$sym} {$exp}: records=" . count($processedData));
+                                return [
+                                    'success' => true,
+                                    'data' => $processedData,
+                                    'symbol' => $sym,
+                                    'expiry' => $exp,
+                                    'cached' => false
+                                ];
+                            } else {
+                                Log::warning("Options API empty for {$sym} {$exp}, trying DB fallback");
+                                Cache::put($negKey, true, 60);
+                                $dbData = OptionChain::getChain($sym, $exp, true);
+                                if (!empty($dbData)) {
+                                    return [
+                                        'success' => true,
+                                        'data' => $dbData,
+                                        'symbol' => $sym,
+                                        'expiry' => $exp,
+                                        'cached' => true,
+                                        'data_source' => 'database'
+                                    ];
+                                }
+                            }
+                        }
+                    }
+
+                    // NSE fallback
+                    if ((microtime(true) - $startedAt) > $hardDeadlineSec) { break 2; }
+                    Log::info("Trying NSE fallback for {$sym} {$exp}");
+                    $nseData = $this->fetchFromNse($sym, $exp, $forwardHeaders);
+                    if (!empty($nseData)) {
+                        try { OptionChain::storeChain($sym, $exp, $nseData, 'NSE'); } catch (\Exception $e) { Log::error('Persist NSE chain failed: ' . $e->getMessage()); }
+                        Cache::put($cacheKey, $nseData, 90);
+                        return [
+                            'success' => true,
+                            'data' => $nseData,
+                            'symbol' => $sym,
+                            'expiry' => $exp,
+                            'cached' => false,
+                            'data_source' => 'NSE'
+                        ];
+                    }
+                }
             }
+
+            return [
+                'success' => false,
+                'error' => 'No options data returned from provider for given symbol/expiries',
+                'symbol' => $normalizedSymbol,
+                'expiry_tried' => $expiryCandidates
+            ];
         } catch (\Exception $e) {
             Log::error("Options Service Error for {$symbol}: " . $e->getMessage());
             return [
@@ -111,7 +180,7 @@ class OptionsService
             
             if (empty($optionsData)) {
                 Log::warning("No options data found for {$symbol}");
-                return $this->generateMockOptionsData($symbol);
+                return [];
             }
             
             // Process each option according to TrueData format
@@ -176,7 +245,7 @@ class OptionsService
             
         } catch (\Exception $e) {
             Log::error("Error processing options data for {$symbol}: " . $e->getMessage());
-            return $this->generateMockOptionsData($symbol);
+            return [];
         }
     }
     
@@ -382,6 +451,174 @@ class OptionsService
     }
 
     /**
+     * Get nearest Thursday expiry (YYYYMMDD)
+     */
+    private function getNearestThursdayExpiry(int $weeksToAdd = 0)
+    {
+        $now = new \DateTime('now', new \DateTimeZone('Asia/Kolkata'));
+        // Start from today; if after market close on Thursday, move to next week
+        $day = (int) $now->format('w'); // 0=Sun..6=Sat
+        $daysUntilThu = (4 - $day + 7) % 7; // 4 = Thursday
+        if ($daysUntilThu === 0) {
+            // It is Thursday; if after 15:30 IST, move to next Thursday
+            if ((int)$now->format('Hi') > 1530) {
+                $daysUntilThu = 7;
+            }
+        }
+        $now->modify("+{$daysUntilThu} days");
+        if ($weeksToAdd > 0) {
+            $now->modify("+{$weeksToAdd} week");
+        }
+        return $now->format('Ymd');
+    }
+
+    /**
+     * Get next month expiry (last Thursday next month)
+     */
+    private function getNextMonthExpiry()
+    {
+        $year = (int) date('Y');
+        $month = (int) date('m');
+        $month++;
+        if ($month > 12) { $month = 1; $year++; }
+        $lastDay = (int) date('t', mktime(0, 0, 0, $month, 1, $year));
+        for ($day = $lastDay; $day >= 1; $day--) {
+            $ts = mktime(0, 0, 0, $month, $day, $year);
+            if ((int) date('w', $ts) === 4) { // Thursday
+                return date('Ymd', $ts);
+            }
+        }
+        return date('Ymd', mktime(0, 0, 0, $month, $lastDay, $year));
+    }
+
+    /**
+     * Alternate symbol spellings to try
+     */
+    private function alternateSymbols(string $normalized): array
+    {
+        $alts = [$normalized];
+        if ($normalized === 'BANKNIFTY') {
+            $alts[] = 'NIFTY BANK';
+            $alts[] = 'NIFTYBANK';
+        } elseif ($normalized === 'NIFTY') {
+            $alts[] = 'NIFTY 50';
+            $alts[] = 'NIFTY50';
+        }
+        return array_unique($alts);
+    }
+
+    /**
+     * NSE fallback: fetch option chain and normalize
+     */
+    private function fetchFromNse(string $symbol, string $expiryYmd, array $forwardHeaders = []): array
+    {
+        try {
+            $isIndex = in_array($symbol, ['NIFTY', 'BANKNIFTY', 'FINNIFTY', 'MIDCPNIFTY']);
+            $endpoint = $isIndex ? 'option-chain-indices' : 'option-chain-equities';
+            $nseSymbol = $this->nseSymbol($symbol);
+
+            // Prime cookies
+            $headers = [
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
+                'Accept' => 'application/json, text/plain, */*',
+                'Accept-Language' => 'en-US,en;q=0.9',
+                'Referer' => 'https://www.nseindia.com/',
+                'Connection' => 'keep-alive'
+            ];
+            foreach (['User-Agent','Cookie','Accept-Language'] as $h) {
+                if (!empty($forwardHeaders[$h])) { $headers[$h] = $forwardHeaders[$h]; }
+            }
+
+            $client = Http::withHeaders($headers)->withOptions(['verify' => false]);
+            $client->get('https://www.nseindia.com');
+
+            $res = $client->get("https://www.nseindia.com/api/{$endpoint}", ['symbol' => $nseSymbol]);
+            if (!$res->successful()) {
+                Log::error('NSE fallback HTTP error: status=' . $res->status());
+                return [];
+            }
+
+            $json = $res->json();
+            if (!isset($json['records']['data']) || !is_array($json['records']['data'])) {
+                Log::warning('NSE fallback: unexpected response');
+                return [];
+            }
+
+            $targetExpiry = $this->formatNseExpiry($expiryYmd);
+            $rows = [];
+            foreach ($json['records']['data'] as $item) {
+                $expDate = $item['expiryDate'] ?? null;
+                if (!$expDate || $expDate !== $targetExpiry) { continue; }
+                $strike = $item['strikePrice'] ?? null;
+                if ($strike === null) { continue; }
+
+                if (isset($item['CE'])) {
+                    $ce = $item['CE'];
+                    $rows[] = [
+                        'symbol' => $symbol,
+                        'timestamp' => $ce['timestamp'] ?? now()->toISOString(),
+                        'ltp' => (float)($ce['lastPrice'] ?? 0),
+                        'bid' => (float)($ce['bidprice'] ?? 0),
+                        'ask' => (float)($ce['askPrice'] ?? 0),
+                        'volume' => (int)($ce['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($ce['openInterest'] ?? 0),
+                        'strike_price' => (float)$strike,
+                        'option_type' => 'CALL'
+                    ];
+                }
+                if (isset($item['PE'])) {
+                    $pe = $item['PE'];
+                    $rows[] = [
+                        'symbol' => $symbol,
+                        'timestamp' => $pe['timestamp'] ?? now()->toISOString(),
+                        'ltp' => (float)($pe['lastPrice'] ?? 0),
+                        'bid' => (float)($pe['bidprice'] ?? 0),
+                        'ask' => (float)($pe['askPrice'] ?? 0),
+                        'volume' => (int)($pe['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($pe['openInterest'] ?? 0),
+                        'strike_price' => (float)$strike,
+                        'option_type' => 'PUT'
+                    ];
+                }
+            }
+
+            // If nothing for the exact expiry, try using the first available expiry in response
+            if (empty($rows) && isset($json['records']['expiryDates'][0])) {
+                $fallbackExpiry = $json['records']['expiryDates'][0];
+                foreach ($json['records']['data'] as $item) {
+                    if (($item['expiryDate'] ?? null) !== $fallbackExpiry) { continue; }
+                    $strike = $item['strikePrice'] ?? null; if ($strike === null) { continue; }
+                    if (isset($item['CE'])) { $ce = $item['CE']; $rows[] = [ 'symbol'=>$symbol, 'timestamp'=>$ce['timestamp'] ?? now()->toISOString(), 'ltp'=>(float)($ce['lastPrice'] ?? 0), 'bid'=>(float)($ce['bidprice'] ?? 0), 'ask'=>(float)($ce['askPrice'] ?? 0), 'volume'=>(int)($ce['totalTradedVolume'] ?? 0), 'oi'=>(int)($ce['openInterest'] ?? 0), 'strike_price'=>(float)$strike, 'option_type'=>'CALL' ]; }
+                    if (isset($item['PE'])) { $pe = $item['PE']; $rows[] = [ 'symbol'=>$symbol, 'timestamp'=>$pe['timestamp'] ?? now()->toISOString(), 'ltp'=>(float)($pe['lastPrice'] ?? 0), 'bid'=>(float)($pe['bidprice'] ?? 0), 'ask'=>(float)($pe['askPrice'] ?? 0), 'volume'=>(int)($pe['totalTradedVolume'] ?? 0), 'oi'=>(int)($pe['openInterest'] ?? 0), 'strike_price'=>(float)$strike, 'option_type'=>'PUT' ]; }
+                }
+
+                // If we used a different expiry, we need to convert NSE format to Ymd for storage consistency
+                if (!empty($rows)) {
+                    Log::info('NSE fallback used different expiry: ' . $fallbackExpiry);
+                }
+            }
+
+            return $rows;
+        } catch (\Exception $e) {
+            Log::error('NSE fallback error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function nseSymbol(string $symbol): string
+    {
+        if ($symbol === 'NIFTY') { return 'NIFTY'; }
+        if ($symbol === 'BANKNIFTY') { return 'BANKNIFTY'; }
+        return $symbol; // stocks
+    }
+
+    private function formatNseExpiry(string $ymd): string
+    {
+        $dt = \DateTime::createFromFormat('Ymd', $ymd, new \DateTimeZone('Asia/Kolkata'));
+        return $dt ? $dt->format('d-M-Y') : $ymd;
+    }
+
+    /**
      * Get options data for dashboard
      */
     public function getOptionsDashboard()
@@ -407,5 +644,25 @@ class OptionsService
             'data' => $optionsData,
             'timestamp' => now()->toISOString()
         ];
+    }
+
+    /**
+     * Normalize incoming symbol to TrueData symbol codes
+     */
+    private function normalizeSymbol(string $symbol): string
+    {
+        $map = [
+            'NIFTY 50' => 'NIFTY',
+            'NIFTY50' => 'NIFTY',
+            'NIFTY' => 'NIFTY',
+            'NIFTY BANK' => 'BANKNIFTY',
+            'BANKNIFTY' => 'BANKNIFTY',
+            'BANK NIFTY' => 'BANKNIFTY',
+            'FINNIFTY' => 'FINNIFTY',
+            'MIDCPNIFTY' => 'MIDCPNIFTY',
+        ];
+
+        $trimmed = trim(strtoupper($symbol));
+        return $map[$trimmed] ?? $trimmed;
     }
 }

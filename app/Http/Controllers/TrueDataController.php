@@ -555,7 +555,20 @@ class TrueDataController extends Controller
     public function getOptionChain($symbol): JsonResponse
     {
         try {
-            $result = $this->optionsService->getOptionChain($symbol);
+            $expiry = request()->query('expiry');
+            $forceSource = request()->query('source'); // e.g., 'nse' or 'truedata'
+
+            // Forward selected headers (to help NSE fallback)
+            $forwardHeaders = [
+                'User-Agent' => request()->header('User-Agent'),
+                'Cookie' => request()->header('Cookie'),
+                'Accept-Language' => request()->header('Accept-Language'),
+            ];
+
+            $result = $this->optionsService->getOptionChain($symbol, $expiry, [
+                'force_source' => $forceSource,
+                'forward_headers' => $forwardHeaders
+            ]);
             
             return response()->json($result);
         } catch (\Exception $e) {

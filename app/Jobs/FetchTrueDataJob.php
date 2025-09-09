@@ -53,7 +53,7 @@ class FetchTrueDataJob implements ShouldQueue
                 Log::info("FetchTrueDataJob: WebSocket data stored in database ({$storedCount} symbols) and cached for 30 seconds");
             } else {
                 // Fallback: Run Python script to fetch data
-                $result = Process::timeout(5)->run('python3 truedata_fetch.py');
+                $result = Process::timeout(45)->run('python3 truedata_fetch.py');
                 
                 if ($result->successful()) {
                     $output = $result->output();
@@ -99,8 +99,8 @@ class FetchTrueDataJob implements ShouldQueue
                 $fileTime = filemtime($jsonFile);
                 $currentTime = time();
                 
-                // Only use file if it's less than 30 seconds old
-                if (($currentTime - $fileTime) < 30) {
+                // Only use file if it's reasonably fresh (less than 120 seconds old)
+                if (($currentTime - $fileTime) < 120) {
                     $jsonContent = file_get_contents($jsonFile);
                     $webSocketData = json_decode($jsonContent, true);
                     
@@ -119,7 +119,7 @@ class FetchTrueDataJob implements ShouldQueue
                                 'change_percent' => $data['change_percent'] ?? 0,
                                 'volume' => $data['volume'] ?? 0,
                                 'timestamp' => $data['timestamp'] ?? now()->toISOString(),
-                                'source' => 'TrueData WebSocket Live'
+                                'data_source' => $data['data_source'] ?? ($data['source'] ?? 'TrueData WebSocket Live')
                             ];
                         }
                         
@@ -144,31 +144,84 @@ class FetchTrueDataJob implements ShouldQueue
     private function parsePythonOutput($output): array
     {
         $marketData = [];
-        
+
         try {
-            // Split output into lines
-            $lines = explode("\n", $output);
-            
-            foreach ($lines as $line) {
-                // Look for JSON data lines
-                if (strpos($line, 'Data #') !== false && strpos($line, '{') !== false) {
-                    // Extract JSON part
+            // First try to decode the entire output as JSON (python prints full JSON)
+            $decoded = json_decode(trim($output), true);
+            if (json_last_error() === JSON_ERROR_NONE && !empty($decoded)) {
+                // If decoded is a map of symbol => data
+                if (is_array($decoded)) {
+                    foreach ($decoded as $symbol => $data) {
+                        if (is_array($data)) {
+                            $marketData[$symbol] = [
+                                'symbol' => $data['symbol'] ?? $symbol,
+                                'ltp' => $data['ltp'] ?? 0,
+                                'high' => $data['high'] ?? 0,
+                                'low' => $data['low'] ?? 0,
+                                'open' => $data['open'] ?? 0,
+                                'prev_close' => $data['prev_close'] ?? 0,
+                                'change' => $data['change'] ?? 0,
+                                'change_percent' => $data['change_percent'] ?? 0,
+                                'volume' => $data['volume'] ?? 0,
+                                'timestamp' => $data['timestamp'] ?? now()->toISOString(),
+                                'data_source' => $data['data_source'] ?? ($data['source'] ?? 'TrueData Real WebSocket')
+                            ];
+                        }
+                    }
+                }
+            } else {
+                // Fallback: split output into lines and process JSON fragments (old behavior)
+                $lines = explode("\n", $output);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '') { continue; }
+                    // Extract any JSON object from the line
                     $jsonStart = strpos($line, '{');
                     if ($jsonStart !== false) {
                         $jsonPart = substr($line, $jsonStart);
-                        
                         $data = json_decode($jsonPart, true);
-                        if ($data) {
+                        if (json_last_error() === JSON_ERROR_NONE && $data) {
                             $this->processMarketData($data, $marketData);
                         }
                     }
                 }
             }
-            
         } catch (\Exception $e) {
             Log::error('ParsePythonOutput Error: ' . $e->getMessage());
         }
-        
+
+        // As a final fallback, if still empty, try reading market_data.json directly
+        if (empty($marketData)) {
+            try {
+                $jsonFile = base_path('market_data.json');
+                if (file_exists($jsonFile)) {
+                    $content = file_get_contents($jsonFile);
+                    $fileData = json_decode($content, true);
+                    if (is_array($fileData)) {
+                        foreach ($fileData as $symbol => $data) {
+                            if (is_array($data)) {
+                                $marketData[$symbol] = [
+                                    'symbol' => $data['symbol'] ?? $symbol,
+                                    'ltp' => $data['ltp'] ?? 0,
+                                    'high' => $data['high'] ?? 0,
+                                    'low' => $data['low'] ?? 0,
+                                    'open' => $data['open'] ?? 0,
+                                    'prev_close' => $data['prev_close'] ?? 0,
+                                    'change' => $data['change'] ?? 0,
+                                    'change_percent' => $data['change_percent'] ?? 0,
+                                    'volume' => $data['volume'] ?? 0,
+                                    'timestamp' => $data['timestamp'] ?? now()->toISOString(),
+                                    'data_source' => $data['data_source'] ?? ($data['source'] ?? 'TrueData Real WebSocket')
+                                ];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('ParsePythonOutput Fallback Error: ' . $e->getMessage());
+            }
+        }
+
         return $marketData;
     }
     

@@ -293,7 +293,7 @@
 
     <!-- Trade Modal -->
     <div v-if="showTradeModal" class="modal-overlay" @click="closeTradeModal">
-      <div class="modal-content" @click.stop>
+      <div class="stock-options-modal" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">
             <i class="fas fa-chart-line"></i>
