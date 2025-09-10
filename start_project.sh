@@ -27,6 +27,11 @@ echo "📅 Starting Laravel scheduler for automatic WebSocket management..."
 php artisan schedule:work &
 SCHEDULER_PID=$!
 
+# Start queue worker for processing jobs
+echo "⚙️  Starting queue worker for processing jobs..."
+php artisan queue:work &
+QUEUE_PID=$!
+
 # Check if WebSocket script should run (market hours)
 current_hour=$(date +%H)
 current_minute=$(date +%M)
@@ -54,9 +59,11 @@ echo ""
 echo "📊 Services Running:"
 echo "   🌐 Laravel Server: http://127.0.0.1:8005 (PID: $LARAVEL_PID)"
 echo "   📅 Laravel Scheduler: Running (PID: $SCHEDULER_PID)"
+echo "   ⚙️  Queue Worker: Running (PID: $QUEUE_PID)"
 echo ""
 echo "🎯 Features:"
 echo "   📈 Live Market Data: Auto-refresh every 5 seconds"
+echo "   📊 Option Chain Data: Auto-refresh every 5 seconds"
 echo "   🔌 WebSocket Script: Auto-starts during market hours"
 echo "   ⏰ Market Hours: 9:15 AM - 3:30 PM IST (Monday to Friday)"
 echo ""

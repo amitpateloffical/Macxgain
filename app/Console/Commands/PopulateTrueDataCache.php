@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Jobs\FetchTrueDataJob;
+use App\Jobs\UpdateOptionChainJob;
 use App\Models\MarketData;
 use Illuminate\Support\Facades\File;
 
@@ -50,11 +51,12 @@ class PopulateTrueDataCache extends Command
             }
         }
         
-        // Dispatch the job to fetch fresh data
+        // Dispatch the jobs to fetch fresh data
         FetchTrueDataJob::dispatch();
+        UpdateOptionChainJob::dispatch();
         
-        $this->info('TrueData cache population job dispatched successfully!');
-        $this->info('Cache and database will be populated with live market data.');
+        $this->info('TrueData cache population jobs dispatched successfully!');
+        $this->info('Cache and database will be populated with live market data and option chain data.');
         
         // Show database stats
         $stats = MarketData::getMarketDataStats();

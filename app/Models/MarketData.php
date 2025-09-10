@@ -84,7 +84,7 @@ class MarketData extends Model
                 ];
 
                 // Update or create market data record
-                self::updateOrCreate(
+                $record = self::updateOrCreate(
                     ['symbol' => $symbol],
                     [
                         'ltp' => $data['ltp'] ?? 0,
@@ -95,13 +95,16 @@ class MarketData extends Model
                         'open' => $data['open'] ?? 0,
                         'prev_close' => $data['prev_close'] ?? 0,
                         'volume' => $data['volume'] ?? 0,
-                        'data_timestamp' => isset($data['timestamp']) ? Carbon::parse($data['timestamp']) : now(),
                         'data_source' => $data['data_source'] ?? 'Unknown',
                         'raw_data' => $rawData,
                         'is_live' => $isLive,
                         'market_status' => $marketStatus
                     ]
                 );
+                
+                // Always update timestamp to ensure it's current
+                $record->data_timestamp = isset($data['timestamp']) ? Carbon::parse($data['timestamp']) : now();
+                $record->save();
                 
                 $storedCount++;
             } catch (\Exception $e) {

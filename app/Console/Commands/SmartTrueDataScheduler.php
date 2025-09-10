@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Jobs\FetchTrueDataJob;
+use App\Jobs\UpdateOptionChainJob;
 use App\Services\MarketStatusService;
 use Illuminate\Support\Facades\Log;
 
@@ -28,10 +29,12 @@ class SmartTrueDataScheduler extends Command
             
             Log::info("Smart TrueData Scheduler - Market Status: {$marketStatus['status']}, Refresh Interval: {$refreshInterval}s");
             
-            // Dispatch the job
+            // Dispatch the jobs
             FetchTrueDataJob::dispatch();
+            UpdateOptionChainJob::dispatch();
             
             $this->info("🚀 Smart TrueData fetch dispatched");
+            $this->info("📈 Option chain update dispatched");
             $this->info("📊 Market Status: {$marketStatus['status']}");
             $this->info("⏱️  Refresh Interval: {$refreshInterval} seconds");
             $this->info("🕐 Current Time: " . now('Asia/Kolkata')->format('H:i:s'));

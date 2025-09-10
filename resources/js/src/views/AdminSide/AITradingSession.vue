@@ -553,12 +553,19 @@ export default {
       }
     },
     startAutoRefresh() {
-      // Auto-refresh market data and status every 10 seconds
+      // Auto-refresh market data and status every 5 seconds
       this.autoRefreshInterval = setInterval(() => {
         this.loadMarketStatus();
         this.loadMarketData();
+        
+        // Also refresh option chain data if a stock is selected
+        if (this.selectedStock && this.selectedStock.symbol) {
+          this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
+          console.log('Auto-refresh: Option chain data updated for', this.selectedStock.symbol);
+        }
+        
         console.log('Auto-refresh: Market data and status updated');
-      }, 10000); // 10 seconds for live market data (reduced frequency to prevent page refresh)
+      }, 5000); // 5 seconds for live market data (faster refresh for real-time updates)
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
@@ -568,15 +575,19 @@ export default {
         this.loading = true;
         const token = localStorage.getItem('access_token');
         
+        console.log('🔄 Loading market data at:', new Date().toLocaleTimeString());
+        
         const response = await axios.get('/api/truedata/live-data', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
-          }
+          },
+          params: { _t: Date.now() } // Cache busting parameter
         });
 
         if (response.data.success && response.data.data) {
-          console.log('Market data received:', response.data.data);
+          console.log('✅ Market data received:', response.data.data_count, 'symbols');
+          console.log('📊 Sample data - NIFTY 50 LTP:', response.data.data['NIFTY 50']?.ltp);
           
           // Convert object data to array format
           const dataObject = response.data.data;
@@ -592,24 +603,32 @@ export default {
           };
           
           this.lastUpdate = firstStock?.timestamp || new Date().toISOString();
-          console.log('Live stocks loaded:', this.liveStocks.length, 'stocks');
-          console.log('First stock sample:', this.liveStocks[0]);
+          console.log('📈 Live stocks loaded:', this.liveStocks.length, 'stocks');
+          console.log('🕐 Last update:', this.lastUpdate);
+          console.log('💰 NIFTY 50 LTP:', this.liveStocks.find(s => s.symbol === 'NIFTY 50')?.ltp);
         } else {
-          console.log('No market data received:', response.data);
+          console.log('❌ No market data received:', response.data);
         }
       } catch (error) {
-        console.error('Error loading market data:', error);
+        console.error('❌ Error loading market data:', error);
         this.showError('Failed to load market data');
       } finally {
         this.loading = false;
       }
     },
     async refreshMarketData() {
+      console.log('🔄 Manual refresh triggered at:', new Date().toLocaleTimeString());
+      
+      // Clear any existing cache
+      this.liveStocks = [];
+      this.lastUpdate = null;
+      
+      // Force refresh by clearing cache and reloading
       await this.loadMarketData();
-      // Only show toast for manual refresh, not auto-refresh
-      if (!this.autoRefreshInterval) {
-        this.showSuccess('Market data refreshed');
-      }
+      
+      // Show success message
+      this.showSuccess('Market data refreshed successfully');
+      console.log('✅ Manual refresh completed');
     },
     searchStocks() {
       // Search functionality is handled by computed property
@@ -633,8 +652,12 @@ export default {
       this.callOptions = [];
       this.putOptions = [];
     },
-    async loadOptionsData(symbol) {
+    async loadOptionsData(symbol, showLoading = true) {
       try {
+        if (showLoading) {
+          this.loadingOptions = true;
+        }
+        
         console.log(`🔄 Loading options data for ${symbol}`);
         console.log(`🌐 API URL: /api/truedata/options/chain/${encodeURIComponent(symbol)}`);
         
@@ -664,6 +687,10 @@ export default {
         console.error('❌ Error loading options data:', error);
         this.showError('Failed to load options data. Please check your connection and try again.');
         this.closeStockOptions();
+      } finally {
+        if (showLoading) {
+          this.loadingOptions = false;
+        }
       }
     },
     processOptionsData(data) {
