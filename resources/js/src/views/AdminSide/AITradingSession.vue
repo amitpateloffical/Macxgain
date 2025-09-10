@@ -1800,6 +1800,23 @@ export default {
   position: relative;
   animation: modalSlideIn 0.3s ease-out;
   margin: 20px auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(5px);
 }
 
 @keyframes modalSlideIn {
@@ -3306,24 +3323,40 @@ export default {
     min-width: 120px;
   }
   
-  /* Stock Options Modal */
+  /* Stock Options Modal - Tablet Optimized */
+  .modal-overlay {
+    padding: 10px;
+  }
+  
   .stock-options-modal {
     width: 95%;
     max-width: none;
     margin: 20px auto;
     max-height: 90vh;
     overflow-y: auto;
+    border-radius: 16px;
   }
   
   .modal-header {
     padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #1a1a2e;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .modal-title {
     font-size: 1.3rem;
+    flex: 1;
+  }
+  
+  .close-btn {
+    min-width: 36px;
+    min-height: 36px;
   }
   
   .modal-body {
@@ -3605,36 +3638,67 @@ export default {
     border-radius: 8px;
   }
   
+  .angel-options-container {
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
   .options-table {
     min-width: 500px;
   }
   
-  .options-header,
+  .options-header {
+    grid-template-columns: 1fr 120px 1fr;
+    padding: 14px 10px;
+  }
+  
+  .header-cell {
+    padding: 10px 6px;
+    font-size: 0.85rem;
+  }
+  
+  .section-label {
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+  
+  .sub-header {
+    font-size: 0.75rem;
+  }
+  
   .option-row {
-    grid-template-columns: 70px 50px 50px 50px 50px 80px;
+    grid-template-columns: 1fr 120px 1fr;
+    padding: 10px;
+  }
+  
+  .cell {
+    padding: 10px 6px;
     gap: 6px;
+  }
+  
+  .strike-price {
+    font-size: 0.85rem;
+  }
+  
+  .call-ltp, .put-ltp {
+    font-size: 0.85rem;
+  }
+  
+  .call-change, .put-change {
     font-size: 0.8rem;
   }
   
-  .header-cell,
-  .option-cell {
-    font-size: 0.8rem;
-    padding: 6px 3px;
+  .action-buttons {
+    gap: 6px;
+    margin-top: 8px;
   }
   
-  .mini-btn {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    min-width: 40px;
-    gap: 2px;
-  }
-  
-  .mini-btn i {
-    font-size: 0.6rem;
-  }
-  
-  .mini-btn span {
-    font-size: 0.6rem;
+  .action-btn {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: 0.75rem;
+    border-radius: 5px;
   }
   
   .options-section {
@@ -3758,7 +3822,12 @@ export default {
     font-size: 13px;
   }
   
-  /* Stock Options Modal */
+  /* Stock Options Modal - Mobile Optimized */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+  
   .stock-options-modal {
     width: 100%;
     max-width: none;
@@ -3766,44 +3835,50 @@ export default {
     max-height: 100vh;
     border-radius: 0;
     overflow-y: auto;
+    box-shadow: none;
   }
   
   .modal-header {
-    padding: 10px 12px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    padding: 12px 16px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #1a1a2e;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .modal-title {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    flex: 1;
+    margin-right: 10px;
   }
   
   .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    padding: 6px;
+    position: static;
+    padding: 8px;
     font-size: 18px;
+    min-width: 40px;
+    min-height: 40px;
   }
   
   .modal-body {
-    padding: 12px;
+    padding: 16px;
   }
   
   .stock-info-section {
-    padding: 10px;
-    flex-direction: column;
-    text-align: center;
-    gap: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
   }
   
   .stock-price-large {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
   
   .stock-change-large {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   
   .options-grid {
@@ -3832,43 +3907,68 @@ export default {
     font-size: 13px;
   }
   
-  /* Options Chain Table */
-  .options-chain {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 6px;
+  /* Options Chain Table - Mobile Optimized */
+  .angel-options-container {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
   
   .options-table {
-    min-width: 450px;
+    min-width: 500px;
   }
   
-  .options-header,
+  .options-header {
+    grid-template-columns: 1fr 100px 1fr;
+    padding: 12px 8px;
+  }
+  
+  .header-cell {
+    padding: 8px 4px;
+    font-size: 0.8rem;
+  }
+  
+  .section-label {
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+  }
+  
+  .sub-header {
+    font-size: 0.7rem;
+  }
+  
   .option-row {
-    grid-template-columns: 60px 45px 45px 45px 45px 70px;
+    grid-template-columns: 1fr 100px 1fr;
+    padding: 8px;
+  }
+  
+  .cell {
+    padding: 8px 4px;
     gap: 4px;
+  }
+  
+  .strike-price {
+    font-size: 0.8rem;
+  }
+  
+  .call-ltp, .put-ltp {
+    font-size: 0.8rem;
+  }
+  
+  .call-change, .put-change {
     font-size: 0.75rem;
   }
   
-  .header-cell,
-  .option-cell {
-    font-size: 0.75rem;
-    padding: 4px 2px;
+  .action-buttons {
+    gap: 4px;
+    margin-top: 6px;
   }
   
-  .mini-btn {
-    padding: 3px 6px;
-    font-size: 0.65rem;
-    min-width: 35px;
-    gap: 2px;
-  }
-  
-  .mini-btn i {
-    font-size: 0.55rem;
-  }
-  
-  .mini-btn span {
-    font-size: 0.55rem;
+  .action-btn {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px 6px;
+    font-size: 0.7rem;
+    border-radius: 4px;
   }
   
   .options-section {
@@ -3961,22 +4061,68 @@ export default {
 
 /* Landscape Mobile */
 @media (max-height: 500px) and (orientation: landscape) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+  
   .stock-options-modal {
     max-height: 100vh;
     margin: 0;
     border-radius: 0;
+    width: 100%;
+  }
+  
+  .modal-header {
+    padding: 8px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  
+  .modal-title {
+    font-size: 1rem;
+  }
+  
+  .close-btn {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 6px;
   }
   
   .modal-body {
     padding: 8px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
   }
   
   .stock-info-section {
     padding: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .stock-price-large {
+    font-size: 1.4rem;
+  }
+  
+  .stock-change-large {
+    font-size: 0.9rem;
   }
   
   .options-section {
     padding: 8px;
+  }
+  
+  .angel-options-container {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .action-btn {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 3px 5px;
+    font-size: 0.65rem;
   }
 }
 
@@ -4026,10 +4172,14 @@ export default {
 .angel-options-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .options-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
   background: #1f2937;
   border-radius: 0.5rem;
@@ -4042,6 +4192,9 @@ export default {
   grid-template-columns: 1fr 120px 1fr;
   background: #374151;
   border-bottom: 2px solid #4b5563;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .header-cell {
@@ -4161,23 +4314,30 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   justify-content: center;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .action-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
+  min-width: 32px;
+  min-height: 32px;
+  width: auto;
+  height: auto;
+  padding: 6px 8px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .action-btn.buy-btn {
