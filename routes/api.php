@@ -129,7 +129,9 @@ Route::get('/truedata/live-data', [TrueDataController::class, 'getLiveDataFromPy
 Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataFetch']);
 
 // Options API Routes
+Route::get('/truedata/options/valid-symbols', [TrueDataController::class, 'getValidOptionSymbols']);
 Route::get('/truedata/options/chain/{symbol}', [TrueDataController::class, 'getOptionChain']);
+Route::get('/truedata/options/expiries/{symbol}', [TrueDataController::class, 'getOptionExpiries']);
 Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
 Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
 Route::get('/truedata/options/current-price', [TrueDataController::class, 'getCurrentOptionPrice']);

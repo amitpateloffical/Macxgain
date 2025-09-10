@@ -415,9 +415,10 @@
               class="btn btn-profit" 
               @click="executeTrade"
               :disabled="getTotalAmount() > user.balance || tradeData.lots < 1"
+              :title="`Total: ₹${getTotalAmount()}, Balance: ₹${user.balance}, Disabled: ${getTotalAmount() > user.balance || tradeData.lots < 1}`"
             >
-              <i class="fas fa-exchange-alt"></i>
-              Trade
+              <i class="fas fa-check-circle"></i>
+              Place Order
             </button>
           </div>
         </div>
@@ -674,17 +675,32 @@ export default {
         }
         
         console.log(`🔄 Loading options data for ${symbol}`);
-        console.log(`🌐 API URL: /api/truedata/options/chain/${encodeURIComponent(symbol)}`);
+        
+        // Map symbol names to TrueData format
+        const symbolMap = {
+          'NIFTY 50': 'NIFTY',
+          'NIFTY': 'NIFTY',
+          'NIFTY BANK': 'BANKNIFTY',
+          'BANKNIFTY': 'BANKNIFTY',
+          'BANK NIFTY': 'BANKNIFTY'
+        };
+        
+        const mappedSymbol = symbolMap[symbol] || symbol;
+        console.log(`📊 Mapped symbol: ${symbol} → ${mappedSymbol}`);
         
         // Check if symbol has options trading
         if (symbol === 'SENSEX') {
-          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or NIFTY BANK for options trading.');
+          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or BANK NIFTY for options trading.');
           this.closeStockOptions();
           return;
         }
         
-        // Call the real options API
-        const response = await axios.get(`/api/truedata/options/chain/${encodeURIComponent(symbol)}`);
+        // Use dynamic expiry selection - let backend choose the best available expiry
+        const apiUrl = `/api/truedata/options/chain/${encodeURIComponent(mappedSymbol)}`;
+        console.log(`🌐 API URL: ${apiUrl}`);
+        
+        // Call the TrueData options API
+        const response = await axios.get(apiUrl);
         console.log('📡 Options API response:', response);
         console.log('📊 Response data:', response.data);
         console.log('✅ Response status:', response.status);
@@ -966,7 +982,18 @@ export default {
     getTotalAmount() {
       const optionPrice = this.getOptionPrice();
       const totalShares = this.getTotalShares();
-      return optionPrice * totalShares;
+      const total = optionPrice * totalShares;
+      
+      // Debug logging
+      console.log('💰 Trade Amount Calculation:', {
+        optionPrice,
+        totalShares,
+        total,
+        userBalance: this.user.balance,
+        isDisabled: total > this.user.balance || this.tradeData.lots < 1
+      });
+      
+      return total;
     },
     async executeTrade() {
       try {

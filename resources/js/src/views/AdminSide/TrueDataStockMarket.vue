@@ -151,9 +151,9 @@
             v-for="stock in filteredStocks" 
             :key="stock.symbol"
             class="stock-card"
-            :class="{ 'positive': stock.change > 0, 'negative': stock.change < 0 }"
-            @click="showOptionsModal(stock.symbol, stock)"
-            style="cursor: pointer;"
+            :class="{ 'positive': stock.change > 0, 'negative': stock.change < 0, 'no-options': !hasOptions(stock.symbol) }"
+            @click="hasOptions(stock.symbol) ? showOptionsModal(stock.symbol, stock) : showNoOptionsMessage(stock.symbol)"
+            :style="{ cursor: hasOptions(stock.symbol) ? 'pointer' : 'not-allowed' }"
           >
             <div class="stock-header">
               <div class="stock-symbol">{{ stock.symbol }}</div>
@@ -229,8 +229,23 @@
   <div v-if="showOptions" class="options-modal-overlay" @click="closeOptionsModal">
     <div class="options-modal" @click.stop>
       <div class="options-header">
-        <h3>{{ selectedStock?.symbol }} Options</h3>
+        <div class="options-title">
+          <h3>{{ selectedStock?.symbol }} Options</h3>
+          <span v-if="dataSource" class="data-source-badge">{{ dataSource }}</span>
+        </div>
         <div class="header-actions">
+          <div class="expiry-selector" v-if="availableExpiries.length > 1">
+            <label>Expiry:</label>
+            <select 
+              v-model="selectedExpiry" 
+              @change="loadOptionsWithNewExpiry"
+              class="expiry-dropdown"
+            >
+              <option v-for="expiry in availableExpiries" :key="expiry.value" :value="expiry.value">
+                {{ expiry.label }}
+              </option>
+            </select>
+          </div>
           <div class="search-container">
             <input 
               v-model="optionsSearchQuery" 
@@ -394,12 +409,37 @@ export default {
       filteredCallOptions: [],
       filteredPutOptions: [],
       filteredStrikes: [],
-      loadingOptions: false
+      loadingOptions: false,
+      dataSource: null,
+      availableExpiries: [],
+      selectedExpiry: null,
+      loadingExpiries: false,
+      validOptionSymbols: [], // List of symbols that have options trading
+      loadingValidSymbols: false
     };
   },
   computed: {
     marketStatusClass() {
       return this.marketStatus === 'OPEN' ? 'open' : 'closed';
+    },
+    
+    // Check if a symbol has options trading available
+    hasOptions() {
+      return (symbol) => {
+        if (!symbol) return false;
+        
+        // Map symbol names to TrueData format for checking
+        const symbolMap = {
+          'NIFTY 50': 'NIFTY',
+          'NIFTY': 'NIFTY',
+          'NIFTY BANK': 'BANKNIFTY',
+          'BANKNIFTY': 'BANKNIFTY',
+          'BANK NIFTY': 'BANKNIFTY'
+        };
+        
+        const mappedSymbol = symbolMap[symbol] || symbol;
+        return this.validOptionSymbols.includes(mappedSymbol);
+      };
     },
     marketStatusText() {
       return this.marketStatus === 'OPEN' ? 'Market Open' : 'Market Closed';
@@ -468,6 +508,8 @@ export default {
     this.loadMarketData();
     // Auto-refresh every 10 seconds when market is open
     this.startAutoRefresh();
+    // Fetch valid option symbols
+    this.fetchValidOptionSymbols();
     
     // Add ESC key listener for options modal
     document.addEventListener('keydown', this.handleKeyPress);
@@ -1017,6 +1059,10 @@ export default {
       }
     },
 
+    showNoOptionsMessage(symbol) {
+      this.showError(`${symbol} does not have options trading available. Only ${this.validOptionSymbols.length} symbols have options trading.`);
+    },
+
     // Options Modal Methods
     async showOptionsModal(symbol, stock) {
       console.log('🎯 showOptionsModal called with:', symbol, stock);
@@ -1046,35 +1092,154 @@ export default {
     async loadOptionsData(symbol) {
       try {
         console.log(`🔄 Loading options data for ${symbol}`);
-        console.log(`🌐 API URL: /api/truedata/options/chain/${encodeURIComponent(symbol)}`);
+        this.loadingOptions = true;
+        
+        // Map symbol names to TrueData format
+        const symbolMap = {
+          'NIFTY 50': 'NIFTY',
+          'NIFTY': 'NIFTY',
+          'NIFTY BANK': 'BANKNIFTY',
+          'BANKNIFTY': 'BANKNIFTY',
+          'BANK NIFTY': 'BANKNIFTY'
+        };
+        
+        const mappedSymbol = symbolMap[symbol] || symbol;
+        console.log(`📊 Mapped symbol: ${symbol} → ${mappedSymbol}`);
         
         // Check if symbol has options trading
         if (symbol === 'SENSEX') {
-          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or NIFTY BANK for options trading.');
+          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or BANK NIFTY for options trading.');
           this.closeOptionsModal();
           return;
         }
         
-        // Call the real options API
-        const response = await axios.get(`/api/truedata/options/chain/${encodeURIComponent(symbol)}`);
-        console.log('📡 Options API response:', response);
+        // First, fetch available expiry dates
+        console.log('🔄 Fetching available expiry dates...');
+        this.loadingExpiries = true;
+        
+        try {
+          const expiryResponse = await axios.get(`/api/truedata/options/expiries/${encodeURIComponent(mappedSymbol)}`);
+          console.log('📅 Expiry dates response:', expiryResponse.data);
+          
+          if (expiryResponse.data.success && expiryResponse.data.data.length > 0) {
+            this.availableExpiries = expiryResponse.data.data;
+            this.selectedExpiry = this.selectedExpiry || this.availableExpiries[0].value; // Use first expiry if none selected
+            console.log(`✅ Found ${this.availableExpiries.length} expiry dates`);
+          } else {
+            console.log('⚠️ No expiry dates found, using fallback');
+            this.availableExpiries = [];
+            this.selectedExpiry = null;
+          }
+        } catch (expiryError) {
+          console.error('❌ Error fetching expiry dates:', expiryError);
+          this.availableExpiries = [];
+          this.selectedExpiry = null;
+        } finally {
+          this.loadingExpiries = false;
+        }
+        
+        // Build API URL with selected expiry (or let backend choose default)
+        let apiUrl = `/api/truedata/options/chain/${encodeURIComponent(mappedSymbol)}`;
+        if (this.selectedExpiry) {
+          apiUrl += `?expiry=${this.selectedExpiry}`;
+        }
+        
+        console.log(`🌐 API URL: ${apiUrl}`);
+        
+        // Call the TrueData options API
+        const response = await axios.get(apiUrl);
+        console.log('📡 TrueData API response:', response);
         console.log('📊 Response data:', response.data);
         console.log('✅ Response status:', response.status);
         
-        if (response.data.success && response.data.data) {
-          console.log('🎯 Processing real API data...');
+        if (response.data.success && response.data.data && response.data.data.length > 0) {
+          console.log('🎯 Processing live TrueData API data...');
+          console.log(`📈 Data source: ${response.data.data_source || 'TrueData'}`);
+          console.log(`📊 Total options: ${response.data.data.length}`);
+          this.dataSource = response.data.data_source || 'TrueData';
           this.processOptionsData(response.data.data);
         } else {
-          console.log('⚠️ API response not successful, using mock data');
+          console.log('⚠️ No options data available from TrueData API');
           console.log('Response success:', response.data.success);
-          console.log('Response data exists:', !!response.data.data);
-          this.generateMockOptions(symbol);
+          console.log('Response data length:', response.data.data?.length || 0);
+          this.showError(`No options data available for ${symbol}. This might be due to market hours or symbol not having active options.`);
+          this.closeOptionsModal();
         }
       } catch (error) {
         console.error('❌ Error loading options data:', error);
         console.error('Error details:', error.response?.data || error.message);
-        console.log('🔄 Using mock data as fallback');
-        this.generateMockOptions(symbol);
+        
+        if (error.response?.status === 404) {
+          this.showError(`Options data not found for ${symbol}. Please try NIFTY 50 or BANK NIFTY.`);
+        } else if (error.response?.status === 500) {
+          this.showError('Server error while fetching options data. Please try again later.');
+        } else {
+          this.showError('Failed to load options data. Please check your connection and try again.');
+        }
+        this.closeOptionsModal();
+      } finally {
+        this.loadingOptions = false;
+      }
+    },
+
+    async loadOptionsWithNewExpiry() {
+      if (!this.selectedStock || !this.selectedExpiry) return;
+      
+      console.log(`🔄 Loading options with new expiry: ${this.selectedExpiry}`);
+      
+      try {
+        this.loadingOptions = true;
+        
+        // Map symbol names to TrueData format
+        const symbolMap = {
+          'NIFTY 50': 'NIFTY',
+          'NIFTY': 'NIFTY',
+          'NIFTY BANK': 'BANKNIFTY',
+          'BANKNIFTY': 'BANKNIFTY',
+          'BANK NIFTY': 'BANKNIFTY'
+        };
+        
+        const mappedSymbol = symbolMap[this.selectedStock.symbol] || this.selectedStock.symbol;
+        const apiUrl = `/api/truedata/options/chain/${encodeURIComponent(mappedSymbol)}?expiry=${this.selectedExpiry}`;
+        
+        console.log(`🌐 API URL: ${apiUrl}`);
+        
+        const response = await axios.get(apiUrl);
+        console.log('📡 TrueData API response:', response);
+        
+        if (response.data.success && response.data.data && response.data.data.length > 0) {
+          console.log('🎯 Processing live TrueData API data...');
+          this.dataSource = response.data.data_source || 'TrueData';
+          this.processOptionsData(response.data.data);
+        } else {
+          this.showError(`No options data available for selected expiry.`);
+        }
+      } catch (error) {
+        console.error('❌ Error loading options with new expiry:', error);
+        this.showError('Failed to load options data for selected expiry.');
+      } finally {
+        this.loadingOptions = false;
+      }
+    },
+
+    async fetchValidOptionSymbols() {
+      try {
+        console.log('🔄 Fetching valid option symbols...');
+        this.loadingValidSymbols = true;
+        
+        const response = await axios.get('/api/truedata/options/valid-symbols');
+        console.log('📋 Valid symbols response:', response.data);
+        
+        if (response.data.success) {
+          this.validOptionSymbols = response.data.data;
+          console.log(`✅ Loaded ${this.validOptionSymbols.length} valid option symbols`);
+        } else {
+          console.error('❌ Failed to fetch valid symbols:', response.data.error);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching valid option symbols:', error);
+      } finally {
+        this.loadingValidSymbols = false;
       }
     },
 
@@ -1138,64 +1303,6 @@ export default {
       console.log('📉 Final putOptions:', this.putOptions);
     },
 
-    generateMockOptions(symbol) {
-      console.log('🔄 Generating mock options for:', symbol);
-      const currentPrice = this.selectedStock?.last || this.selectedStock?.ltp || 1000;
-      console.log('💰 Current price for mock data:', currentPrice);
-      const strikes = this.generateStrikes(currentPrice);
-      console.log('🎯 Generated strikes:', strikes);
-      
-      this.callOptions = strikes.map(strike => ({
-        strike,
-        price: this.calculateOptionPrice(currentPrice, strike, 'call'),
-        volume: Math.floor(Math.random() * 10000),
-        oi: Math.floor(Math.random() * 50000),
-        greeks: {
-          delta: (Math.random() * 0.8 + 0.1).toFixed(3),
-          gamma: (Math.random() * 0.1).toFixed(3),
-          theta: (-Math.random() * 5).toFixed(3),
-          vega: (Math.random() * 10).toFixed(3)
-        }
-      }));
-
-      this.putOptions = strikes.map(strike => ({
-        strike,
-        price: this.calculateOptionPrice(currentPrice, strike, 'put'),
-        volume: Math.floor(Math.random() * 10000),
-        oi: Math.floor(Math.random() * 50000),
-        greeks: {
-          delta: (-Math.random() * 0.8 - 0.1).toFixed(3),
-          gamma: (Math.random() * 0.1).toFixed(3),
-          theta: (-Math.random() * 5).toFixed(3),
-          vega: (Math.random() * 10).toFixed(3)
-        }
-      }));
-
-      // Initialize filtered arrays
-      this.filteredCallOptions = [...this.callOptions];
-      this.filteredPutOptions = [...this.putOptions];
-      this.filteredStrikes = strikes;
-      this.optionsSearchQuery = '';
-    },
-
-    generateStrikes(currentPrice) {
-      const strikes = [];
-      // Generate strikes around current price with 2% intervals
-      const interval = Math.round(currentPrice * 0.02);
-      const start = Math.round(currentPrice - (5 * interval));
-      const end = Math.round(currentPrice + (5 * interval));
-      
-      for (let i = start; i <= end; i += interval) {
-        strikes.push(i);
-      }
-      return strikes;
-    },
-
-    calculateOptionPrice(spot, strike, type) {
-      const intrinsic = type === 'call' ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
-      const timeValue = Math.max(1, spot * (0.008 + Math.random() * 0.004)); // More realistic time value
-      return (intrinsic + timeValue).toFixed(2);
-    },
 
     // Helper methods for Angel One style display
     getCallLTP(strike) {
@@ -1800,6 +1907,16 @@ export default {
 
 .stock-card.negative {
   border-left: 4px solid #ff4444;
+}
+
+.stock-card.no-options {
+  opacity: 0.7;
+  border-left: 4px solid #888888;
+}
+
+.stock-card.no-options:hover {
+  opacity: 0.8;
+  transform: none;
 }
 
 .stock-header {
@@ -2667,6 +2784,45 @@ export default {
   gap: 15px;
 }
 
+.expiry-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expiry-selector label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.expiry-dropdown {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 128, 0.3);
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.expiry-dropdown:hover {
+  border-color: rgba(0, 255, 128, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.expiry-dropdown:focus {
+  outline: none;
+  border-color: #00ff80;
+  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
+}
+
+.expiry-dropdown option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
 .esc-hint {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
@@ -2677,11 +2833,29 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.options-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .options-header h3 {
   color: #fff;
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
+}
+
+.data-source-badge {
+  background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+  color: #000;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
 }
 
 .close-btn {

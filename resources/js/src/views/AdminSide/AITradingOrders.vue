@@ -508,7 +508,6 @@ export default {
         this.loadUserBalance();
         this.loadMarketStatus();
         this.loadMarketData();
-        this.loadLivePnLValues(); // Load live P&L values
         
         // Auto-refresh every 10 seconds
         this.startAutoRefresh();
@@ -521,6 +520,10 @@ export default {
       console.error('Error in mounted lifecycle:', error);
       this.showError('Failed to initialize component');
     }
+  },
+  beforeDestroy() {
+    // Clean up auto-refresh interval when component is destroyed
+    this.stopAutoRefresh();
   },
   methods: {
     goBack() {
@@ -605,6 +608,27 @@ export default {
       console.log('Updating live prices for active trades...');
       // The liveStocks data is already updated by loadMarketData()
       // P&L will be recalculated automatically through computed properties
+    },
+    startAutoRefresh() {
+      // Auto-refresh market data every 10 seconds for live P&L updates
+      console.log('Starting auto-refresh for live P&L updates...');
+      this.autoRefreshInterval = setInterval(async () => {
+        try {
+          // Only refresh market data to update live prices and P&L
+          await this.loadMarketData();
+          await this.loadMarketStatus();
+          console.log('Live data refreshed for P&L calculation');
+        } catch (error) {
+          console.error('Error in auto-refresh:', error);
+        }
+      }, 10000); // 10 seconds interval
+    },
+    stopAutoRefresh() {
+      if (this.autoRefreshInterval) {
+        clearInterval(this.autoRefreshInterval);
+        this.autoRefreshInterval = null;
+        console.log('Auto-refresh stopped');
+      }
     },
     getCurrentPrice(symbol) {
       // Get current market price for a symbol

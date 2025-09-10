@@ -550,6 +550,74 @@ class TrueDataController extends Controller
     }
 
     /**
+     * Get all symbols that have options trading available
+     */
+    public function getValidOptionSymbols(): JsonResponse
+    {
+        try {
+            Log::info("TrueDataController: Getting valid option symbols");
+            
+            $result = $this->optionsService->getValidOptionSymbols();
+            
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $result['data'],
+                    'count' => count($result['data']),
+                    'message' => 'Valid option symbols fetched successfully'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                    'message' => $result['message']
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            Log::error('TrueDataController: Exception in getValidOptionSymbols - ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Server error',
+                'message' => 'Failed to fetch valid option symbols'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available expiry dates for a symbol
+     */
+    public function getOptionExpiries($symbol): JsonResponse
+    {
+        try {
+            Log::info("TrueDataController: Getting expiry dates for symbol: {$symbol}");
+            
+            $result = $this->optionsService->getAvailableExpiries($symbol);
+            
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $result['data'],
+                    'symbol' => $result['symbol'],
+                    'message' => $result['message']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                    'message' => $result['message']
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            Log::error('TrueDataController: Exception in getOptionExpiries - ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Server error',
+                'message' => 'Failed to fetch expiry dates'
+            ], 500);
+        }
+    }
+
+    /**
      * Get Option Chain for a specific symbol
      */
     public function getOptionChain($symbol): JsonResponse
