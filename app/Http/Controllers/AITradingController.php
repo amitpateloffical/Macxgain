@@ -539,11 +539,71 @@ class AITradingController extends Controller
      */
     private function calculatePnL($order, $currentPrice)
     {
+        try {
+            $strikePrice = $order->strike_price;
+            $quantity = $order->quantity;
+            $optionType = $order->option_type;
+            $action = $order->action;
+            $entryPremium = $order->total_amount / $quantity; // Premium per share at entry
+            $stockSymbol = $order->stock_symbol;
+
+            // Get real-time option price from options service
+            $optionsService = new \App\Services\OptionsService();
+            $currentOptionPrice = $optionsService->getRealTimeOptionPrice(
+                $stockSymbol,
+                $strikePrice,
+                $optionType
+            );
+
+            // If we can't get real-time option price, fall back to intrinsic value calculation
+            if ($currentOptionPrice === null) {
+                Log::warning("Could not fetch real-time option price for {$stockSymbol} {$strikePrice} {$optionType}, using intrinsic value");
+                return $this->calculateIntrinsicPnL($order, $currentPrice);
+            }
+
+            // Calculate P&L based on real option prices
+            $netPnL = 0;
+            
+            if ($action === 'BUY') {
+                // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+                $pnlPerShare = $currentOptionPrice - $entryPremium;
+                $netPnL = $pnlPerShare * $quantity;
+            } else if ($action === 'SELL') {
+                // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+                $pnlPerShare = $entryPremium - $currentOptionPrice;
+                $netPnL = $pnlPerShare * $quantity;
+            }
+
+            Log::info("Real-time P&L calculation", [
+                'symbol' => $stockSymbol,
+                'strike' => $strikePrice,
+                'type' => $optionType,
+                'action' => $action,
+                'entry_premium' => $entryPremium,
+                'current_option_price' => $currentOptionPrice,
+                'quantity' => $quantity,
+                'pnl' => $netPnL
+            ]);
+
+            return round($netPnL, 2);
+
+        } catch (\Exception $e) {
+            Log::error("Error in P&L calculation: " . $e->getMessage());
+            // Fallback to intrinsic value calculation
+            return $this->calculateIntrinsicPnL($order, $currentPrice);
+        }
+    }
+
+    /**
+     * Fallback P&L calculation using intrinsic value (old method)
+     */
+    private function calculateIntrinsicPnL($order, $currentPrice)
+    {
         $strikePrice = $order->strike_price;
         $quantity = $order->quantity;
         $optionType = $order->option_type;
         $action = $order->action;
-        $premiumPaid = $order->total_amount; // Amount paid for the option
+        $premiumPaid = $order->total_amount; // Total amount paid/received for the option
 
         // For CALL options
         if ($optionType === 'CALL') {
@@ -555,8 +615,8 @@ class AITradingController extends Controller
             } else {
                 // Sold CALL: Profit if current price < strike price
                 $intrinsicValue = max(0, $currentPrice - $strikePrice);
-                $grossPnL = ($strikePrice - $intrinsicValue) * $quantity;
-                $netPnL = $grossPnL + $premiumPaid; // Add premium received
+                $grossPnL = $intrinsicValue * $quantity;
+                $netPnL = $premiumPaid - $grossPnL; // Premium received minus loss
             }
         }
         // For PUT options
@@ -569,12 +629,166 @@ class AITradingController extends Controller
             } else {
                 // Sold PUT: Profit if current price > strike price
                 $intrinsicValue = max(0, $strikePrice - $currentPrice);
-                $grossPnL = ($intrinsicValue - $strikePrice) * $quantity;
-                $netPnL = $grossPnL + $premiumPaid; // Add premium received
+                $grossPnL = $intrinsicValue * $quantity;
+                $netPnL = $premiumPaid - $grossPnL; // Premium received minus loss
             }
         }
 
         return round($netPnL, 2);
+    }
+
+    /**
+     * Get detailed trade information with live P&L
+     */
+    public function getTradeDetails($orderId): JsonResponse
+    {
+        try {
+            $order = DB::table('ai_trading_orders')
+                ->where('id', $orderId)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order not found'
+                ], 404);
+            }
+
+            // Get current market price
+            $currentPrice = $this->getCurrentMarketPrice($order->stock_symbol);
+            
+            // Get real-time option price
+            $optionsService = new \App\Services\OptionsService();
+            $currentOptionPrice = $optionsService->getRealTimeOptionPrice(
+                $order->stock_symbol,
+                $order->strike_price,
+                $order->option_type
+            );
+
+            // Calculate live P&L
+            $livePnL = 0;
+            $entryPremium = $order->total_amount / $order->quantity;
+            
+            if ($order->status === 'COMPLETED' && $currentOptionPrice !== null) {
+                if ($order->action === 'BUY') {
+                    $pnlPerShare = $currentOptionPrice - $entryPremium;
+                    $livePnL = $pnlPerShare * $order->quantity;
+                } else if ($order->action === 'SELL') {
+                    $pnlPerShare = $entryPremium - $currentOptionPrice;
+                    $livePnL = $pnlPerShare * $order->quantity;
+                }
+            }
+
+            // Calculate percentage change
+            $pnlPercentage = 0;
+            if ($order->total_amount > 0) {
+                $pnlPercentage = ($livePnL / $order->total_amount) * 100;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'order_id' => $order->id,
+                    'stock_symbol' => $order->stock_symbol,
+                    'option_type' => $order->option_type,
+                    'strike_price' => $order->strike_price,
+                    'action' => $order->action,
+                    'quantity' => $order->quantity,
+                    'entry_premium' => round($entryPremium, 2),
+                    'total_amount' => $order->total_amount,
+                    'current_stock_price' => $currentPrice,
+                    'current_option_price' => $currentOptionPrice,
+                    'live_pnl' => round($livePnL, 2),
+                    'pnl_percentage' => round($pnlPercentage, 2),
+                    'status' => $order->status,
+                    'created_at' => $order->created_at,
+                    'closed_at' => $order->closed_at ?? null,
+                    'exit_price' => $order->exit_price ?? null,
+                    'final_pnl' => $order->pnl ?? null
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error getting trade details: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get trade details'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get live P&L for all active trades of a user
+     */
+    public function getLivePnL($userId): JsonResponse
+    {
+        try {
+            $activeTrades = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED')
+                ->get();
+
+            $totalLivePnL = 0;
+            $tradeDetails = [];
+
+            foreach ($activeTrades as $order) {
+                // Get current market price
+                $currentPrice = $this->getCurrentMarketPrice($order->stock_symbol);
+                
+                // Get real-time option price
+                $optionsService = new \App\Services\OptionsService();
+                $currentOptionPrice = $optionsService->getRealTimeOptionPrice(
+                    $order->stock_symbol,
+                    $order->strike_price,
+                    $order->option_type
+                );
+
+                // Calculate live P&L
+                $livePnL = 0;
+                $entryPremium = $order->total_amount / $order->quantity;
+                
+                if ($currentOptionPrice !== null) {
+                    if ($order->action === 'BUY') {
+                        $pnlPerShare = $currentOptionPrice - $entryPremium;
+                        $livePnL = $pnlPerShare * $order->quantity;
+                    } else if ($order->action === 'SELL') {
+                        $pnlPerShare = $entryPremium - $currentOptionPrice;
+                        $livePnL = $pnlPerShare * $order->quantity;
+                    }
+                }
+
+                $totalLivePnL += $livePnL;
+
+                $tradeDetails[] = [
+                    'order_id' => $order->id,
+                    'stock_symbol' => $order->stock_symbol,
+                    'option_type' => $order->option_type,
+                    'strike_price' => $order->strike_price,
+                    'action' => $order->action,
+                    'quantity' => $order->quantity,
+                    'entry_premium' => round($entryPremium, 2),
+                    'current_option_price' => $currentOptionPrice,
+                    'live_pnl' => round($livePnL, 2),
+                    'pnl_percentage' => $order->total_amount > 0 ? round(($livePnL / $order->total_amount) * 100, 2) : 0
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_live_pnl' => round($totalLivePnL, 2),
+                    'active_trades_count' => count($activeTrades),
+                    'trades' => $tradeDetails
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error getting live P&L: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get live P&L'
+            ], 500);
+        }
     }
 
     /**

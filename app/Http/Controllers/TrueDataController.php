@@ -601,6 +601,49 @@ class TrueDataController extends Controller
     }
 
     /**
+     * Get current option price for a specific strike and option type
+     */
+    public function getCurrentOptionPrice(): JsonResponse
+    {
+        try {
+            $symbol = request()->query('symbol');
+            $strikePrice = request()->query('strike_price');
+            $optionType = request()->query('option_type');
+            
+            if (!$symbol || !$strikePrice || !$optionType) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Missing required parameters: symbol, strike_price, option_type'
+                ], 400);
+            }
+            
+            $currentOptionPrice = $this->optionsService->getRealTimeOptionPrice(
+                $symbol,
+                floatval($strikePrice),
+                strtoupper($optionType)
+            );
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'symbol' => $symbol,
+                    'strike_price' => floatval($strikePrice),
+                    'option_type' => strtoupper($optionType),
+                    'current_price' => $currentOptionPrice,
+                    'timestamp' => now()->toISOString()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get Current Option Price Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'Failed to fetch current option price'
+            ], 500);
+        }
+    }
+
+    /**
      * Get Popular Options
      */
     public function getPopularOptions(): JsonResponse

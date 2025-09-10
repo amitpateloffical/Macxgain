@@ -303,14 +303,21 @@
             </div>
             <div v-else-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
               <span class="detail-label">P&L (Live):</span>
-              <span class="detail-value pnl live-pnl" :class="getLivePnL(order) >= 0 ? 'profit' : 'loss'">
-                {{ getLivePnL(order) >= 0 ? '+' : '' }}₹{{ (getLivePnL(order) || 0).toFixed(2) }}
+              <span class="detail-value pnl live-pnl" :class="getLivePnLValue(order) >= 0 ? 'profit' : 'loss'">
+                {{ getLivePnLValue(order) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(order) || 0).toFixed(2) }}
                 <span class="live-indicator">●</span>
               </span>
             </div>
-            <!-- Current Market Price for active trades -->
+            <!-- Current Option Price for active trades -->
             <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
-              <span class="detail-label">Current Price:</span>
+              <span class="detail-label">Current Option Price:</span>
+              <span class="detail-value current-price">
+                ₹{{ (getCurrentOptionPrice(order.strike_price, order.option_type, order.stock_symbol) || 0).toFixed(2) }}
+              </span>
+            </div>
+            <!-- Current Stock Price for reference -->
+            <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
+              <span class="detail-label">Current Stock Price:</span>
               <span class="detail-value current-price">
                 ₹{{ (getCurrentPrice(order.stock_symbol) || 0).toFixed(2) }}
               </span>
@@ -369,7 +376,8 @@ export default {
         current_time: '',
         next_open_time: null
       },
-      lastUpdate: null
+      lastUpdate: null,
+      livePnLValues: {} // Store live P&L values for each order
     }
   },
   computed: {
@@ -500,6 +508,7 @@ export default {
         this.loadUserBalance();
         this.loadMarketStatus();
         this.loadMarketData();
+        this.loadLivePnLValues(); // Load live P&L values
         
         // Auto-refresh every 10 seconds
         this.startAutoRefresh();
@@ -610,6 +619,51 @@ export default {
         return 0;
       }
     },
+    async getCurrentOptionPrice(strikePrice, optionType, stockSymbol = 'NIFTY 50') {
+      // Get current option price from backend API
+      try {
+        console.log(`Getting ${optionType} option price for strike ${strikePrice} of ${stockSymbol}`);
+        
+        const response = await axios.get('/api/truedata/options/current-price', {
+          params: {
+            symbol: stockSymbol,
+            strike_price: strikePrice,
+            option_type: optionType
+          }
+        });
+        
+        if (response.data.success && response.data.data) {
+          const price = response.data.data.current_price;
+          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price}`);
+          return price;
+        } else {
+          console.log(`No ${optionType} option price found for strike ${strikePrice}`);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error getting current option price:', error);
+        return null;
+      }
+    },
+    getLivePnLValue(order) {
+      // Get cached live P&L value for an order
+      const orderId = order.id || order.order_id;
+      return this.livePnLValues[orderId] || 0;
+    },
+    async loadLivePnLValues() {
+      // Load live P&L values for all active trades
+      try {
+        const activeTrades = this.userOrders.filter(order => order.status === 'COMPLETED');
+        
+        for (const trade of activeTrades) {
+          const livePnL = await this.getLivePnL(trade);
+          const orderId = trade.id || trade.order_id;
+          this.$set(this.livePnLValues, orderId, livePnL);
+        }
+      } catch (error) {
+        console.error('Error loading live P&L values:', error);
+      }
+    },
     calculateActiveTradesPnL() {
       // Calculate P&L for active trades using live market prices
       try {
@@ -623,32 +677,47 @@ export default {
               return;
             }
             
+            // For now, use intrinsic value calculation since we can't use await in forEach
+            // TODO: Implement async option price fetching in a different way
+            const currentOptionPrice = null; // Will use intrinsic value fallback
+            const entryPremium = trade.total_amount / trade.quantity;
+            
             // Calculate P&L based on option type and action
             let pnl = 0;
             
-            if (trade.option_type === 'CALL') {
+            if (currentOptionPrice !== null) {
+              // Use real option price for calculation
               if (trade.action === 'BUY') {
-                // Bought CALL: Profit if current price > strike price
-                const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-                const grossPnL = intrinsicValue * trade.quantity;
-                pnl = grossPnL - trade.total_amount; // Subtract premium paid
+                // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+                const pnlPerShare = currentOptionPrice - entryPremium;
+                pnl = pnlPerShare * trade.quantity;
               } else if (trade.action === 'SELL') {
-                // Sold CALL: Profit if current price < strike price
-                const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-                const grossPnL = (trade.strike_price - intrinsicValue) * trade.quantity;
-                pnl = grossPnL + trade.total_amount; // Add premium received
+                // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+                const pnlPerShare = entryPremium - currentOptionPrice;
+                pnl = pnlPerShare * trade.quantity;
               }
-            } else if (trade.option_type === 'PUT') {
-              if (trade.action === 'BUY') {
-                // Bought PUT: Profit if current price < strike price
-                const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-                const grossPnL = intrinsicValue * trade.quantity;
-                pnl = grossPnL - trade.total_amount; // Subtract premium paid
-              } else if (trade.action === 'SELL') {
-                // Sold PUT: Profit if current price > strike price
-                const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-                const grossPnL = (intrinsicValue - trade.strike_price) * trade.quantity;
-                pnl = grossPnL + trade.total_amount; // Add premium received
+            } else {
+              // Fallback to intrinsic value calculation
+              if (trade.option_type === 'CALL') {
+                if (trade.action === 'BUY') {
+                  const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+                  const grossPnL = intrinsicValue * trade.quantity;
+                  pnl = grossPnL - trade.total_amount;
+                } else if (trade.action === 'SELL') {
+                  const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+                  const grossPnL = intrinsicValue * trade.quantity;
+                  pnl = trade.total_amount - grossPnL;
+                }
+              } else if (trade.option_type === 'PUT') {
+                if (trade.action === 'BUY') {
+                  const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+                  const grossPnL = intrinsicValue * trade.quantity;
+                  pnl = grossPnL - trade.total_amount;
+                } else if (trade.action === 'SELL') {
+                  const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+                  const grossPnL = intrinsicValue * trade.quantity;
+                  pnl = trade.total_amount - grossPnL;
+                }
               }
             }
             
@@ -665,7 +734,7 @@ export default {
         return 0;
       }
     },
-    getLivePnL(trade) {
+    async getLivePnL(trade) {
       // Calculate live P&L for a specific trade
       try {
         const currentPrice = this.getCurrentPrice(trade.stock_symbol);
@@ -676,31 +745,45 @@ export default {
           return 0;
         }
         
+        // Get current option price from option chain data
+        const currentOptionPrice = await this.getCurrentOptionPrice(trade.strike_price, trade.option_type, trade.stock_symbol);
+        const entryPremium = trade.total_amount / trade.quantity;
+        
         let pnl = 0;
         
-        if (trade.option_type === 'CALL') {
+        if (currentOptionPrice !== null) {
+          // Use real option price for calculation
           if (trade.action === 'BUY') {
-            // Bought CALL: Profit if current price > strike price
-            const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-            const grossPnL = intrinsicValue * trade.quantity;
-            pnl = grossPnL - trade.total_amount; // Subtract premium paid
+            // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+            const pnlPerShare = currentOptionPrice - entryPremium;
+            pnl = pnlPerShare * trade.quantity;
           } else if (trade.action === 'SELL') {
-            // Sold CALL: Profit if current price < strike price
-            const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-            const grossPnL = (trade.strike_price - intrinsicValue) * trade.quantity;
-            pnl = grossPnL + trade.total_amount; // Add premium received
+            // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+            const pnlPerShare = entryPremium - currentOptionPrice;
+            pnl = pnlPerShare * trade.quantity;
           }
-        } else if (trade.option_type === 'PUT') {
-          if (trade.action === 'BUY') {
-            // Bought PUT: Profit if current price < strike price
-            const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-            const grossPnL = intrinsicValue * trade.quantity;
-            pnl = grossPnL - trade.total_amount; // Subtract premium paid
-          } else if (trade.action === 'SELL') {
-            // Sold PUT: Profit if current price > strike price
-            const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-            const grossPnL = (intrinsicValue - trade.strike_price) * trade.quantity;
-            pnl = grossPnL + trade.total_amount; // Add premium received
+        } else {
+          // Fallback to intrinsic value calculation
+          if (trade.option_type === 'CALL') {
+            if (trade.action === 'BUY') {
+              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = grossPnL - trade.total_amount;
+            } else if (trade.action === 'SELL') {
+              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = trade.total_amount - grossPnL;
+            }
+          } else if (trade.option_type === 'PUT') {
+            if (trade.action === 'BUY') {
+              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = grossPnL - trade.total_amount;
+            } else if (trade.action === 'SELL') {
+              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
+              const grossPnL = intrinsicValue * trade.quantity;
+              pnl = trade.total_amount - grossPnL;
+            }
           }
         }
         
@@ -736,6 +819,7 @@ export default {
           this.loadMarketData();
           // Only update live prices, don't reload orders to prevent page refresh
           this.updateLivePrices();
+          this.loadLivePnLValues(); // Reload live P&L values
         }
       }, 10000); // 10 seconds for faster updates
     },

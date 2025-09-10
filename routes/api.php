@@ -132,6 +132,7 @@ Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataF
 Route::get('/truedata/options/chain/{symbol}', [TrueDataController::class, 'getOptionChain']);
 Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
 Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
+Route::get('/truedata/options/current-price', [TrueDataController::class, 'getCurrentOptionPrice']);
 
 // Legacy Upstox routes (for backward compatibility)
 Route::middleware('auth:sanctum')->group(function() {
@@ -166,6 +167,8 @@ Route::middleware('auth:api')->group(function() {
     Route::get('/ai-trading/orders', [AITradingController::class, 'getAllOrders']);
     Route::patch('/ai-trading/orders/{orderId}/cancel', [AITradingController::class, 'cancelOrder']);
     Route::post('/ai-trading/orders/{orderId}/exit', [AITradingController::class, 'exitTrade']);
+    Route::get('/ai-trading/orders/{orderId}/details', [AITradingController::class, 'getTradeDetails']);
+    Route::get('/ai-trading/users/{userId}/live-pnl', [AITradingController::class, 'getLivePnL']);
     Route::get('/ai-trading/market-status', [AITradingController::class, 'getMarketStatus']);
     Route::get('/ai-trading/stats', [AITradingController::class, 'getTradingStats']);
 });

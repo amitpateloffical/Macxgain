@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Models\OptionChain;
+use Carbon\Carbon;
 
 class OptionsService
 {
@@ -28,6 +29,7 @@ class OptionsService
         try {
             $forceSource = strtolower($options['force_source'] ?? '') ?: null; // 'nse' or 'truedata'
             $forwardHeaders = $options['forward_headers'] ?? [];
+            
             // Normalize symbol and prepare candidates
             $normalizedSymbol = $this->normalizeSymbol($symbol);
             $altSymbols = $this->alternateSymbols($normalizedSymbol);
@@ -56,22 +58,27 @@ class OptionsService
                 foreach ($expiryCandidates as $exp) {
                     $cacheKey = "options_chain_{$sym}_{$exp}";
                     $negKey = $cacheKey . "_neg";
+                    
                     if (Cache::has($negKey)) {
                         Log::info("Skipping {$sym} {$exp} due to negative cache");
                         continue;
                     }
 
-                    // Check if we have cached data, but skip cache for sample data to ensure freshness
+                    // Use cache only if not Sample and very fresh (<=5s)
                     $cachedData = Cache::get($cacheKey);
                     if ($cachedData && (!isset($cachedData[0]['data_source']) || $cachedData[0]['data_source'] !== 'Sample')) {
-                        Log::info("Returning cached options data for {$sym} {$exp}");
-                        return [
-                            'success' => true,
-                            'data' => $cachedData,
-                            'symbol' => $sym,
-                            'expiry' => $exp,
-                            'cached' => true
-                        ];
+                        $firstTs = $cachedData[0]['timestamp'] ?? null;
+                        $age = $firstTs ? Carbon::parse($firstTs)->diffInSeconds(now()) : 999;
+                        if ($age <= 5) {
+                            Log::info("Returning fresh cached options data for {$sym} {$exp} (age {$age}s)");
+                            return [
+                                'success' => true,
+                                'data' => $cachedData,
+                                'symbol' => $sym,
+                                'expiry' => $exp,
+                                'cached' => true
+                            ];
+                        }
                     }
 
                     $params = [
@@ -87,17 +94,63 @@ class OptionsService
                         break 2;
                     }
 
+                    // Prefer NSE first for liveness
                     if ($forceSource === 'nse') {
-Log::info("Skipping TrueData due to force_source=nse");
+                        Log::info("Force using NSE for {$sym} {$exp}");
+                        $nseData = $this->fetchFromNse($sym, $exp, $forwardHeaders);
+                        if (!empty($nseData)) {
+                            try { 
+                                OptionChain::storeChain($sym, $exp, $nseData, 'NSE'); 
+                            } catch (\Exception $e) { 
+                                Log::error('Persist NSE chain failed: ' . $e->getMessage()); 
+                            }
+                            Cache::put($cacheKey, $nseData, 5);
+                            return [
+                                'success' => true,
+                                'data' => $nseData,
+                                'symbol' => $sym,
+                                'expiry' => $exp,
+                                'cached' => false,
+                                'data_source' => 'NSE'
+                            ];
+                        }
                     } else {
-                        // Skip TrueData API for now due to timeout issues
-                        Log::info("Skipping TrueData API due to timeout issues, using sample data");
+                        Log::info("Trying NSE first for {$sym} {$exp}");
+                        $nseData = $this->fetchFromNse($sym, $exp, $forwardHeaders);
+                        if (!empty($nseData)) {
+                            try { 
+                                OptionChain::storeChain($sym, $exp, $nseData, 'NSE'); 
+                            } catch (\Exception $e) { 
+                                Log::error('Persist NSE chain failed: ' . $e->getMessage()); 
+                            }
+                            Cache::put($cacheKey, $nseData, 5);
+                            return [
+                                'success' => true,
+                                'data' => $nseData,
+                                'symbol' => $sym,
+                                'expiry' => $exp,
+                                'cached' => false,
+                                'data_source' => 'NSE'
+                            ];
+                        }
+                    }
+
+                    // If NSE has nothing, try TrueData quickly; else sample
+                    Log::info("Options API request: symbol={$sym} expiry={$exp}");
+                    $response = $http->get($url, $params);
+
+                    if (!$response->successful()) {
+                        Log::error("Options API HTTP error for {$sym} {$exp}: status=" . $response->status());
+                        Cache::put($negKey, true, 5); // 5 seconds negative cache
+                        
+                        // Fallback to sample data if TrueData fails
+                        Log::warning("Options API failed for {$sym} {$exp}, generating fresh sample data");
                         $sampleData = $this->generateSampleOptionsData($sym, $exp);
                         if (!empty($sampleData)) {
-                            try { 
-                                OptionChain::storeChain($sym, $exp, $sampleData, 'Sample'); 
-                            } catch (\Exception $e) { 
-                                Log::error('Persist sample chain failed: ' . $e->getMessage()); 
+                            try {
+                                OptionChain::storeChain($sym, $exp, $sampleData, 'Sample');
+                            } catch (\Exception $e) {
+                                Log::error('Persist sample chain failed: ' . $e->getMessage());
                             }
                             return [
                                 'success' => true,
@@ -108,63 +161,62 @@ Log::info("Skipping TrueData due to force_source=nse");
                                 'data_source' => 'Sample'
                             ];
                         }
-                        continue;
-                        
-                        Log::info("Options API request: symbol={$sym} expiry={$exp}");
-                        $response = $http->get($url, $params);
-
-                        if (!$response->successful()) {
-                            Log::error("Options API HTTP error for {$sym} {$exp}: status=" . $response->status());
-                            Cache::put($negKey, true, 30); // Reduced from 60 to 30 seconds
-                            continue; // Skip to next expiry
+                    } else {
+                        $data = $response->json();
+                        $processedData = $this->processOptionsData($data, $sym);
+                        if (!empty($processedData)) {
+                            try { 
+                                OptionChain::storeChain($sym, $exp, $processedData, 'TrueData'); 
+                            } catch (\Exception $e) { 
+                                Log::error('Persist option chain failed: ' . $e->getMessage()); 
+                            }
+                            Cache::put($cacheKey, $processedData, 5);
+                            Log::info("Options API success for {$sym} {$exp}: records=" . count($processedData));
+                            return [
+                                'success' => true,
+                                'data' => $processedData,
+                                'symbol' => $sym,
+                                'expiry' => $exp,
+                                'cached' => false
+                            ];
                         } else {
-                            $data = $response->json();
-                            $processedData = $this->processOptionsData($data, $sym);
-                            if (!empty($processedData)) {
-                                try { OptionChain::storeChain($sym, $exp, $processedData, 'TrueData'); } catch (\Exception $e) { Log::error('Persist option chain failed: ' . $e->getMessage()); }
-                                Cache::put($cacheKey, $processedData, 30); // Reduced from 90 to 30 seconds
-                                Log::info("Options API success for {$sym} {$exp}: records=" . count($processedData));
+                            Log::warning("Options API empty for {$sym} {$exp}, generating fresh sample data");
+                            Cache::put($negKey, true, 5);
+                            
+                            // Generate fresh sample data instead of using stale database data
+                            $sampleData = $this->generateSampleOptionsData($sym, $exp);
+                            if (!empty($sampleData)) {
+                                try { 
+                                    OptionChain::storeChain($sym, $exp, $sampleData, 'Sample'); 
+                                } catch (\Exception $e) { 
+                                    Log::error('Persist sample chain failed: ' . $e->getMessage()); 
+                                }
                                 return [
                                     'success' => true,
-                                    'data' => $processedData,
+                                    'data' => $sampleData,
                                     'symbol' => $sym,
                                     'expiry' => $exp,
-                                    'cached' => false
+                                    'cached' => false,
+                                    'data_source' => 'Sample'
                                 ];
-                            } else {
-                                Log::warning("Options API empty for {$sym} {$exp}, generating fresh sample data");
-                                Cache::put($negKey, true, 30); // Reduced from 60 to 30 seconds
-                                
-                                // Generate fresh sample data instead of using stale database data
-                                $sampleData = $this->generateSampleOptionsData($sym, $exp);
-                                if (!empty($sampleData)) {
-                                    try { 
-                                        OptionChain::storeChain($sym, $exp, $sampleData, 'Sample'); 
-                                    } catch (\Exception $e) { 
-                                        Log::error('Persist sample chain failed: ' . $e->getMessage()); 
-                                    }
-                                    return [
-                                        'success' => true,
-                                        'data' => $sampleData,
-                                        'symbol' => $sym,
-                                        'expiry' => $exp,
-                                        'cached' => false,
-                                        'data_source' => 'Sample'
-                                    ];
-                                }
-                                
-                                // Skip database fallback to ensure fresh sample data generation
                             }
                         }
                     }
 
-                    // NSE fallback
-                    if ((microtime(true) - $startedAt) > $hardDeadlineSec) { break 2; }
+                    // If still nothing, try NSE once more as fallback
+                    if ((microtime(true) - $startedAt) > $hardDeadlineSec) { 
+                        break 2; 
+                    }
+                    
                     Log::info("Trying NSE fallback for {$sym} {$exp}");
                     $nseData = $this->fetchFromNse($sym, $exp, $forwardHeaders);
                     if (!empty($nseData)) {
-                        try { OptionChain::storeChain($sym, $exp, $nseData, 'NSE'); } catch (\Exception $e) { Log::error('Persist NSE chain failed: ' . $e->getMessage()); }
-                        Cache::put($cacheKey, $nseData, 30); // Reduced from 90 to 30 seconds
+                        try { 
+                            OptionChain::storeChain($sym, $exp, $nseData, 'NSE'); 
+                        } catch (\Exception $e) { 
+                            Log::error('Persist NSE chain failed: ' . $e->getMessage()); 
+                        }
+                        Cache::put($cacheKey, $nseData, 5);
                         return [
                             'success' => true,
                             'data' => $nseData,
@@ -201,6 +253,7 @@ Log::info("Skipping TrueData due to force_source=nse");
                 'symbol' => $normalizedSymbol,
                 'expiry_tried' => $expiryCandidates
             ];
+            
         } catch (\Exception $e) {
             Log::error("Options Service Error for {$symbol}: " . $e->getMessage());
             return [
@@ -638,8 +691,34 @@ Log::info("Skipping TrueData due to force_source=nse");
                 foreach ($json['records']['data'] as $item) {
                     if (($item['expiryDate'] ?? null) !== $fallbackExpiry) { continue; }
                     $strike = $item['strikePrice'] ?? null; if ($strike === null) { continue; }
-                    if (isset($item['CE'])) { $ce = $item['CE']; $rows[] = [ 'symbol'=>$symbol, 'timestamp'=>$ce['timestamp'] ?? now()->toISOString(), 'ltp'=>(float)($ce['lastPrice'] ?? 0), 'bid'=>(float)($ce['bidprice'] ?? 0), 'ask'=>(float)($ce['askPrice'] ?? 0), 'volume'=>(int)($ce['totalTradedVolume'] ?? 0), 'oi'=>(int)($ce['openInterest'] ?? 0), 'strike_price'=>(float)$strike, 'option_type'=>'CALL' ]; }
-                    if (isset($item['PE'])) { $pe = $item['PE']; $rows[] = [ 'symbol'=>$symbol, 'timestamp'=>$pe['timestamp'] ?? now()->toISOString(), 'ltp'=>(float)($pe['lastPrice'] ?? 0), 'bid'=>(float)($pe['bidprice'] ?? 0), 'ask'=>(float)($pe['askPrice'] ?? 0), 'volume'=>(int)($pe['totalTradedVolume'] ?? 0), 'oi'=>(int)($pe['openInterest'] ?? 0), 'strike_price'=>(float)$strike, 'option_type'=>'PUT' ]; }
+                    if (isset($item['CE'])) { 
+                        $ce = $item['CE']; 
+                        $rows[] = [ 
+                            'symbol'=>$symbol, 
+                            'timestamp'=>$ce['timestamp'] ?? now()->toISOString(), 
+                            'ltp'=>(float)($ce['lastPrice'] ?? 0), 
+                            'bid'=>(float)($ce['bidprice'] ?? 0), 
+                            'ask'=>(float)($ce['askPrice'] ?? 0), 
+                            'volume'=>(int)($ce['totalTradedVolume'] ?? 0), 
+                            'oi'=>(int)($ce['openInterest'] ?? 0), 
+                            'strike_price'=>(float)$strike, 
+                            'option_type'=>'CALL' 
+                        ]; 
+                    }
+                    if (isset($item['PE'])) { 
+                        $pe = $item['PE']; 
+                        $rows[] = [ 
+                            'symbol'=>$symbol, 
+                            'timestamp'=>$pe['timestamp'] ?? now()->toISOString(), 
+                            'ltp'=>(float)($pe['lastPrice'] ?? 0), 
+                            'bid'=>(float)($pe['bidprice'] ?? 0), 
+                            'ask'=>(float)($pe['askPrice'] ?? 0), 
+                            'volume'=>(int)($pe['totalTradedVolume'] ?? 0), 
+                            'oi'=>(int)($pe['openInterest'] ?? 0), 
+                            'strike_price'=>(float)$strike, 
+                            'option_type'=>'PUT' 
+                        ]; 
+                    }
                 }
 
                 // If we used a different expiry, we need to convert NSE format to Ymd for storage consistency
@@ -843,5 +922,30 @@ Log::info("Skipping TrueData due to force_source=nse");
         $p = $d * $t * (0.3193815 + $t * (-0.3565638 + $t * (1.7814779 + $t * (-1.8212560 + $t * 1.3302744))));
         
         return $x > 0 ? 1 - $p : $p;
+    }
+
+    /**
+     * Get real-time option price for specific strike and type
+     */
+    public function getRealTimeOptionPrice($symbol, $strikePrice, $optionType, $expiry = null)
+    {
+        try {
+            $chainData = $this->getOptionChain($symbol, $expiry);
+            
+            if (!$chainData['success']) {
+                return null;
+            }
+            
+            foreach ($chainData['data'] as $option) {
+                if ($option['strike_price'] == $strikePrice && $option['option_type'] == $optionType) {
+                    return $option['ltp'];
+                }
+            }
+            
+            return null;
+        } catch (\Exception $e) {
+            Log::error("Error getting real-time option price: " . $e->getMessage());
+            return null;
+        }
     }
 }

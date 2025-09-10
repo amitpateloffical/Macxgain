@@ -13,6 +13,26 @@
             Trading for: <strong>{{ user.name || 'Loading...' }}</strong> 
             (Available: ₹{{ user.balance?.toLocaleString() || '0' }} | Total: ₹{{ user.total_balance?.toLocaleString() || '0' }} | Blocked: ₹{{ user.blocked_amount?.toLocaleString() || '0' }})
           </p>
+          
+          <!-- Live P&L Display -->
+          <div v-if="livePnLData" class="live-pnl-card">
+            <div class="pnl-header">
+              <h3>📊 Live P&L Summary</h3>
+              <span class="update-time">Updated every 5 seconds</span>
+            </div>
+            <div class="pnl-content">
+              <div class="pnl-stat">
+                <span class="pnl-label">Total Live P&L:</span>
+                <span :class="['pnl-value', livePnLData.total_live_pnl >= 0 ? 'profit' : 'loss']">
+                  ₹{{ livePnLData.total_live_pnl?.toLocaleString() || '0' }}
+                </span>
+              </div>
+              <div class="pnl-stat">
+                <span class="pnl-label">Active Trades:</span>
+                <span class="pnl-count">{{ livePnLData.active_trades_count || 0 }}</span>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -393,19 +413,11 @@
           <div class="trade-options">
             <button 
               class="btn btn-profit" 
-              @click="executeTradeWithProfit"
+              @click="executeTrade"
               :disabled="getTotalAmount() > user.balance || tradeData.lots < 1"
             >
-              <i class="fas fa-arrow-up"></i>
-              Trade with Profit
-            </button>
-            <button 
-              class="btn btn-loss" 
-              @click="executeTradeWithLoss"
-              :disabled="getTotalAmount() > user.balance || tradeData.lots < 1"
-            >
-              <i class="fas fa-arrow-down"></i>
-              Trade with Loss
+              <i class="fas fa-exchange-alt"></i>
+              Trade
             </button>
           </div>
         </div>
@@ -434,6 +446,7 @@ export default {
       showTradeModal: false,
 
       userOrders: [],
+      livePnLData: null,
       exitingTrade: null,
       currentMarketPrices: {},
       marketStatus: {
@@ -517,6 +530,7 @@ export default {
     this.loadUserOrders();
     this.loadUserBalance(); // Fetch live balance from database
     this.loadMarketStatus(); // Load market status
+    this.loadLivePnL(); // Load live P&L data
     
     // Add ESC key listener for closing modals
     document.addEventListener('keydown', this.handleKeyDown);
@@ -554,18 +568,19 @@ export default {
     },
     startAutoRefresh() {
       // Auto-refresh market data and status every 5 seconds
-      this.autoRefreshInterval = setInterval(() => {
-        this.loadMarketStatus();
-        this.loadMarketData();
-        
-        // Also refresh option chain data if a stock is selected
-        if (this.selectedStock && this.selectedStock.symbol) {
-          this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
-          console.log('Auto-refresh: Option chain data updated for', this.selectedStock.symbol);
-        }
-        
-        console.log('Auto-refresh: Market data and status updated');
-      }, 5000); // 5 seconds for live market data (faster refresh for real-time updates)
+    this.autoRefreshInterval = setInterval(() => {
+      this.loadMarketStatus();
+      this.loadMarketData();
+      this.loadLivePnL(); // Load live P&L data
+
+      // Also refresh option chain data if a stock is selected
+      if (this.selectedStock && this.selectedStock.symbol) {
+        this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
+        console.log('Auto-refresh: Option chain data updated for', this.selectedStock.symbol);
+      }
+
+      console.log('Auto-refresh: Market data, P&L and status updated');
+    }, 5000); // 5 seconds for live market data (faster refresh for real-time updates)
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
@@ -1003,126 +1018,7 @@ export default {
         this.showError(`Trade execution failed: ${error.response?.data?.message || error.message}`);
       }
     },
-    async executeTradeWithProfit() {
-      try {
-        console.log('Executing trade with profit...', this.tradeData);
-        
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          this.showError('Please login to execute trades');
-          return;
-        }
-        
-        // Calculate profit based on market price movement
-        const currentPrice = this.tradeData.stock.ltp || this.tradeData.stock.last || 1000;
-        const optionPrice = this.getOptionPrice();
-        const profitPercentage = 0.15; // 15% profit
-        const profitAmount = optionPrice * profitPercentage;
-        const exitPrice = optionPrice + profitAmount;
-        
-        const tradePayload = {
-          user_id: this.user.id,
-          stock_symbol: this.tradeData.stock.symbol,
-          option_type: this.tradeData.optionType,
-          action: this.tradeData.action,
-          strike_price: this.tradeData.strikePrice,
-          quantity: this.tradeData.lots,
-          total_amount: this.getTotalAmount(),
-          lot_size: this.getLotSize(this.tradeData.stock.symbol),
-          total_shares: this.getTotalShares(),
-          option_price: this.getOptionPrice(),
-          trade_type: 'PROFIT',
-          exit_price: exitPrice,
-          profit_amount: profitAmount,
-          current_market_price: currentPrice
-        };
-        
-        console.log('Profit trade payload:', tradePayload);
-
-        const response = await axios.post('/api/ai-trading/execute-trade', tradePayload, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log('Trade response:', response.data);
-        
-        if (response.data.success) {
-          this.showSuccess(`Trade executed with profit! Order #${response.data.order_id} - Profit: ₹${profitAmount.toFixed(2)}`);
-          this.closeTradeModal();
-          this.loadUserOrders();
-          this.loadUserBalance();
-        } else {
-          this.showError(response.data.message || 'Failed to execute trade');
-        }
-      } catch (error) {
-        console.error('Error executing trade with profit:', error);
-        console.error('Error details:', error.response?.data);
-        this.showError(`Trade execution failed: ${error.response?.data?.message || error.message}`);
-      }
-    },
-    async executeTradeWithLoss() {
-      try {
-        console.log('Executing trade with loss...', this.tradeData);
-        
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          this.showError('Please login to execute trades');
-          return;
-        }
-        
-        // Calculate loss based on market price movement
-        const currentPrice = this.tradeData.stock.ltp || this.tradeData.stock.last || 1000;
-        const optionPrice = this.getOptionPrice();
-        const lossPercentage = 0.10; // 10% loss
-        const lossAmount = optionPrice * lossPercentage;
-        const exitPrice = optionPrice - lossAmount;
-        
-        const tradePayload = {
-          user_id: this.user.id,
-          stock_symbol: this.tradeData.stock.symbol,
-          option_type: this.tradeData.optionType,
-          action: this.tradeData.action,
-          strike_price: this.tradeData.strikePrice,
-          quantity: this.tradeData.lots,
-          total_amount: this.getTotalAmount(),
-          lot_size: this.getLotSize(this.tradeData.stock.symbol),
-          total_shares: this.getTotalShares(),
-          option_price: this.getOptionPrice(),
-          trade_type: 'LOSS',
-          exit_price: exitPrice,
-          loss_amount: lossAmount,
-          current_market_price: currentPrice
-        };
-        
-        console.log('Loss trade payload:', tradePayload);
-
-        const response = await axios.post('/api/ai-trading/execute-trade', tradePayload, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log('Trade response:', response.data);
-        
-        if (response.data.success) {
-          this.showSuccess(`Trade executed with loss! Order #${response.data.order_id} - Loss: ₹${lossAmount.toFixed(2)}`);
-          this.closeTradeModal();
-          this.loadUserOrders();
-          this.loadUserBalance();
-        } else {
-          this.showError(response.data.message || 'Failed to execute trade');
-        }
-      } catch (error) {
-        console.error('Error executing trade with loss:', error);
-        console.error('Error details:', error.response?.data);
-        this.showError(`Trade execution failed: ${error.response?.data?.message || error.message}`);
-      }
-    },
+    // Removed profit/loss preset actions. Single executeTrade is used; P/L is computed from live LTP when exiting.
     async loadUserOrders() {
       try {
         const token = localStorage.getItem('access_token');
@@ -1139,6 +1035,26 @@ export default {
         }
       } catch (error) {
         console.error('Error loading user orders:', error);
+      }
+    },
+    async loadLivePnL() {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        
+        const response = await axios.get(`/api/ai-trading/users/${this.user.id}/live-pnl`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.livePnLData = response.data.data;
+          console.log('Live P&L data loaded:', this.livePnLData);
+        }
+      } catch (error) {
+        console.error('Error loading live P&L:', error);
       }
     },
     async loadUserBalance(showToast = false) {
@@ -1285,6 +1201,34 @@ export default {
       const stock = this.liveStocks.find(s => s.symbol === symbol);
       return stock ? stock.ltp.toFixed(2) : 'N/A';
     },
+    getCurrentOptionPrice(strikePrice, optionType) {
+      // Get current option price from option chain data
+      try {
+        let options = [];
+        if (optionType === 'CALL') {
+          options = this.callOptions || [];
+        } else if (optionType === 'PUT') {
+          options = this.putOptions || [];
+        }
+        
+        // Find the option with matching strike price
+        const option = options.find(opt => 
+          Math.abs(parseFloat(opt.strike_price || opt.strike) - parseFloat(strikePrice)) < 0.01
+        );
+        
+        if (option) {
+          const price = parseFloat(option.ltp || option.price || 0);
+          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price}`);
+          return price;
+        } else {
+          console.log(`No ${optionType} option found for strike ${strikePrice}`);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error getting current option price:', error);
+        return null;
+      }
+    },
     calculateUnrealizedPnL(order) {
       const currentPrice = parseFloat(this.getCurrentPrice(order.stock_symbol));
       if (isNaN(currentPrice)) return 0;
@@ -1293,31 +1237,47 @@ export default {
       const quantity = parseInt(order.quantity);
       const optionType = order.option_type;
       const action = order.action;
+      const totalAmount = parseFloat(order.total_amount);
+      const entryPremium = totalAmount / quantity; // Premium per share
 
+      // Get current option price from option chain data
+      const currentOptionPrice = this.getCurrentOptionPrice(strikePrice, optionType);
+      
       let pnl = 0;
 
-      // For CALL options
-      if (optionType === 'CALL') {
+      if (currentOptionPrice !== null) {
+        // Use real option price for calculation
         if (action === 'BUY') {
-          // Bought CALL: Profit if current price > strike price
-          const intrinsicValue = Math.max(0, currentPrice - strikePrice);
-          pnl = (intrinsicValue - strikePrice) * quantity;
+          // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+          const pnlPerShare = currentOptionPrice - entryPremium;
+          pnl = pnlPerShare * quantity;
         } else {
-          // Sold CALL: Profit if current price < strike price
-          const intrinsicValue = Math.max(0, currentPrice - strikePrice);
-          pnl = (strikePrice - intrinsicValue) * quantity;
+          // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+          const pnlPerShare = entryPremium - currentOptionPrice;
+          pnl = pnlPerShare * quantity;
         }
-      }
-      // For PUT options
-      else {
-        if (action === 'BUY') {
-          // Bought PUT: Profit if current price < strike price
-          const intrinsicValue = Math.max(0, strikePrice - currentPrice);
-          pnl = (intrinsicValue - strikePrice) * quantity;
+      } else {
+        // Fallback to intrinsic value calculation if option price not available
+        if (optionType === 'CALL') {
+          if (action === 'BUY') {
+            const intrinsicValue = Math.max(0, currentPrice - strikePrice);
+            const grossPnL = intrinsicValue * quantity;
+            pnl = grossPnL - totalAmount;
+          } else {
+            const intrinsicValue = Math.max(0, currentPrice - strikePrice);
+            const grossPnL = intrinsicValue * quantity;
+            pnl = totalAmount - grossPnL;
+          }
         } else {
-          // Sold PUT: Profit if current price > strike price
-          const intrinsicValue = Math.max(0, strikePrice - currentPrice);
-          pnl = (strikePrice - intrinsicValue) * quantity;
+          if (action === 'BUY') {
+            const intrinsicValue = Math.max(0, strikePrice - currentPrice);
+            const grossPnL = intrinsicValue * quantity;
+            pnl = grossPnL - totalAmount;
+          } else {
+            const intrinsicValue = Math.max(0, strikePrice - currentPrice);
+            const grossPnL = intrinsicValue * quantity;
+            pnl = totalAmount - grossPnL;
+          }
         }
       }
 
@@ -4383,5 +4343,73 @@ export default {
 
 .action-btn.sell-btn:hover {
   background: #dc2626;
+}
+
+/* Live P&L Card Styles */
+.live-pnl-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pnl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pnl-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #00ff88;
+}
+
+.update-time {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pnl-content {
+  display: flex;
+  gap: 24px;
+}
+
+.pnl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pnl-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.pnl-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.pnl-value.profit {
+  color: #00ff88;
+}
+
+.pnl-value.loss {
+  color: #ff4444;
+}
+
+.pnl-count {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #00aaff;
 }
 </style>
