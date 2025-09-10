@@ -347,7 +347,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '../../axios';
 import Swal from 'sweetalert2';
 
 export default {
@@ -512,14 +512,8 @@ export default {
     async loadUserOrders() {
       try {
         this.loading = true;
-        const token = localStorage.getItem('access_token');
         
-        const response = await axios.get(`/api/ai-trading/user-orders/${this.user.id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+        const response = await axios.get(`ai-trading/user-orders/${this.user.id}`);
 
         if (response.data.success) {
           this.userOrders = response.data.orders || [];
@@ -534,14 +528,7 @@ export default {
     },
     async loadUserBalance() {
       try {
-        const token = localStorage.getItem('access_token');
-        
-        const response = await axios.get(`/api/ai-trading/user-balance/${this.user.id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+        const response = await axios.get(`ai-trading/user-balance/${this.user.id}`);
 
         if (response.data.success) {
           this.user.balance = response.data.balance;
@@ -552,14 +539,7 @@ export default {
     },
     async loadMarketStatus() {
       try {
-        const token = localStorage.getItem('access_token');
-        
-        const response = await axios.get('/api/ai-trading/market-status', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+        const response = await axios.get('ai-trading/market-status');
 
         if (response.data.success) {
           this.marketStatus = response.data.data;
@@ -577,13 +557,7 @@ export default {
     },
     async loadMarketData() {
       try {
-        const token = localStorage.getItem('access_token');
-        
-        const response = await axios.get('/api/truedata/live-data', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          },
+        const response = await axios.get('truedata/live-data', {
           params: { _t: Date.now() } // Cache busting parameter
         });
 
@@ -720,14 +694,8 @@ export default {
     async exitTrade(orderId) {
       try {
         this.exitingTrade = orderId;
-        const token = localStorage.getItem('access_token');
         
-        const response = await axios.post(`/api/ai-trading/orders/${orderId}/exit`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+        const response = await axios.post(`ai-trading/orders/${orderId}/exit`);
 
         if (response.data.success) {
           this.showSuccess('Trade exited successfully');

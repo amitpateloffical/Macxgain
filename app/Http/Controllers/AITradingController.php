@@ -480,7 +480,7 @@ class AITradingController extends Controller
                     'user_id' => $order->user_id,
                     'exit_price' => $currentPrice,
                     'pnl' => $pnl,
-                    'new_balance' => $newBalance
+                    'new_balance' => $finalBalance
                 ]);
 
                 return response()->json([
@@ -490,7 +490,7 @@ class AITradingController extends Controller
                         'order_id' => $orderId,
                         'exit_price' => $currentPrice,
                         'pnl' => $pnl,
-                        'new_balance' => $newBalance,
+                        'new_balance' => $finalBalance,
                         'pnl_type' => $pnl >= 0 ? 'profit' : 'loss'
                     ]
                 ]);
