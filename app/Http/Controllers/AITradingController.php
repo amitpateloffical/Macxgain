@@ -558,7 +558,7 @@ class AITradingController extends Controller
     }
 
     /**
-     * Calculate P&L for an option trade
+     * Calculate P&L for an option trade using real option chain prices
      */
     private function calculatePnL($order, $currentPrice)
     {
@@ -570,28 +570,119 @@ class AITradingController extends Controller
             $entryPremium = $order->total_amount / $quantity; // Premium per share at entry
             $stockSymbol = $order->stock_symbol;
 
-            // For exit trades, use simplified intrinsic value calculation
-            Log::info("Calculating P&L for exit trade using intrinsic value method");
-            return $this->calculateIntrinsicPnL($order, $currentPrice);
+            // Try to get current option price from option chain data
+            $currentOptionPrice = $this->getCurrentOptionPrice($stockSymbol, $strikePrice, $optionType, $currentPrice);
+            
+            if ($currentOptionPrice !== null && $currentOptionPrice > 0) {
+                // Use real option price for calculation
+                Log::info("Using real option price for P&L calculation", [
+                    'symbol' => $stockSymbol,
+                    'strike' => $strikePrice,
+                    'type' => $optionType,
+                    'action' => $action,
+                    'entry_premium' => $entryPremium,
+                    'current_option_price' => $currentOptionPrice,
+                    'quantity' => $quantity
+                ]);
+                
+                $netPnL = $this->calculatePnLWithOptionPrice($order, $currentOptionPrice);
+                
+                Log::info("Real-time P&L calculation result", [
+                    'symbol' => $stockSymbol,
+                    'strike' => $strikePrice,
+                    'type' => $optionType,
+                    'action' => $action,
+                    'entry_premium' => $entryPremium,
+                    'current_option_price' => $currentOptionPrice,
+                    'quantity' => $quantity,
+                    'pnl' => $netPnL
+                ]);
 
-            Log::info("Real-time P&L calculation", [
-                'symbol' => $stockSymbol,
-                'strike' => $strikePrice,
-                'type' => $optionType,
-                'action' => $action,
-                'entry_premium' => $entryPremium,
-                'current_option_price' => $currentOptionPrice,
-                'quantity' => $quantity,
-                'pnl' => $netPnL
-            ]);
-
-            return round($netPnL, 2);
+                return round($netPnL, 2);
+            } else {
+                // Fallback to intrinsic value calculation if option price not available
+                Log::info("Option price not available, using intrinsic value calculation");
+                return $this->calculateIntrinsicPnL($order, $currentPrice);
+            }
 
         } catch (\Exception $e) {
             Log::error("Error in P&L calculation: " . $e->getMessage());
             // Fallback to intrinsic value calculation
             return $this->calculateIntrinsicPnL($order, $currentPrice);
         }
+    }
+
+    /**
+     * Get current option price from option chain data
+     */
+    private function getCurrentOptionPrice($stockSymbol, $strikePrice, $optionType, $currentPrice)
+    {
+        try {
+            // Map symbol names for API compatibility
+            $apiSymbol = $stockSymbol;
+            if ($stockSymbol === 'NIFTY 50') {
+                $apiSymbol = 'NIFTY';
+            } elseif ($stockSymbol === 'BANK NIFTY') {
+                $apiSymbol = 'BANKNIFTY';
+            }
+            
+            // Get the latest option chain data
+            $expiry = '20250916'; // Default expiry - you might want to make this dynamic
+            $optionChainData = \App\Models\OptionChain::getChain($apiSymbol, $expiry);
+            
+            if (empty($optionChainData)) {
+                Log::warning("No option chain data found for {$apiSymbol}");
+                return null;
+            }
+            
+            // Find the specific option
+            $targetStrike = (float) $strikePrice;
+            $targetType = strtoupper($optionType) === 'CALL' ? 'CE' : 'PE';
+            
+            foreach ($optionChainData as $option) {
+                if (isset($option['strike_price']) && isset($option['option_type'])) {
+                    $optionStrike = (float) $option['strike_price'];
+                    $optionTypeCode = $option['option_type'];
+                    
+                    if (abs($optionStrike - $targetStrike) < 0.01 && $optionTypeCode === $targetType) {
+                        $ltp = (float) ($option['ltp'] ?? 0);
+                        Log::info("Found option price for {$optionType} strike {$strikePrice}: {$ltp}");
+                        return $ltp;
+                    }
+                }
+            }
+            
+            Log::warning("Option not found in chain data for {$optionType} strike {$strikePrice}");
+            return null;
+            
+        } catch (\Exception $e) {
+            Log::error("Error getting current option price: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Calculate P&L using real option prices
+     */
+    private function calculatePnLWithOptionPrice($order, $currentOptionPrice)
+    {
+        $strikePrice = $order->strike_price;
+        $quantity = $order->quantity;
+        $optionType = $order->option_type;
+        $action = $order->action;
+        $entryPremium = $order->total_amount / $quantity; // Premium per share at entry
+        
+        if ($action === 'BUY') {
+            // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+            $pnlPerShare = $currentOptionPrice - $entryPremium;
+            $netPnL = $pnlPerShare * $quantity;
+        } else {
+            // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+            $pnlPerShare = $entryPremium - $currentOptionPrice;
+            $netPnL = $pnlPerShare * $quantity;
+        }
+        
+        return $netPnL;
     }
 
     /**

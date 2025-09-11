@@ -719,6 +719,13 @@ export default {
       this.callOptions = [];
       this.putOptions = [];
     },
+    async ensureFreshOptionData() {
+      // Ensure we have fresh option chain data for accurate P&L calculations
+      if (this.selectedStock && (this.callOptions.length === 0 || this.putOptions.length === 0)) {
+        console.log('🔄 Refreshing option chain data for accurate P&L calculations');
+        await this.loadOptionsData(this.selectedStock.symbol, false);
+      }
+    },
     async loadOptionsData(symbol, showLoading = true) {
       try {
         if (showLoading) {
@@ -1367,17 +1374,30 @@ export default {
           options = this.putOptions || [];
         }
         
-        // Find the option with matching strike price
-        const option = options.find(opt => 
-          Math.abs(parseFloat(opt.strike_price || opt.strike) - parseFloat(strikePrice)) < 0.01
-        );
+        if (!options || options.length === 0) {
+          console.warn(`No ${optionType} options available in chain data`);
+          return null;
+        }
+        
+        // Find the option with matching strike price (more flexible matching)
+        const targetStrike = parseFloat(strikePrice);
+        const option = options.find(opt => {
+          const optStrike = parseFloat(opt.strike_price || opt.strike || 0);
+          return Math.abs(optStrike - targetStrike) < 0.01;
+        });
         
         if (option) {
-          const price = parseFloat(option.ltp || option.price || 0);
-          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price}`);
-          return price;
+          const price = parseFloat(option.ltp || option.price || option.last_price || 0);
+          if (price > 0) {
+            console.log(`✅ Found ${optionType} option for strike ${strikePrice}: ₹${price}`);
+            return price;
+          } else {
+            console.warn(`⚠️ ${optionType} option found for strike ${strikePrice} but price is 0 or invalid: ${price}`);
+            return null;
+          }
         } else {
-          console.log(`No ${optionType} option found for strike ${strikePrice}`);
+          console.warn(`❌ No ${optionType} option found for strike ${strikePrice}. Available strikes:`, 
+            options.map(opt => opt.strike_price || opt.strike).slice(0, 5));
           return null;
         }
       } catch (error) {
@@ -1386,58 +1406,95 @@ export default {
       }
     },
     calculateUnrealizedPnL(order) {
-      const currentPrice = parseFloat(this.getCurrentPrice(order.stock_symbol));
-      if (isNaN(currentPrice)) return 0;
-
-      const strikePrice = parseFloat(order.strike_price);
-      const quantity = parseInt(order.quantity);
-      const optionType = order.option_type;
-      const action = order.action;
-      const totalAmount = parseFloat(order.total_amount);
-      const entryPremium = totalAmount / quantity; // Premium per share
-
-      // Get current option price from option chain data
-      const currentOptionPrice = this.getCurrentOptionPrice(strikePrice, optionType);
-      
-      let pnl = 0;
-
-      if (currentOptionPrice !== null) {
-        // Use real option price for calculation
-        if (action === 'BUY') {
-          // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
-          const pnlPerShare = currentOptionPrice - entryPremium;
-          pnl = pnlPerShare * quantity;
-        } else {
-          // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
-          const pnlPerShare = entryPremium - currentOptionPrice;
-          pnl = pnlPerShare * quantity;
+      try {
+        // Validate order data
+        if (!order || !order.strike_price || !order.quantity || !order.option_type || !order.action || !order.total_amount) {
+          console.warn('Invalid order data for P&L calculation:', order);
+          return 0;
         }
-      } else {
-        // Fallback to intrinsic value calculation if option price not available
-        if (optionType === 'CALL') {
-          if (action === 'BUY') {
-            const intrinsicValue = Math.max(0, currentPrice - strikePrice);
-            const grossPnL = intrinsicValue * quantity;
-            pnl = grossPnL - totalAmount;
-          } else {
-            const intrinsicValue = Math.max(0, currentPrice - strikePrice);
-            const grossPnL = intrinsicValue * quantity;
-            pnl = totalAmount - grossPnL;
-          }
-        } else {
-          if (action === 'BUY') {
-            const intrinsicValue = Math.max(0, strikePrice - currentPrice);
-            const grossPnL = intrinsicValue * quantity;
-            pnl = grossPnL - totalAmount;
-          } else {
-            const intrinsicValue = Math.max(0, strikePrice - currentPrice);
-            const grossPnL = intrinsicValue * quantity;
-            pnl = totalAmount - grossPnL;
-          }
+
+        const currentPrice = parseFloat(this.getCurrentPrice(order.stock_symbol));
+        if (isNaN(currentPrice) || currentPrice <= 0) {
+          console.warn(`Invalid current price for ${order.stock_symbol}: ${currentPrice}`);
+          return 0;
         }
+
+        const strikePrice = parseFloat(order.strike_price);
+        const quantity = parseInt(order.quantity);
+        const optionType = order.option_type;
+        const action = order.action;
+        const totalAmount = parseFloat(order.total_amount);
+        const entryPremium = totalAmount / quantity; // Premium per share
+
+        if (isNaN(strikePrice) || isNaN(quantity) || isNaN(totalAmount) || quantity <= 0) {
+          console.warn('Invalid order parameters for P&L calculation:', { strikePrice, quantity, totalAmount });
+          return 0;
+        }
+
+        // Ensure we have fresh option chain data
+        this.ensureFreshOptionData();
+        
+        // Get current option price from option chain data
+        const currentOptionPrice = this.getCurrentOptionPrice(strikePrice, optionType);
+        
+        let pnl = 0;
+        let calculationMethod = '';
+
+        if (currentOptionPrice !== null && currentOptionPrice > 0) {
+          // Use real option price for calculation
+          calculationMethod = 'real_option_price';
+          if (action === 'BUY') {
+            // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
+            const pnlPerShare = currentOptionPrice - entryPremium;
+            pnl = pnlPerShare * quantity;
+          } else {
+            // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
+            const pnlPerShare = entryPremium - currentOptionPrice;
+            pnl = pnlPerShare * quantity;
+          }
+          console.log(`📊 P&L calculated using real option price: ${optionType} ${action} strike ${strikePrice}, entry: ₹${entryPremium}, current: ₹${currentOptionPrice}, P&L: ₹${pnl}`);
+        } else {
+          // Fallback to intrinsic value calculation if option price not available
+          calculationMethod = 'intrinsic_value';
+          console.warn(`⚠️ Using intrinsic value calculation for ${optionType} ${action} strike ${strikePrice} (option price not available)`);
+          
+          if (optionType === 'CALL') {
+            if (action === 'BUY') {
+              const intrinsicValue = Math.max(0, currentPrice - strikePrice);
+              const grossPnL = intrinsicValue * quantity;
+              pnl = grossPnL - totalAmount;
+            } else {
+              const intrinsicValue = Math.max(0, currentPrice - strikePrice);
+              const grossPnL = intrinsicValue * quantity;
+              pnl = totalAmount - grossPnL;
+            }
+          } else {
+            if (action === 'BUY') {
+              const intrinsicValue = Math.max(0, strikePrice - currentPrice);
+              const grossPnL = intrinsicValue * quantity;
+              pnl = grossPnL - totalAmount;
+            } else {
+              const intrinsicValue = Math.max(0, strikePrice - currentPrice);
+              const grossPnL = intrinsicValue * quantity;
+              pnl = totalAmount - grossPnL;
+            }
+          }
+          console.log(`📊 P&L calculated using intrinsic value: ${optionType} ${action} strike ${strikePrice}, underlying: ₹${currentPrice}, P&L: ₹${pnl}`);
+        }
+
+        const roundedPnL = Math.round(pnl * 100) / 100; // Round to 2 decimal places
+        
+        // Store calculation method for debugging
+        if (order.id) {
+          this.pnlCalculationMethods = this.pnlCalculationMethods || {};
+          this.pnlCalculationMethods[order.id] = calculationMethod;
+        }
+
+        return roundedPnL;
+      } catch (error) {
+        console.error('Error calculating unrealized P&L:', error, order);
+        return 0;
       }
-
-      return Math.round(pnl * 100) / 100; // Round to 2 decimal places
     },
     getPnLClass(pnl) {
       if (pnl > 0) return 'profit';

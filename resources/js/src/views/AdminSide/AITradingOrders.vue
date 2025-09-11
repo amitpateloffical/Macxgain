@@ -813,10 +813,14 @@ export default {
       // Calculate live P&L for a specific trade
       try {
         const currentPrice = this.getCurrentPrice(trade.stock_symbol);
-        if (currentPrice <= 0) return 0;
+        if (currentPrice <= 0) {
+          console.warn(`Invalid current price for ${trade.stock_symbol}: ${currentPrice}`);
+          return 0;
+        }
         
         // Validate trade data
         if (!trade || !trade.option_type || !trade.action || !trade.strike_price || !trade.quantity || !trade.total_amount) {
+          console.warn('Invalid trade data for P&L calculation:', trade);
           return 0;
         }
         
@@ -825,9 +829,11 @@ export default {
         const entryPremium = trade.total_amount / trade.quantity;
         
         let pnl = 0;
+        let calculationMethod = '';
         
         if (currentOptionPrice > 0) {
           // Use real option price for calculation
+          calculationMethod = 'real_option_price';
           if (trade.action === 'BUY') {
             // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
             const pnlPerShare = currentOptionPrice - entryPremium;
@@ -837,8 +843,11 @@ export default {
             const pnlPerShare = entryPremium - currentOptionPrice;
             pnl = pnlPerShare * trade.quantity;
           }
+          console.log(`📊 Live P&L using real option price: ${trade.option_type} ${trade.action} strike ${trade.strike_price}, entry: ₹${entryPremium}, current: ₹${currentOptionPrice}, P&L: ₹${pnl}`);
         } else {
           // Fallback to intrinsic value calculation
+          calculationMethod = 'intrinsic_value';
+          console.warn(`⚠️ Using intrinsic value for live P&L: ${trade.option_type} ${trade.action} strike ${trade.strike_price}`);
           if (trade.option_type === 'CALL') {
             if (trade.action === 'BUY') {
               const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
