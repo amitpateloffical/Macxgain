@@ -17,13 +17,13 @@ fi
 # Deploy real option prices update
 echo "🔄 Deploying real option prices update..."
 
-# Pull latest changes
-echo "📥 Pulling latest changes..."
-git pull origin main
+# # Pull latest changes
+# echo "📥 Pulling latest changes..."
+# git pull origin main
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-composer install --no-dev --optimize-autoloader
+# # Install dependencies
+# echo "📦 Installing dependencies..."
+# composer install --no-dev --optimize-autoloader
 
 # Clear caches
 echo "🧹 Clearing caches..."
