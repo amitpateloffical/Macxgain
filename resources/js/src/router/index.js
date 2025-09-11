@@ -81,6 +81,12 @@ const routes = [
     component: () => import("../views/AdminSide/TrueDataStockMarket.vue"),
   },
   {
+    path: "/admin/alpha-vantage",
+    name: "alpha_vantage",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/AlphaVantageMarket.vue"),
+  },
+  {
     path: "/user/dashboard",
     name: "user-ashboard",
     meta: { requiresAuth: true, requiresUser: true },

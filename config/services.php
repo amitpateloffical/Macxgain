@@ -47,6 +47,12 @@ return [
         'base_url' => env('TRUEDATA_HOST', 'push.truedata.in'), // Correct host
     ],
 
+    'alphavantage' => [
+        'api_key' => env('ALPHAVANTAGE_API_KEY', 'II73DAUC1KB906VM'),
+        'base_url' => env('ALPHAVANTAGE_BASE_URL', 'https://www.alphavantage.co/query'),
+        'cache_ttl' => env('ALPHAVANTAGE_CACHE_TTL', 300), // 5 minutes cache
+    ],
+
     'office365' => [
         'client_id' => env('O365_CLIENT_ID'),
         'client_secret' => env('O365_CLIENT_SECRET'),

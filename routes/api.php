@@ -22,6 +22,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminPaymentCollectorController;
 use App\Http\Controllers\AITradingController;
 use App\Http\Controllers\FundAdjustController;
+use App\Http\Controllers\AlphaVantageController;
 
 
 
@@ -162,6 +163,32 @@ Route::get('/truedata/simple-option/{symbol}', function($symbol) {
 Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
 Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
 Route::get('/truedata/options/current-price', [TrueDataController::class, 'getCurrentOptionPrice']);
+
+// Alpha Vantage API Routes
+Route::prefix('alphavantage')->group(function() {
+    // Stock Data Routes
+    Route::get('/stocks/popular', [AlphaVantageController::class, 'getPopularStocks']);
+    Route::get('/stocks/categories', [AlphaVantageController::class, 'getStockCategories']);
+    Route::get('/stocks/by-category', [AlphaVantageController::class, 'getStocksByCategory']);
+    Route::get('/stocks/search', [AlphaVantageController::class, 'searchSymbols']);
+    Route::get('/stocks/{symbol}/quote', [AlphaVantageController::class, 'getQuote']);
+    Route::get('/stocks/{symbol}/intraday', [AlphaVantageController::class, 'getIntradayData']);
+    Route::get('/stocks/{symbol}/daily', [AlphaVantageController::class, 'getDailyData']);
+    Route::get('/stocks/{symbol}/overview', [AlphaVantageController::class, 'getCompanyOverview']);
+    Route::get('/stocks/{symbol}/data', [AlphaVantageController::class, 'getStockData']);
+    Route::get('/stocks/{symbol}/dashboard', [AlphaVantageController::class, 'getStockDashboardData']);
+    
+    // Options Routes
+    Route::get('/options/{symbol}', [AlphaVantageController::class, 'getOptionsData']);
+    
+    // Market Data Routes
+    Route::get('/market/status', [AlphaVantageController::class, 'getMarketStatus']);
+    Route::get('/market/top-gainers-losers', [AlphaVantageController::class, 'getTopGainersLosers']);
+    
+    // Technical Indicators Routes
+    Route::get('/indicators/{symbol}/sma', [AlphaVantageController::class, 'getSMA']);
+    Route::get('/indicators/{symbol}/rsi', [AlphaVantageController::class, 'getRSI']);
+});
 
 // Legacy Upstox routes (for backward compatibility)
 Route::middleware('auth:sanctum')->group(function() {
