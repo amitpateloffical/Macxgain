@@ -10,13 +10,28 @@
         <div class="user-info">
           <h1 class="page-title">📋 Trading Orders</h1>
           <p class="page-subtitle">
-            Orders for: <strong>{{ user.name || 'Loading...' }}</strong> 
-            (Balance: ₹{{ user.balance?.toLocaleString() || '0' }})
-            <span v-if="overallPnL !== 0" class="balance-update" :class="overallPnL >= 0 ? 'profit' : 'loss'">
-              → ₹{{ updatedBalance?.toLocaleString() }}
-              ({{ overallPnL >= 0 ? '+' : '' }}₹{{ overallPnL?.toLocaleString() }})
-            </span>
+            Orders for: <strong>{{ user.name || 'Loading...' }}</strong>
           </p>
+          <div class="balance-breakdown">
+            <div class="balance-item">
+              <span class="balance-label">Available Balance:</span>
+              <span class="balance-value available">₹{{ (user.balance || 0).toLocaleString() }}</span>
+            </div>
+            <div class="balance-item" v-if="user.total_balance">
+              <span class="balance-label">Total Balance:</span>
+              <span class="balance-value total">₹{{ (user.total_balance || 0).toLocaleString() }}</span>
+            </div>
+            <div class="balance-item" v-if="user.blocked_amount && user.blocked_amount > 0">
+              <span class="balance-label">Blocked in Trades:</span>
+              <span class="balance-value blocked">₹{{ (user.blocked_amount || 0).toLocaleString() }}</span>
+            </div>
+            <div class="balance-item" v-if="overallPnL !== 0">
+              <span class="balance-label">Live P&L:</span>
+              <span class="balance-value live-pnl" :class="overallPnL >= 0 ? 'profit' : 'loss'">
+                {{ overallPnL >= 0 ? '+' : '' }}₹{{ (overallPnL || 0).toLocaleString() }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="header-actions">
@@ -570,7 +585,16 @@ export default {
         const response = await axios.get(`ai-trading/user-balance/${this.user.id}`);
 
         if (response.data.success) {
-          this.user.balance = response.data.balance;
+          // Update all balance details
+          this.user.balance = response.data.balance; // Available balance
+          this.user.total_balance = response.data.total_balance; // Total wallet balance
+          this.user.blocked_amount = response.data.blocked_amount; // Amount blocked in trades
+          
+          console.log('Balance updated:', {
+            available: response.data.balance,
+            total: response.data.total_balance,
+            blocked: response.data.blocked_amount
+          });
         }
       } catch (error) {
         console.error('Error loading user balance:', error);
@@ -2309,6 +2333,71 @@ export default {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Balance breakdown styling */
+.balance-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.balance-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.balance-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.balance-value.available {
+  color: #4caf50;
+}
+
+.balance-value.total {
+  color: #2196f3;
+}
+
+.balance-value.blocked {
+  color: #ff9800;
+}
+
+.balance-value.live-pnl.profit {
+  color: #4caf50;
+}
+
+.balance-value.live-pnl.loss {
+  color: #f44336;
+}
+
+@media (max-width: 768px) {
+  .balance-breakdown {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .balance-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 .detail-row .current-price {
