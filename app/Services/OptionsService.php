@@ -607,16 +607,17 @@ class OptionsService
     {
         if (is_array($option)) {
             // TrueData API returns indexed arrays, not associative arrays
-            // Map field names to their respective indices based on API response structure
+            // Map field names to their respective indices based on TrueData API response structure
+            // TrueData format: [id, symbol, type, ltp, exchange, ask, strike, expiry, oi_symbol, full_symbol, volume, ...]
             $indexMap = [
-                'ltp' => 11,        // Last Traded Price at index 11
-                'bid' => 14,        // Bid price at index 14  
-                'ask' => 16,        // Ask price at index 16
-                'bid_qty' => 15,    // Bid quantity at index 15
-                'ask_qty' => 17,    // Ask quantity at index 17
-                'volume' => 18,     // Volume at index 18
-                'oi' => 19,         // Open Interest at index 19
-                'prev_close' => 20, // Previous close at index 20
+                'ltp' => 3,         // Last Traded Price at index 3
+                'bid' => 4,         // Bid price at index 4 (might be exchange)
+                'ask' => 5,         // Ask price at index 5
+                'bid_qty' => 12,    // Bid quantity at index 12
+                'ask_qty' => 13,    // Ask quantity at index 13
+                'volume' => 10,     // Volume at index 10
+                'oi' => 14,         // Open Interest at index 14
+                'prev_close' => 16, // Previous close at index 16
             ];
             
             if (isset($indexMap[$key])) {

@@ -774,7 +774,10 @@ export default {
         }
       } catch (error) {
         console.error('❌ Error loading options data:', error);
-        this.showError('Failed to load options data. Please check your connection and try again.');
+        const serverMessage = (error && error.response && (error.response.data?.message || error.response.data?.error))
+          || error.message
+          || 'Failed to load options data. Please check your connection and try again.';
+        this.showError(serverMessage);
         this.closeStockOptions();
       } finally {
         if (showLoading) {

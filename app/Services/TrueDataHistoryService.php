@@ -137,6 +137,71 @@ class TrueDataHistoryService
     }
 
     /**
+     * Get recent (last 1-5 minutes) option quote for a specific option symbol
+     */
+    public function getRecentOptionQuote(string $optionSymbol, int $maxMinutes = 5): ?array
+    {
+        $token = $this->getAccessToken();
+        if (!$token) {
+            Log::warning('TrueDataHistoryService: No auth token to fetch recent option quotes');
+            return null;
+        }
+
+        try {
+            // Fetch up to 200 recent ticks and pick the freshest within N minutes
+            $response = Http::withToken($token)->get($this->baseUrl . '/getlastnticks', [
+                'symbol' => $optionSymbol,
+                'bidask' => 1,
+                'response' => 'json',
+                'nticks' => 200,
+                'interval' => 'tick'
+            ]);
+
+            if (!$response->successful()) {
+                Log::warning("TrueDataHistoryService: getlastnticks failed for {$optionSymbol} with status " . $response->status());
+                return null;
+            }
+
+            $data = $response->json();
+            if (empty($data) || !is_array($data)) {
+                return null;
+            }
+
+            $now = now();
+            $selected = null;
+            foreach ($data as $row) {
+                // Row may be associative (with keys) or indexed array
+                $timestamp = $row['timestamp'] ?? $row['time'] ?? ($row[0] ?? null);
+                if (!$timestamp) { continue; }
+                try {
+                    $ts = \Carbon\Carbon::parse($timestamp);
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                if ($ts->diffInMinutes($now) <= $maxMinutes) {
+                    $ltp = isset($row['ltp']) ? (float)$row['ltp'] : (isset($row[1]) ? (float)$row[1] : 0);
+                    $bid = isset($row['bid']) ? (float)$row['bid'] : (isset($row[4]) ? (float)$row[4] : 0);
+                    $ask = isset($row['ask']) ? (float)$row['ask'] : (isset($row[6]) ? (float)$row[6] : 0);
+                    $selected = [
+                        'ltp' => $ltp,
+                        'bid' => $bid,
+                        'ask' => $ask,
+                        'timestamp' => $ts->toISOString()
+                    ];
+                    // break on first freshest tick
+                    break;
+                }
+            }
+
+            return $selected;
+        } catch (\Exception $e) {
+            Log::error('TrueDataHistoryService: Error in getRecentOptionQuote - ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Get top gainers from last trading day
      */
     public function getTopGainers()
