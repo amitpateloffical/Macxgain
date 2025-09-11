@@ -492,6 +492,7 @@ export default {
       filteredStrikes: [],
       loadingOptions: false,
       autoRefreshInterval: null,
+      currentRefreshInterval: 3000, // Track current refresh interval
       lastOptionsUpdate: null,
       priceChangeIndicators: {} // Track price changes for visual effects
     }
@@ -585,20 +586,53 @@ export default {
       }
     },
     startAutoRefresh() {
-      // Auto-refresh market data and status every 3 seconds for real-time updates
-    this.autoRefreshInterval = setInterval(() => {
-      this.loadMarketStatus();
-      this.loadMarketData();
-      this.loadLivePnL(); // Load live P&L data
+      // Auto-refresh market data and status - frequency based on market hours
+      this.autoRefreshInterval = setInterval(() => {
+        this.loadMarketStatus();
+        
+        // Get current refresh interval based on market status
+        const refreshInterval = this.marketStatus?.is_open ? 3000 : 10000; // 3s during market hours, 10s after hours
+        
+        // Clear and restart with appropriate interval if needed
+        if (this.currentRefreshInterval !== refreshInterval) {
+          this.currentRefreshInterval = refreshInterval;
+          clearInterval(this.autoRefreshInterval);
+          this.startAutoRefreshWithInterval(refreshInterval);
+          return;
+        }
+        
+        this.loadMarketData();
+        this.loadLivePnL(); // Load live P&L data
 
-      // Also refresh option chain data if a stock is selected (LIVE OPTION CHAIN UPDATES)
-      if (this.selectedStock && this.selectedStock.symbol) {
-        this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
-        console.log('🔥 LIVE UPDATE: Option chain prices refreshed for', this.selectedStock.symbol);
-      }
+        // Also refresh option chain data if a stock is selected (LIVE OPTION CHAIN UPDATES)
+        if (this.selectedStock && this.selectedStock.symbol) {
+          this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
+          const marketStatus = this.marketStatus?.is_open ? 'MARKET OPEN' : 'AFTER HOURS';
+          console.log(`🔥 LIVE UPDATE: Option chain prices refreshed for ${this.selectedStock.symbol} (${marketStatus})`);
+        }
 
-      console.log('🚀 Auto-refresh: Market data, P&L and option chain updated - Live trading experience');
-    }, 3000); // 3 seconds for real-time option chain updates (like professional trading apps)
+        const marketStatus = this.marketStatus?.is_open ? 'MARKET OPEN' : 'AFTER HOURS';
+        console.log(`🚀 Auto-refresh: Market data, P&L and option chain updated - ${marketStatus} (${refreshInterval/1000}s interval)`);
+      }, 3000); // Start with 3 seconds, will adjust based on market status
+      
+      this.currentRefreshInterval = 3000;
+    },
+    
+    startAutoRefreshWithInterval(interval) {
+      this.autoRefreshInterval = setInterval(() => {
+        this.loadMarketStatus();
+        this.loadMarketData();
+        this.loadLivePnL();
+
+        if (this.selectedStock && this.selectedStock.symbol) {
+          this.loadOptionsData(this.selectedStock.symbol, false);
+          const marketStatus = this.marketStatus?.is_open ? 'MARKET OPEN' : 'AFTER HOURS';
+          console.log(`🔥 LIVE UPDATE: Option chain prices refreshed for ${this.selectedStock.symbol} (${marketStatus})`);
+        }
+
+        const marketStatus = this.marketStatus?.is_open ? 'MARKET OPEN' : 'AFTER HOURS';
+        console.log(`🚀 Auto-refresh: ${marketStatus} (${interval/1000}s interval)`);
+      }, interval);
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });

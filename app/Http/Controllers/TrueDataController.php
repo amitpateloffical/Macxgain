@@ -30,7 +30,32 @@ class TrueDataController extends Controller
     public function getMarketStatus(): JsonResponse
     {
         try {
-            $marketStatus = $this->marketStatusService->getMarketStatus();
+            // Simple market hours check for Indian stock market (NSE/BSE)
+            $currentTime = now('Asia/Kolkata');
+            $currentHour = (int) $currentTime->format('H');
+            $currentMinute = (int) $currentTime->format('i');
+            $currentDay = $currentTime->format('N'); // 1 (Monday) to 7 (Sunday)
+            
+            // Market hours: Monday to Friday, 9:15 AM to 3:30 PM IST
+            $isWeekday = $currentDay >= 1 && $currentDay <= 5; // Monday to Friday
+            $isMarketHours = false;
+            
+            if ($isWeekday) {
+                $currentTimeMinutes = ($currentHour * 60) + $currentMinute;
+                $marketOpenMinutes = (9 * 60) + 15; // 9:15 AM
+                $marketCloseMinutes = (15 * 60) + 30; // 3:30 PM
+                
+                $isMarketHours = $currentTimeMinutes >= $marketOpenMinutes && $currentTimeMinutes <= $marketCloseMinutes;
+            }
+            
+            $marketStatus = [
+                'is_open' => $isMarketHours,
+                'current_time' => $currentTime->format('H:i:s'),
+                'current_date' => $currentTime->format('Y-m-d'),
+                'market_status' => $isMarketHours ? 'OPEN' : 'CLOSED',
+                'next_open_time' => $isMarketHours ? null : $this->getNextMarketOpenTime($currentTime),
+                'timezone' => 'Asia/Kolkata'
+            ];
             
             return response()->json([
                 'success' => true,
@@ -46,6 +71,27 @@ class TrueDataController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+    
+    private function getNextMarketOpenTime($currentTime)
+    {
+        $nextOpen = $currentTime->copy();
+        
+        // If it's weekend, move to Monday
+        if ($nextOpen->format('N') > 5) {
+            $nextOpen->next('Monday');
+        }
+        // If it's after market hours on weekday, move to next day
+        elseif ($nextOpen->format('H') >= 16 || ($nextOpen->format('H') == 15 && $nextOpen->format('i') > 30)) {
+            $nextOpen->addDay();
+            // Skip weekend
+            if ($nextOpen->format('N') > 5) {
+                $nextOpen->next('Monday');
+            }
+        }
+        
+        $nextOpen->setTime(9, 15, 0); // Set to 9:15 AM
+        return $nextOpen->format('Y-m-d H:i:s');
     }
 
     /**
