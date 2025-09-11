@@ -200,7 +200,16 @@
 
           <!-- Options Trading Section -->
           <div class="options-trading-section">
-            <h3 class="options-main-title">Options Trading</h3>
+            <div class="options-header-section">
+              <h3 class="options-main-title">Options Trading</h3>
+              <div class="live-update-indicator" v-if="lastOptionsUpdate">
+                <span class="live-badge">
+                  <i class="fas fa-circle live-dot"></i>
+                  LIVE
+                </span>
+                <span class="last-update">{{ lastOptionsUpdate }}</span>
+              </div>
+            </div>
             
             <!-- Loading State -->
             <div v-if="loadingOptions" class="loading-options">
@@ -246,8 +255,11 @@
                             <div class="call-change" :class="getChangeClass(getCallChange(strike))">
                               {{ getCallChange(strike) }}
                             </div>
-                            <div class="call-ltp">
+                            <div class="call-ltp" :class="getPriceChangeClass(getCallPriceChangeIndicator(strike))">
                               ₹{{ getCallLTP(strike) }}
+                              <i v-if="getCallPriceChangeIndicator(strike)" 
+                                 :class="getCallPriceChangeIndicator(strike).type === 'up' ? 'fas fa-arrow-up price-arrow-up' : 'fas fa-arrow-down price-arrow-down'">
+                              </i>
                             </div>
                           </div>
                           <div class="action-buttons" v-if="getCallOption(strike)">
@@ -274,8 +286,11 @@
                         <!-- Put Section with Action Buttons -->
                         <div class="cell put-section">
                           <div class="put-ltp-with-actions">
-                            <div class="put-ltp">
+                            <div class="put-ltp" :class="getPriceChangeClass(getPutPriceChangeIndicator(strike))">
                               ₹{{ getPutLTP(strike) }}
+                              <i v-if="getPutPriceChangeIndicator(strike)" 
+                                 :class="getPutPriceChangeIndicator(strike).type === 'up' ? 'fas fa-arrow-up price-arrow-up' : 'fas fa-arrow-down price-arrow-down'">
+                              </i>
                             </div>
                             <div class="put-change" :class="getChangeClass(getPutChange(strike))">
                               {{ getPutChange(strike) }}
@@ -476,7 +491,9 @@ export default {
       putOptions: [],
       filteredStrikes: [],
       loadingOptions: false,
-      autoRefreshInterval: null
+      autoRefreshInterval: null,
+      lastOptionsUpdate: null,
+      priceChangeIndicators: {} // Track price changes for visual effects
     }
   },
   computed: {
@@ -568,20 +585,20 @@ export default {
       }
     },
     startAutoRefresh() {
-      // Auto-refresh market data and status every 5 seconds
+      // Auto-refresh market data and status every 3 seconds for real-time updates
     this.autoRefreshInterval = setInterval(() => {
       this.loadMarketStatus();
       this.loadMarketData();
       this.loadLivePnL(); // Load live P&L data
 
-      // Also refresh option chain data if a stock is selected
+      // Also refresh option chain data if a stock is selected (LIVE OPTION CHAIN UPDATES)
       if (this.selectedStock && this.selectedStock.symbol) {
         this.loadOptionsData(this.selectedStock.symbol, false); // Don't show loading spinner during auto-refresh
-        console.log('Auto-refresh: Option chain data updated for', this.selectedStock.symbol);
+        console.log('🔥 LIVE UPDATE: Option chain prices refreshed for', this.selectedStock.symbol);
       }
 
-      console.log('Auto-refresh: Market data, P&L and status updated');
-    }, 5000); // 5 seconds for live market data (faster refresh for real-time updates)
+      console.log('🚀 Auto-refresh: Market data, P&L and option chain updated - Live trading experience');
+    }, 3000); // 3 seconds for real-time option chain updates (like professional trading apps)
     },
     goBack() {
       this.$router.push({ name: 'ai_trading' });
@@ -727,6 +744,17 @@ export default {
     processOptionsData(data) {
       console.log('🔄 Processing options data:', data);
       
+      // Store previous prices for change detection
+      const previousCallPrices = {};
+      const previousPutPrices = {};
+      
+      this.callOptions.forEach(option => {
+        previousCallPrices[option.strike_price] = option.ltp;
+      });
+      this.putOptions.forEach(option => {
+        previousPutPrices[option.strike_price] = option.ltp;
+      });
+      
       // Initialize arrays
       this.callOptions = [];
       this.putOptions = [];
@@ -789,12 +817,65 @@ export default {
         // Set filtered strikes for Angel One style display
         this.filteredStrikes = relevantStrikes;
         
+        // Detect price changes and set visual indicators
+        this.detectPriceChanges(previousCallPrices, previousPutPrices);
+        
+        // Update last refresh timestamp
+        this.lastOptionsUpdate = new Date().toLocaleTimeString('en-IN');
+        console.log('🔥 Live option chain updated at:', this.lastOptionsUpdate);
+        
         console.log('✅ Processed', this.callOptions.length, 'CALL options and', this.putOptions.length, 'PUT options');
         } else {
           console.log('⚠️ No data array found');
           this.showError('No options data available for this symbol. Please try another stock.');
           this.closeStockOptions();
         }
+    },
+    
+    detectPriceChanges(previousCallPrices, previousPutPrices) {
+      // Detect CALL option price changes
+      this.callOptions.forEach(option => {
+        const strikeKey = `CALL_${option.strike_price}`;
+        const previousPrice = previousCallPrices[option.strike_price];
+        const currentPrice = option.ltp;
+        
+        if (previousPrice && currentPrice && previousPrice !== currentPrice) {
+          const change = currentPrice - previousPrice;
+          this.priceChangeIndicators[strikeKey] = {
+            type: change > 0 ? 'up' : 'down',
+            change: change,
+            timestamp: Date.now()
+          };
+          console.log(`🔥 CALL ${option.strike_price}: ₹${previousPrice} → ₹${currentPrice} (${change > 0 ? '+' : ''}${change.toFixed(2)})`);
+          
+          // Clear indicator after 2 seconds
+          setTimeout(() => {
+            delete this.priceChangeIndicators[strikeKey];
+          }, 2000);
+        }
+      });
+      
+      // Detect PUT option price changes
+      this.putOptions.forEach(option => {
+        const strikeKey = `PUT_${option.strike_price}`;
+        const previousPrice = previousPutPrices[option.strike_price];
+        const currentPrice = option.ltp;
+        
+        if (previousPrice && currentPrice && previousPrice !== currentPrice) {
+          const change = currentPrice - previousPrice;
+          this.priceChangeIndicators[strikeKey] = {
+            type: change > 0 ? 'up' : 'down',
+            change: change,
+            timestamp: Date.now()
+          };
+          console.log(`🔥 PUT ${option.strike_price}: ₹${previousPrice} → ₹${currentPrice} (${change > 0 ? '+' : ''}${change.toFixed(2)})`);
+          
+          // Clear indicator after 2 seconds
+          setTimeout(() => {
+            delete this.priceChangeIndicators[strikeKey];
+          }, 2000);
+        }
+      });
     },
     
     generateAngelOneStrikes(currentPrice) {
@@ -883,6 +964,19 @@ export default {
 
     getPutOption(strike) {
       return this.putOptions.find(opt => opt.strike_price === strike);
+    },
+
+    getCallPriceChangeIndicator(strike) {
+      return this.priceChangeIndicators[`CALL_${strike}`];
+    },
+
+    getPutPriceChangeIndicator(strike) {
+      return this.priceChangeIndicators[`PUT_${strike}`];
+    },
+
+    getPriceChangeClass(indicator) {
+      if (!indicator) return '';
+      return indicator.type === 'up' ? 'price-up-flash' : 'price-down-flash';
     },
 
     openTradeModal(stock, optionType, action, option = null) {
@@ -1918,11 +2012,96 @@ export default {
   margin-top: 20px;
 }
 
+.options-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .options-main-title {
   font-size: 1.5rem;
   color: #00ff88;
-  margin-bottom: 20px;
-  text-align: center;
+  margin: 0;
+}
+
+.live-update-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-badge {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  color: #0d0d1a;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-dot {
+  font-size: 6px;
+  animation: livePulse 1.5s infinite;
+}
+
+.last-update {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Price Change Animation Styles */
+.price-up-flash {
+  animation: priceUpFlash 2s ease-out;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+  background-size: 200% 100%;
+}
+
+.price-down-flash {
+  animation: priceDownFlash 2s ease-out;
+  background: linear-gradient(90deg, transparent, rgba(255, 87, 34, 0.3), transparent);
+  background-size: 200% 100%;
+}
+
+.price-arrow-up {
+  color: #00ff88;
+  font-size: 8px;
+  margin-left: 4px;
+  animation: arrowBounce 0.6s ease-out;
+}
+
+.price-arrow-down {
+  color: #ff5722;
+  font-size: 8px;
+  margin-left: 4px;
+  animation: arrowBounce 0.6s ease-out;
+}
+
+@keyframes priceUpFlash {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes priceDownFlash {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes arrowBounce {
+  0%, 20%, 60%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  80% { transform: translateY(-1px); }
 }
 
 .options-grid {

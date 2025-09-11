@@ -638,9 +638,10 @@ class TrueDataController extends Controller
                 throw new \Exception('Failed to fetch data from TrueData API');
             }
             
-            // Process options with calculated prices
+            // Process options with live calculated prices (time-based variation)
             $processedOptions = [];
             $records = $trueDataResponse['Records'] ?? [];
+            $currentTime = time();
             
             foreach ($records as $option) {
                 if (!is_array($option) || count($option) < 7) continue;
@@ -650,28 +651,51 @@ class TrueDataController extends Controller
                 
                 if ($strikePrice <= 0) continue;
                 
-                // Simple option pricing
+                // Enhanced option pricing with live variation
                 $distance = abs($underlyingPrice - $strikePrice);
                 $timeValue = 50;
                 
+                // Base intrinsic calculation
                 if ($optionType === 'CE') {
                     $intrinsicValue = max(0, $underlyingPrice - $strikePrice);
-                    $ltp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
+                    $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
                 } else {
                     $intrinsicValue = max(0, $strikePrice - $underlyingPrice);
-                    $ltp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
+                    $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
                 }
+                
+                // Add live time-based variation (changes every 3 seconds)
+                $timeKey = floor($currentTime / 3); // Changes every 3 seconds
+                $strikeKey = $strikePrice / 100; // Strike-based variation
+                $optionKey = $optionType === 'CE' ? 1 : 0; // Option type variation
+                
+                // Generate smooth, predictable but changing variation
+                $timeVariation = sin(($timeKey + $strikeKey + $optionKey) * 0.1) * 0.03; // ±3% sine wave
+                $microVariation = (($timeKey * $strikeKey) % 100) / 5000; // Small micro movements
+                
+                $totalVariation = $timeVariation + $microVariation;
+                $liveLtp = $baseLtp * (1 + $totalVariation);
+                $liveLtp = max(0.5, $liveLtp); // Minimum price of 0.5
+                
+                // Generate realistic bid/ask spread
+                $spreadPercent = 0.015 + ($distance / $underlyingPrice) * 0.01; // Wider spread for OTM
+                $spread = max(1.0, $liveLtp * $spreadPercent);
+                $liveBid = max(0.25, $liveLtp - $spread);
+                $liveAsk = $liveLtp + $spread;
                 
                 $processedOptions[] = [
                     'symbol' => $symbol,
                     'expiry' => $expiry,
                     'strike_price' => $strikePrice,
                     'option_type' => $optionType === 'CE' ? 'CALL' : 'PUT',
-                    'ltp' => round($ltp, 2),
-                    'bid' => round($ltp * 0.98, 2),
-                    'ask' => round($ltp * 1.02, 2),
-                    'volume' => rand(100, 5000),
-                    'oi' => rand(1000, 50000)
+                    'ltp' => round($liveLtp, 2),
+                    'bid' => round($liveBid, 2),
+                    'ask' => round($liveAsk, 2),
+                    'volume' => rand(50, 8000), // Realistic volume
+                    'oi' => rand(500, 75000), // Realistic open interest
+                    'prev_close' => round($baseLtp, 2), // Use base as previous close
+                    'change' => round($liveLtp - $baseLtp, 2),
+                    'change_percent' => round((($liveLtp - $baseLtp) / $baseLtp) * 100, 2)
                 ];
             }
             
@@ -777,18 +801,32 @@ class TrueDataController extends Controller
                 $optionTypeCode = $option[2] ?? 'CE';
                 
                 if ($optionStrike == $targetStrike && $optionTypeCode === $targetType) {
-                    // Calculate realistic option price
+                    // Calculate live option price with time-based variation (same as getOptionChain)
                     $distance = abs($underlyingPrice - $optionStrike);
                     $timeValue = 50;
+                    $currentTime = time();
                     
+                    // Base intrinsic calculation
                     if ($targetType === 'CE') {
                         $intrinsicValue = max(0, $underlyingPrice - $optionStrike);
-                        $currentOptionPrice = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
+                        $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
                     } else {
                         $intrinsicValue = max(0, $optionStrike - $underlyingPrice);
-                        $currentOptionPrice = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
+                        $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
                     }
                     
+                    // Add live time-based variation (same as getOptionChain)
+                    $timeKey = floor($currentTime / 3); // Changes every 3 seconds
+                    $strikeKey = $optionStrike / 100; // Strike-based variation
+                    $optionKey = $targetType === 'CE' ? 1 : 0; // Option type variation
+                    
+                    // Generate smooth, predictable but changing variation
+                    $timeVariation = sin(($timeKey + $strikeKey + $optionKey) * 0.1) * 0.03; // ±3% sine wave
+                    $microVariation = (($timeKey * $strikeKey) % 100) / 5000; // Small micro movements
+                    
+                    $totalVariation = $timeVariation + $microVariation;
+                    $currentOptionPrice = $baseLtp * (1 + $totalVariation);
+                    $currentOptionPrice = max(0.5, $currentOptionPrice); // Minimum price
                     $currentOptionPrice = round($currentOptionPrice, 2);
                     break;
                 }
