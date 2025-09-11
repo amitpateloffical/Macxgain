@@ -135,6 +135,10 @@
               <i class="fas fa-eye"></i>
               View Details
             </button>
+            <button class="action-btn orders-btn" @click="viewUserOrders(user)">
+              <i class="fas fa-list-alt"></i>
+              Orders
+            </button>
             <button class="action-btn trade-btn" @click="tradeWithUser(user)">
               <i class="fas fa-robot"></i>
               Trade with AI
@@ -548,6 +552,21 @@ export default {
       // Redirect to AI Trading Session page with user data
       this.$router.push({
         name: 'ai_trading_session',
+        query: { 
+          userId: user.id,
+          userName: user.name,
+          userBalance: user.total_balance,
+          userEmail: user.email
+        }
+      });
+    },
+    viewUserOrders(user) {
+      console.log('View orders for user:', user);
+      this.$toast?.success?.(`Loading orders for ${user.name}`);
+      
+      // Redirect to AI Trading Orders page with user data
+      this.$router.push({
+        name: 'ai_trading_orders',
         query: { 
           userId: user.id,
           userName: user.name,
@@ -1046,6 +1065,34 @@ export default {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.orders-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.orders-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.orders-btn:hover::before {
+  left: 100%;
+}
+
+.orders-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ee5a52 0%, #ff6b6b 100%);
 }
 
 .action-btn:hover:not(:disabled) {
