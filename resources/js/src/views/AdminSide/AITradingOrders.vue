@@ -207,13 +207,13 @@
                     </span>
                     <span class="invested-amount">Invested: ₹{{ trade.total_amount?.toLocaleString() }}</span>
                   </div>
-                  <div class="live-pnl" :class="getLivePnL(trade) >= 0 ? 'profit' : 'loss'">
+                  <div class="live-pnl" :class="getLivePnLValue(trade) >= 0 ? 'profit' : 'loss'">
                     <i class="fas fa-chart-line"></i>
-                    Live P&L: {{ getLivePnL(trade) >= 0 ? '+' : '' }}₹{{ (getLivePnL(trade) || 0).toFixed(2) }}
-                    <span class="pnl-percentage" v-if="getPnLPercentage(trade) !== 0">
-                      ({{ getPnLPercentage(trade) >= 0 ? '+' : '' }}{{ getPnLPercentage(trade).toFixed(2) }}%)
+                    Live P&L: {{ getLivePnLValue(trade) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(trade) || 0).toFixed(2) }}
+                    <span class="pnl-percentage" v-if="getLivePnLPercentage(trade) !== 0">
+                      ({{ getLivePnLPercentage(trade) >= 0 ? '+' : '' }}{{ getLivePnLPercentage(trade).toFixed(2) }}%)
                     </span>
-                    <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live updates every 5 seconds"></i>
+                    <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live updates every 3 seconds"></i>
                   </div>
                   <span class="trade-date">{{ formatDate(trade.created_at) }}</span>
                 </div>
@@ -327,18 +327,30 @@
                 {{ order.pnl >= 0 ? '+' : '' }}₹{{ order.pnl?.toLocaleString() }}
               </span>
             </div>
-            <div v-else-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
-              <span class="detail-label">P&L (Live):</span>
-              <span class="detail-value pnl live-pnl" :class="getLivePnLValue(order) >= 0 ? 'profit' : 'loss'">
-                {{ getLivePnLValue(order) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(order) || 0).toFixed(2) }}
-                <span class="live-indicator">●</span>
+            <div v-else-if="order.status === 'COMPLETED'" class="detail-row live-pnl-row">
+              <span class="detail-label">
+                <i class="fas fa-chart-line"></i>
+                Live P&L:
+              </span>
+              <span class="detail-value pnl live-pnl-value" :class="getLivePnLValue(order) >= 0 ? 'profit' : 'loss'">
+                <span class="pnl-amount">
+                  {{ getLivePnLValue(order) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(order) || 0).toFixed(2) }}
+                </span>
+                <span class="pnl-percentage" v-if="order.total_amount > 0">
+                  ({{ getLivePnLValue(order) >= 0 ? '+' : '' }}{{ ((getLivePnLValue(order) / order.total_amount) * 100).toFixed(2) }}%)
+                </span>
+                <span class="live-indicator" :class="marketStatus.is_open ? 'live' : 'offline'">
+                  <i class="fas fa-circle"></i>
+                  {{ marketStatus.is_open ? 'LIVE' : 'OFFLINE' }}
+                  <span class="update-time" v-if="lastUpdate">{{ lastUpdate }}</span>
+                </span>
               </span>
             </div>
             <!-- Current Option Price for active trades -->
             <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
               <span class="detail-label">Current Option Price:</span>
               <span class="detail-value current-price">
-                ₹{{ (getCurrentOptionPrice(order.strike_price, order.option_type, order.stock_symbol) || 0).toFixed(2) }}
+                ₹{{ formatPrice(getCurrentOptionPrice(order.strike_price, order.option_type, order.stock_symbol)) }}
               </span>
             </div>
             <!-- Current Stock Price for reference -->
@@ -602,10 +614,20 @@ export default {
     },
     async loadMarketStatus() {
       try {
-        const response = await axios.get('ai-trading/market-status');
+        const response = await axios.get('truedata/market-status');
 
-        if (response.data.success) {
-          this.marketStatus = response.data.data;
+        if (response.data.success && response.data.data) {
+          // Map the API response to our marketStatus object
+          const apiData = response.data.data;
+          this.marketStatus = {
+            is_open: apiData.status === 'OPEN' && apiData.is_live,
+            status: apiData.status,
+            current_time: apiData.current_time,
+            session: apiData.session,
+            next_change: apiData.next_change,
+            trading_hours: apiData.trading_hours
+          };
+          console.log('Market status loaded:', this.marketStatus);
         }
       } catch (error) {
         console.error('Error loading market status:', error);
@@ -625,9 +647,17 @@ export default {
         });
 
         if (response.data.success && response.data.data) {
+          const oldNiftyPrice = this.getCurrentPrice('NIFTY 50');
           this.liveStocks = response.data.data;
+          const newNiftyPrice = this.getCurrentPrice('NIFTY 50');
+          
           this.lastUpdate = new Date().toLocaleTimeString();
           console.log('Live market data loaded:', Object.keys(this.liveStocks).length, 'symbols');
+          
+          // Log price changes
+          if (oldNiftyPrice !== newNiftyPrice && oldNiftyPrice > 0) {
+            console.log(`NIFTY 50 price changed: ₹${oldNiftyPrice} → ₹${newNiftyPrice} (${newNiftyPrice > oldNiftyPrice ? '+' : ''}${(newNiftyPrice - oldNiftyPrice).toFixed(2)})`);
+          }
         }
       } catch (error) {
         console.error('Error loading live market data:', error);
@@ -645,18 +675,29 @@ export default {
       // P&L will be recalculated automatically through computed properties
     },
     startAutoRefresh() {
-      // Auto-refresh market data every 10 seconds for live P&L updates
-      console.log('Starting auto-refresh for live P&L updates...');
+      // Auto-refresh market data every 3 seconds for real-time P&L updates
+      console.log('Starting enhanced auto-refresh for live P&L updates...');
       this.autoRefreshInterval = setInterval(async () => {
         try {
-          // Only refresh market data to update live prices and P&L
+          // Refresh market data first
           await this.loadMarketData();
           await this.loadMarketStatus();
-          console.log('Live data refreshed for P&L calculation');
+          
+          // Clear cached P&L values to force recalculation
+          this.livePnLValues = {};
+          
+          // Recalculate live P&L values with fresh market data
+          await this.loadLivePnLValues();
+          
+          // Force reactivity update for computed properties
+          this.$forceUpdate();
+          
+          console.log('Live P&L data refreshed - Market:', this.marketStatus.is_open ? 'OPEN' : 'CLOSED');
+          console.log('Updated P&L cache:', Object.keys(this.livePnLValues).length, 'trades');
         } catch (error) {
-          console.error('Error in auto-refresh:', error);
+          console.error('Error in enhanced auto-refresh:', error);
         }
-      }, 5000); // 5 seconds interval for real-time updates
+      }, 3000); // 3 seconds interval for real-time updates
     },
     stopAutoRefresh() {
       if (this.autoRefreshInterval) {
@@ -679,29 +720,41 @@ export default {
       }
     },
     async getCurrentOptionPrice(strikePrice, optionType, stockSymbol = 'NIFTY 50') {
-      // Get current option price from backend API
+      // Get current option price with live underlying price
       try {
-        console.log(`Getting ${optionType} option price for strike ${strikePrice} of ${stockSymbol}`);
+        // Map symbol names for API compatibility
+        let apiSymbol = stockSymbol;
+        if (stockSymbol === 'NIFTY 50') {
+          apiSymbol = 'NIFTY';
+        } else if (stockSymbol === 'BANK NIFTY') {
+          apiSymbol = 'BANKNIFTY';
+        }
+        
+        // Get live underlying price from cached market data
+        const currentUnderlyingPrice = this.getCurrentPrice(stockSymbol);
+        
+        console.log(`Getting ${optionType} option price for strike ${strikePrice} of ${stockSymbol} (API: ${apiSymbol}) with underlying: ₹${currentUnderlyingPrice}`);
         
         const response = await axios.get('/api/truedata/options/current-price', {
           params: {
-            symbol: stockSymbol,
+            symbol: apiSymbol,
             strike_price: strikePrice,
-            option_type: optionType
+            option_type: optionType,
+            underlying_price: currentUnderlyingPrice // Pass live underlying price
           }
         });
         
         if (response.data.success && response.data.data) {
-          const price = response.data.data.current_price;
-          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price}`);
+          const price = parseFloat(response.data.data.current_price) || 0;
+          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price} (underlying: ₹${currentUnderlyingPrice})`);
           return price;
         } else {
           console.log(`No ${optionType} option price found for strike ${strikePrice}`);
-          return null;
+          return 0; // Return 0 instead of null to prevent .toFixed() errors
         }
       } catch (error) {
         console.error('Error getting current option price:', error);
-        return null;
+        return 0; // Return 0 instead of null to prevent .toFixed() errors
       }
     },
     getLivePnLValue(order) {
@@ -710,84 +763,47 @@ export default {
       return this.livePnLValues[orderId] || 0;
     },
     async loadLivePnLValues() {
-      // Load live P&L values for all active trades
+      // Load live P&L values for all active trades with enhanced error handling
       try {
         const activeTrades = this.userOrders.filter(order => order.status === 'COMPLETED');
+        console.log(`Calculating live P&L for ${activeTrades.length} active trades...`);
         
-        for (const trade of activeTrades) {
-          const livePnL = await this.getLivePnL(trade);
-          const orderId = trade.id || trade.order_id;
-          this.$set(this.livePnLValues, orderId, livePnL);
-        }
+        // Process trades in parallel for better performance
+        const pnlPromises = activeTrades.map(async (trade) => {
+          try {
+            const livePnL = await this.getLivePnL(trade);
+            const orderId = trade.id || trade.order_id;
+            
+            // Update with Vue's reactivity system (Vue 3 compatible)
+            this.$set ? this.$set(this.livePnLValues, orderId, livePnL) : (this.livePnLValues[orderId] = livePnL);
+            
+            console.log(`Trade #${orderId}: Live P&L = ₹${livePnL.toFixed(2)}`);
+            return { orderId, livePnL };
+          } catch (error) {
+            console.error(`Error calculating P&L for trade #${trade.id}:`, error);
+            return { orderId: trade.id, livePnL: 0 };
+          }
+        });
+        
+        await Promise.all(pnlPromises);
+        console.log('Live P&L values updated for all active trades');
+        console.log('Current livePnLValues cache:', this.livePnLValues);
+        
       } catch (error) {
         console.error('Error loading live P&L values:', error);
       }
     },
     calculateActiveTradesPnL() {
-      // Calculate P&L for active trades using live market prices
+      // Calculate total P&L for active trades using cached live P&L values
       try {
         let totalActivePnL = 0;
         
         this.activeTrades.forEach(trade => {
-          const currentPrice = this.getCurrentPrice(trade.stock_symbol);
-          if (currentPrice > 0) {
-            // Validate trade data
-            if (!trade || !trade.option_type || !trade.action || !trade.strike_price || !trade.quantity || !trade.total_amount) {
-              return;
-            }
-            
-            // For now, use intrinsic value calculation since we can't use await in forEach
-            // TODO: Implement async option price fetching in a different way
-            const currentOptionPrice = null; // Will use intrinsic value fallback
-            const entryPremium = trade.total_amount / trade.quantity;
-            
-            // Calculate P&L based on option type and action
-            let pnl = 0;
-            
-            if (currentOptionPrice !== null) {
-              // Use real option price for calculation
-              if (trade.action === 'BUY') {
-                // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
-                const pnlPerShare = currentOptionPrice - entryPremium;
-                pnl = pnlPerShare * trade.quantity;
-              } else if (trade.action === 'SELL') {
-                // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
-                const pnlPerShare = entryPremium - currentOptionPrice;
-                pnl = pnlPerShare * trade.quantity;
-              }
-            } else {
-              // Fallback to intrinsic value calculation
-              if (trade.option_type === 'CALL') {
-                if (trade.action === 'BUY') {
-                  const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-                  const grossPnL = intrinsicValue * trade.quantity;
-                  pnl = grossPnL - trade.total_amount;
-                } else if (trade.action === 'SELL') {
-                  const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-                  const grossPnL = intrinsicValue * trade.quantity;
-                  pnl = trade.total_amount - grossPnL;
-                }
-              } else if (trade.option_type === 'PUT') {
-                if (trade.action === 'BUY') {
-                  const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-                  const grossPnL = intrinsicValue * trade.quantity;
-                  pnl = grossPnL - trade.total_amount;
-                } else if (trade.action === 'SELL') {
-                  const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-                  const grossPnL = intrinsicValue * trade.quantity;
-                  pnl = trade.total_amount - grossPnL;
-                }
-              }
-            }
-            
-            // Ensure we add a valid number
-            const validPnL = parseFloat(pnl) || 0;
-            totalActivePnL += isNaN(validPnL) ? 0 : validPnL;
-          }
+          const livePnL = this.getLivePnLValue(trade);
+          totalActivePnL += livePnL;
         });
         
         return totalActivePnL;
-        
       } catch (error) {
         console.error('Error calculating active trades P&L:', error);
         return 0;
@@ -810,7 +826,7 @@ export default {
         
         let pnl = 0;
         
-        if (currentOptionPrice !== null) {
+        if (currentOptionPrice > 0) {
           // Use real option price for calculation
           if (trade.action === 'BUY') {
             // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
@@ -869,6 +885,20 @@ export default {
         return 0;
       }
     },
+    getLivePnLPercentage(trade) {
+      // Calculate live P&L percentage using cached values
+      try {
+        if (!trade || !trade.total_amount || trade.total_amount === 0) return 0;
+        
+        const livePnL = this.getLivePnLValue(trade);
+        const percentage = (livePnL / trade.total_amount) * 100;
+        
+        return isNaN(percentage) ? 0 : percentage;
+      } catch (error) {
+        console.error('Error calculating live P&L percentage:', error);
+        return 0;
+      }
+    },
     async refreshAllData() {
       this.loading = true;
       try {
@@ -884,17 +914,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-    startAutoRefresh() {
-      // Auto-refresh every 10 seconds when market is open
-      this.autoRefreshInterval = setInterval(() => {
-        if (this.marketStatus.is_open) {
-          this.loadMarketData();
-          // Only update live prices, don't reload orders to prevent page refresh
-          this.updateLivePrices();
-          this.loadLivePnLValues(); // Reload live P&L values
-        }
-      }, 5000); // 5 seconds for real-time updates
     },
     async exitTrade(orderId) {
       try {
@@ -924,6 +943,16 @@ export default {
     },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString('en-IN');
+    },
+    formatPrice(price) {
+      // Safe price formatting that handles null/undefined values
+      try {
+        const numPrice = parseFloat(price) || 0;
+        return numPrice.toFixed(2);
+      } catch (error) {
+        console.error('Error formatting price:', price, error);
+        return '0.00';
+      }
     },
     showSuccess(message) {
       // Use SweetAlert2 for success notifications
@@ -2414,6 +2443,96 @@ export default {
   font-size: 12px;
   margin-left: 4px;
   animation: pulse 2s infinite;
+}
+
+/* Enhanced Live P&L Row Styling */
+.live-pnl-row {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 8px;
+  padding: 12px !important;
+  margin: 8px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.live-pnl-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+.live-pnl-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+.pnl-amount {
+  font-size: 18px;
+  font-weight: 800;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.pnl-percentage {
+  font-size: 14px;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.live-indicator.live {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: livePulse 1.5s infinite;
+}
+
+.live-indicator.offline {
+  color: #ff5722;
+  background: rgba(255, 87, 34, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.update-time {
+  font-size: 8px;
+  opacity: 0.7;
+  margin-left: 4px;
+  font-weight: 400;
+  text-transform: none;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes livePulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.05);
+  }
 }
 
 @keyframes pulse {

@@ -738,14 +738,21 @@ class TrueDataController extends Controller
             
             // Get the full option chain and find the specific option
             $expiry = request()->query('expiry', '20250916'); // Default expiry
-            $underlyingPrice = 25000; // Default fallback
             
-            // Use a realistic underlying price for NIFTY/BANKNIFTY
-            if ($symbol === 'NIFTY') {
-                $underlyingPrice = 25000; // Realistic NIFTY price
-            } elseif ($symbol === 'BANKNIFTY') {
-                $underlyingPrice = 52000; // Realistic BANKNIFTY price
+            // Use live underlying price from frontend, fallback to defaults
+            $underlyingPrice = request()->query('underlying_price');
+            if (!$underlyingPrice || $underlyingPrice <= 0) {
+                // Fallback to realistic prices if not provided
+                if ($symbol === 'NIFTY') {
+                    $underlyingPrice = 25000; // Realistic NIFTY price
+                } elseif ($symbol === 'BANKNIFTY') {
+                    $underlyingPrice = 52000; // Realistic BANKNIFTY price
+                } else {
+                    $underlyingPrice = 25000; // Default fallback
+                }
             }
+            
+            Log::info("Using underlying price for {$symbol}: {$underlyingPrice}");
 
             // Fetch option chain from TrueData API
             $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial189&password=patel189&symbol={$symbol}&expiry={$expiry}";
