@@ -14,6 +14,26 @@ if [ ! -f "artisan" ]; then
     exit 1
 fi
 
+# Deploy real option prices update
+echo "🔄 Deploying real option prices update..."
+
+# Pull latest changes
+echo "📥 Pulling latest changes..."
+git pull origin main
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+composer install --no-dev --optimize-autoloader
+
+# Clear caches
+echo "🧹 Clearing caches..."
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+echo "✅ Real option prices deployment complete!"
+
 # Start Laravel development server
 echo "🌐 Starting Laravel development server..."
 php artisan serve --host=127.0.0.1 --port=8005 &
@@ -63,7 +83,8 @@ echo "   ⚙️  Queue Worker: Running (PID: $QUEUE_PID)"
 echo ""
 echo "🎯 Features:"
 echo "   📈 Live Market Data: Auto-refresh every 5 seconds"
-echo "   📊 Option Chain Data: Auto-refresh every 5 seconds"
+echo "   📊 Real Option Chain Data: NSE India Free API (1-2 min delayed)"
+echo "   💰 Accurate P&L Calculation: Based on real option prices"
 echo "   🔌 WebSocket Script: Auto-starts during market hours"
 echo "   ⏰ Market Hours: 9:15 AM - 3:30 PM IST (Monday to Friday)"
 echo ""
