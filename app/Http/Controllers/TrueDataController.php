@@ -705,7 +705,25 @@ class TrueDataController extends Controller
             // Use fixed underlying price for now (will be made dynamic later)
             $underlyingPrice = 25000;
 
-            // Fetch option chain from TrueData API using HTTP client with timeout to avoid hanging
+            // Try free option chain service first for real option prices
+            $freeService = app(\App\Services\FreeOptionChainService::class);
+            $freeResp = $freeService->getOptionChain($symbol);
+            if ($freeResp['success'] && !empty($freeResp['data'])) {
+                Log::info("Using free option chain service for real option prices");
+                return response()->json([
+                    'success' => true,
+                    'data' => $freeResp['data'],
+                    'symbol' => $symbol,
+                    'expiry' => $expiry,
+                    'underlying_price' => $underlyingPrice,
+                    'data_source' => $freeResp['source'] ?? 'Free API (1-2 min delayed)',
+                    'message' => 'Real option prices from free API',
+                    'total_options' => count($freeResp['data'])
+                ]);
+            }
+
+            // Fallback to TrueData API if NSE fails
+            Log::info("NSE failed, trying TrueData API");
             $trueDataUrl = "https://api.truedata.in/getOptionChain";
             $httpResponse = \Illuminate\Support\Facades\Http::timeout(10)->get($trueDataUrl, [
                 'user' => 'Trial189',
@@ -714,26 +732,12 @@ class TrueDataController extends Controller
                 'expiry' => $expiry,
             ]);
             if (!$httpResponse->successful()) {
-                throw new \Exception('TrueData API request failed with status ' . $httpResponse->status());
+                throw new \Exception('Both NSE and TrueData APIs failed');
             }
             $trueDataResponse = $httpResponse->json();
             
             if (!$trueDataResponse || $trueDataResponse['status'] !== 'Success') {
-                // Fallback to NSE free API (1-2 min delayed real prices)
-                $nse = app(\App\Services\NSEOptionChainService::class);
-                $nseResp = $nse->getOptionChain($symbol);
-                if ($nseResp['success']) {
-                    return response()->json([
-                        'success' => true,
-                        'data' => $nseResp['data'],
-                        'symbol' => $symbol,
-                        'expiry' => $expiry,
-                        'underlying_price' => $underlyingPrice,
-                        'data_source' => 'NSE Free API (1-2 min delayed)',
-                        'message' => 'Using NSE free API fallback'
-                    ]);
-                }
-                throw new \Exception('Failed to fetch data from TrueData API');
+                throw new \Exception('TrueData API returned no data');
             }
             
             // Process options with live/calculated/delayed prices
@@ -741,6 +745,7 @@ class TrueDataController extends Controller
             $records = $trueDataResponse['Records'] ?? [];
             $currentTime = time();
             
+            // Process TrueData records - only use real prices, skip if no real data
             foreach ($records as $option) {
                 if (!is_array($option) || count($option) < 7) continue;
                 
@@ -753,126 +758,42 @@ class TrueDataController extends Controller
                 if (abs($strikePrice - $underlyingPrice) > 1000) {
                     continue;
                 }
-                
+
                 // Extract real market prices from TrueData API response
-                // TrueData format: [id, symbol, type, ltp, exchange, ask, strike, expiry, oi_symbol, full_symbol, ...]
                 $realLtp = (float) ($option[3] ?? 0);      // Real LTP from market (index 3)
                 $realBid = (float) ($option[4] ?? 0);      // Real bid from market (index 4) 
                 $realAsk = (float) ($option[5] ?? 0);      // Real ask from market (index 5)
                 $realVolume = (int) ($option[10] ?? 0);    // Real volume from market (index 10)
                 $realOi = (int) ($option[14] ?? 0);        // Real open interest from market (index 14)
                 
-                // Use real market prices if available; otherwise fallback to calculated
+                // Only use real market prices - skip if no real data
                 if ($realLtp > 0) {
                     $ltp = $realLtp;
-                    $bid = $realBid > 0 ? $realBid : max(0.25, $ltp * 0.95); // Fallback bid if not available
-                    $ask = $realAsk > 0 ? $realAsk : $ltp * 1.05; // Fallback ask if not available
+                    $bid = $realBid > 0 ? $realBid : max(0.25, $ltp * 0.95);
+                    $ask = $realAsk > 0 ? $realAsk : $ltp * 1.05;
                     $volume = $realVolume;
                     $oi = $realOi;
                     
                     Log::info("Using real market prices for {$optionType} strike {$strikePrice}: LTP={$ltp}, Bid={$bid}, Ask={$ask}");
+                    
+                    $processedOptions[] = [
+                        'symbol' => $symbol,
+                        'expiry' => $expiry,
+                        'strike_price' => $strikePrice,
+                        'option_type' => $optionType === 'CE' ? 'CALL' : 'PUT',
+                        'ltp' => round($ltp, 2),
+                        'bid' => round($bid, 2),
+                        'ask' => round($ask, 2),
+                        'volume' => $volume,
+                        'oi' => $oi,
+                        'prev_close' => round($ltp * 0.98, 2),
+                        'change' => round($ltp * 0.02, 2),
+                        'change_percent' => round(2.0, 2),
+                        'data_source' => 'TrueData Real Market'
+                    ];
                 } else {
-                    // If TrueData lacks prices, fallback to NSE for this symbol entirely (faster and cleaner)
-                    $nse = app(\App\Services\NSEOptionChainService::class);
-                    $nseResp = $nse->getOptionChain($symbol);
-                    if ($nseResp['success']) {
-                        return response()->json([
-                            'success' => true,
-                            'data' => $nseResp['data'],
-                            'symbol' => $symbol,
-                            'expiry' => $expiry,
-                            'underlying_price' => $underlyingPrice,
-                            'data_source' => 'NSE Free API (1-2 min delayed)',
-                            'message' => 'Using NSE free API fallback'
-                        ]);
-                    }
-
-                    // Try local 1-minute delayed generation using market_data.json underlying
-                    $delayedUnderlying = $this->getUnderlyingFromMarketData($symbol);
-                    if ($delayedUnderlying !== null) {
-                        $distance = abs($delayedUnderlying - $strikePrice);
-                        $timeValue = 40; // smaller time value for delayed quotes
-                        if ($optionType === 'CE') {
-                            $intrinsicValue = max(0, $delayedUnderlying - $strikePrice);
-                            $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                        } else {
-                            $intrinsicValue = max(0, $strikePrice - $delayedUnderlying);
-                            $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                        }
-                        $ltp = max(0.5, round($baseLtp, 2));
-                        $bid = max(0.25, round($ltp * 0.98, 2));
-                        $ask = round($ltp * 1.02, 2);
-                        $volume = $realVolume;
-                        $oi = $realOi;
-                        $processedOptions[] = [
-                            'symbol' => $symbol,
-                            'expiry' => $expiry,
-                            'strike_price' => $strikePrice,
-                            'option_type' => $optionType === 'CE' ? 'CALL' : 'PUT',
-                            'ltp' => $ltp,
-                            'bid' => $bid,
-                            'ask' => $ask,
-                            'volume' => $volume,
-                            'oi' => $oi,
-                            'prev_close' => round($ltp * 0.98, 2),
-                            'change' => round($ltp - ($ltp * 0.98), 2),
-                            'change_percent' => round(2.0, 2),
-                            'data_source' => 'Local Cache (market_data.json) ~1m delayed'
-                        ];
-                        continue; // proceed to next record
-                    }
-
-                    // Fallback to calculated prices if real prices not available
-                    Log::warning("Real prices not available for {$optionType} strike {$strikePrice}, using calculated prices");
-                    
-                    $distance = abs($underlyingPrice - $strikePrice);
-                    $timeValue = 50;
-                    
-                    // Base intrinsic calculation
-                    if ($optionType === 'CE') {
-                        $intrinsicValue = max(0, $underlyingPrice - $strikePrice);
-                        $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                    } else {
-                        $intrinsicValue = max(0, $strikePrice - $underlyingPrice);
-                        $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                    }
-                    
-                    // Add live time-based variation (changes every 3 seconds)
-                    $timeKey = floor($currentTime / 3);
-                    $strikeKey = $strikePrice / 100;
-                    $optionKey = $optionType === 'CE' ? 1 : 0;
-                    
-                    $timeVariation = sin(($timeKey + $strikeKey + $optionKey) * 0.1) * 0.03;
-                    $microVariation = (($timeKey * $strikeKey) % 100) / 5000;
-                    
-                    $totalVariation = $timeVariation + $microVariation;
-                    $ltp = $baseLtp * (1 + $totalVariation);
-                    $ltp = max(0.5, $ltp);
-                    
-                    // Generate realistic bid/ask spread
-                    $spreadPercent = 0.015 + ($distance / $underlyingPrice) * 0.01;
-                    $spread = max(1.0, $ltp * $spreadPercent);
-                    $bid = max(0.25, $ltp - $spread);
-                    $ask = $ltp + $spread;
-                    $volume = rand(50, 8000);
-                    $oi = rand(500, 75000);
+                    Log::info("Skipping {$optionType} strike {$strikePrice} - no real price data available");
                 }
-                
-                $processedOptions[] = [
-                    'symbol' => $symbol,
-                    'expiry' => $expiry,
-                    'strike_price' => $strikePrice,
-                    'option_type' => $optionType === 'CE' ? 'CALL' : 'PUT',
-                    'ltp' => round($ltp, 2),
-                    'bid' => round($bid, 2),
-                    'ask' => round($ask, 2),
-                    'volume' => $volume,
-                    'oi' => $oi,
-                    'prev_close' => round($ltp * 0.98, 2), // Estimate previous close
-                    'change' => round($ltp * 0.02, 2), // Estimate change
-                    'change_percent' => round(2.0, 2), // Estimate change percent
-                    'data_source' => $realLtp > 0 ? 'TrueData Real Market' : 'TrueData Calculated'
-                ];
             }
             
             // Sort by strike price
@@ -961,109 +882,88 @@ class TrueDataController extends Controller
                 ], 400);
             }
             
-            // Get the full option chain and find the specific option
-            $expiry = request()->query('expiry', '20250916'); // Default expiry
-            
             // Use live underlying price from frontend, fallback to defaults
             $underlyingPrice = request()->query('underlying_price');
             if (!$underlyingPrice || $underlyingPrice <= 0) {
-                // Fallback to realistic prices if not provided
                 if ($symbol === 'NIFTY') {
-                    $underlyingPrice = 25000; // Realistic NIFTY price
+                    $underlyingPrice = 25000;
                 } elseif ($symbol === 'BANKNIFTY') {
-                    $underlyingPrice = 52000; // Realistic BANKNIFTY price
+                    $underlyingPrice = 52000;
                 } else {
-                    $underlyingPrice = 25000; // Default fallback
+                    $underlyingPrice = 25000;
                 }
             }
             
-            Log::info("Using underlying price for {$symbol}: {$underlyingPrice}");
-
-            // Fetch option chain from TrueData API
+            $targetStrike = (float) $strikePrice;
+            $targetType = strtoupper($optionType) === 'CALL' ? 'CALL' : 'PUT';
+            
+            // Try free option chain service first for real option prices
+            $freeService = app(\App\Services\FreeOptionChainService::class);
+            $freeResp = $freeService->getOptionChain($symbol);
+            if ($freeResp['success'] && !empty($freeResp['data'])) {
+                foreach ($freeResp['data'] as $option) {
+                    if ((float)$option['strike_price'] == $targetStrike && 
+                        strtoupper($option['option_type']) === $targetType) {
+                        $price = (float)($option['ltp'] ?? 0);
+                        if ($price > 0) {
+                            return response()->json([
+                                'success' => true,
+                                'data' => [
+                                    'symbol' => $symbol,
+                                    'strike_price' => $targetStrike,
+                                    'option_type' => strtoupper($optionType),
+                                    'current_price' => $price,
+                                    'underlying_price' => $underlyingPrice,
+                                    'timestamp' => now()->toISOString(),
+                                    'data_source' => $freeResp['source'] ?? 'Free API (1-2 min delayed)'
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+            
+            // Fallback to TrueData API
+            $expiry = request()->query('expiry', '20250916');
             $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial189&password=patel189&symbol={$symbol}&expiry={$expiry}";
             $rawResponse = file_get_contents($trueDataUrl);
             $trueDataResponse = json_decode($rawResponse, true);
             
-            if (!$trueDataResponse || $trueDataResponse['status'] !== 'Success') {
-                throw new \Exception('Failed to fetch data from TrueData API');
-            }
-            
-            // Find the specific option
-            $records = $trueDataResponse['Records'] ?? [];
-            $targetStrike = (float) $strikePrice;
-            $targetType = strtoupper($optionType) === 'CALL' ? 'CE' : 'PE';
-            
-            $currentOptionPrice = null;
-            
-            foreach ($records as $option) {
-                if (!is_array($option) || count($option) < 7) continue;
+            if ($trueDataResponse && $trueDataResponse['status'] === 'Success') {
+                $records = $trueDataResponse['Records'] ?? [];
+                $targetTypeCode = $targetType === 'CALL' ? 'CE' : 'PE';
                 
-                $optionStrike = (float) ($option[6] ?? 0);
-                $optionTypeCode = $option[2] ?? 'CE';
-                
-                if ($optionStrike == $targetStrike && $optionTypeCode === $targetType) {
-                    // Extract real market price from TrueData API response
-                    $realLtp = (float) ($option[3] ?? 0); // Real LTP from market (index 3)
-
-                    if ($realLtp > 0) {
-                        // Use real market price
-                        $currentOptionPrice = $realLtp;
-                        Log::info("Using real market price for {$targetType} strike {$targetStrike}: {$currentOptionPrice}");
-                    } else {
-                        if (!isset($currentOptionPrice)) {
-                            // Fallback to calculated price if nothing available
-                            Log::warning("Real or delayed price not available for {$targetType} strike {$targetStrike}, using calculated price");
-
-                            $distance = abs($underlyingPrice - $optionStrike);
-                            $timeValue = 50;
-                            $currentTime = time();
-                            
-                            // Base intrinsic calculation
-                            if ($targetType === 'CE') {
-                                $intrinsicValue = max(0, $underlyingPrice - $optionStrike);
-                                $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                            } else {
-                                $intrinsicValue = max(0, $optionStrike - $underlyingPrice);
-                                $baseLtp = $intrinsicValue + ($timeValue * exp(-$distance / 1000));
-                            }
-                            
-                            // Add live time-based variation
-                            $timeKey = floor($currentTime / 3);
-                            $strikeKey = $optionStrike / 100;
-                            $optionKey = $targetType === 'CE' ? 1 : 0;
-                            
-                            $timeVariation = sin(($timeKey + $strikeKey + $optionKey) * 0.1) * 0.03;
-                            $microVariation = (($timeKey * $strikeKey) % 100) / 5000;
-                            
-                            $totalVariation = $timeVariation + $microVariation;
-                            $currentOptionPrice = $baseLtp * (1 + $totalVariation);
-                            $currentOptionPrice = max(0.5, $currentOptionPrice);
+                foreach ($records as $option) {
+                    if (!is_array($option) || count($option) < 7) continue;
+                    
+                    $optionStrike = (float) ($option[6] ?? 0);
+                    $optionTypeCode = $option[2] ?? 'CE';
+                    
+                    if ($optionStrike == $targetStrike && $optionTypeCode === $targetTypeCode) {
+                        $realLtp = (float) ($option[3] ?? 0);
+                        if ($realLtp > 0) {
+                            return response()->json([
+                                'success' => true,
+                                'data' => [
+                                    'symbol' => $symbol,
+                                    'strike_price' => $targetStrike,
+                                    'option_type' => strtoupper($optionType),
+                                    'current_price' => $realLtp,
+                                    'underlying_price' => $underlyingPrice,
+                                    'timestamp' => now()->toISOString(),
+                                    'data_source' => 'TrueData Real Market'
+                                ]
+                            ]);
                         }
                     }
-
-                    $currentOptionPrice = round($currentOptionPrice, 2);
-                    break;
                 }
             }
             
-            if ($currentOptionPrice === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Option not found for the specified strike and type'
-                ], 404);
-            }
-            
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'symbol' => $symbol,
-                    'strike_price' => $targetStrike,
-                    'option_type' => strtoupper($optionType),
-                    'current_price' => $currentOptionPrice,
-                    'underlying_price' => $underlyingPrice,
-                    'timestamp' => now()->toISOString()
-                ]
-            ]);
+                'success' => false,
+                'message' => 'No real option price available for the specified strike and type'
+            ], 404);
+            
         } catch (\Exception $e) {
             Log::error('Get Current Option Price Error: ' . $e->getMessage());
             return response()->json([
