@@ -132,6 +132,33 @@ Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataF
 Route::get('/truedata/options/valid-symbols', [TrueDataController::class, 'getValidOptionSymbols']);
 Route::get('/truedata/options/chain/{symbol}', [TrueDataController::class, 'getOptionChain']);
 Route::get('/truedata/options/expiries/{symbol}', [TrueDataController::class, 'getOptionExpiries']);
+// Test route for debugging
+Route::get('/truedata/test', function() {
+    return response()->json(['success' => true, 'message' => 'Test route working']);
+});
+Route::get('/truedata/test-option/{symbol}', [TrueDataController::class, 'testOptionChain']);
+Route::get('/truedata/simple-option/{symbol}', function($symbol) {
+    try {
+        // Simple direct implementation
+        $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial189&password=patel189&symbol={$symbol}&expiry=20250916";
+        $rawResponse = file_get_contents($trueDataUrl);
+        $trueDataResponse = json_decode($rawResponse, true);
+        
+        return response()->json([
+            'success' => true,
+            'symbol' => $symbol,
+            'api_status' => $trueDataResponse['status'] ?? 'unknown',
+            'total_records' => count($trueDataResponse['Records'] ?? []),
+            'sample_record' => ($trueDataResponse['Records'][0] ?? null),
+            'data_source' => 'TrueData API Direct'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+});
 Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
 Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
 Route::get('/truedata/options/current-price', [TrueDataController::class, 'getCurrentOptionPrice']);

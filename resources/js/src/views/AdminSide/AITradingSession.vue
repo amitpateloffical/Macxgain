@@ -1033,6 +1033,7 @@ export default {
         if (response.data.success) {
           this.showSuccess(`Trade executed successfully! Order #${response.data.order_id}`);
           this.closeTradeModal();
+          this.closeStockOptions(); // Close the options trading popup
           this.loadUserOrders();
           // Refresh live user balance from database
           this.loadUserBalance();

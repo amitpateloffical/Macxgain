@@ -187,12 +187,18 @@
                 <div class="trade-pnl">
                   <div class="price-info">
                     <span class="current-price" v-if="getCurrentPrice(trade.stock_symbol) > 0">
+                      <i class="fas fa-circle live-dot" :class="marketStatus.is_open ? 'live' : 'offline'"></i>
                       Current: ₹{{ (getCurrentPrice(trade.stock_symbol) || 0).toFixed(2) }}
                     </span>
                     <span class="invested-amount">Invested: ₹{{ trade.total_amount?.toLocaleString() }}</span>
                   </div>
                   <div class="live-pnl" :class="getLivePnL(trade) >= 0 ? 'profit' : 'loss'">
+                    <i class="fas fa-chart-line"></i>
                     Live P&L: {{ getLivePnL(trade) >= 0 ? '+' : '' }}₹{{ (getLivePnL(trade) || 0).toFixed(2) }}
+                    <span class="pnl-percentage" v-if="getPnLPercentage(trade) !== 0">
+                      ({{ getPnLPercentage(trade) >= 0 ? '+' : '' }}{{ getPnLPercentage(trade).toFixed(2) }}%)
+                    </span>
+                    <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live updates every 5 seconds"></i>
                   </div>
                   <span class="trade-date">{{ formatDate(trade.created_at) }}</span>
                 </div>
@@ -201,7 +207,12 @@
             <div class="section-total">
               <span>Total Invested: ₹{{ totalActiveInvestment?.toLocaleString() }}</span>
               <span class="live-total-pnl" :class="calculateActiveTradesPnL() >= 0 ? 'profit' : 'loss'">
+                <i class="fas fa-chart-line"></i>
                 Live P&L: {{ calculateActiveTradesPnL() >= 0 ? '+' : '' }}₹{{ (calculateActiveTradesPnL() || 0).toFixed(2) }}
+                <span class="pnl-percentage" v-if="totalActiveInvestment > 0">
+                  ({{ calculateActiveTradesPnL() >= 0 ? '+' : '' }}{{ ((calculateActiveTradesPnL() / totalActiveInvestment) * 100).toFixed(2) }}%)
+                </span>
+                <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live portfolio updates"></i>
               </span>
             </div>
           </div>
@@ -621,7 +632,7 @@ export default {
         } catch (error) {
           console.error('Error in auto-refresh:', error);
         }
-      }, 10000); // 10 seconds interval
+      }, 5000); // 5 seconds interval for real-time updates
     },
     stopAutoRefresh() {
       if (this.autoRefreshInterval) {
@@ -820,6 +831,20 @@ export default {
         return 0;
       }
     },
+    getPnLPercentage(trade) {
+      // Calculate P&L percentage based on invested amount
+      try {
+        if (!trade || !trade.total_amount || trade.total_amount === 0) return 0;
+        
+        const livePnL = this.getLivePnL(trade);
+        const percentage = (livePnL / trade.total_amount) * 100;
+        
+        return isNaN(percentage) ? 0 : percentage;
+      } catch (error) {
+        console.error('Error calculating P&L percentage:', error);
+        return 0;
+      }
+    },
     async refreshAllData() {
       this.loading = true;
       try {
@@ -845,7 +870,7 @@ export default {
           this.updateLivePrices();
           this.loadLivePnLValues(); // Reload live P&L values
         }
-      }, 10000); // 10 seconds for faster updates
+      }, 5000); // 5 seconds for real-time updates
     },
     async exitTrade(orderId) {
       try {
@@ -2244,6 +2269,46 @@ export default {
   background: #ffebee;
   color: #c62828;
   border: 1px solid #f44336;
+}
+
+/* Live indicators and animations */
+.live-dot {
+  font-size: 8px;
+  margin-right: 5px;
+  animation: pulse 2s infinite;
+}
+
+.live-dot.live {
+  color: #4caf50;
+}
+
+.live-dot.offline {
+  color: #f44336;
+  animation: none;
+}
+
+.live-refresh {
+  margin-left: 8px;
+  font-size: 10px;
+  animation: spin 2s linear infinite;
+  color: #2196f3;
+}
+
+.pnl-percentage {
+  font-size: 12px;
+  margin-left: 5px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .detail-row .current-price {
