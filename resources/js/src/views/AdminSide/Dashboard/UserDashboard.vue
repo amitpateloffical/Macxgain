@@ -1,7 +1,7 @@
 <template>
   <div class="modern-dashboard">
     <!-- Dashboard Header -->
-    <div class="dashboard-header">
+    <!-- <div class="dashboard-header">
       <div class="header-content">
         <h1 class="dashboard-title">📊 Live Market Data</h1>
         <p class="dashboard-subtitle">Real-time stock prices from database ({{ totalSymbols }} symbols)</p>
@@ -28,10 +28,10 @@
           </span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Quick Stats Cards -->
-    <div class="stats-grid quick-stats">
+    <!-- <div class="stats-grid quick-stats">
       <div class="stat-card">
         <div class="stat-icon">
           <i class="fas fa-chart-line"></i>
@@ -75,7 +75,7 @@
           <p class="stat-description">Real-time data</p>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Live Market Data Section -->
     <div class="section-container">
