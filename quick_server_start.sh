@@ -25,8 +25,8 @@ echo "✅ WebSocket daemon started"
 
 # Start Laravel server
 echo "🌐 Starting Laravel server..."
-nohup php artisan serve --host=0.0.0.0 --port=8005 > logs/laravel.log 2>&1 &
-echo "✅ Laravel server started on port 8005"
+nohup php artisan serve --host=0.0.0.0 --port=8000 > logs/laravel.log 2>&1 &
+echo "✅ Laravel server started on port 8000"
 
 # Start queue worker
 echo "⚙️ Starting queue worker..."
@@ -60,7 +60,7 @@ fi
 
 # Test API endpoint
 echo "🧪 Testing API endpoint..."
-if curl -s http://localhost:8005/api/truedata/live-data | grep -q "success"; then
+if curl -s http://localhost:8000/api/truedata/live-data | grep -q "success"; then
     echo "✅ API endpoint: Working"
 else
     echo "❌ API endpoint: Not working"
@@ -68,9 +68,9 @@ fi
 
 echo ""
 echo "🎉 Macxgain Trading Platform is now running!"
-echo "📱 Access your application at: http://your-server-ip:8005"
-echo "📊 Admin panel: http://your-server-ip:8005/admin/stock-market"
-echo "🔗 API endpoint: http://your-server-ip:8005/api/truedata/live-data"
+echo "📱 Access your application at: http://your-server-ip:8000"
+echo "📊 Admin panel: http://your-server-ip:8000/admin/stock-market"
+echo "🔗 API endpoint: http://your-server-ip:8000/api/truedata/live-data"
 echo ""
 echo "📋 To monitor logs:"
 echo "   tail -f logs/daemon.log"

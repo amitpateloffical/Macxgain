@@ -75,10 +75,10 @@ echo "----------------------"
 if pgrep -f "php artisan serve" > /dev/null; then
     echo "✅ Laravel dev server: RUNNING"
     echo "📊 Server PID: $(pgrep -f 'php artisan serve')"
-    echo "🌐 Access URL: http://your-domain.com:8005"
+    echo "🌐 Access URL: http://your-domain.com:8000"
 else
     echo "❌ Laravel dev server: NOT RUNNING"
-    echo "💡 Start with: php artisan serve --host=0.0.0.0 --port=8005 > /dev/null 2>&1 &"
+    echo "💡 Start with: php artisan serve --host=0.0.0.0 --port=8000 > /dev/null 2>&1 &"
 fi
 
 echo ""
@@ -86,9 +86,9 @@ echo "📈 7. LIVE DATA STATUS"
 echo "---------------------"
 # Check if live data is available
 echo "🔍 Checking live data availability..."
-if curl -s http://localhost:8005/api/truedata/live-data > /dev/null 2>&1; then
+if curl -s http://localhost:8000/api/truedata/live-data > /dev/null 2>&1; then
     echo "✅ Live data API: ACCESSIBLE"
-    echo "📊 Data timestamp: $(curl -s http://localhost:8005/api/truedata/live-data | grep -o '"last_update":"[^"]*"' | head -1)"
+    echo "📊 Data timestamp: $(curl -s http://localhost:8000/api/truedata/live-data | grep -o '"last_update":"[^"]*"' | head -1)"
 else
     echo "❌ Live data API: NOT ACCESSIBLE"
     echo "💡 Check if Laravel server is running"
@@ -110,7 +110,7 @@ echo "🚀 9. QUICK START COMMANDS"
 echo "-------------------------"
 echo "To start all services:"
 echo "1. python3 truedata_websocket.py > /dev/null 2>&1 &"
-echo "2. php artisan serve --host=0.0.0.0 --port=8005 > /dev/null 2>&1 &"
+echo "2. php artisan serve --host=0.0.0.0 --port=8000 > /dev/null 2>&1 &"
 echo "3. php artisan queue:work > /dev/null 2>&1 &"
 echo ""
 echo "To check this status again:"

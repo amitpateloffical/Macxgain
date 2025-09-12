@@ -136,7 +136,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
 # Expose ports
-EXPOSE 8005 5179
+EXPOSE 8000 5173
 
 # Start with custom script
 CMD ["/usr/local/bin/start.sh"]

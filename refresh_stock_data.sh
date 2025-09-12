@@ -20,4 +20,4 @@ php artisan tinker --execute="echo 'Cache has data: ' . (Cache::has('truedata_li
 
 echo ""
 echo "✅ Stock market data refresh completed!"
-echo "🌐 You can now visit: http://127.0.0.1:8005/admin/stock-market"
+echo "🌐 You can now visit: http://127.0.0.1:8000/admin/stock-market"
