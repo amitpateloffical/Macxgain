@@ -9,6 +9,15 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
     },
+    build: {
+        manifest: true,
+        outDir: 'public/build',
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            }
+        }
+    },
     plugins: [
         vue(),
         laravel({
