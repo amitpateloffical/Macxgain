@@ -12,8 +12,8 @@ class TrueDataWebSocket:
         self.running = True
         self.ws = None
         self.realtime_port = 8086
-        self.username = 'Trial189'
-        self.password = 'patel189'
+        self.username = 'Trial110'
+        self.password = 'bikash110'
         
         # Signal handler for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)

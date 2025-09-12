@@ -726,8 +726,8 @@ class TrueDataController extends Controller
             Log::info("NSE failed, trying TrueData API");
             $trueDataUrl = "https://api.truedata.in/getOptionChain";
             $httpResponse = \Illuminate\Support\Facades\Http::timeout(10)->get($trueDataUrl, [
-                'user' => 'Trial189',
-                'password' => 'patel189',
+                'user' => 'Trial110',
+                'password' => 'bikash110',
                 'symbol' => $symbol,
                 'expiry' => $expiry,
             ]);
@@ -925,7 +925,7 @@ class TrueDataController extends Controller
             
             // Fallback to TrueData API
             $expiry = request()->query('expiry', '20250916');
-            $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial189&password=patel189&symbol={$symbol}&expiry={$expiry}";
+            $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial110&password=bikash110&symbol={$symbol}&expiry={$expiry}";
             $rawResponse = file_get_contents($trueDataUrl);
             $trueDataResponse = json_decode($rawResponse, true);
             

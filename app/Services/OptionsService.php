@@ -16,8 +16,8 @@ class OptionsService
 
     public function __construct()
     {
-        $this->username = 'Trial189';
-        $this->password = 'patel189';
+        $this->username = 'Trial110';
+        $this->password = 'bikash110';
         $this->baseUrl = 'https://api.truedata.in';
     }
 
