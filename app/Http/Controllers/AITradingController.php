@@ -67,6 +67,8 @@ class AITradingController extends Controller
                 'option_type' => 'required|string|in:CALL,PUT',
                 'action' => 'required|string|in:BUY,SELL',
                 'strike_price' => 'required|numeric|min:0.01',
+                'unit_price' => 'required|numeric|min:0.01',
+                'lot_size' => 'required|integer|min:1|max:1000',
                 'quantity' => 'required|integer|min:1|max:1000',
                 'total_amount' => 'required|numeric|min:0.01'
             ]);
@@ -84,6 +86,8 @@ class AITradingController extends Controller
             $optionType = $request->input('option_type');
             $action = $request->input('action');
             $strikePrice = $request->input('strike_price');
+            $unitPrice = $request->input('unit_price');
+            $lotSize = $request->input('lot_size');
             $quantity = $request->input('quantity');
             $totalAmount = $request->input('total_amount');
 
@@ -129,6 +133,8 @@ class AITradingController extends Controller
                     'option_type' => $optionType,
                     'action' => $action,
                     'strike_price' => $strikePrice,
+                    'unit_price' => $unitPrice,
+                    'lot_size' => $lotSize,
                     'quantity' => $quantity,
                     'total_amount' => $totalAmount,
                     'status' => 'COMPLETED',
@@ -172,6 +178,8 @@ class AITradingController extends Controller
                         'option_type' => $optionType,
                         'action' => $action,
                         'strike_price' => $strikePrice,
+                        'unit_price' => $unitPrice,
+                        'lot_size' => $lotSize,
                         'quantity' => $quantity,
                         'total_amount' => $totalAmount,
                         'status' => 'COMPLETED',
@@ -422,14 +430,28 @@ class AITradingController extends Controller
                 ], 404);
             }
 
-            // Get current market price for the stock
-            $currentPrice = $this->getCurrentMarketPrice($order->stock_symbol);
+            // Get exit unit price from request, or use current market price as fallback
+            $exitUnitPrice = $request->input('exit_unit_price');
+            $exitPrice = $request->input('exit_price');
             
-            if ($currentPrice === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unable to fetch current market price'
-                ], 400);
+            if ($exitUnitPrice && $exitPrice) {
+                // Use provided exit prices
+                $currentPrice = $exitPrice;
+                Log::info("Using provided exit prices", [
+                    'order_id' => $orderId,
+                    'exit_unit_price' => $exitUnitPrice,
+                    'exit_price' => $exitPrice
+                ]);
+            } else {
+                // Fallback to current market price
+                $currentPrice = $this->getCurrentMarketPrice($order->stock_symbol);
+                
+                if ($currentPrice === null) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unable to fetch current market price. Please provide exit unit price.'
+                    ], 400);
+                }
             }
 
             // Calculate P&L based on option type
@@ -458,7 +480,7 @@ class AITradingController extends Controller
 
                 // Calculate final balance: current total balance + P&L
                 $blockedAmount = $order->total_amount; // Amount that was blocked
-                $finalBalance = $currentTotalBalance + $pnl;
+                $finalBalance = $currentTotalBalance + $request->input('exit_price') * $order->quantity - $order->total_amount;
 
                 // Create wallet transaction for trade exit (unblock + P&L)
                 DB::table('wallet_transactions')->insert([

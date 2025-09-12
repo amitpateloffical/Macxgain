@@ -1149,9 +1149,10 @@ export default {
           option_type: this.tradeData.optionType,
           action: this.tradeData.action,
           strike_price: this.tradeData.strikePrice,
+          unit_price: this.getOptionPrice(), // Unit price per share
+          lot_size: this.getLotSize(this.tradeData.stock.symbol),
           quantity: this.tradeData.lots, // Send lots, not total shares
           total_amount: this.getTotalAmount(),
-          lot_size: this.getLotSize(this.tradeData.stock.symbol),
           total_shares: this.getTotalShares(),
           option_price: this.getOptionPrice()
         };

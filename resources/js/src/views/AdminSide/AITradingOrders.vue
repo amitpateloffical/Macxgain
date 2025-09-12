@@ -12,50 +12,17 @@
           <p class="page-subtitle">
             Orders for: <strong>{{ user.name || 'Loading...' }}</strong>
           </p>
-          <div class="balance-breakdown">
-            <div class="balance-item">
-              <span class="balance-label">Available Balance:</span>
-              <span class="balance-value available">₹{{ (user.balance || 0).toLocaleString() }}</span>
-            </div>
-            <div class="balance-item" v-if="user.total_balance">
-              <span class="balance-label">Total Balance:</span>
-              <span class="balance-value total">₹{{ (user.total_balance || 0).toLocaleString() }}</span>
-            </div>
-            <div class="balance-item" v-if="user.blocked_amount && user.blocked_amount > 0">
-              <span class="balance-label">Blocked in Trades:</span>
-              <span class="balance-value blocked">₹{{ (user.blocked_amount || 0).toLocaleString() }}</span>
-            </div>
-            <div class="balance-item" v-if="overallPnL !== 0">
-              <span class="balance-label">Live P&L:</span>
-              <span class="balance-value live-pnl" :class="overallPnL >= 0 ? 'profit' : 'loss'">
-                {{ overallPnL >= 0 ? '+' : '' }}₹{{ (overallPnL || 0).toLocaleString() }}
-              </span>
-            </div>
-          </div>
         </div>
-      </div>
-      <div class="header-actions">
-        <button class="refresh-btn" @click="refreshAllData" :disabled="loading">
-          <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-          {{ loading ? 'Loading...' : 'Refresh All' }}
-        </button>
-        <button class="refresh-btn" @click="loadUserBalance" :disabled="loading">
-          <i class="fas fa-wallet"></i>
-          Refresh Balance
-        </button>
       </div>
     </div>
 
-    <!-- Market Status -->
-    <div class="market-status">
-      <div class="status-indicator" :class="marketStatus.is_open ? 'open' : 'closed'">
-        <div class="status-dot"></div>
-        <span>{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
-        <span class="market-time">{{ marketStatus.current_time }} IST</span>
-      </div>
-      <div class="last-update">
-        Last Update: {{ lastUpdate || 'Never' }}
-      </div>
+    <!-- Debug Info -->
+    <div style="background: #333; color: white; padding: 10px; margin: 10px 0; border-radius: 5px;">
+      <strong>Debug Info:</strong><br>
+      Loading: {{ loading }}<br>
+      User Orders Length: {{ userOrders.length }}<br>
+      Filtered Orders Length: {{ filteredOrders.length }}<br>
+      User ID: {{ user.id }}
     </div>
 
     <!-- Orders Summary -->
@@ -80,160 +47,6 @@
       </div>
     </div>
 
-    <!-- P&L Analysis -->
-    <div class="pnl-analysis">
-      <div class="analysis-header">
-        <h2>📊 Profit & Loss Analysis</h2>
-        <div class="analysis-toggle">
-          <button 
-            class="toggle-btn" 
-            :class="{ active: showDetailedAnalysis }"
-            @click="showDetailedAnalysis = !showDetailedAnalysis"
-          >
-            <i class="fas fa-chart-line"></i>
-            {{ showDetailedAnalysis ? 'Hide Details' : 'Show Details' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Overall P&L Summary -->
-      <div class="pnl-summary">
-        <div class="pnl-card total-pnl" :class="overallPnL >= 0 ? 'profit' : 'loss'">
-          <div class="pnl-icon">
-            <i class="fas" :class="overallPnL >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
-          </div>
-          <div class="pnl-info">
-            <span class="pnl-label">Overall P&L</span>
-            <span class="pnl-value">
-              {{ overallPnL >= 0 ? '+' : '' }}₹{{ overallPnL?.toLocaleString() }}
-            </span>
-            <span class="pnl-percentage">
-              ({{ overallPnLPercentage >= 0 ? '+' : '' }}{{ overallPnLPercentage?.toFixed(2) }}%)
-            </span>
-          </div>
-        </div>
-
-        <div class="pnl-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total Invested</span>
-            <span class="stat-value">₹{{ totalInvested?.toLocaleString() }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Total Return</span>
-            <span class="stat-value">₹{{ totalReturn?.toLocaleString() }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Win Rate</span>
-            <span class="stat-value" :class="winRate >= 50 ? 'profit' : 'loss'">
-              {{ winRate?.toFixed(1) }}%
-            </span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Avg Profit per Trade</span>
-            <span class="stat-value" :class="avgProfitPerTrade >= 0 ? 'profit' : 'loss'">
-              {{ avgProfitPerTrade >= 0 ? '+' : '' }}₹{{ avgProfitPerTrade?.toLocaleString() }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detailed Analysis -->
-      <div v-if="showDetailedAnalysis" class="detailed-analysis">
-        <div class="analysis-grid">
-          <!-- Profit Trades -->
-          <div class="analysis-section profit-section">
-            <div class="section-header">
-              <i class="fas fa-trophy"></i>
-              <h3>Profitable Trades ({{ profitableTrades.length }})</h3>
-            </div>
-            <div class="trades-list">
-              <div v-for="trade in profitableTrades" :key="trade.id" class="trade-item profit">
-                <div class="trade-info">
-                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
-                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
-                </div>
-                <div class="trade-pnl">
-                  <span class="pnl-amount">+₹{{ trade.pnl?.toLocaleString() }}</span>
-                  <span class="trade-date">{{ formatDate(trade.closed_at || trade.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="section-total">
-              <span>Total Profit: +₹{{ totalProfit?.toLocaleString() }}</span>
-            </div>
-          </div>
-
-          <!-- Loss Trades -->
-          <div class="analysis-section loss-section">
-            <div class="section-header">
-              <i class="fas fa-chart-line-down"></i>
-              <h3>Loss Trades ({{ lossTrades.length }})</h3>
-            </div>
-            <div class="trades-list">
-              <div v-for="trade in lossTrades" :key="trade.id" class="trade-item loss">
-                <div class="trade-info">
-                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
-                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
-                </div>
-                <div class="trade-pnl">
-                  <span class="pnl-amount">{{ trade.pnl >= 0 ? '+' : '' }}₹{{ trade.pnl?.toLocaleString() }}</span>
-                  <span class="trade-date">{{ formatDate(trade.closed_at || trade.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="section-total">
-              <span>Total Loss: ₹{{ Math.abs(totalLoss)?.toLocaleString() }}</span>
-            </div>
-          </div>
-
-          <!-- Active Trades -->
-          <div class="analysis-section active-section">
-            <div class="section-header">
-              <i class="fas fa-clock"></i>
-              <h3>Active Trades ({{ activeTrades.length }})</h3>
-            </div>
-            <div class="trades-list">
-              <div v-for="trade in activeTrades" :key="trade.id" class="trade-item active">
-                <div class="trade-info">
-                  <span class="trade-symbol">{{ trade.stock_symbol }}</span>
-                  <span class="trade-type">{{ trade.option_type }} {{ trade.action }}</span>
-                  <span class="strike-price">Strike: ₹{{ trade.strike_price }}</span>
-                </div>
-                <div class="trade-pnl">
-                  <div class="price-info">
-                    <span class="current-price" v-if="getCurrentPrice(trade.stock_symbol) > 0">
-                      <i class="fas fa-circle live-dot" :class="marketStatus.is_open ? 'live' : 'offline'"></i>
-                      Current: ₹{{ (getCurrentPrice(trade.stock_symbol) || 0).toFixed(2) }}
-                    </span>
-                    <span class="invested-amount">Invested: ₹{{ trade.total_amount?.toLocaleString() }}</span>
-                  </div>
-                  <div class="live-pnl" :class="getLivePnLValue(trade) >= 0 ? 'profit' : 'loss'">
-                    <i class="fas fa-chart-line"></i>
-                    Live P&L: {{ getLivePnLValue(trade) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(trade) || 0).toFixed(2) }}
-                    <span class="pnl-percentage" v-if="getLivePnLPercentage(trade) !== 0">
-                      ({{ getLivePnLPercentage(trade) >= 0 ? '+' : '' }}{{ getLivePnLPercentage(trade).toFixed(2) }}%)
-                    </span>
-                    <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live updates every 3 seconds"></i>
-                  </div>
-                  <span class="trade-date">{{ formatDate(trade.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="section-total">
-              <span>Total Invested: ₹{{ totalActiveInvestment?.toLocaleString() }}</span>
-              <span class="live-total-pnl" :class="calculateActiveTradesPnL() >= 0 ? 'profit' : 'loss'">
-                <i class="fas fa-chart-line"></i>
-                Live P&L: {{ calculateActiveTradesPnL() >= 0 ? '+' : '' }}₹{{ (calculateActiveTradesPnL() || 0).toFixed(2) }}
-                <span class="pnl-percentage" v-if="totalActiveInvestment > 0">
-                  ({{ calculateActiveTradesPnL() >= 0 ? '+' : '' }}{{ ((calculateActiveTradesPnL() / totalActiveInvestment) * 100).toFixed(2) }}%)
-                </span>
-                <i class="fas fa-sync-alt live-refresh" v-if="marketStatus.is_open" title="Live portfolio updates"></i>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Orders List -->
     <div class="orders-container">
@@ -305,6 +118,14 @@
               <span class="detail-value">₹{{ order.strike_price }}</span>
             </div>
             <div class="detail-row">
+              <span class="detail-label">Unit Price:</span>
+              <span class="detail-value unit-price">₹{{ formatUnitPrice(order.unit_price) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Lot Size:</span>
+              <span class="detail-value lot-size">{{ formatLotSize(order.lot_size) }}</span>
+            </div>
+            <div class="detail-row">
               <span class="detail-label">Quantity:</span>
               <span class="detail-value">{{ order.quantity }}</span>
             </div>
@@ -318,54 +139,24 @@
             </div>
             <div v-if="order.exit_price" class="detail-row">
               <span class="detail-label">Exit Price:</span>
-              <span class="detail-value">₹{{ order.exit_price }}</span>
+              <span class="detail-value">₹{{ order.exit_price * order.quantity }}</span>
             </div>
-            <!-- P&L Display - Live for active trades, Final for closed trades -->
-            <div v-if="order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined" class="detail-row">
-              <span class="detail-label">P&L (Final):</span>
-              <span class="detail-value pnl" :class="order.pnl >= 0 ? 'profit' : 'loss'">
-                {{ order.pnl >= 0 ? '+' : '' }}₹{{ order.pnl?.toLocaleString() }}
-              </span>
-            </div>
-            <div v-else-if="order.status === 'COMPLETED'" class="detail-row live-pnl-row">
-              <span class="detail-label">
-                <i class="fas fa-chart-line"></i>
-                Live P&L:
-              </span>
-              <span class="detail-value pnl live-pnl-value" :class="getLivePnLValue(order) >= 0 ? 'profit' : 'loss'">
-                <span class="pnl-amount">
-                  {{ getLivePnLValue(order) >= 0 ? '+' : '' }}₹{{ (getLivePnLValue(order) || 0).toFixed(2) }}
-                </span>
-                <span class="pnl-percentage" v-if="order.total_amount > 0">
-                  ({{ getLivePnLValue(order) >= 0 ? '+' : '' }}{{ ((getLivePnLValue(order) / order.total_amount) * 100).toFixed(2) }}%)
-                </span>
-                <span class="live-indicator" :class="marketStatus.is_open ? 'live' : 'offline'">
-                  <i class="fas fa-circle"></i>
-                  {{ marketStatus.is_open ? 'LIVE' : 'OFFLINE' }}
-                  <span class="update-time" v-if="lastUpdate">{{ lastUpdate }}</span>
-                </span>
-              </span>
-            </div>
-            <!-- Current Option Price for active trades -->
-            <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
-              <span class="detail-label">Current Option Price:</span>
-              <span class="detail-value current-price">
-                ₹{{ formatPrice(getCurrentOptionPrice(order.strike_price, order.option_type, order.stock_symbol)) }}
-              </span>
-            </div>
-            <!-- Current Stock Price for reference -->
-            <div v-if="order.status === 'COMPLETED' && getCurrentPrice(order.stock_symbol) > 0" class="detail-row">
-              <span class="detail-label">Current Stock Price:</span>
-              <span class="detail-value current-price">
-                ₹{{ (getCurrentPrice(order.stock_symbol) || 0).toFixed(2) }}
-              </span>
-            </div>
+            <div v-if="order.exit_price && order.total_amount" class="detail-row">
+    <span class="detail-label">Profit / Loss:</span>
+    <span
+      class="detail-value"
+      :class="(order.exit_price * order.quantity - order.total_amount) >= 0 ? 'profit' : 'loss'"
+    >
+      {{ (order.exit_price * order.quantity - order.total_amount) >= 0 ? '+' : '-' }}
+      ₹{{ Math.abs(order.exit_price * order.quantity - order.total_amount).toLocaleString() }}
+    </span>
+  </div>
           </div>
 
           <div v-if="order.status === 'COMPLETED'" class="order-actions">
             <button 
               class="exit-trade-btn" 
-              @click="exitTrade(order.id)"
+              @click="openExitModal(order)"
               :disabled="exitingTrade === order.id"
               :title="'Exit trade - 24/7 trading enabled'"
             >
@@ -389,6 +180,103 @@
       </div>
     </div>
   </div>
+    <!-- Exit Trade Modal -->
+    <div v-if="showExitModal" class="modal-overlay" @click="closeExitModal">
+      <div class="exit-modal" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-sign-out-alt"></i>
+            Exit Trade
+          </h3>
+          <button class="close-btn" @click="closeExitModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="selectedOrder" class="exit-trade-info">
+            <div class="info-section">
+              <h4>Trade Details</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">Stock:</span>
+                  <span class="value">{{ selectedOrder.stock_symbol }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Option Type:</span>
+                  <span class="value">{{ selectedOrder.option_type }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Action:</span>
+                  <span class="value">{{ selectedOrder.action }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Strike Price:</span>
+                  <span class="value">₹{{ selectedOrder.strike_price }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Original Unit Price:</span>
+                  <span class="value">₹{{ formatUnitPrice(selectedOrder.unit_price) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Lot Size:</span>
+                  <span class="value">{{ formatLotSize(selectedOrder.lot_size) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Quantity:</span>
+                  <span class="value">{{ selectedOrder.quantity }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="exit-price-section">
+              <h4>Exit Price Details</h4>
+              <div class="form-group">
+                <label class="form-label">Exit Unit Price</label>
+                <div class="input-group">
+                  <span class="input-prefix">₹</span>
+                  <input
+                    type="number"
+                    v-model="exitForm.exitUnitPrice"
+                    class="form-input"
+                    step="0.01"
+                    min="0"
+                    placeholder="Enter exit unit price"
+                    @input="calculateExitPrice"
+                  />
+                </div>
+                <div class="input-hint">Original unit price: ₹{{ formatUnitPrice(selectedOrder.unit_price) }}</div>
+              </div>
+
+              <div class="calculated-price">
+                <div class="price-row">
+                  <span class="price-label">Exit Price (Unit Price × Lot Size):</span>
+                  <span class="price-value">₹{{ formatPrice(calculatedExitPrice) }}</span>
+                </div>
+                <div class="price-row">
+                  <span class="price-label">Total Exit Amount (Exit Price × Quantity):</span>
+                  <span class="price-value total">₹{{ formatPrice(totalExitAmount) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeExitModal">
+            Cancel
+          </button>
+          <button 
+            class="btn btn-primary" 
+            @click="confirmExitTrade"
+            :disabled="!exitForm.exitUnitPrice || exitForm.exitUnitPrice <= 0"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+            Exit Trade
+          </button>
+        </div>
+      </div>
+    </div>
 </template>
 
 <script>
@@ -405,17 +293,11 @@ export default {
       exitingTrade: null,
       statusFilter: '',
       sortBy: 'created_at',
-      showDetailedAnalysis: false,
-      liveStocks: {},
-      autoRefreshInterval: null,
-      marketStatus: {
-        is_open: false,
-        status: 'CLOSED',
-        current_time: '',
-        next_open_time: null
-      },
-      lastUpdate: null,
-      livePnLValues: {} // Store live P&L values for each order
+      showExitModal: false,
+      selectedOrder: null,
+      exitForm: {
+        exitUnitPrice: 0
+      }
     }
   },
   computed: {
@@ -445,80 +327,22 @@ export default {
       
       return orders;
     },
-    
-    // P&L Analysis Computed Properties
-    closedTrades() {
-      return this.userOrders.filter(order => order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined);
+    calculatedExitPrice() {
+      if (!this.selectedOrder || !this.exitForm.exitUnitPrice) {
+        return 0;
+      }
+      const unitPrice = Number(this.exitForm.exitUnitPrice);
+      const quantity = Number(this.selectedOrder.quantity);
+      const lotSize = Number(this.selectedOrder.lot_size) || 0;
+      return unitPrice * lotSize;
     },
-    
-    profitableTrades() {
-      return this.closedTrades.filter(trade => trade.pnl > 0);
-    },
-    
-    lossTrades() {
-      return this.closedTrades.filter(trade => trade.pnl < 0);
-    },
-    
-    activeTrades() {
-      return this.userOrders.filter(order => order.status === 'COMPLETED');
-    },
-    
-    totalProfit() {
-      return this.profitableTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || 0), 0);
-    },
-    
-    totalLoss() {
-      // Loss trades already have negative P&L, so we sum them as is
-      return this.lossTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || 0), 0);
-    },
-    
-    overallPnL() {
-      // Calculate P&L including live prices for active trades
-      const closedPnL = this.totalProfit + this.totalLoss;
-      const activePnL = this.calculateActiveTradesPnL();
-      return closedPnL + activePnL;
-    },
-    
-    totalInvested() {
-      // Only count completed trades (money actually invested)
-      return this.userOrders
-        .filter(order => order.status === 'COMPLETED' || order.status === 'CLOSED')
-        .reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-    },
-    
-    totalReturn() {
-      // Total return = Initial investment + P&L (including live prices for active trades)
-      return this.totalInvested + this.overallPnL;
-    },
-    
-    overallPnLPercentage() {
-      if (this.totalInvested === 0) return 0;
-      const percentage = (this.overallPnL / this.totalInvested) * 100;
-      return isNaN(percentage) ? 0 : percentage;
-    },
-    
-    winRate() {
-      const totalClosedTrades = this.closedTrades.length;
-      if (totalClosedTrades === 0) return 0;
-      return (this.profitableTrades.length / totalClosedTrades) * 100;
-    },
-    
-    avgProfitPerTrade() {
-      const totalClosedTrades = this.closedTrades.length;
-      if (totalClosedTrades === 0) return 0;
-      const average = this.overallPnL / totalClosedTrades;
-      return isNaN(average) ? 0 : average;
-    },
-    
-    totalActiveInvestment() {
-      return this.activeTrades.reduce((sum, trade) => sum + parseFloat(trade.total_amount || 0), 0);
-    },
-    
-    // Updated balance after P&L
-    updatedBalance() {
-      // Current balance + overall P&L from closed trades
-      return parseFloat(this.user.balance || 0) + this.overallPnL;
-    }
+    totalExitAmount() {
+      if (!this.selectedOrder) {
+        return 0;
+      }
+      const quantity = Number(this.selectedOrder.quantity) || 0;
+      return this.calculatedExitPrice * quantity;
+    }    
   },
   mounted() {
     try {
@@ -541,30 +365,72 @@ export default {
         return;
       }
       
-      // Load data sequentially to avoid race conditions
-      this.loadUserOrders().then(() => {
-        this.loadUserBalance();
-        this.loadMarketStatus();
-        this.loadMarketData();
-        
-        // Auto-refresh every 10 seconds
-        this.startAutoRefresh();
-      }).catch(error => {
-        console.error('Error in mounted lifecycle:', error);
-        this.showError('Failed to load initial data');
-      });
+      // Load user orders only
+      this.loadUserOrders();
       
     } catch (error) {
       console.error('Error in mounted lifecycle:', error);
       this.showError('Failed to initialize component');
     }
   },
-  beforeDestroy() {
-    // Clean up auto-refresh interval when component is destroyed
-    this.stopAutoRefresh();
-  },
   methods: {
-    goBack() {
+    formatUnitPrice(unitPrice) {
+      if (!unitPrice || unitPrice === null || unitPrice === undefined) {
+        return 'N/A';
+      }
+      const num = Number(unitPrice);
+      return isNaN(num) ? 'N/A' : num.toFixed(2);
+    },
+    formatLotSize(lotSize) {
+      if (!lotSize || lotSize === null || lotSize === undefined) {
+        return 'N/A';
+      }
+      const num = Number(lotSize);
+      return isNaN(num) ? 'N/A' : num.toString();
+    },
+    calculateExitPrice() {
+      // This will be called when exit unit price changes
+      // The computed properties will automatically update
+    },
+    openExitModal(order) {
+      this.selectedOrder = order;
+      this.exitForm.exitUnitPrice = Number(order.unit_price) || 0;
+      this.showExitModal = true;
+    },
+    closeExitModal() {
+      this.showExitModal = false;
+      this.selectedOrder = null;
+      this.exitForm.exitUnitPrice = 0;
+    },
+    async confirmExitTrade() {
+      if (!this.selectedOrder || !this.exitForm.exitUnitPrice) {
+        this.showError('Please enter a valid exit unit price');
+        return;
+      }
+
+      try {
+        this.exitingTrade = this.selectedOrder.id;
+        
+        const response = await axios.post(`ai-trading/orders/${this.selectedOrder.id}/exit`, {
+          exit_unit_price: this.exitForm.exitUnitPrice,
+          exit_price: this.calculatedExitPrice
+        });
+
+        if (response.data.success) {
+          this.showSuccess('Trade exited successfully');
+          await this.loadUserOrders();
+          await this.loadUserBalance();
+          this.closeExitModal();
+        } else {
+          this.showError(response.data.message || 'Failed to exit trade');
+        }
+      } catch (error) {
+        console.error('Error exiting trade:', error);
+        this.showError('Failed to exit trade');
+      } finally {
+        this.exitingTrade = null;
+      }
+    },    goBack() {
       this.$router.push({
         name: 'ai_trading_session',
         query: {
@@ -592,334 +458,13 @@ export default {
         this.loading = false;
       }
     },
-    async loadUserBalance() {
-      try {
-        const response = await axios.get(`ai-trading/user-balance/${this.user.id}`);
-
-        if (response.data.success) {
-          // Update all balance details
-          this.user.balance = response.data.balance; // Available balance
-          this.user.total_balance = response.data.total_balance; // Total wallet balance
-          this.user.blocked_amount = response.data.blocked_amount; // Amount blocked in trades
-          
-          console.log('Balance updated:', {
-            available: response.data.balance,
-            total: response.data.total_balance,
-            blocked: response.data.blocked_amount
-          });
-        }
-      } catch (error) {
-        console.error('Error loading user balance:', error);
-      }
-    },
-    async loadMarketStatus() {
-      try {
-        const response = await axios.get('truedata/market-status');
-
-        if (response.data.success && response.data.data) {
-          // Map the API response to our marketStatus object
-          const apiData = response.data.data;
-          this.marketStatus = {
-            is_open: apiData.status === 'OPEN' && apiData.is_live,
-            status: apiData.status,
-            current_time: apiData.current_time,
-            session: apiData.session,
-            next_change: apiData.next_change,
-            trading_hours: apiData.trading_hours
-          };
-          console.log('Market status loaded:', this.marketStatus);
-        }
-      } catch (error) {
-        console.error('Error loading market status:', error);
-        // Use default market status
-        this.marketStatus = {
-          is_open: false,
-          status: 'CLOSED',
-          current_time: new Date().toLocaleTimeString('en-IN'),
-          next_open_time: null
-        };
-      }
-    },
-    async loadMarketData() {
-      try {
-        const response = await axios.get('truedata/live-data', {
-          params: { _t: Date.now() } // Cache busting parameter
-        });
-
-        if (response.data.success && response.data.data) {
-          const oldNiftyPrice = this.getCurrentPrice('NIFTY 50');
-          this.liveStocks = response.data.data;
-          const newNiftyPrice = this.getCurrentPrice('NIFTY 50');
-          
-          this.lastUpdate = new Date().toLocaleTimeString();
-          console.log('Live market data loaded:', Object.keys(this.liveStocks).length, 'symbols');
-          
-          // Log price changes
-          if (oldNiftyPrice !== newNiftyPrice && oldNiftyPrice > 0) {
-            console.log(`NIFTY 50 price changed: ₹${oldNiftyPrice} → ₹${newNiftyPrice} (${newNiftyPrice > oldNiftyPrice ? '+' : ''}${(newNiftyPrice - oldNiftyPrice).toFixed(2)})`);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading live market data:', error);
-      }
-    },
-    async refreshMarketData() {
-      await this.loadMarketData();
-      this.showSuccess('Market data refreshed');
-    },
-    updateLivePrices() {
-      // Update live prices without reloading orders
-      // This method will be called by auto-refresh to update prices only
-      console.log('Updating live prices for active trades...');
-      // The liveStocks data is already updated by loadMarketData()
-      // P&L will be recalculated automatically through computed properties
-    },
-    startAutoRefresh() {
-      // Auto-refresh market data every 3 seconds for real-time P&L updates
-      console.log('Starting enhanced auto-refresh for live P&L updates...');
-      this.autoRefreshInterval = setInterval(async () => {
-        try {
-          // Refresh market data first
-          await this.loadMarketData();
-          await this.loadMarketStatus();
-          
-          // Clear cached P&L values to force recalculation
-          this.livePnLValues = {};
-          
-          // Recalculate live P&L values with fresh market data
-          await this.loadLivePnLValues();
-          
-          // Force reactivity update for computed properties
-          this.$forceUpdate();
-          
-          console.log('Live P&L data refreshed - Market:', this.marketStatus.is_open ? 'OPEN' : 'CLOSED');
-          console.log('Updated P&L cache:', Object.keys(this.livePnLValues).length, 'trades');
-        } catch (error) {
-          console.error('Error in enhanced auto-refresh:', error);
-        }
-      }, 3000); // 3 seconds interval for real-time updates
-    },
-    stopAutoRefresh() {
-      if (this.autoRefreshInterval) {
-        clearInterval(this.autoRefreshInterval);
-        this.autoRefreshInterval = null;
-        console.log('Auto-refresh stopped');
-      }
-    },
-    getCurrentPrice(symbol) {
-      // Get current market price for a symbol
-      try {
-        if (this.liveStocks && this.liveStocks[symbol] && this.liveStocks[symbol].ltp) {
-          const price = parseFloat(this.liveStocks[symbol].ltp);
-          return isNaN(price) ? 0 : price;
-        }
-        return 0;
-      } catch (error) {
-        console.error('Error getting current price for', symbol, ':', error);
-        return 0;
-      }
-    },
-    async getCurrentOptionPrice(strikePrice, optionType, stockSymbol = 'NIFTY 50') {
-      // Get current option price with live underlying price
-      try {
-        // Map symbol names for API compatibility
-        let apiSymbol = stockSymbol;
-        if (stockSymbol === 'NIFTY 50') {
-          apiSymbol = 'NIFTY';
-        } else if (stockSymbol === 'BANK NIFTY') {
-          apiSymbol = 'BANKNIFTY';
-        }
-        
-        // Get live underlying price from cached market data
-        const currentUnderlyingPrice = this.getCurrentPrice(stockSymbol);
-        
-        console.log(`Getting ${optionType} option price for strike ${strikePrice} of ${stockSymbol} (API: ${apiSymbol}) with underlying: ₹${currentUnderlyingPrice}`);
-        
-        const response = await axios.get('/api/truedata/options/current-price', {
-          params: {
-            symbol: apiSymbol,
-            strike_price: strikePrice,
-            option_type: optionType,
-            underlying_price: currentUnderlyingPrice // Pass live underlying price
-          }
-        });
-        
-        if (response.data.success && response.data.data) {
-          const price = parseFloat(response.data.data.current_price) || 0;
-          console.log(`Found ${optionType} option for strike ${strikePrice}: ₹${price} (underlying: ₹${currentUnderlyingPrice})`);
-          return price;
-        } else {
-          console.log(`No ${optionType} option price found for strike ${strikePrice}`);
-          return 0; // Return 0 instead of null to prevent .toFixed() errors
-        }
-      } catch (error) {
-        console.error('Error getting current option price:', error);
-        return 0; // Return 0 instead of null to prevent .toFixed() errors
-      }
-    },
-    getLivePnLValue(order) {
-      // Get cached live P&L value for an order
-      const orderId = order.id || order.order_id;
-      return this.livePnLValues[orderId] || 0;
-    },
-    async loadLivePnLValues() {
-      // Load live P&L values for all active trades with enhanced error handling
-      try {
-        const activeTrades = this.userOrders.filter(order => order.status === 'COMPLETED');
-        console.log(`Calculating live P&L for ${activeTrades.length} active trades...`);
-        
-        // Process trades in parallel for better performance
-        const pnlPromises = activeTrades.map(async (trade) => {
-          try {
-            const livePnL = await this.getLivePnL(trade);
-            const orderId = trade.id || trade.order_id;
-            
-            // Update with Vue's reactivity system (Vue 3 compatible)
-            this.$set ? this.$set(this.livePnLValues, orderId, livePnL) : (this.livePnLValues[orderId] = livePnL);
-            
-            console.log(`Trade #${orderId}: Live P&L = ₹${livePnL.toFixed(2)}`);
-            return { orderId, livePnL };
-          } catch (error) {
-            console.error(`Error calculating P&L for trade #${trade.id}:`, error);
-            return { orderId: trade.id, livePnL: 0 };
-          }
-        });
-        
-        await Promise.all(pnlPromises);
-        console.log('Live P&L values updated for all active trades');
-        console.log('Current livePnLValues cache:', this.livePnLValues);
-        
-      } catch (error) {
-        console.error('Error loading live P&L values:', error);
-      }
-    },
-    calculateActiveTradesPnL() {
-      // Calculate total P&L for active trades using cached live P&L values
-      try {
-        let totalActivePnL = 0;
-        
-        this.activeTrades.forEach(trade => {
-          const livePnL = this.getLivePnLValue(trade);
-          totalActivePnL += livePnL;
-        });
-        
-        return totalActivePnL;
-      } catch (error) {
-        console.error('Error calculating active trades P&L:', error);
-        return 0;
-      }
-    },
-    async getLivePnL(trade) {
-      // Calculate live P&L for a specific trade
-      try {
-        const currentPrice = this.getCurrentPrice(trade.stock_symbol);
-        if (currentPrice <= 0) {
-          console.warn(`Invalid current price for ${trade.stock_symbol}: ${currentPrice}`);
-          return 0;
-        }
-        
-        // Validate trade data
-        if (!trade || !trade.option_type || !trade.action || !trade.strike_price || !trade.quantity || !trade.total_amount) {
-          console.warn('Invalid trade data for P&L calculation:', trade);
-          return 0;
-        }
-        
-        // Get current option price from option chain data
-        const currentOptionPrice = await this.getCurrentOptionPrice(trade.strike_price, trade.option_type, trade.stock_symbol);
-        const entryPremium = trade.total_amount / trade.quantity;
-        
-        let pnl = 0;
-        let calculationMethod = '';
-        
-        if (currentOptionPrice > 0) {
-          // Use real option price for calculation
-          calculationMethod = 'real_option_price';
-          if (trade.action === 'BUY') {
-            // Bought option: P&L = (Current Option Price - Entry Premium) * Quantity
-            const pnlPerShare = currentOptionPrice - entryPremium;
-            pnl = pnlPerShare * trade.quantity;
-          } else if (trade.action === 'SELL') {
-            // Sold option: P&L = (Entry Premium - Current Option Price) * Quantity
-            const pnlPerShare = entryPremium - currentOptionPrice;
-            pnl = pnlPerShare * trade.quantity;
-          }
-          console.log(`📊 Live P&L using real option price: ${trade.option_type} ${trade.action} strike ${trade.strike_price}, entry: ₹${entryPremium}, current: ₹${currentOptionPrice}, P&L: ₹${pnl}`);
-        } else {
-          // Fallback to intrinsic value calculation
-          calculationMethod = 'intrinsic_value';
-          console.warn(`⚠️ Using intrinsic value for live P&L: ${trade.option_type} ${trade.action} strike ${trade.strike_price}`);
-          if (trade.option_type === 'CALL') {
-            if (trade.action === 'BUY') {
-              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-              const grossPnL = intrinsicValue * trade.quantity;
-              pnl = grossPnL - trade.total_amount;
-            } else if (trade.action === 'SELL') {
-              const intrinsicValue = Math.max(0, currentPrice - trade.strike_price);
-              const grossPnL = intrinsicValue * trade.quantity;
-              pnl = trade.total_amount - grossPnL;
-            }
-          } else if (trade.option_type === 'PUT') {
-            if (trade.action === 'BUY') {
-              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-              const grossPnL = intrinsicValue * trade.quantity;
-              pnl = grossPnL - trade.total_amount;
-            } else if (trade.action === 'SELL') {
-              const intrinsicValue = Math.max(0, trade.strike_price - currentPrice);
-              const grossPnL = intrinsicValue * trade.quantity;
-              pnl = trade.total_amount - grossPnL;
-            }
-          }
-        }
-        
-        // Ensure we return a valid number
-        const result = parseFloat(pnl) || 0;
-        return isNaN(result) ? 0 : result;
-        
-      } catch (error) {
-        console.error('Error calculating live P&L:', error);
-        return 0;
-      }
-    },
-    getPnLPercentage(trade) {
-      // Calculate P&L percentage based on invested amount
-      try {
-        if (!trade || !trade.total_amount || trade.total_amount === 0) return 0;
-        
-        const livePnL = this.getLivePnL(trade);
-        const percentage = (livePnL / trade.total_amount) * 100;
-        
-        return isNaN(percentage) ? 0 : percentage;
-      } catch (error) {
-        console.error('Error calculating P&L percentage:', error);
-        return 0;
-      }
-    },
-    getLivePnLPercentage(trade) {
-      // Calculate live P&L percentage using cached values
-      try {
-        if (!trade || !trade.total_amount || trade.total_amount === 0) return 0;
-        
-        const livePnL = this.getLivePnLValue(trade);
-        const percentage = (livePnL / trade.total_amount) * 100;
-        
-        return isNaN(percentage) ? 0 : percentage;
-      } catch (error) {
-        console.error('Error calculating live P&L percentage:', error);
-        return 0;
-      }
-    },
     async refreshAllData() {
       this.loading = true;
       try {
-        await Promise.all([
-          this.loadUserOrders(),
-          this.loadUserBalance(),
-          this.loadMarketStatus(),
-          this.loadMarketData()
-        ]);
-        this.showSuccess('All data refreshed successfully');
+        await this.loadUserOrders();
+        this.showSuccess('Data refreshed successfully');
       } catch (error) {
-        this.showError('Failed to refresh some data');
+        this.showError('Failed to refresh data');
       } finally {
         this.loading = false;
       }
@@ -1019,12 +564,6 @@ export default {
         case 'SELL': return 'fa-money-bill-wave';
         default: return 'fa-exchange-alt';
       }
-    }
-  },
-  beforeUnmount() {
-    // Cleanup auto-refresh interval
-    if (this.autoRefreshInterval) {
-      clearInterval(this.autoRefreshInterval);
     }
   }
 }
@@ -1754,6 +1293,16 @@ export default {
 .detail-value.amount {
   color: #00ff88;
   font-weight: bold;
+}
+
+.detail-value.unit-price {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+.detail-value.lot-size {
+  color: #ff9800;
+  font-weight: 600;
 }
 
 .detail-value.pnl.profit {
@@ -2576,4 +2125,252 @@ export default {
     padding: 6px 10px;
   }
 }
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .exit-modal {
+    background: #1a1a2e;
+    border: 1px solid rgba(0, 255, 128, 0.3);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-title {
+    margin: 0;
+    color: #00ff80;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .info-section h4 {
+    color: #00ff80;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .info-item .label {
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .info-item .value {
+    color: white;
+    font-weight: 600;
+  }
+
+  .exit-price-section h4 {
+    color: #00ff80;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    color: #ccc;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .input-prefix {
+    padding: 12px 15px;
+    background: rgba(0, 255, 128, 0.1);
+    color: #00ff80;
+    font-weight: 600;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .form-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: white;
+    padding: 12px 15px;
+    font-size: 16px;
+    outline: none;
+  }
+
+  .form-input:focus {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .input-hint {
+    color: #999;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+
+  .calculated-price {
+    background: rgba(0, 255, 128, 0.05);
+    border: 1px solid rgba(0, 255, 128, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .price-row:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .price-label {
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .price-value {
+    color: white;
+    font-weight: 600;
+  }
+
+  .price-value.total {
+    color: #00ff80;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff5252, #e53935);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .modal-footer {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .detail-value.profit {
+  color: green;
+  font-weight: bold;
+}
+.detail-value.loss {
+  color: red;
+  font-weight: bold;
+}
+
+  }
 </style>
