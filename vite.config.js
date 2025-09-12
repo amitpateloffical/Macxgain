@@ -10,7 +10,7 @@ export default defineConfig({
         port: 5173,
     },
     build: {
-        manifest: true,
+        manifest: 'manifest.json',
         outDir: 'public/build',
         rollupOptions: {
             output: {
