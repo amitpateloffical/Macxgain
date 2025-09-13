@@ -69,8 +69,8 @@ services:
       - "8080:80"
     environment:
       PMA_HOST: host.docker.internal
-      PMA_USER: macxgain
-      PMA_PASSWORD: macxgain123
+      PMA_USER: root
+      PMA_PASSWORD: root123
     networks:
       - macxgain-network
 

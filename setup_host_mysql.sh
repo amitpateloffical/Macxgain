@@ -15,18 +15,23 @@ echo "🚀 Starting MySQL service..."
 sudo systemctl start mysql
 sudo systemctl enable mysql
 
-# Secure MySQL installation
-echo "🔒 Securing MySQL installation..."
-sudo mysql_secure_installation
+# Set root password and secure MySQL
+echo "🔒 Setting MySQL root password..."
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root123';"
+sudo mysql -e "FLUSH PRIVILEGES;"
+
+# Secure MySQL installation (optional)
+echo "🔒 Securing MySQL installation (optional)..."
+echo "Note: Root password is already set to 'root123'"
 
 # Create database and user for Macxgain
 echo "👤 Creating Macxgain database and user..."
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS macxgain;"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
+mysql -u root -proot123 -e "CREATE DATABASE IF NOT EXISTS macxgain;"
+mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
+mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
+mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
+mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
+mysql -u root -proot123 -e "FLUSH PRIVILEGES;"
 
 # Configure MySQL to accept connections from Docker containers
 echo "🔧 Configuring MySQL for Docker access..."
@@ -54,7 +59,8 @@ echo "📁 Media Storage:"
 echo "   Path: /var/macxgain-data/"
 echo "   Directories: trading, uploads, profiles, screenshots, documents"
 echo ""
-echo "🔍 Test connection:"
-echo "   mysql -h localhost -u macxgain -p macxgain"
+echo "🔍 Test connections:"
+echo "   mysql -u root -proot123 macxgain        # Root user"
+echo "   mysql -h localhost -u macxgain -p macxgain  # App user"
 echo ""
 echo "🚀 Now run: docker-compose up --build"
