@@ -8,6 +8,7 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         port: 5173,
+        https: false,
     },
     build: {
         manifest: 'manifest.json',
@@ -16,7 +17,9 @@ export default defineConfig({
             output: {
                 manualChunks: undefined,
             }
-        }
+        },
+        // Ensure assets work with both HTTP and HTTPS
+        assetsInlineLimit: 0,
     },
     plugins: [
         vue(),

@@ -23,8 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS only if APP_URL starts with https
-        if (env('APP_ENV') === 'production' && str_starts_with(env('APP_URL', 'http://localhost'), 'https://')) {
+        // Force HTTPS for production domain or if running on HTTPS
+        $isHttpsRequest = request()->isSecure() || request()->header('x-forwarded-proto') === 'https';
+        $isProductionDomain = in_array(request()->getHost(), ['macxgain.com', 'www.macxgain.com']);
+        
+        if (env('APP_ENV') === 'production' && ($isHttpsRequest || $isProductionDomain)) {
             URL::forceScheme('https');
         }
         
