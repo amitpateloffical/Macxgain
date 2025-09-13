@@ -71,7 +71,7 @@ create_backup() {
     # Backup database (host MySQL)
     if systemctl is-active --quiet mysql; then
         print_status $YELLOW "📊 Backing up host MySQL database..."
-        mysqldump -h localhost -u root macxgain > "$backup_path/database.sql"
+        mysqldump -h localhost -u root -p"Kabirisgod@7354$" macxgain > "$backup_path/database.sql"
     else
         print_status $YELLOW "⚠️  Host MySQL not running, skipping database backup"
     fi
@@ -324,7 +324,7 @@ rollback() {
     # Restore database (host MySQL)
     if [ -f "$backup_path/database.sql" ]; then
         print_status $YELLOW "📊 Restoring host MySQL database..."
-        mysql -h localhost -u root macxgain < "$backup_path/database.sql"
+        mysql -h localhost -u root -p"Kabirisgod@7354$" macxgain < "$backup_path/database.sql"
     fi
     
     # Restore storage
