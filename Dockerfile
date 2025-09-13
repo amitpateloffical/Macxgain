@@ -36,7 +36,8 @@ RUN apt-get update && apt-get install -y \
 
 # Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
@@ -70,8 +71,10 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install Node.js dependencies
-RUN npm ci --only=production --silent
+# Install Node.js dependencies (including devDependencies for build)
+RUN npm --version && node --version \
+    && npm install --silent \
+    && echo "Node modules installed successfully"
 
 # Create Python virtual environment for better isolation  
 RUN python3 -m venv /opt/venv
@@ -88,8 +91,13 @@ RUN if [ -f requirements.txt ]; then \
 # Copy application files
 COPY . .
 
-# Build frontend assets
-RUN npm run build
+# Verify dependencies and build frontend assets
+RUN ls -la node_modules/laravel-vite-plugin || echo "laravel-vite-plugin not found" \
+    && npm run build
+
+# Remove devDependencies and clean npm cache to reduce image size
+RUN npm prune --production \
+    && npm cache clean --force
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
