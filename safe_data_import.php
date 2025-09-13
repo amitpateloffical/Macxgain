@@ -40,7 +40,17 @@ try {
     $count = 0;
     foreach ($jsonData as $symbol => $data) {
         try {
-            DB::table('market_data')->insert([
+            // Check if timestamp column exists
+            $columns = DB::select('DESCRIBE market_data');
+            $hasTimestamp = false;
+            foreach ($columns as $column) {
+                if ($column->Field === 'timestamp') {
+                    $hasTimestamp = true;
+                    break;
+                }
+            }
+            
+            $insertData = [
                 'symbol' => $symbol,
                 'ltp' => $data['ltp'] ?? 0,
                 'change' => $data['change'] ?? 0,
@@ -50,7 +60,6 @@ try {
                 'open' => $data['open'] ?? 0,
                 'prev_close' => $data['prev_close'] ?? 0,
                 'volume' => $data['volume'] ?? 0,
-                'timestamp' => $data['timestamp'] ?? now(),
                 'data_timestamp' => now(),
                 'data_source' => $data['data_source'] ?? 'TrueData Real WebSocket',
                 'raw_data' => json_encode($data),
@@ -58,7 +67,14 @@ try {
                 'market_status' => 'CLOSED',
                 'created_at' => now(),
                 'updated_at' => now()
-            ]);
+            ];
+            
+            // Only add timestamp if column exists
+            if ($hasTimestamp) {
+                $insertData['timestamp'] = $data['timestamp'] ?? now();
+            }
+            
+            DB::table('market_data')->insert($insertData);
             $count++;
         } catch (Exception $e) {
             echo "⚠️  Error importing $symbol: " . $e->getMessage() . "\n";
