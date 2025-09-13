@@ -68,10 +68,12 @@ create_backup() {
     
     mkdir -p "$backup_path"
     
-    # Backup database
-    if docker-compose ps mysql | grep -q "Up"; then
-        print_status $YELLOW "📊 Backing up database..."
-        docker-compose exec -T mysql mysqldump -u root -p"${MYSQL_ROOT_PASSWORD:-root123}" macxgain > "$backup_path/database.sql"
+    # Backup database (host MySQL)
+    if systemctl is-active --quiet mysql; then
+        print_status $YELLOW "📊 Backing up host MySQL database..."
+        mysqldump -h localhost -u macxgain -p"macxgain123" macxgain > "$backup_path/database.sql"
+    else
+        print_status $YELLOW "⚠️  Host MySQL not running, skipping database backup"
     fi
     
     # Backup storage
@@ -84,6 +86,12 @@ create_backup() {
     if [ -d "./public/files" ]; then
         print_status $YELLOW "📄 Backing up uploaded files..."
         cp -r ./public/files "$backup_path/"
+    fi
+    
+    # Backup user media from host volume
+    if [ -d "/var/macxgain-data" ]; then
+        print_status $YELLOW "📸 Backing up user media and trading data..."
+        cp -r /var/macxgain-data "$backup_path/"
     fi
     
     # Backup environment file
@@ -135,7 +143,7 @@ build_images() {
 run_migrations() {
     print_status $BLUE "🗄️  Running database migrations..."
     
-    # Wait for database to be ready
+    # Wait for database to be ready (host MySQL)
     local max_attempts=30
     local attempt=1
     
@@ -144,13 +152,14 @@ run_migrations() {
             break
         fi
         
-        print_status $YELLOW "⏳ Waiting for database... (attempt $attempt/$max_attempts)"
+        print_status $YELLOW "⏳ Waiting for host MySQL database... (attempt $attempt/$max_attempts)"
         sleep 2
         attempt=$((attempt + 1))
     done
     
     if [ $attempt -gt $max_attempts ]; then
-        print_status $RED "❌ Database connection failed after $max_attempts attempts"
+        print_status $RED "❌ Host MySQL connection failed after $max_attempts attempts"
+        print_status $YELLOW "💡 Make sure MySQL is running on host: sudo systemctl start mysql"
         exit 1
     fi
     
@@ -312,12 +321,10 @@ rollback() {
     # Stop current services
     docker-compose down
     
-    # Restore database
+    # Restore database (host MySQL)
     if [ -f "$backup_path/database.sql" ]; then
-        print_status $YELLOW "📊 Restoring database..."
-        docker-compose up -d mysql
-        sleep 10
-        docker-compose exec -T mysql mysql -u root -p"${MYSQL_ROOT_PASSWORD:-root123}" macxgain < "$backup_path/database.sql"
+        print_status $YELLOW "📊 Restoring host MySQL database..."
+        mysql -h localhost -u macxgain -p"macxgain123" macxgain < "$backup_path/database.sql"
     fi
     
     # Restore storage
@@ -332,6 +339,14 @@ rollback() {
         print_status $YELLOW "📄 Restoring uploaded files..."
         rm -rf ./public/files
         cp -r "$backup_path/files" ./public/
+    fi
+    
+    # Restore user media to host volume
+    if [ -d "$backup_path/macxgain-data" ]; then
+        print_status $YELLOW "📸 Restoring user media and trading data..."
+        sudo rm -rf /var/macxgain-data
+        sudo cp -r "$backup_path/macxgain-data" /var/
+        sudo chown -R 33:33 /var/macxgain-data
     fi
     
     # Restore environment

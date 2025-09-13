@@ -1,8 +1,8 @@
-# Use PHP 8.2 with Apache as base image
-FROM php:8.2-apache
+# Use PHP 8.2 FPM as base image
+FROM php:8.2-fpm
 
 # Set environment variables
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+ENV DOCUMENT_ROOT=/var/www/html/public
 ENV PHP_MEMORY_LIMIT=1024M
 ENV PHP_MAX_EXECUTION_TIME=300
 ENV NODE_VERSION=20
@@ -11,11 +11,13 @@ ENV PYTHON_VERSION=3.11
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies and Python
+# Install system dependencies, Nginx and Python
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     wget \
+    nginx \
+    supervisor \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -71,12 +73,16 @@ COPY package.json package-lock.json ./
 # Install Node.js dependencies
 RUN npm ci --only=production --silent
 
-# Copy Python requirements and install Python dependencies
+# Create Python virtual environment for better isolation  
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy Python requirements and install in virtual environment
 COPY requirements.txt* ./
 RUN if [ -f requirements.txt ]; then \
-        pip3 install --no-cache-dir -r requirements.txt; \
+        /opt/venv/bin/pip install --no-cache-dir -r requirements.txt; \
     else \
-        pip3 install --no-cache-dir websocket-client requests; \
+        /opt/venv/bin/pip install --no-cache-dir websocket-client requests; \
     fi
 
 # Copy application files
@@ -92,11 +98,17 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod +x truedata*.py \
     && chmod +x *.sh
 
-# Copy Apache configuration
-COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+# Create Nginx configuration
+RUN rm -f /etc/nginx/sites-enabled/default
+COPY docker/nginx.conf /etc/nginx/sites-available/default
+RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-# Enable Apache modules
-RUN a2enmod rewrite headers ssl
+# Copy PHP-FPM configuration
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Create PHP session directory
+RUN mkdir -p /var/lib/php/sessions \
+    && chown -R www-data:www-data /var/lib/php/sessions
 
 # Create .env file if it doesn't exist
 RUN if [ -f .env.example ]; then cp .env.example .env; fi
@@ -107,19 +119,8 @@ RUN if [ -f .env ]; then php artisan key:generate --no-interaction; fi
 # Run composer scripts after copying all files
 RUN composer run-script post-autoload-dump
 
-# Create Python virtual environment for better isolation
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Python dependencies in virtual environment
-RUN if [ -f requirements.txt ]; then \
-        /opt/venv/bin/pip install --no-cache-dir -r requirements.txt; \
-    else \
-        /opt/venv/bin/pip install --no-cache-dir websocket-client requests; \
-    fi
-
 # Create directories for logs and cache
-RUN mkdir -p /var/log/websocket /var/log/scheduler /var/log/truedata \
+RUN mkdir -p /var/log/websocket /var/log/scheduler /var/log/truedata /var/log/supervisor /var/log/nginx \
     && mkdir -p /var/cache/laravel /var/cache/redis \
     && chown -R www-data:www-data /var/log /var/cache
 
@@ -135,8 +136,11 @@ RUN chmod +x /usr/local/bin/keep_websocket_alive.sh
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
-# Expose ports
-EXPOSE 8000 5173
+# Create supervisor configuration
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Start with custom script
-CMD ["/usr/local/bin/start.sh"]
+# Expose ports
+EXPOSE 80 443 9000
+
+# Start with supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
