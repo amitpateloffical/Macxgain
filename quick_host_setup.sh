@@ -8,26 +8,17 @@ echo "=========================================="
 if command -v mysql >/dev/null 2>&1; then
     echo "✅ MySQL is already installed"
     
-    # Check if root password is set, if not set it
-    if mysql -u root -proot123 -e "SELECT 1;" 2>/dev/null; then
-        echo "✅ MySQL root password is set"
-    else
-        echo "🔒 Setting MySQL root password..."
-        sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root123';"
-        sudo mysql -e "FLUSH PRIVILEGES;"
-    fi
-    
     # Check if macxgain database exists
-    if mysql -u root -proot123 -e "USE macxgain;" 2>/dev/null; then
+    if mysql -u root -p"Kabirisgod@7354$" -e "USE macxgain;" 2>/dev/null; then
         echo "✅ Macxgain database exists"
     else
         echo "📊 Creating Macxgain database..."
-        mysql -u root -proot123 -e "CREATE DATABASE IF NOT EXISTS macxgain;"
-        mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
-        mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
-        mysql -u root -proot123 -e "FLUSH PRIVILEGES;"
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE DATABASE IF NOT EXISTS macxgain;"
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
+        mysql -u root -p"Kabirisgod@7354$" -e "FLUSH PRIVILEGES;"
     fi
 else
     echo "❌ MySQL not found. Running full setup..."
