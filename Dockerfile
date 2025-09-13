@@ -99,8 +99,11 @@ RUN ls -la node_modules/laravel-vite-plugin || echo "laravel-vite-plugin not fou
 RUN npm prune --production \
     && npm cache clean --force
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
+# Create required directories and set proper permissions
+RUN mkdir -p /var/www/html/storage/{app,framework,logs} \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/{cache,sessions,views} \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache \
     && chmod +x truedata*.py \

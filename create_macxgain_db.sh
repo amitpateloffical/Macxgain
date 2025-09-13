@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# Create Macxgain Database with Existing Root Password
-echo "📊 Creating Macxgain Database..."
+# Create Trading Database with Existing Root Password
+echo "📊 Creating Trading Database..."
 
 # Create database and user
 mysql -u root -p"Kabirisgod@7354$" << 'EOF'
-CREATE DATABASE IF NOT EXISTS macxgain;
+CREATE DATABASE IF NOT EXISTS trading;
 CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';
-GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';
+GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'%';
 CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';
-GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';
+GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 
 if [ $? -eq 0 ]; then
-    echo "✅ Macxgain database created successfully!"
+    echo "✅ Trading database created successfully!"
     
     # Configure MySQL for Docker access
     echo "🔧 Configuring MySQL for Docker containers..."

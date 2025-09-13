@@ -8,16 +8,16 @@ echo "=========================================="
 if command -v mysql >/dev/null 2>&1; then
     echo "✅ MySQL is already installed"
     
-    # Check if macxgain database exists
-    if mysql -u root -p"Kabirisgod@7354$" -e "USE macxgain;" 2>/dev/null; then
-        echo "✅ Macxgain database exists"
+    # Check if trading database exists
+    if mysql -u root -p"Kabirisgod@7354$" -e "USE trading;" 2>/dev/null; then
+        echo "✅ Trading database exists"
     else
-        echo "📊 Creating Macxgain database..."
-        mysql -u root -p"Kabirisgod@7354$" -e "CREATE DATABASE IF NOT EXISTS macxgain;"
+        echo "📊 Creating Trading database..."
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE DATABASE IF NOT EXISTS trading;"
         mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'%';"
         mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'localhost';"
         mysql -u root -p"Kabirisgod@7354$" -e "FLUSH PRIVILEGES;"
     fi
 else
