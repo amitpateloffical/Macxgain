@@ -204,6 +204,373 @@ class AITradingController extends Controller
     }
 
     /**
+     * Place a stock order (direct stock purchase/sale)
+     */
+    public function placeStockOrder(Request $request): JsonResponse
+    {
+        try {
+            // 24/7 Trading enabled for testing purposes
+            // Commented out market hours check
+            /*
+            if (!$this->isMarketOpen()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Trading is only allowed during market hours (9:15 AM - 3:30 PM IST, Monday-Friday)',
+                    'market_status' => 'CLOSED'
+                ], 400);
+            }
+            */
+
+            $validator = Validator::make($request->all(), [
+                'stock_symbol' => 'required|string|max:50',
+                'action' => 'required|string|in:BUY,SELL',
+                'quantity' => 'required|integer|min:1|max:10000',
+                'unit_price' => 'required|numeric|min:0.01',
+                'user_id' => 'required|integer|exists:users,id'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            $stockSymbol = $request->input('stock_symbol');
+            $action = $request->input('action');
+            $quantity = $request->input('quantity');
+            $unitPrice = $request->input('unit_price');
+            
+            // Calculate total amount from quantity * unit price
+            $totalAmount = $quantity * $unitPrice;
+            
+            // Validate calculated total amount
+            if ($totalAmount <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid total amount calculated. Please check quantity and unit price.'
+                ], 400);
+            }
+            
+            // Log the calculation for debugging
+            Log::info('Stock order calculation', [
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'calculated_total' => $totalAmount,
+                'stock_symbol' => $stockSymbol
+            ]);
+
+            // Get user ID from request (selected user)
+            $userId = $request->input('user_id');
+            
+            // Verify the authenticated user has permission to place orders for this user
+            $authenticatedUserId = auth()->id();
+            if (!$authenticatedUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+            
+            // Debug: Log the user IDs
+            Log::info('User IDs for stock order', [
+                'selected_user_id' => $userId,
+                'authenticated_user_id' => $authenticatedUserId
+            ]);
+
+            // Check user exists
+            $user = DB::table('users')->where('id', $userId)->first();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Get user's current balance from wallet transactions
+            $totalBalance = DB::table('wallet_transactions')
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->value('running_balance');
+
+            // If no wallet transactions exist, balance is 0
+            $totalBalance = $totalBalance ?? 0;
+            
+            // Debug: Check wallet transactions for this user
+            $walletTransactions = DB::table('wallet_transactions')
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            Log::info('Wallet transactions debug', [
+                'user_id' => $userId,
+                'total_balance_from_query' => $totalBalance,
+                'wallet_transactions_count' => $walletTransactions->count(),
+                'latest_transaction' => $walletTransactions->first(),
+                'all_transactions' => $walletTransactions->toArray()
+            ]);
+
+            // Calculate blocked amount from active trades
+            $blockedAmount = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED') // Active trades
+                ->sum('total_amount');
+
+            // Available balance = Total balance - Blocked amount
+            $availableBalance = ($totalBalance ?? 0) - ($blockedAmount ?? 0);
+
+            if ($availableBalance < $totalAmount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient available balance. Available: ₹' . number_format($availableBalance, 2) . ' (Total: ₹' . number_format($totalBalance ?? 0, 2) . ', Blocked: ₹' . number_format($blockedAmount ?? 0, 2) . ')'
+                ], 400);
+            }
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            try {
+                // Create stock order
+                $orderId = DB::table('ai_trading_orders')->insertGetId([
+                    'user_id' => $userId,
+                    'stock_symbol' => $stockSymbol,
+                    'option_type' => 'STOCK', // Mark as stock order
+                    'action' => $action,
+                    'strike_price' => 0, // No strike price for stocks
+                    'unit_price' => $unitPrice,
+                    'lot_size' => 1, // 1 share per lot for stocks
+                    'quantity' => $quantity,
+                    'total_amount' => $totalAmount,
+                    'status' => 'COMPLETED',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Create wallet transaction record (block amount - don't deduct from balance)
+                // Balance remains same, but amount is blocked for trading
+                DB::table('wallet_transactions')->insert([
+                    'user_id' => $userId,
+                    'transaction_code' => 'STOCK_ORDER_' . $orderId,
+                    'type' => 'block',
+                    'amount' => $totalAmount,
+                    'running_balance' => $totalBalance, // Balance stays same
+                    'remark' => "Stock Order: {$action} {$quantity} shares of {$stockSymbol} @ ₹{$unitPrice} (Amount: ₹{$totalAmount})",
+                    'approved_by' => $userId, // Self-approved for stock orders
+                    'approved_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                DB::commit();
+
+                Log::info("Stock order placed", [
+                    'order_id' => $orderId,
+                    'user_id' => $userId,
+                    'stock_symbol' => $stockSymbol,
+                    'action' => $action,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'total_amount' => $totalAmount
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Stock order placed successfully',
+                    'order_id' => $orderId,
+                    'data' => [
+                        'order_id' => $orderId,
+                        'stock_symbol' => $stockSymbol,
+                        'action' => $action,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_amount' => $totalAmount,
+                        'calculation' => "{$quantity} shares × ₹{$unitPrice} = ₹{$totalAmount}",
+                        'status' => 'COMPLETED',
+                        'created_at' => now()->toISOString()
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error placing stock order: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to place stock order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add initial funds for testing purposes
+     */
+    public function addInitialFunds(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'amount' => 'required|numeric|min:100|max:100000'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            $userId = auth()->id();
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $amount = $request->input('amount');
+
+            // Check if user already has wallet transactions
+            $existingTransaction = DB::table('wallet_transactions')
+                ->where('user_id', $userId)
+                ->exists();
+
+            if ($existingTransaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User already has wallet transactions. Use fund adjustment instead.'
+                ], 400);
+            }
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            try {
+                // Create initial wallet transaction
+                DB::table('wallet_transactions')->insert([
+                    'user_id' => $userId,
+                    'transaction_code' => 'INITIAL_FUNDS_' . time() . '_' . $userId,
+                    'type' => 'credit',
+                    'amount' => $amount,
+                    'running_balance' => $amount,
+                    'remark' => "Initial funds added for testing - ₹{$amount}",
+                    'approved_by' => $userId,
+                    'approved_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Note: User's total_balance is calculated dynamically from wallet_transactions
+                // No need to update users table as it's handled by the User model's getTotalBalanceAttribute()
+
+                DB::commit();
+
+                Log::info("Initial funds added", [
+                    'user_id' => $userId,
+                    'amount' => $amount
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Initial funds added successfully',
+                    'data' => [
+                        'amount' => $amount,
+                        'new_balance' => $amount
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error adding initial funds: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add initial funds',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Debug balance information
+     */
+    public function debugBalance(): JsonResponse
+    {
+        try {
+            $userId = auth()->id();
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Get all wallet transactions for this user
+            $walletTransactions = DB::table('wallet_transactions')
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Get user info
+            $user = DB::table('users')->where('id', $userId)->first();
+
+            // Get active trades
+            $activeTrades = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED')
+                ->get();
+
+            // Calculate balance using the same logic as placeStockOrder
+            $totalBalance = DB::table('wallet_transactions')
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->value('running_balance');
+            $totalBalance = $totalBalance ?? 0;
+
+            $blockedAmount = DB::table('ai_trading_orders')
+                ->where('user_id', $userId)
+                ->where('status', 'COMPLETED')
+                ->sum('total_amount');
+
+            $availableBalance = $totalBalance - $blockedAmount;
+
+            return response()->json([
+                'success' => true,
+                'debug_info' => [
+                    'user_id' => $userId,
+                    'user_info' => $user,
+                    'wallet_transactions_count' => $walletTransactions->count(),
+                    'wallet_transactions' => $walletTransactions->toArray(),
+                    'total_balance_from_wallet' => $totalBalance,
+                    'active_trades_count' => $activeTrades->count(),
+                    'active_trades' => $activeTrades->toArray(),
+                    'blocked_amount' => $blockedAmount,
+                    'available_balance' => $availableBalance,
+                    'calculation' => "Total: ₹{$totalBalance} - Blocked: ₹{$blockedAmount} = Available: ₹{$availableBalance}"
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in debug balance: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to debug balance',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get user's trading orders
      */
     public function getUserOrders($userId): JsonResponse
@@ -364,11 +731,20 @@ class AITradingController extends Controller
     public function getUserBalance($userId): JsonResponse
     {
         try {
+            // Debug: Log the user ID being used for balance check
+            Log::info('Getting balance for user', [
+                'requested_user_id' => $userId,
+                'authenticated_user_id' => auth()->id()
+            ]);
+            
             // Get total balance from all transactions
             $totalBalance = DB::table('wallet_transactions')
                 ->where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->value('running_balance');
+
+            // If no wallet transactions exist, balance is 0
+            $totalBalance = $totalBalance ?? 0;
 
             // Calculate blocked amount from active trades
             $blockedAmount = DB::table('ai_trading_orders')

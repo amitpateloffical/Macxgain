@@ -49,6 +49,14 @@
           <i class="fas fa-wallet"></i>
           Refresh Balance
         </button>
+        <button v-if="user.balance === 0" class="add-funds-btn" @click="addInitialFunds" :disabled="loading">
+          <i class="fas fa-plus"></i>
+          Add Initial Funds
+        </button>
+        <button class="debug-btn" @click="debugBalance" :disabled="loading">
+          <i class="fas fa-bug"></i>
+          Debug Balance
+        </button>
       </div>
     </div>
 
@@ -149,10 +157,14 @@
             </div>
           </div>
 
-          <!-- Click to View Options -->
-          <div class="click-hint">
+          <!-- Conditional Action Button -->
+          <div v-if="isNiftySymbol(stock.symbol)" class="click-hint">
             <i class="fas fa-mouse-pointer"></i>
             <span>Click to view Options Trading</span>
+          </div>
+          <div v-else class="buy-stock-button" @click.stop="buyStock(stock)">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Buy Stock</span>
           </div>
         </div>
       </div>
@@ -440,7 +452,116 @@
       </div>
     </div>
 
+    <!-- Stock Purchase Modal -->
+    <div v-if="showPurchaseModal" class="modal-overlay" @click="closePurchaseModal">
+      <div class="stock-purchase-modal" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-shopping-cart"></i>
+            {{ purchaseData.action }} Stock - {{ purchaseData.stock.symbol }}
+          </h3>
+          <button class="close-btn" @click="closePurchaseModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
 
+        <div class="modal-body">
+          <div class="purchase-info">
+            <div class="info-row">
+              <span>Stock Symbol:</span>
+              <span>{{ purchaseData.stock.symbol }}</span>
+            </div>
+            <div class="info-row">
+              <span>Current Price:</span>
+              <span>₹{{ purchaseData.stock.ltp?.toFixed(2) }}</span>
+            </div>
+            <div class="info-row">
+              <span>Action:</span>
+              <span class="action-badge buy">{{ purchaseData.action }}</span>
+            </div>
+            <div class="info-row">
+              <span>High:</span>
+              <span>₹{{ purchaseData.stock.high?.toFixed(2) }}</span>
+            </div>
+            <div class="info-row">
+              <span>Low:</span>
+              <span>₹{{ purchaseData.stock.low?.toFixed(2) }}</span>
+            </div>
+            <div class="info-row">
+              <span>Volume:</span>
+              <span>{{ purchaseData.stock.volume?.toLocaleString() }}</span>
+            </div>
+          </div>
+
+          <div class="quantity-section">
+            <label class="quantity-label">Quantity:</label>
+            <div class="quantity-controls">
+              <button class="qty-btn" @click="decreasePurchaseQuantity">-</button>
+              <input 
+                v-model.number="purchaseData.quantity" 
+                type="number" 
+                class="quantity-input"
+                min="1"
+                max="10000"
+                @input="updatePurchasePrice"
+              >
+              <button class="qty-btn" @click="increasePurchaseQuantity">+</button>
+            </div>
+            <div class="price-input-section">
+              <label class="price-label">Price per Share (₹):</label>
+              <input 
+                v-model.number="purchaseData.price" 
+                type="number" 
+                class="price-input"
+                :placeholder="purchaseData.stock.ltp?.toFixed(2)"
+                step="0.01"
+                min="0.01"
+                @input="updatePurchaseTotal"
+              >
+            </div>
+          </div>
+
+          <div class="purchase-summary">
+            <div class="summary-row">
+              <span>Quantity:</span>
+              <span>{{ purchaseData.quantity }} shares</span>
+            </div>
+            <div class="summary-row">
+              <span>Price per Share:</span>
+              <span>₹{{ purchaseData.price?.toFixed(2) || purchaseData.stock.ltp?.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Amount:</span>
+              <span class="total-amount">₹{{ getPurchaseTotalAmount().toLocaleString() }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Available Balance:</span>
+              <span>₹{{ user.balance?.toLocaleString() }}</span>
+            </div>
+            <div class="summary-row" :class="getPurchaseTotalAmount() > user.balance ? 'insufficient' : 'sufficient'">
+              <span>Status:</span>
+              <span>{{ getPurchaseTotalAmount() > user.balance ? 'Insufficient Balance' : 'Sufficient Balance' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closePurchaseModal">
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+          <button 
+            class="btn btn-primary"
+            @click="executePurchase"
+            :disabled="getPurchaseTotalAmount() > user.balance || purchaseData.quantity < 1"
+            :title="`Total: ₹${getPurchaseTotalAmount()}, Balance: ₹${user.balance}, Disabled: ${getPurchaseTotalAmount() > user.balance || purchaseData.quantity < 1}`"
+          >
+            <i class="fas fa-check-circle"></i>
+            Place Order
+          </button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -460,6 +581,7 @@ export default {
       searchQuery: '',
       sortBy: 'symbol',
       showTradeModal: false,
+      showPurchaseModal: false,
 
       userOrders: [],
       livePnLData: null,
@@ -485,6 +607,12 @@ export default {
         quantity: 1,
         lots: 1,
         option: null
+      },
+      purchaseData: {
+        stock: {},
+        action: 'BUY',
+        quantity: 1,
+        price: 0
       },
       selectedStock: null,
       callOptions: [],
@@ -574,6 +702,220 @@ export default {
     }
   },
   methods: {
+    // Check if symbol is NIFTY-related for options trading
+    isNiftySymbol(symbol) {
+      const niftySymbols = ['NIFTY 50', 'NIFTY', 'NIFTY BANK', 'BANKNIFTY', 'BANK NIFTY', 'NIFTY IT', 'FINNIFTY', 'NIFTY MIDCAP'];
+      return niftySymbols.includes(symbol);
+    },
+    
+    // Handle buy stock action
+    buyStock(stock) {
+      this.openPurchaseModal(stock);
+    },
+    
+    // Open stock purchase modal
+    openPurchaseModal(stock) {
+      this.purchaseData = {
+        stock: stock,
+        action: 'BUY',
+        quantity: 1,
+        price: stock.ltp || 0
+      };
+      this.showPurchaseModal = true;
+    },
+    
+    // Close stock purchase modal
+    closePurchaseModal() {
+      this.showPurchaseModal = false;
+      this.purchaseData = {
+        stock: {},
+        action: 'BUY',
+        quantity: 1,
+        price: 0
+      };
+    },
+    
+    // Purchase quantity controls
+    increasePurchaseQuantity() {
+      if (this.purchaseData.quantity < 10000) {
+        this.purchaseData.quantity++;
+        this.updatePurchaseTotal();
+      }
+    },
+    
+    decreasePurchaseQuantity() {
+      if (this.purchaseData.quantity > 1) {
+        this.purchaseData.quantity--;
+        this.updatePurchaseTotal();
+      }
+    },
+    
+    // Update purchase price when quantity changes
+    updatePurchasePrice() {
+      this.updatePurchaseTotal();
+    },
+    
+    // Update purchase total when price or quantity changes
+    updatePurchaseTotal() {
+      // This method is called when inputs change
+      // The getPurchaseTotalAmount() method will calculate the total
+    },
+    
+    // Get total amount for purchase
+    getPurchaseTotalAmount() {
+      const price = this.purchaseData.price || this.purchaseData.stock.ltp || 0;
+      const quantity = this.purchaseData.quantity || 1;
+      return price * quantity;
+    },
+    
+    // Execute stock purchase
+    async executePurchase() {
+      try {
+        console.log('Executing stock purchase...', this.purchaseData);
+        console.log('Current user ID:', this.user.id);
+        console.log('User object:', this.user);
+        
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          this.showError('Please login to place orders');
+          return;
+        }
+
+        const response = await axios.post('/api/ai-trading/place-stock-order', {
+          stock_symbol: this.purchaseData.stock.symbol,
+          action: this.purchaseData.action,
+          quantity: this.purchaseData.quantity,
+          unit_price: this.purchaseData.price || this.purchaseData.stock.ltp,
+          user_id: this.user.id
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.showSuccess(`Stock purchase order placed successfully!`);
+          this.closePurchaseModal();
+          this.loadUserOrders(); // Refresh orders
+          this.loadUserBalance(); // Refresh balance
+        } else {
+          this.showError(response.data.message || 'Failed to place order');
+        }
+      } catch (error) {
+        console.error('Purchase error:', error);
+        this.showError(error.response?.data?.message || 'Failed to place order');
+      }
+    },
+    
+    // Add initial funds for testing
+    async addInitialFunds() {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          this.showError('Please login to add funds');
+          return;
+        }
+
+        // Ask user for amount
+        const { value: amount } = await Swal.fire({
+          title: 'Add Initial Funds',
+          text: 'Enter the amount you want to add (₹100 - ₹100,000)',
+          input: 'number',
+          inputValue: 10000,
+          inputAttributes: {
+            min: 100,
+            max: 100000,
+            step: 100
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Add Funds',
+          cancelButtonText: 'Cancel',
+          inputValidator: (value) => {
+            if (!value) {
+              return 'Please enter an amount';
+            }
+            if (value < 100) {
+              return 'Minimum amount is ₹100';
+            }
+            if (value > 100000) {
+              return 'Maximum amount is ₹100,000';
+            }
+          }
+        });
+
+        if (!amount) return;
+
+        const response = await axios.post('/api/ai-trading/add-initial-funds', {
+          amount: parseFloat(amount)
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.showSuccess(`Initial funds of ₹${amount} added successfully!`);
+          this.loadUserBalance(); // Refresh balance
+        } else {
+          this.showError(response.data.message || 'Failed to add funds');
+        }
+      } catch (error) {
+        console.error('Error adding funds:', error);
+        this.showError(error.response?.data?.message || 'Failed to add funds');
+      }
+    },
+    
+    // Debug balance information
+    async debugBalance() {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          this.showError('Please login to debug balance');
+          return;
+        }
+
+        const response = await axios.get('/api/ai-trading/debug-balance', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          console.log('Debug Balance Info:', response.data.debug_info);
+          
+          // Show debug info in a modal
+          await Swal.fire({
+            title: 'Balance Debug Information',
+            html: `
+              <div style="text-align: left; font-family: monospace; font-size: 12px;">
+                <p><strong>User ID:</strong> ${response.data.debug_info.user_id}</p>
+                <p><strong>Wallet Transactions Count:</strong> ${response.data.debug_info.wallet_transactions_count}</p>
+                <p><strong>Total Balance from Wallet:</strong> ₹${response.data.debug_info.total_balance_from_wallet}</p>
+                <p><strong>Active Trades Count:</strong> ${response.data.debug_info.active_trades_count}</p>
+                <p><strong>Blocked Amount:</strong> ₹${response.data.debug_info.blocked_amount}</p>
+                <p><strong>Available Balance:</strong> ₹${response.data.debug_info.available_balance}</p>
+                <p><strong>Calculation:</strong> ${response.data.debug_info.calculation}</p>
+                <br>
+                <p><strong>Wallet Transactions:</strong></p>
+                <pre style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 5px;">${JSON.stringify(response.data.debug_info.wallet_transactions, null, 2)}</pre>
+              </div>
+            `,
+            width: '80%',
+            showConfirmButton: true,
+            confirmButtonText: 'Close'
+          });
+        } else {
+          this.showError(response.data.message || 'Failed to debug balance');
+        }
+      } catch (error) {
+        console.error('Error debugging balance:', error);
+        this.showError(error.response?.data?.message || 'Failed to debug balance');
+      }
+    },
+    
     handleKeyDown(event) {
       // Close modals on ESC key press
       if (event.key === 'Escape') {
@@ -582,6 +924,9 @@ export default {
         }
         if (this.showTradeModal) {
           this.closeTradeModal();
+        }
+        if (this.showPurchaseModal) {
+          this.closePurchaseModal();
         }
       }
     },
@@ -1227,6 +1572,7 @@ export default {
     async loadUserBalance(showToast = false) {
       try {
         console.log('Loading user balance for user ID:', this.user.id);
+        console.log('User object:', this.user);
         const token = localStorage.getItem('access_token');
         console.log('Token exists:', !!token);
         
@@ -1682,6 +2028,56 @@ export default {
   outline-offset: 2px;
 }
 
+.add-funds-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-funds-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+.add-funds-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.debug-btn {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.debug-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3);
+}
+
+.debug-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Market Status */
 .market-status {
   display: flex;
@@ -1992,6 +2388,33 @@ export default {
   font-size: 1rem;
 }
 
+.buy-stock-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  color: #ffc107;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.buy-stock-button:hover {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: rgba(255, 193, 7, 0.5);
+  transform: translateY(-1px);
+}
+
+.buy-stock-button i {
+  font-size: 1rem;
+}
+
 /* Stock Options Modal */
 .stock-options-modal {
   background: linear-gradient(145deg, #1a1a2e, #16213e);
@@ -2005,6 +2428,106 @@ export default {
   animation: modalSlideIn 0.3s ease-out;
   margin: 20px auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Stock Purchase Modal */
+.stock-purchase-modal {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+  margin: 20px auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Purchase Modal Specific Styles */
+.purchase-info {
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.price-input-section {
+  margin-top: 15px;
+}
+
+.price-label {
+  display: block;
+  color: #ffc107;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.price-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  color: #ffc107;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: rgba(255, 193, 7, 0.6);
+  background: rgba(255, 193, 7, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+.price-input::placeholder {
+  color: rgba(255, 193, 7, 0.6);
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.quantity-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  color: #ffc107;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: rgba(255, 193, 7, 0.6);
+  background: rgba(255, 193, 7, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+.purchase-summary {
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.action-badge.buy {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.4);
 }
 
 /* Modal Overlay */
@@ -3495,6 +4018,10 @@ export default {
   .stock-options-modal {
     max-width: 1200px;
   }
+  
+  .stock-purchase-modal {
+    max-width: 700px;
+  }
 }
 
 /* Desktop (1200px - 1399px) */
@@ -3505,6 +4032,10 @@ export default {
   
   .stock-options-modal {
     max-width: 1000px;
+  }
+  
+  .stock-purchase-modal {
+    max-width: 600px;
   }
 }
 
@@ -3528,6 +4059,10 @@ export default {
   
   .stock-options-modal {
     max-width: 900px;
+  }
+  
+  .stock-purchase-modal {
+    max-width: 550px;
   }
   
   .options-chain {
@@ -3618,6 +4153,15 @@ export default {
   }
   
   .stock-options-modal {
+    width: 95%;
+    max-width: none;
+    margin: 20px auto;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+  
+  .stock-purchase-modal {
     width: 95%;
     max-width: none;
     margin: 20px auto;
@@ -3812,6 +4356,11 @@ export default {
     padding: 4px 8px;
   }
   
+  .buy-stock-button {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
   .filters-section {
     flex-direction: column;
     align-items: stretch;
@@ -3850,6 +4399,14 @@ export default {
   
   /* Stock Options Modal */
   .stock-options-modal {
+    width: 98%;
+    max-width: none;
+    margin: 10px auto;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  
+  .stock-purchase-modal {
     width: 98%;
     max-width: none;
     margin: 10px auto;
@@ -4075,6 +4632,11 @@ export default {
     padding: 3px 6px;
   }
   
+  .buy-stock-button {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+  
   .filters-section {
     flex-direction: column;
     align-items: stretch;
@@ -4118,6 +4680,16 @@ export default {
   }
   
   .stock-options-modal {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    max-height: 100vh;
+    border-radius: 0;
+    overflow-y: auto;
+    box-shadow: none;
+  }
+  
+  .stock-purchase-modal {
     width: 100%;
     max-width: none;
     margin: 0;
@@ -4324,6 +4896,11 @@ export default {
     padding: 6px 8px;
   }
   
+  .buy-stock-button {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
   .filters-section {
     gap: 8px;
   }
@@ -4356,6 +4933,13 @@ export default {
   }
   
   .stock-options-modal {
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    width: 100%;
+  }
+  
+  .stock-purchase-modal {
     max-height: 100vh;
     margin: 0;
     border-radius: 0;
@@ -4440,6 +5024,15 @@ export default {
 /* Print Styles */
 @media print {
   .stock-options-modal {
+    position: static;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .stock-purchase-modal {
     position: static;
     width: 100%;
     height: auto;

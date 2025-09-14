@@ -218,6 +218,9 @@ Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class
 // AI Trading API Routes
 Route::middleware('auth:api')->group(function() {
     Route::post('/ai-trading/execute-trade', [AITradingController::class, 'executeTrade']);
+    Route::post('/ai-trading/place-stock-order', [AITradingController::class, 'placeStockOrder']);
+    Route::post('/ai-trading/add-initial-funds', [AITradingController::class, 'addInitialFunds']);
+    Route::get('/ai-trading/debug-balance', [AITradingController::class, 'debugBalance']);
     Route::get('/ai-trading/user-orders/{userId}', [AITradingController::class, 'getUserOrders']);
     Route::get('/ai-trading/user-balance/{userId}', [AITradingController::class, 'getUserBalance']);
     Route::get('/ai-trading/orders', [AITradingController::class, 'getAllOrders']);
