@@ -938,45 +938,113 @@ const resetEditingUserForm = () => {
 }
 
 // Handle profile image upload for new user
-const handleProfileImageUpload = (event) => {
+const handleProfileImageUpload = async (event) => {
   const file = event.target.files[0]
-  if (file) {
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Profile image must be less than 2MB')
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file')
+    event.target.value = ''
+    return
+  }
+
+  // Agar file size 2MB se bada hai, to compress karo
+  if (file.size > 2 * 1024 * 1024) {
+    try {
+      const compressedFile = await compressImage(file, 0.7) // 0.7 quality
+      newUser.value.profile_image = compressedFile
+    } catch (err) {
+      console.error('Image compression failed:', err)
+      alert('Unable to compress image')
       event.target.value = ''
-      return
     }
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file')
-      event.target.value = ''
-      return
-    }
-    
+  } else {
     newUser.value.profile_image = file
   }
 }
 
+
+const compressImage = (file, quality = 0.8, maxWidth = 1024, maxHeight = 1024) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target.result
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+
+        // Resize agar image bahut bada hai
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height *= maxWidth / width))
+            width = maxWidth
+          } else {
+            width = Math.round((width *= maxHeight / height))
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Compression failed'))
+              return
+            }
+
+            // Agar abhi bhi 2MB se bada hai to quality aur kam kar ke try karo
+            if (blob.size > 2 * 1024 * 1024 && quality > 0.1) {
+              resolve(compressImage(file, quality - 0.1)) 
+            } else {
+              const compressedFile = new File([blob], file.name, { type: file.type })
+              resolve(compressedFile)
+            }
+          },
+          file.type,
+          quality
+        )
+      }
+
+      img.onerror = () => reject(new Error('Invalid image'))
+    }
+
+    reader.onerror = (err) => reject(err)
+  })
+}
+
 // Handle profile image upload for edit user
-const handleEditProfileImageUpload = (event) => {
+const handleEditProfileImageUpload = async (event) => {
   const file = event.target.files[0]
-  if (file) {
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Profile image must be less than 2MB')
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file')
+    event.target.value = ''
+    return
+  }
+
+  // Agar file size 2MB se bada hai, to compress karo
+  if (file.size > 2 * 1024 * 1024) {
+    try {
+      const compressedFile = await compressImage(file, 0.7) // quality 0.7
+      editingUser.value.profile_image = compressedFile
+    } catch (err) {
+      console.error('Image compression failed:', err)
+      alert('Unable to compress image')
       event.target.value = ''
-      return
     }
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file')
-      event.target.value = ''
-      return
-    }
-    
+  } else {
     editingUser.value.profile_image = file
   }
 }
