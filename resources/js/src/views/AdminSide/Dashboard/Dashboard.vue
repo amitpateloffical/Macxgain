@@ -97,22 +97,22 @@
         </div>
       </div>
 
-      <div class="dashboard-card" @click="navigateTo('/admin/alpha-vantage')">
-        <div class="card-content">
-          <div class="card-icon">🚀</div>
-          <h3 class="card-title">Alpha Vantage</h3>
-          <p class="card-description">
-            US Stock market data, Options chain & Technical indicators
-          </p>
-        </div>
-      </div>
-
       <div class="dashboard-card" @click="navigateTo('/admin/fund-adjust')">
         <div class="card-content">
           <div class="card-icon">⚖️</div>
           <h3 class="card-title">Fund Adjust</h3>
           <p class="card-description">
             Adjust user wallet balances and fund management
+          </p>
+        </div>
+      </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/backup')">
+        <div class="card-content">
+          <div class="card-icon">💾</div>
+          <h3 class="card-title">Backup</h3>
+          <p class="card-description">
+            Create and manage system backups and data recovery
           </p>
         </div>
       </div>

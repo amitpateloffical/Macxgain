@@ -23,6 +23,7 @@ use App\Http\Controllers\AdminPaymentCollectorController;
 use App\Http\Controllers\AITradingController;
 use App\Http\Controllers\FundAdjustController;
 use App\Http\Controllers\AlphaVantageController;
+use App\Http\Controllers\BackupController;
 
 
 
@@ -210,6 +211,15 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('admin-payment-collectors', AdminPaymentCollectorController::class);
     Route::patch('/admin-payment-collectors/{id}/primary', [AdminPaymentCollectorController::class, 'markAsPrimary']);
     Route::patch('/admin-payment-collectors/{id}/toggle-status', [AdminPaymentCollectorController::class, 'toggleStatus']);
+    
+    // Backup Routes
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/backups', [BackupController::class, 'index']);
+        Route::post('/backups/create', [BackupController::class, 'create']);
+        Route::get('/backups/{backupId}/download', [BackupController::class, 'download']);
+        Route::post('/backups/{backupId}/restore', [BackupController::class, 'restore']);
+        Route::delete('/backups/{backupId}', [BackupController::class, 'delete']);
+    });
 });
 
 // Public Payment Collector Routes (for users to see payment details)

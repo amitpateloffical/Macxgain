@@ -187,6 +187,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/FundAdjust.vue"),
   },
+  {
+    path: "/admin/backup",
+    name: "backup",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/Backup.vue"),
+  },
   
   // Catch-all route - must be last
   { path: '/:pathMatch(.*)*', redirect: '/' }
