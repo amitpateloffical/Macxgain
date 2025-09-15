@@ -928,45 +928,109 @@ export default {
     },
 
     // Handle KYC image uploads
-    handleKYCImageUpload(field, event) {
-      const file = event.target.files[0];
-      if (file) {
-        // Validate file size (2MB max)
-        if (file.size > 2 * 1024 * 1024) {
-          Swal.fire({
-            icon: "error",
-            title: "File too large",
-            text: "Please select a file smaller than 2MB",
-          });
-          event.target.value = ''; // Clear the input
-          return;
-        }
+async handleKYCImageUpload(field, event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        if (!allowedTypes.includes(file.type)) {
-          Swal.fire({
-            icon: "error",
-            title: "Invalid file type",
-            text: "Please select JPG, PNG, or JPEG files only",
-          });
-          event.target.value = ''; // Clear the input
-          return;
-        }
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid file type",
+        text: "Please select JPG, PNG, or JPEG files only",
+      });
+      event.target.value = '';
+      return;
+    }
 
-        // Store the file for upload
-        if (!this.kycImages) {
-          this.kycImages = {};
-        }
-        this.kycImages[field] = file;
+    let finalFile = file;
 
-        // Create preview URL
-        if (!this.kycImagePreviews) {
-          this.kycImagePreviews = {};
-        }
-        this.kycImagePreviews[field] = URL.createObjectURL(file);
+    // Compress if file size > 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      try {
+        finalFile = await this.compressImage(file, 0.7); // quality = 70%
+      } catch (err) {
+        console.error("Compression error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Compression Failed",
+          text: "Unable to compress image. Please try another image.",
+        });
+        event.target.value = '';
+        return;
       }
-    },
+    }
+
+    // Store the compressed file
+    if (!this.kycImages) {
+      this.kycImages = {};
+    }
+    this.kycImages[field] = finalFile;
+
+    // Create preview
+    if (!this.kycImagePreviews) {
+      this.kycImagePreviews = {};
+    }
+    this.kycImagePreviews[field] = URL.createObjectURL(finalFile);
+  },
+
+  compressImage(file, quality = 0.8, maxWidth = 1024, maxHeight = 1024) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Resize dimensions if needed
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height *= maxWidth / width));
+              width = maxWidth;
+            } else {
+              width = Math.round((width *= maxHeight / height));
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Compression failed"));
+                return;
+              }
+
+              // Agar abhi bhi 2MB se bada hai → quality aur kam karo
+              if (blob.size > 2 * 1024 * 1024 && quality > 0.1) {
+                resolve(this.compressImage(file, quality - 0.1));
+              } else {
+                const compressedFile = new File([blob], file.name, { type: file.type });
+                resolve(compressedFile);
+              }
+            },
+            file.type,
+            quality
+          );
+        };
+
+        img.onerror = () => reject(new Error("Invalid image"));
+      };
+
+      reader.onerror = (err) => reject(err);
+    });
+  },
 
     // Get image URL for display
     getImageUrl(imagePath) {
