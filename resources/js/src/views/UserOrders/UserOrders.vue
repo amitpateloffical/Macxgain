@@ -164,7 +164,7 @@
           :class="[
             order.type.toLowerCase(),
             order.status.toLowerCase(),
-            { 'profit': order.pnl > 0, 'loss': order.pnl < 0 }
+            { 'profit': order.status === 'CLOSED' && calculateTradePnL(order) > 0, 'loss': order.status === 'CLOSED' && calculateTradePnL(order) < 0 }
           ]"
         >
           <!-- Order Header -->
@@ -219,10 +219,10 @@
                 <span class="detail-label">Exit Price</span>
                 <span class="detail-value">₹{{ order.executedPrice.toFixed(2) }}</span>
               </div>
-              <div class="detail-group" v-if="order.pnl !== null && order.pnl !== undefined && order.status === 'CLOSED'">
+              <div class="detail-group" v-if="order.status === 'CLOSED' && order.executedPrice && order.totalAmount">
                 <span class="detail-label">P&L</span>
-                <span class="detail-value" :class="{ 'profit': order.pnl > 0, 'loss': order.pnl < 0 }">
-                  {{ order.pnl > 0 ? '+' : '' }}₹{{ order.pnl.toFixed(2) }}
+                <span class="detail-value" :class="{ 'profit': calculateTradePnL(order) > 0, 'loss': calculateTradePnL(order) < 0 }">
+                  {{ calculateTradePnL(order) > 0 ? '+' : '' }}₹{{ calculateTradePnL(order).toFixed(2) }}
                 </span>
               </div>
               <div class="detail-group" v-if="order.executedAt && order.status === 'CLOSED'">
@@ -406,7 +406,7 @@ export default {
       return this.orders.filter(order => order.status === 'PENDING').length;
     },
     executedOrders() {
-      return this.orders.filter(order => order.status === 'EXECUTED').length;
+      return this.orders.filter(order => order.status === 'CLOSED').length;
     },
     cancelledOrders() {
       return this.orders.filter(order => order.status === 'CANCELLED').length;
@@ -414,23 +414,23 @@ export default {
     
     // P&L Analysis Computed Properties
     closedTrades() {
-      return this.orders.filter(order => order.status === 'CLOSED' && order.pnl !== null && order.pnl !== undefined);
+      return this.orders.filter(order => order.status === 'CLOSED' && order.executedPrice && order.totalAmount);
     },
     
     profitableTrades() {
-      return this.closedTrades.filter(trade => trade.pnl > 0);
+      return this.closedTrades.filter(trade => this.calculateTradePnL(trade) > 0);
     },
     
     lossTrades() {
-      return this.closedTrades.filter(trade => trade.pnl < 0);
+      return this.closedTrades.filter(trade => this.calculateTradePnL(trade) < 0);
     },
     
     totalProfit() {
-      return this.profitableTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+      return this.profitableTrades.reduce((sum, trade) => sum + this.calculateTradePnL(trade), 0);
     },
     
     totalLoss() {
-      return this.lossTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+      return this.lossTrades.reduce((sum, trade) => sum + this.calculateTradePnL(trade), 0);
     },
     
     overallPnL() {
@@ -507,7 +507,6 @@ export default {
             quantity: parseInt(order.quantity),
             price: parseFloat(order.strike_price),
             executedPrice: order.exit_price ? parseFloat(order.exit_price) : null,
-            pnl: order.pnl ? parseFloat(order.pnl) : 0,
             timestamp: new Date(order.created_at),
             executedAt: order.closed_at ? new Date(order.closed_at) : null,
             optionType: order.option_type,
@@ -542,6 +541,14 @@ export default {
     showError(message) {
       // Simple error notification - you can enhance this with a proper notification system
       alert(message);
+    },
+
+    calculateTradePnL(trade) {
+      // Calculate P&L using the same formula as admin: exit_price * quantity - total_amount
+      if (!trade.executedPrice || !trade.totalAmount) {
+        return 0;
+      }
+      return (trade.executedPrice * trade.quantity) - trade.totalAmount;
     },
 
     getStatusIcon(status) {
