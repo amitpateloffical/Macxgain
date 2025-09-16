@@ -269,7 +269,41 @@ export default {
       // since API routes might not be properly configured on production server
       return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? '' 
-        : window.location.origin;
+        : 'https://macxgain.com';
+    },
+    
+    async makeApiCall(endpoint, options = {}) {
+      const token = localStorage.getItem('access_token');
+      const defaultHeaders = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      const requestOptions = {
+        ...options,
+        headers: { ...defaultHeaders, ...options.headers }
+      };
+      
+      // Try production API first
+      try {
+        const response = await fetch(`${this.getApiBaseUrl()}${endpoint}`, requestOptions);
+        
+        // Check if response is HTML (API not configured)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('API_NOT_CONFIGURED');
+        }
+        
+        return response;
+      } catch (error) {
+        // If production API fails and we're not on localhost, try localhost fallback
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && error.message === 'API_NOT_CONFIGURED') {
+          console.warn('Production API not configured, trying localhost fallback...');
+          return await fetch(`http://127.0.0.1:8000${endpoint}`, requestOptions);
+        }
+        throw error;
+      }
     },
     
     async loadBackupData() {
@@ -281,13 +315,8 @@ export default {
           throw new Error('No authentication token found. Please login again.');
         }
 
-        const response = await fetch(`${this.getApiBaseUrl()}/api/backups`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+        const response = await this.makeApiCall('/api/backups', {
+          method: 'GET'
         });
 
         if (!response.ok) {
@@ -361,14 +390,8 @@ export default {
     async createBackup() {
       this.creatingBackup = true;
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch(`${this.getApiBaseUrl()}/api/backups/create`, {
+        const response = await this.makeApiCall('/api/backups/create', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
           body: JSON.stringify({
             type: this.selectedBackupType
           })
@@ -414,11 +437,9 @@ export default {
     
     async downloadBackup(backupId) {
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch(`${this.getApiBaseUrl()}/api/backups/${backupId}/download`, {
+        const response = await this.makeApiCall(`/api/backups/${backupId}/download`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Accept': 'application/octet-stream'
           }
         });
@@ -478,13 +499,8 @@ export default {
         if (confirm(`Are you sure you want to restore backup: ${backup.name}? This will overwrite current data.`)) {
           try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${this.getApiBaseUrl()}/api/backups/${backupId}/restore`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              }
+            const response = await this.makeApiCall(`/api/backups/${backupId}/restore`, {
+              method: 'POST'
             });
 
             if (!response.ok) {
@@ -512,13 +528,8 @@ export default {
         if (confirm(`Are you sure you want to delete backup: ${backup.name}?`)) {
           try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${this.getApiBaseUrl()}/api/backups/${backupId}`, {
-              method: 'DELETE',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              }
+            const response = await this.makeApiCall(`/api/backups/${backupId}`, {
+              method: 'DELETE'
             });
 
             if (!response.ok) {
