@@ -321,6 +321,7 @@ onMounted(() => {
   color: white;
   padding: 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -470,7 +471,9 @@ onMounted(() => {
 }
 
 .section-container {
-  margin-bottom: 40px;
+  margin: 0 auto 40px;
+  max-width: 1200px;
+  width: 100%;
 }
 
 .section-header {
@@ -646,7 +649,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
-  max-height: 600px;
+  max-height: 60vh;
   overflow-y: auto;
   padding-right: 8px;
 }
@@ -754,6 +757,7 @@ onMounted(() => {
   
   .stocks-list {
     grid-template-columns: 1fr;
+    max-height: 60vh;
   }
   
   .header-stats {
@@ -833,7 +837,7 @@ onMounted(() => {
   }
   
   .stocks-list {
-    max-height: 300px;
+    max-height: 50vh;
   }
   
   .stock-item {

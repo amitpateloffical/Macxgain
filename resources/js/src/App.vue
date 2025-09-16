@@ -4,7 +4,7 @@
       <Header v-if="layout !== 'FullLayout' && !isMobile && !shouldShowAppBar" />
       <div class="main_screen_sidebar_devider" :class="{ 'mobile-layout': isMobile }">
         <!-- <Sidebar v-if="layout !== 'FullLayout'" /> -->
-        <div class="main_content_screen">
+        <div class="main_content_screen" :class="{ 'with-app-bar': shouldShowAppBar }">
           <router-view />
         </div>
       </div>
