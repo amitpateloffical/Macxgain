@@ -18,6 +18,32 @@ class BackupController extends Controller
     public function __construct()
     {
         // Admin check will be done in each method
+        // Ensure backup directory exists
+        $this->ensureBackupDirectory();
+    }
+    
+    private function ensureBackupDirectory()
+    {
+        $backupPath = storage_path('app/' . $this->backupPath);
+        if (!file_exists($backupPath)) {
+            mkdir($backupPath, 0755, true);
+        }
+        
+        // Ensure temp directory exists
+        $tempPath = storage_path('app/temp');
+        if (!file_exists($tempPath)) {
+            mkdir($tempPath, 0755, true);
+        }
+        
+        // Ensure system temp directory is writable
+        $systemTemp = sys_get_temp_dir();
+        if (!is_writable($systemTemp)) {
+            \Log::error("System temp directory not writable: " . $systemTemp);
+        }
+        
+        // Set proper permissions
+        chmod($backupPath, 0755);
+        chmod($tempPath, 0755);
     }
 
     /**
@@ -339,11 +365,43 @@ class BackupController extends Controller
                 file_put_contents($tempPath . '/readme.txt', 'Backup created on ' . date('Y-m-d H:i:s'));
             }
             
-            // Create zip file
+            // Create zip file using a different approach
+            $zipPath = storage_path('app/' . $filePath);
+            
+            // Ensure the directory exists
+            $zipDir = dirname($zipPath);
+            if (!file_exists($zipDir)) {
+                mkdir($zipDir, 0755, true);
+            }
+            
+            // Use a temporary file in our own temp directory
+            $tempZipPath = $tempPath . '/backup.zip';
+            
             $zip = new ZipArchive();
-            if ($zip->open(storage_path('app/' . $filePath), ZipArchive::CREATE) === TRUE) {
+            $result = $zip->open($tempZipPath, ZipArchive::CREATE);
+            if ($result === TRUE) {
                 $this->addDirectoryToZip($zip, $tempPath, '');
-                $zip->close();
+                if ($zip->close()) {
+                    // Move the zip file to final location
+                    if (rename($tempZipPath, $zipPath)) {
+                        // Success
+                    } else {
+                        return [
+                            'success' => false,
+                            'message' => 'Failed to move zip file to final location.'
+                        ];
+                    }
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => 'Failed to close zip file. Check directory permissions.'
+                    ];
+                }
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to create zip file. Error code: ' . $result . '. Check directory permissions.'
+                ];
             }
             
             // Clean up temp directory
