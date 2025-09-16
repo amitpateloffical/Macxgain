@@ -297,10 +297,9 @@ export default {
         
         return response;
       } catch (error) {
-        // If production API fails and we're not on localhost, try localhost fallback
+        // If production API fails, show proper error message
         if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && error.message === 'API_NOT_CONFIGURED') {
-          console.warn('Production API not configured, trying localhost fallback...');
-          return await fetch(`http://127.0.0.1:8000${endpoint}`, requestOptions);
+          throw new Error('Backup API is not configured on the production server. Please contact administrator to set up backup functionality.');
         }
         throw error;
       }
