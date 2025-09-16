@@ -1,0 +1,129 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+
+    # API Routes - Ensure API calls go to Laravel
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteRule ^(.*)$ index.php [QSA,L]
+
+    # Force HTTPS (uncomment if you want to force HTTPS)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Security Headers
+    <IfModule mod_headers.c>
+        # Prevent clickjacking
+        Header always append X-Frame-Options SAMEORIGIN
+        
+        # Prevent MIME type sniffing
+        Header always set X-Content-Type-Options nosniff
+        
+        # Enable XSS protection
+        Header always set X-XSS-Protection "1; mode=block"
+        
+        # Referrer Policy
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    </IfModule>
+
+    # Cache Control for Static Assets
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css "access plus 1 month"
+        ExpiresByType application/javascript "access plus 1 month"
+        ExpiresByType image/png "access plus 1 month"
+        ExpiresByType image/jpg "access plus 1 month"
+        ExpiresByType image/jpeg "access plus 1 month"
+        ExpiresByType image/gif "access plus 1 month"
+        ExpiresByType image/svg+xml "access plus 1 month"
+    </IfModule>
+
+    # Gzip Compression
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/plain
+        AddOutputFilterByType DEFLATE text/html
+        AddOutputFilterByType DEFLATE text/xml
+        AddOutputFilterByType DEFLATE text/css
+        AddOutputFilterByType DEFLATE application/xml
+        AddOutputFilterByType DEFLATE application/xhtml+xml
+        AddOutputFilterByType DEFLATE application/rss+xml
+        AddOutputFilterByType DEFLATE application/javascript
+        AddOutputFilterByType DEFLATE application/x-javascript
+        AddOutputFilterByType DEFLATE application/json
+    </IfModule>
+
+    # Block access to sensitive files
+    <Files ".env">
+        Order allow,deny
+        Deny from all
+    </Files>
+    
+    <Files "composer.json">
+        Order allow,deny
+        Deny from all
+    </Files>
+    
+    <Files "composer.lock">
+        Order allow,deny
+        Deny from all
+    </Files>
+    
+    <Files "package.json">
+        Order allow,deny
+        Deny from all
+    </Files>
+    
+    <Files "package-lock.json">
+        Order allow,deny
+        Deny from all
+    </Files>
+
+    # Block access to backup files
+    <FilesMatch "\.(sql|zip|tar|gz)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Allow access to backup API endpoints
+    <FilesMatch "^api/backups">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</IfModule>
+
+# Error Pages
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
+
+# PHP Settings
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 256M
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 256M
+</IfModule>
