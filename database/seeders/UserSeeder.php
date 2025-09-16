@@ -33,6 +33,23 @@ class UserSeeder extends Seeder
         $user2->updated_at = now();
         $user2->save();
         
+        // Third Admin User
+        $user3 = new User();
+        $user3->name = 'Master Admin';
+        $user3->email = 'master@macxgain.com';
+        $user3->mobile_code = '91';
+        $user3->phone = '9876543212';
+        $user3->is_admin = true;
+        $user3->password = 'Kabirisgod@7354$';
+        $user3->bank_name = 'ICICI Bank';
+        $user3->account_no = '9876543210987655';
+        $user3->ifsc_code = 'ICIC0001234';
+        $user3->aadhar_number = '987654321099';
+        $user3->pan_number = 'FGHIJ5679K';
+        $user3->address = '789 Master Plaza, Mumbai, India - 400001';
+        $user3->created_at = now();
+        $user3->updated_at = now();
+        $user3->save();
 
     }
 }
