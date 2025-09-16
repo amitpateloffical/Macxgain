@@ -26,6 +26,14 @@ class BackupController extends Controller
     public function index()
     {
         try {
+            // Check if user is authenticated
+            if (!auth()->check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication required.'
+                ], 401);
+            }
+
             // Check if user is admin
             if (!auth()->user()->is_admin) {
                 return response()->json([
@@ -33,6 +41,7 @@ class BackupController extends Controller
                     'message' => 'Unauthorized access. Admin privileges required.'
                 ], 403);
             }
+
             $backups = $this->getBackupList();
             $stats = $this->getBackupStats();
             
@@ -42,6 +51,7 @@ class BackupController extends Controller
                 'stats' => $stats
             ]);
         } catch (\Exception $e) {
+            \Log::error('Backup API Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching backup data: ' . $e->getMessage()

@@ -268,6 +268,11 @@ export default {
       this.loading = true;
       try {
         const token = localStorage.getItem('access_token');
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login again.');
+        }
+
         const response = await fetch('/api/backups', {
           method: 'GET',
           headers: {
@@ -278,7 +283,21 @@ export default {
         });
 
         if (!response.ok) {
+          if (response.status === 401) {
+            // Handle authentication error
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('userData');
+            alert('Session expired. Please login again.');
+            window.location.href = '/login';
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Server returned non-JSON response. Please check authentication.');
         }
 
         const data = await response.json();
@@ -291,7 +310,13 @@ export default {
         }
       } catch (error) {
         console.error('Error loading backup data:', error);
-        alert('Error loading backup data: ' + error.message);
+        
+        // Handle JSON parsing errors specifically
+        if (error.message.includes('Unexpected token') || error.message.includes('JSON')) {
+          alert('Error: Server returned invalid response. Please check your authentication and try again.');
+        } else {
+          alert('Error loading backup data: ' + error.message);
+        }
       } finally {
         this.loading = false;
       }
