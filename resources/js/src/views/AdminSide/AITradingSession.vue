@@ -408,7 +408,17 @@
           <div class="trade-summary">
             <div class="summary-row">
               <span>Option Price (LTP):</span>
-              <span>₹{{ getOptionPrice() }}</span>
+              <div class="price-input-wrapper">
+                <span>₹</span>
+                <input
+                  type="number"
+                  class="price-input"
+                  v-model.number="tradeData.optionPrice"
+                  :placeholder="(tradeData.option?.ltp || 0).toFixed(2)"
+                  min="0"
+                  step="0.01"
+                >
+              </div>
             </div>
             <div class="summary-row">
               <span>Lots:</span>
@@ -606,7 +616,8 @@ export default {
         strikePrice: 0,
         quantity: 1,
         lots: 1,
-        option: null
+        option: null,
+        optionPrice: null
       },
       purchaseData: {
         stock: {},
@@ -1446,6 +1457,9 @@ export default {
       this.tradeData.quantity = this.tradeData.lots;
     },
     getOptionPrice() {
+      if (this.tradeData.optionPrice !== null && this.tradeData.optionPrice !== undefined && !Number.isNaN(this.tradeData.optionPrice)) {
+        return Number(this.tradeData.optionPrice);
+      }
       if (this.tradeData.option) {
         return this.tradeData.option.ltp || 0;
       }
