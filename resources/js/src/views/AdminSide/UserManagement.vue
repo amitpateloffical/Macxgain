@@ -724,7 +724,7 @@ const searchQuery = ref('')
 const statusFilter = ref('all')
 const roleFilter = ref('all')
 const currentPage = ref(1)
-const usersPerPage = ref(10)
+const usersPerPage = ref(50)
 const isSubmitting = ref(false) // Add loading state
 
 // New User Form Data

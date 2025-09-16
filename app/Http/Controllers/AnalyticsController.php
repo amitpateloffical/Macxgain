@@ -235,7 +235,7 @@ class AnalyticsController extends Controller
     private function getDepositsData($dateRange)
     {
         return MoneyRequest::select([
-                'id', 'request_create_for as user_id', 'amount', 'status', 'description', 'created_at',
+                'id', 'request_create_for as user_id', 'amount', 'status', 'created_at',
                 DB::raw('CONCAT("DEP-", LPAD(id, 6, "0")) as transaction_id'),
                 DB::raw('(SELECT name FROM users WHERE id = money_requests.request_create_for) as user_name')
             ])
