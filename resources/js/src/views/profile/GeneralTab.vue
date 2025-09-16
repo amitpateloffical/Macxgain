@@ -17,6 +17,9 @@
             <b-button variant="success" class="camera-btn" @click="openCamera">
               <i class="bi bi-camera me-1"></i> Take Photo
             </b-button>
+            <b-button variant="outline-info" class="permission-btn mt-2" @click="checkCameraPermission" size="sm">
+              <i class="bi bi-shield-check me-1"></i> Check Permission
+            </b-button>
           </div>
           <!-- File Info - Only in Edit Mode -->
           <div v-if="isEditMode" class="file-info">
@@ -548,6 +551,65 @@ export default {
     triggerFileUpload() {
       this.$refs.fileInput.click();
     },
+    async checkCameraPermission() {
+      try {
+        // Check if camera is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          Swal.fire({
+            title: 'Camera Not Supported',
+            text: 'Your device or browser does not support camera access.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+
+        // Check current permission status
+        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+        
+        if (permissionStatus.state === 'granted') {
+          Swal.fire({
+            title: 'Camera Permission Granted',
+            text: 'Camera access is already enabled. You can take photos now!',
+            icon: 'success',
+            confirmButtonText: 'Great!'
+          });
+        } else if (permissionStatus.state === 'denied') {
+          Swal.fire({
+            title: 'Camera Permission Denied',
+            html: `
+              <div class="text-start">
+                <p>Camera access has been denied. To enable it:</p>
+                <ol>
+                  <li>Click on the camera icon in your browser's address bar</li>
+                  <li>Select "Allow" for camera access</li>
+                  <li>Refresh the page</li>
+                </ol>
+                <p class="text-muted small">You may need to restart your browser after changing permissions.</p>
+              </div>
+            `,
+            icon: 'warning',
+            confirmButtonText: 'I Understand'
+          });
+        } else {
+          Swal.fire({
+            title: 'Camera Permission Not Set',
+            text: 'Camera permission has not been requested yet. Click "Take Photo" to request permission.',
+            icon: 'info',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (error) {
+        console.log('Permission check error:', error);
+        Swal.fire({
+          title: 'Permission Check Failed',
+          text: 'Unable to check camera permission status.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    },
+
     async openCamera() {
       try {
         // Check if camera is available
@@ -561,6 +623,48 @@ export default {
           return;
         }
 
+        // Show permission request modal first
+        const permissionResult = await Swal.fire({
+          title: 'Camera Permission Required',
+          html: `
+            <div class="text-center">
+              <i class="bi bi-camera" style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;"></i>
+              <p>We need camera access to take your profile photo.</p>
+              <p class="text-muted small">Click "Allow Camera" to grant permission.</p>
+            </div>
+          `,
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Allow Camera',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#007bff',
+          cancelButtonColor: '#6c757d',
+          allowOutsideClick: false,
+          showCloseButton: false
+        });
+
+        if (!permissionResult.isConfirmed) {
+          return;
+        }
+
+        // Close the modal first
+        Swal.close();
+
+        // Show loading while requesting camera
+        Swal.fire({
+          title: 'Requesting Camera Access...',
+          html: 'Please allow camera access when prompted by your browser.',
+          icon: 'info',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // Small delay to ensure modal is closed and loading is shown
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Request camera permission and open camera
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
@@ -570,6 +674,9 @@ export default {
           } 
         });
 
+        // Close loading modal
+        Swal.close();
+
         // Create camera modal
         this.showCameraModal(stream);
 
@@ -577,12 +684,51 @@ export default {
         console.log('Camera error:', error);
         
         if (error.name === 'NotAllowedError') {
-          Swal.fire({
+          // Show permission request with retry option
+          const result = await Swal.fire({
             title: 'Camera Permission Denied',
-            text: 'Please allow camera access to take photos. You can enable it in your browser settings.',
+            html: `
+              <div class="text-center">
+                <i class="bi bi-shield-exclamation" style="font-size: 3rem; color: #ffc107; margin-bottom: 1rem;"></i>
+                <p><strong>Camera access was denied!</strong></p>
+                <p>Please allow camera access to take your profile photo.</p>
+                <div class="alert alert-info text-start mt-3">
+                  <strong>Quick Fix:</strong>
+                  <ol class="mb-0 mt-2">
+                    <li>Look for camera icon in browser address bar</li>
+                    <li>Click it and select "Allow"</li>
+                    <li>Then click "Try Again" below</li>
+                  </ol>
+                </div>
+              </div>
+            `,
             icon: 'warning',
-            confirmButtonText: 'OK'
+            showCancelButton: true,
+            confirmButtonText: 'Try Again',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ffc107',
+            cancelButtonColor: '#6c757d',
+            allowOutsideClick: false
           });
+          
+          if (result.isConfirmed) {
+            // Show loading and retry camera permission
+            Swal.fire({
+              title: 'Requesting Camera Permission...',
+              html: 'Please wait while we request camera access again.',
+              icon: 'info',
+              allowOutsideClick: false,
+              showConfirmButton: false,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            });
+            
+            // Small delay to let user see the loading
+            setTimeout(() => {
+              this.openCamera();
+            }, 1000);
+          }
         } else if (error.name === 'NotFoundError') {
           Swal.fire({
             title: 'Camera Not Found',
@@ -1832,6 +1978,24 @@ textarea.form-control {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
   color: #fff;
+}
+
+.permission-btn {
+  background: rgba(13, 202, 240, 0.1);
+  border: 1px solid rgba(13, 202, 240, 0.3);
+  color: #0dcaf0;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.permission-btn:hover {
+  background: rgba(13, 202, 240, 0.2);
+  border-color: #0dcaf0;
+  color: #0dcaf0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(13, 202, 240, 0.2);
 }
 
 .file-info {
