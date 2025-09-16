@@ -1,63 +1,74 @@
 <template>
   <div class="landing-page">
-    <!-- Trading Background Animation -->
-    <div class="trading-background">
-      <div class="stock-chart chart-1">
-        <div class="candlestick up"></div>
-        <div class="candlestick down"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick down"></div>
-      </div>
-      <div class="stock-chart chart-2">
-        <div class="candlestick down"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick down"></div>
-        <div class="candlestick up"></div>
-      </div>
-      <div class="stock-chart chart-3">
-        <div class="candlestick up"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick down"></div>
-        <div class="candlestick up"></div>
-        <div class="candlestick down"></div>
-      </div>
-      
-      <div class="trading-indicators">
-        <div class="indicator">
-          <div class="line"></div>
-          <div class="dot"></div>
+    <!-- AI Neural Network Background -->
+    <div class="ai-background">
+      <!-- Neural Network Visualization -->
+      <div class="neural-network">
+        <div class="neural-layer layer-1">
+          <div class="neuron" v-for="i in 8" :key="i" :style="{ animationDelay: i * 0.1 + 's' }"></div>
         </div>
-        <div class="indicator">
-          <div class="line"></div>
-          <div class="dot"></div>
+        <div class="neural-layer layer-2">
+          <div class="neuron" v-for="i in 12" :key="i" :style="{ animationDelay: i * 0.1 + 's' }"></div>
+        </div>
+        <div class="neural-layer layer-3">
+          <div class="neuron" v-for="i in 6" :key="i" :style="{ animationDelay: i * 0.1 + 's' }"></div>
+        </div>
+        <div class="neural-connections">
+          <div class="connection" v-for="i in 20" :key="i" :style="{ animationDelay: i * 0.2 + 's' }"></div>
         </div>
       </div>
       
-      <div class="price-tickers">
-        <div class="ticker">
-          <span class="symbol">AAPL</span>
-          <span class="price up">$185.42</span>
-          <span class="change up">+2.3%</span>
+      <!-- AI Particles System -->
+      <div class="ai-particles">
+        <div class="particle" v-for="i in 50" :key="i" :style="{ 
+          left: Math.random() * 100 + '%', 
+          animationDelay: Math.random() * 5 + 's',
+          animationDuration: (Math.random() * 10 + 5) + 's'
+        }"></div>
+      </div>
+      
+      <!-- AI Data Streams -->
+      <div class="data-streams">
+        <div class="stream stream-1">
+          <div class="data-bit" v-for="i in 15" :key="i" :style="{ animationDelay: i * 0.3 + 's' }">01</div>
         </div>
-        <div class="ticker">
-          <span class="symbol">TSLA</span>
-          <span class="price down">$248.50</span>
-          <span class="change down">-1.2%</span>
+        <div class="stream stream-2">
+          <div class="data-bit" v-for="i in 12" :key="i" :style="{ animationDelay: i * 0.4 + 's' }">10</div>
         </div>
-        <div class="ticker">
-          <span class="symbol">NVDA</span>
-          <span class="price up">$485.09</span>
-          <span class="change up">+3.8%</span>
+        <div class="stream stream-3">
+          <div class="data-bit" v-for="i in 18" :key="i" :style="{ animationDelay: i * 0.2 + 's' }">11</div>
         </div>
       </div>
       
-      <div class="floating-numbers">
-        <div class="number">+15.2%</div>
-        <div class="number">$2.4M</div>
-        <div class="number">+8.7%</div>
-        <div class="number">$1.8M</div>
+      <!-- AI Brain Visualization -->
+      <div class="ai-brain">
+        <div class="brain-core">
+          <div class="brain-pulse"></div>
+          <div class="brain-synapses">
+            <div class="synapse" v-for="i in 8" :key="i" :style="{ 
+              transform: `rotate(${i * 45}deg)`,
+              animationDelay: i * 0.5 + 's'
+            }"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Trading Signals -->
+      <div class="ai-signals">
+        <div class="signal-wave" v-for="i in 5" :key="i" :style="{ 
+          animationDelay: i * 0.8 + 's',
+          left: (i * 20) + '%'
+        }"></div>
+      </div>
+      
+      <!-- Floating AI Elements -->
+      <div class="floating-ai-elements">
+        <div class="ai-element element-1">🤖</div>
+        <div class="ai-element element-2">🧠</div>
+        <div class="ai-element element-3">⚡</div>
+        <div class="ai-element element-4">📊</div>
+        <div class="ai-element element-5">🎯</div>
+        <div class="ai-element element-6">🔮</div>
       </div>
     </div>
 
@@ -99,18 +110,33 @@
           </div>
           
           <h1 class="hero-title fade-in-left">
-            Master the Markets with 
-            <span class="highlight">AI-Powered Trading</span>
+            <span class="ai-typing-text">{{ currentTypingText || 'Master the Markets with AI-Powered Trading' }}</span>
+            <span class="typing-cursor" v-if="currentTypingText">|</span>
           </h1>
           
           <p class="hero-subtitle fade-in-left">
             Experience next-generation trading with Macxgain's revolutionary AI algorithms. 
-            Trade smarter, not harder with real-time market insights and automated strategies.
+            Our machine learning models analyze 10,000+ data points per second to deliver 
+            <span class="ai-highlight">95.8% accuracy</span> in market predictions.
           </p>
           
           <div class="hero-actions fade-in-left">
             <a href="/login" class="btn btn-primary btn-large">Start Trading Now</a>
             <a href="#" class="btn btn-outline btn-large">Download App</a>
+          </div>
+          
+          <!-- AI Voice Assistant Simulation -->
+          <div class="ai-voice-assistant fade-in-up">
+            <div class="voice-waves">
+              <div class="wave wave-1"></div>
+              <div class="wave wave-2"></div>
+              <div class="wave wave-3"></div>
+              <div class="wave wave-4"></div>
+            </div>
+            <div class="voice-text">
+              <span class="voice-label">AI Assistant:</span>
+              <span class="voice-message">"Analyzing market conditions... 94.7% confidence in bullish trend"</span>
+            </div>
           </div>
           
           <div class="hero-stats fade-in-up">
@@ -130,43 +156,55 @@
         </div>
         
         <div class="hero-visual">
-          <div class="trading-dashboard">
-            <!-- Main Chart -->
-            <div class="chart-window main-chart">
-              <div class="chart-header">
-                <div class="chart-info">
-                  <span class="chart-title">NIFTY 50</span>
-                  <span class="chart-subtitle">NSE India</span>
+          <div class="ai-trading-dashboard">
+            <!-- AI Trading Bot Visualization -->
+            <div class="ai-bot-container">
+              <div class="ai-bot">
+                <div class="bot-head">
+                  <div class="bot-eyes">
+                    <div class="eye left-eye"></div>
+                    <div class="eye right-eye"></div>
+                  </div>
+                  <div class="bot-antenna">
+                    <div class="antenna-signal"></div>
+                  </div>
                 </div>
-                <div class="chart-price-info">
-                  <span class="chart-price">₹24,563.30</span>
-                  <span class="chart-change up">+1.8%</span>
+                <div class="bot-body">
+                  <div class="ai-status">
+                    <span class="status-text">AI ACTIVE</span>
+                    <div class="status-indicator"></div>
+                  </div>
+                  <div class="processing-lines">
+                    <div class="line" v-for="i in 5" :key="i" :style="{ animationDelay: i * 0.2 + 's' }"></div>
+                  </div>
                 </div>
               </div>
-              <div class="chart-body">
-                <div class="price-chart">
-                  <div class="chart-line"></div>
-                  <div class="chart-points">
-                    <div class="point up"></div>
-                    <div class="point up"></div>
-                    <div class="point down"></div>
-                    <div class="point up"></div>
-                    <div class="point up"></div>
-                  </div>
+            </div>
+            
+            <!-- AI Prediction Chart -->
+            <div class="ai-prediction-chart">
+              <div class="chart-header">
+                <div class="chart-info">
+                  <span class="chart-title">AI Market Prediction</span>
+                  <span class="chart-subtitle">Neural Network Analysis</span>
                 </div>
-                <div class="chart-stats">
-                  <div class="stat">
-                    <span class="stat-label">Volume</span>
-                    <span class="stat-value">2.5Cr</span>
-                  </div>
-                  <div class="stat">
-                    <span class="stat-label">High</span>
-                    <span class="stat-value">24,650</span>
-                  </div>
-                  <div class="stat">
-                    <span class="stat-label">Low</span>
-                    <span class="stat-value">24,420</span>
-                  </div>
+                <div class="ai-confidence">
+                  <span class="confidence-label">AI Confidence</span>
+                  <span class="confidence-value">94.7%</span>
+                </div>
+              </div>
+              <div class="prediction-chart">
+                <div class="prediction-line"></div>
+                <div class="prediction-points">
+                  <div class="prediction-point" v-for="i in 8" :key="i" :style="{ 
+                    left: (i * 12.5) + '%',
+                    animationDelay: i * 0.3 + 's'
+                  }"></div>
+                </div>
+                <div class="ai-signals">
+                  <div class="signal buy-signal">BUY</div>
+                  <div class="signal hold-signal">HOLD</div>
+                  <div class="signal sell-signal">SELL</div>
                 </div>
               </div>
             </div>
@@ -1267,11 +1305,32 @@ export default {
   data() {
     return {
       // Component data
-      mobileMenuOpen: false
+      mobileMenuOpen: false,
+      currentTypingText: '',
+      typingIndex: 0,
+      typingSpeed: 100,
+      typingPause: 2000,
+      typingTexts: [
+        'Master the Markets with AI-Powered Trading',
+        'Revolutionary Machine Learning Algorithms',
+        '95.8% Accuracy in Market Predictions',
+        'Next-Generation Neural Network Analysis',
+        'Automated Trading with AI Intelligence'
+      ],
+      currentTextIndex: 0,
+      isTyping: true,
+      typingTimeout: null
     };
   },
   mounted() {
     this.initScrollAnimations();
+    
+    // Start typing effect after a short delay to ensure DOM is ready
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.startTypingEffect();
+      }, 2000);
+    });
     
     // Add click outside handler for mobile menu
     document.addEventListener('click', this.handleClickOutside);
@@ -1280,8 +1339,47 @@ export default {
   beforeUnmount() {
     // Remove click outside handler
     document.removeEventListener('click', this.handleClickOutside);
+    
+    // Clear any pending timeouts
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
   },
   methods: {
+    startTypingEffect() {
+      // Reset typing state
+      this.currentTypingText = '';
+      this.typingIndex = 0;
+      this.currentTextIndex = 0;
+      console.log('Starting AI typing effect...');
+      this.typeText();
+    },
+    
+    typeText() {
+      const currentText = this.typingTexts[this.currentTextIndex];
+      
+      if (this.typingIndex < currentText.length) {
+        this.currentTypingText += currentText.charAt(this.typingIndex);
+        this.typingIndex++;
+        this.typingTimeout = setTimeout(() => this.typeText(), this.typingSpeed);
+      } else {
+        // Pause before erasing
+        this.typingTimeout = setTimeout(() => this.eraseText(), this.typingPause);
+      }
+    },
+    
+    eraseText() {
+      if (this.currentTypingText.length > 0) {
+        this.currentTypingText = this.currentTypingText.slice(0, -1);
+        this.typingTimeout = setTimeout(() => this.eraseText(), this.typingSpeed / 2);
+      } else {
+        // Move to next text
+        this.currentTextIndex = (this.currentTextIndex + 1) % this.typingTexts.length;
+        this.typingIndex = 0;
+        this.typingTimeout = setTimeout(() => this.typeText(), 500);
+      }
+    },
+    
     initScrollAnimations() {
       const observerOptions = {
         threshold: 0.15,
@@ -1340,8 +1438,8 @@ export default {
   scroll-behavior: smooth;
 }
 
-/* Trading Background Animation */
-.trading-background {
+/* AI Background Animation */
+.ai-background {
   position: fixed;
   top: 0;
   left: 0;
@@ -1349,152 +1447,358 @@ export default {
   height: 100%;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 
-.stock-chart {
+/* Neural Network Visualization */
+.neural-network {
   position: absolute;
-  display: flex;
-  gap: 2px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0.1;
 }
 
-.chart-1 {
-  top: 15%;
-  left: 5%;
-  animation: slideRight 20s linear infinite;
-}
-
-.chart-2 {
-  top: 45%;
-  right: 10%;
-  animation: slideLeft 25s linear infinite;
-}
-
-.chart-3 {
-  bottom: 20%;
-  left: 15%;
-  animation: slideRight 30s linear infinite;
-}
-
-.candlestick {
-  width: 4px;
-  background: #00ff88;
-  border-radius: 1px;
-}
-
-.candlestick.up {
-  height: 20px;
-  background: #00ff88;
-}
-
-.candlestick.down {
-  height: 15px;
-  background: #ff4757;
-}
-
-.trading-indicators {
+.neural-layer {
   position: absolute;
-  top: 30%;
-  right: 20%;
-  opacity: 0.1;
-}
-
-.indicator {
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  margin-bottom: 10px;
+  width: 100%;
 }
 
-.indicator .line {
-  width: 40px;
-  height: 2px;
-  background: #00ff88;
-  margin-right: 8px;
+.layer-1 {
+  top: 20%;
+  height: 60px;
 }
 
-.indicator .dot {
-  width: 6px;
-  height: 6px;
+.layer-2 {
+  top: 50%;
+  height: 80px;
+}
+
+.layer-3 {
+  bottom: 20%;
+  height: 60px;
+}
+
+.neuron {
+  width: 12px;
+  height: 12px;
   background: #00ff88;
   border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
+  animation: neuronPulse 3s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
 }
 
-.price-tickers {
+.neural-connections {
   position: absolute;
-  top: 10%;
-  right: 5%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.connection {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  animation: connectionFlow 4s linear infinite;
+}
+
+/* AI Particles System */
+.ai-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00ff88;
+  border-radius: 50%;
+  animation: particleFloat 15s linear infinite;
+  opacity: 0.6;
+}
+
+/* AI Data Streams */
+.data-streams {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0.2;
 }
 
-.ticker {
-  background: rgba(0, 255, 136, 0.1);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-  display: flex;
-  gap: 8px;
-  font-size: 12px;
-  animation: slideLeft 15s linear infinite;
-}
-
-.ticker .symbol {
-  font-weight: bold;
-}
-
-.ticker .price.up {
-  color: #00ff88;
-}
-
-.ticker .price.down {
-  color: #ff4757;
-}
-
-.ticker .change.up {
-  color: #00ff88;
-}
-
-.ticker .change.down {
-  color: #ff4757;
-}
-
-.floating-numbers {
+.stream {
   position: absolute;
-  top: 60%;
-  left: 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stream-1 {
+  top: 10%;
+  left: 5%;
+}
+
+.stream-2 {
+  top: 30%;
+  right: 10%;
+}
+
+.stream-3 {
+  bottom: 20%;
+  left: 15%;
+}
+
+.data-bit {
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  animation: dataFlow 8s linear infinite;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+/* AI Brain Visualization */
+.ai-brain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   opacity: 0.15;
 }
 
-.number {
-  font-size: 14px;
-  color: #00ff88;
-  margin-bottom: 10px;
-  animation: floatUp 8s ease-in-out infinite;
+.brain-core {
+  width: 100px;
+  height: 100px;
+  position: relative;
 }
 
-/* Animations */
-@keyframes slideRight {
-  0% { transform: translateX(-100px); opacity: 0; }
-  10% { opacity: 0.1; }
-  90% { opacity: 0.1; }
-  100% { transform: translateX(calc(100vw + 100px)); opacity: 0; }
+.brain-pulse {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: brainPulse 2s ease-in-out infinite;
 }
 
-@keyframes slideLeft {
-  0% { transform: translateX(100px); opacity: 0; }
-  10% { opacity: 0.1; }
-  90% { opacity: 0.1; }
-  100% { transform: translateX(calc(-100vw - 100px)); opacity: 0; }
+.brain-synapses {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.synapse {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: #00ff88;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  animation: synapsePulse 1.5s ease-in-out infinite;
 }
 
-@keyframes floatUp {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+/* AI Trading Signals */
+.ai-signals {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+}
+
+.signal-wave {
+  position: absolute;
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  top: 30%;
+  animation: signalWave 3s ease-in-out infinite;
+}
+
+/* Floating AI Elements */
+.floating-ai-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-element {
+  position: absolute;
+  font-size: 24px;
+  animation: aiFloat 6s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+.element-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.element-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.element-3 {
+  top: 60%;
+  left: 5%;
+  animation-delay: 2s;
+}
+
+.element-4 {
+  top: 70%;
+  right: 20%;
+  animation-delay: 3s;
+}
+
+.element-5 {
+  bottom: 15%;
+  left: 25%;
+  animation-delay: 4s;
+}
+
+.element-6 {
+  bottom: 25%;
+  right: 10%;
+  animation-delay: 5s;
+}
+
+/* AI Animations */
+@keyframes neuronPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+  }
+}
+
+@keyframes connectionFlow {
+  0% { 
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  50% { 
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% { 
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
+@keyframes particleFloat {
+  0% { 
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% { 
+    opacity: 0.6;
+  }
+  90% { 
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0;
+  }
+}
+
+@keyframes dataFlow {
+  0% { 
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  10% { 
+    opacity: 1;
+  }
+  90% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+}
+
+@keyframes brainPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes synapsePulse {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scaleY(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scaleY(1.5);
+  }
+}
+
+@keyframes signalWave {
+  0% { 
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+}
+
+@keyframes aiFloat {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+  25% { 
+    transform: translateY(-20px) rotate(5deg);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: translateY(-10px) rotate(-5deg);
+    opacity: 0.4;
+  }
+  75% { 
+    transform: translateY(-30px) rotate(3deg);
+    opacity: 0.7;
+  }
 }
 
 /* Header Styles */
@@ -1665,10 +1969,30 @@ export default {
   font-weight: bold;
   line-height: 1.2;
   margin-bottom: 1.5rem;
+  min-height: 4.2rem;
+  display: flex;
+  align-items: center;
 }
 
-.highlight {
+.ai-typing-text {
+  color: white;
+}
+
+.typing-cursor {
   color: #00ff88;
+  animation: cursorBlink 1s infinite;
+  margin-left: 4px;
+}
+
+.ai-highlight {
+  color: #00ff88;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 .hero-subtitle {
@@ -1705,19 +2029,400 @@ export default {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Trading Dashboard Visual */
+/* AI Trading Dashboard Visual */
 .hero-visual {
   display: flex;
   justify-content: center;
 }
 
-.trading-dashboard {
+.ai-trading-dashboard {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  width: 380px;
+  width: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-trading-dashboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+  animation: dashboardScan 3s ease-in-out infinite;
+}
+
+@keyframes dashboardScan {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* AI Bot Container */
+.ai-bot-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.ai-bot {
+  width: 80px;
+  height: 100px;
+  position: relative;
+  animation: botFloat 2s ease-in-out infinite;
+}
+
+.bot-head {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  border-radius: 50%;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.bot-eyes {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 8px;
+}
+
+.eye {
+  width: 8px;
+  height: 8px;
+  background: #0a0a1a;
+  border-radius: 50%;
+  animation: eyeBlink 3s ease-in-out infinite;
+}
+
+@keyframes eyeBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.bot-antenna {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 15px;
+  background: #00ff88;
+}
+
+.antenna-signal {
+  position: absolute;
+  top: -5px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  background: #00ff88;
+  border-radius: 50%;
+  animation: signalPulse 1s ease-in-out infinite;
+}
+
+@keyframes signalPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.bot-body {
+  width: 70px;
+  height: 40px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+  margin: 0 auto;
+  margin-top: 5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.status-text {
+  font-size: 8px;
+  color: #00ff88;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  background: #00ff88;
+  border-radius: 50%;
+  animation: statusBlink 1s ease-in-out infinite;
+}
+
+@keyframes statusBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.processing-lines {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  display: flex;
+  gap: 2px;
+}
+
+.line {
+  flex: 1;
+  height: 2px;
+  background: #00ff88;
+  border-radius: 1px;
+  animation: processingWave 1.5s ease-in-out infinite;
+}
+
+@keyframes processingWave {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.5); }
+}
+
+@keyframes botFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* AI Prediction Chart */
+.ai-prediction-chart {
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  position: relative;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.chart-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.ai-confidence {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.confidence-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.confidence-value {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #00ff88;
+}
+
+.prediction-chart {
+  height: 80px;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.prediction-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  border-radius: 1px;
+  animation: predictionFlow 2s ease-in-out infinite;
+}
+
+@keyframes predictionFlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.prediction-points {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.prediction-point {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00ff88;
+  border-radius: 50%;
+  bottom: 0;
+  animation: pointPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pointPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+.ai-signals {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.signal {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+.buy-signal {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  animation: signalGlow 2s ease-in-out infinite;
+}
+
+.hold-signal {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sell-signal {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.4);
+}
+
+@keyframes signalGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.6); }
+}
+
+/* AI Voice Assistant */
+.ai-voice-assistant {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.voice-waves {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.wave {
+  width: 3px;
+  background: #00ff88;
+  border-radius: 2px;
+  animation: voiceWave 1.5s ease-in-out infinite;
+}
+
+.wave-1 {
+  height: 8px;
+  animation-delay: 0s;
+}
+
+.wave-2 {
+  height: 12px;
+  animation-delay: 0.2s;
+}
+
+.wave-3 {
+  height: 16px;
+  animation-delay: 0.4s;
+}
+
+.wave-4 {
+  height: 10px;
+  animation-delay: 0.6s;
+}
+
+@keyframes voiceWave {
+  0%, 100% { 
+    transform: scaleY(0.5);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.voice-text {
+  margin-left: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.voice-label {
+  font-size: 0.8rem;
+  color: #00ff88;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.voice-message {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  animation: voiceTyping 3s ease-in-out infinite;
+}
+
+@keyframes voiceTyping {
+  0%, 80%, 100% { opacity: 1; }
+  85%, 95% { opacity: 0.5; }
 }
 
 .main-chart {
@@ -3483,23 +4188,73 @@ export default {
     font-size: 0.9rem;
   }
   
-  /* Trading Dashboard Mobile */
-  .trading-dashboard {
+  /* AI Trading Dashboard Mobile */
+  .ai-trading-dashboard {
     width: 100%;
     max-width: 350px;
     margin: 0 auto;
   }
   
-  .main-chart {
+  .ai-prediction-chart {
     padding: 1rem;
   }
   
   .chart-title {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
-  .chart-price {
-    font-size: 1rem;
+  .chart-subtitle {
+    font-size: 0.6rem;
+  }
+  
+  .confidence-value {
+    font-size: 0.8rem;
+  }
+  
+  .ai-bot {
+    width: 60px;
+    height: 80px;
+  }
+  
+  .bot-head {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .bot-body {
+    width: 60px;
+    height: 35px;
+  }
+  
+  .status-text {
+    font-size: 7px;
+  }
+  
+  .signal {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  /* AI Voice Assistant Mobile */
+  .ai-voice-assistant {
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+  }
+  
+  .voice-waves {
+    left: 15px;
+  }
+  
+  .voice-text {
+    margin-left: 50px;
+  }
+  
+  .voice-label {
+    font-size: 0.7rem;
+  }
+  
+  .voice-message {
+    font-size: 0.8rem;
   }
   
   .mini-charts {
@@ -3797,35 +4552,86 @@ export default {
     font-size: 0.8rem;
   }
   
-  /* Trading Dashboard Small Mobile */
-  .trading-dashboard {
+  /* AI Trading Dashboard Small Mobile */
+  .ai-trading-dashboard {
     max-width: 300px;
     padding: 1rem;
   }
   
-  .main-chart {
+  .ai-prediction-chart {
     padding: 0.8rem;
   }
   
   .chart-title {
-    font-size: 0.9rem;
-  }
-  
-  .chart-subtitle {
-    font-size: 0.7rem;
-  }
-  
-  .chart-price {
-    font-size: 0.9rem;
-  }
-  
-  .chart-change {
     font-size: 0.8rem;
   }
   
-  .chart-stats {
+  .chart-subtitle {
+    font-size: 0.6rem;
+  }
+  
+  .confidence-value {
     font-size: 0.7rem;
   }
+  
+  .ai-bot {
+    width: 50px;
+    height: 70px;
+  }
+  
+  .bot-head {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .bot-body {
+    width: 50px;
+    height: 30px;
+  }
+  
+  .status-text {
+    font-size: 6px;
+  }
+  
+  .signal {
+    font-size: 0.5rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .prediction-chart {
+    height: 60px;
+  }
+  
+  /* AI Voice Assistant Small Mobile */
+  .ai-voice-assistant {
+    margin-top: 1rem;
+    padding: 0.6rem;
+  }
+  
+  .voice-waves {
+    left: 10px;
+  }
+  
+  .voice-text {
+    margin-left: 40px;
+  }
+  
+  .voice-label {
+    font-size: 0.6rem;
+  }
+  
+  .voice-message {
+    font-size: 0.7rem;
+  }
+  
+  .wave {
+    width: 2px;
+  }
+  
+  .wave-1 { height: 6px; }
+  .wave-2 { height: 8px; }
+  .wave-3 { height: 10px; }
+  .wave-4 { height: 7px; }
   
   .mini-charts {
     gap: 0.3rem;
