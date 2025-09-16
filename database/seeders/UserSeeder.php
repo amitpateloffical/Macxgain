@@ -13,43 +13,66 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-
-
-        // Second Admin User
-        $user2 = new User();
-        $user2->name = 'MacXgain Admin';
-        $user2->email = 'admin@macxgain.com';
-        $user2->mobile_code = '91';
-        $user2->phone = '9876543211';
-        $user2->is_admin = true;
-        $user2->password = '1234567890';
-        $user2->bank_name = 'HDFC Bank';
-        $user2->account_no = '9876543210987654';
-        $user2->ifsc_code = 'HDFC0001234';
-        $user2->aadhar_number = '987654321098';
-        $user2->pan_number = 'FGHIJ5678K';
-        $user2->address = '456 Business District, Delhi, India - 110001';
-        $user2->created_at = now();
-        $user2->updated_at = now();
-        $user2->save();
+        // Check if users already exist before creating
+        $this->createUserIfNotExists([
+            'name' => 'MacXgain Admin',
+            'email' => 'admin@macxgain.com',
+            'mobile_code' => '91',
+            'phone' => '9876543211',
+            'is_admin' => true,
+            'password' => '1234567890',
+            'bank_name' => 'HDFC Bank',
+            'account_no' => '9876543210987654',
+            'ifsc_code' => 'HDFC0001234',
+            'aadhar_number' => '987654321098',
+            'pan_number' => 'FGHIJ5678K',
+            'address' => '456 Business District, Delhi, India - 110001'
+        ]);
         
-        // Third Admin User
-        $user3 = new User();
-        $user3->name = 'Master Admin';
-        $user3->email = 'master@macxgain.com';
-        $user3->mobile_code = '91';
-        $user3->phone = '9876543212';
-        $user3->is_admin = true;
-        $user3->password = 'Kabirisgod@7354$';
-        $user3->bank_name = 'ICICI Bank';
-        $user3->account_no = '9876543210987655';
-        $user3->ifsc_code = 'ICIC0001234';
-        $user3->aadhar_number = '987654321099';
-        $user3->pan_number = 'FGHIJ5679K';
-        $user3->address = '789 Master Plaza, Mumbai, India - 400001';
-        $user3->created_at = now();
-        $user3->updated_at = now();
-        $user3->save();
-
+        $this->createUserIfNotExists([
+            'name' => 'Master Admin',
+            'email' => 'master@macxgain.com',
+            'mobile_code' => '91',
+            'phone' => '9876543212',
+            'is_admin' => true,
+            'password' => 'Kabirisgod@7354$',
+            'bank_name' => 'ICICI Bank',
+            'account_no' => '9876543210987655',
+            'ifsc_code' => 'ICIC0001234',
+            'aadhar_number' => '987654321099',
+            'pan_number' => 'FGHIJ5679K',
+            'address' => '789 Master Plaza, Mumbai, India - 400001'
+        ]);
+    }
+    
+    private function createUserIfNotExists($userData)
+    {
+        // Check if user with this email or phone already exists
+        $existingUser = User::where('email', $userData['email'])
+            ->orWhere('phone', $userData['phone'])
+            ->first();
+        
+        if (!$existingUser) {
+            $user = new User();
+            $user->name = $userData['name'];
+            $user->email = $userData['email'];
+            $user->mobile_code = $userData['mobile_code'];
+            $user->phone = $userData['phone'];
+            $user->is_admin = $userData['is_admin'];
+            $user->password = $userData['password'];
+            $user->bank_name = $userData['bank_name'];
+            $user->account_no = $userData['account_no'];
+            $user->ifsc_code = $userData['ifsc_code'];
+            $user->aadhar_number = $userData['aadhar_number'];
+            $user->pan_number = $userData['pan_number'];
+            $user->address = $userData['address'];
+            $user->created_at = now();
+            $user->updated_at = now();
+            $user->save();
+            
+            echo "Created user: " . $userData['email'] . " (Phone: " . $userData['phone'] . ")\n";
+        } else {
+            echo "User already exists: " . $userData['email'] . " or phone: " . $userData['phone'] . "\n";
+        }
     }
 }

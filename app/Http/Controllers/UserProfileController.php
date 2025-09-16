@@ -129,15 +129,53 @@ class UserProfileController extends Controller
 
     public function register(Request $request)
     {
-        $user = new User ();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->mobile_code = '91';
-        $user->status = 'I';
-        $user->phone = $request->phone;
-        $user->password = $request->password;
-        $user->save();
-        return response()->json(['message' => 'Profile updated successfully', 'data' => $user]);
+        try {
+            // Validate the request
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'phone' => 'required|string|max:20|unique:users,phone',
+                'password' => 'required|string|min:6'
+            ]);
+
+            // Check if user already exists
+            $existingUser = User::where('email', $request->email)->first();
+            if ($existingUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User with this email already exists'
+                ], 422);
+            }
+
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->mobile_code = '91';
+            $user->status = 'I';
+            $user->phone = $request->phone;
+            $user->password = $request->password;
+            $user->is_admin = false;
+            $user->total_balance = 0;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Account created successfully',
+                'data' => $user
+            ], 201);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
     public function changePassword(Request $request)
 {
