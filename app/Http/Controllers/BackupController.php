@@ -26,8 +26,8 @@ class BackupController extends Controller
     public function index()
     {
         try {
-            // Check if user is authenticated
-            if (!auth()->check()) {
+            // Check if user is authenticated (using sanctum)
+            if (!auth('sanctum')->check()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Authentication required.'
@@ -35,7 +35,7 @@ class BackupController extends Controller
             }
 
             // Check if user is admin
-            if (!auth()->user()->is_admin) {
+            if (!auth('sanctum')->user()->is_admin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access. Admin privileges required.'
@@ -66,7 +66,7 @@ class BackupController extends Controller
     {
         try {
             // Check if user is admin
-            if (!auth()->user()->is_admin) {
+            if (!auth('sanctum')->user()->is_admin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access. Admin privileges required.'
@@ -128,7 +128,7 @@ class BackupController extends Controller
     {
         try {
             // Check if user is admin
-            if (!auth()->user()->is_admin) {
+            if (!auth('sanctum')->user()->is_admin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access. Admin privileges required.'
@@ -168,7 +168,7 @@ class BackupController extends Controller
     {
         try {
             // Check if user is admin
-            if (!auth()->user()->is_admin) {
+            if (!auth('sanctum')->user()->is_admin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access. Admin privileges required.'
@@ -220,7 +220,7 @@ class BackupController extends Controller
     {
         try {
             // Check if user is admin
-            if (!auth()->user()->is_admin) {
+            if (!auth('sanctum')->user()->is_admin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access. Admin privileges required.'

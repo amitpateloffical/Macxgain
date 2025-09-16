@@ -297,7 +297,9 @@ export default {
         // Check if response is JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Server returned non-JSON response. Please check authentication.');
+          const responseText = await response.text();
+          console.error('Non-JSON response:', responseText);
+          throw new Error(`Server returned non-JSON response (${response.status}): ${responseText.substring(0, 100)}...`);
         }
 
         const data = await response.json();
