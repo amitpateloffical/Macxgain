@@ -53,12 +53,14 @@ return new class extends Migration
             ->get();
             
         foreach ($duplicates as $duplicate) {
-            // Keep the oldest record (lowest ID) and delete others
-            $usersToDelete = DB::table('users')
+            // Get all users with this email, ordered by ID (oldest first)
+            $allUsers = DB::table('users')
                 ->where('email', $duplicate->email)
                 ->orderBy('id')
-                ->skip(1) // Skip the first (oldest) record
                 ->get(['id']);
+                
+            // Keep the first (oldest) record, delete the rest
+            $usersToDelete = $allUsers->slice(1);
                 
             foreach ($usersToDelete as $user) {
                 // Delete related data first
@@ -85,12 +87,14 @@ return new class extends Migration
             ->get();
             
         foreach ($duplicates as $duplicate) {
-            // Keep the oldest record (lowest ID) and delete others
-            $usersToDelete = DB::table('users')
+            // Get all users with this phone, ordered by ID (oldest first)
+            $allUsers = DB::table('users')
                 ->where('phone', $duplicate->phone)
                 ->orderBy('id')
-                ->skip(1) // Skip the first (oldest) record
                 ->get(['id']);
+                
+            // Keep the first (oldest) record, delete the rest
+            $usersToDelete = $allUsers->slice(1);
                 
             foreach ($usersToDelete as $user) {
                 // Delete related data first
