@@ -130,23 +130,39 @@ class UserProfileController extends Controller
     public function register(Request $request)
     {
         try {
-            // Validate the request
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'phone' => 'required|string|max:20|unique:users,phone',
-                'password' => 'required|string|min:6'
-            ]);
-
-            // Check if user already exists
-            $existingUser = User::where('email', $request->email)->first();
-            if ($existingUser) {
+            \Log::info('Registration attempt', ['email' => $request->email, 'phone' => $request->phone]);
+            
+            // Check for existing email first
+            $existingEmail = User::where('email', $request->email)->first();
+            if ($existingEmail) {
+                \Log::info('Email already exists', ['email' => $request->email]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'User with this email already exists'
+                    'message' => 'Email already registered. Please use a different email.',
+                    'error_type' => 'email_exists'
                 ], 422);
             }
 
+            // Check for existing phone
+            $existingPhone = User::where('phone', $request->phone)->first();
+            if ($existingPhone) {
+                \Log::info('Phone already exists', ['phone' => $request->phone]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mobile number already registered. Please use a different mobile number.',
+                    'error_type' => 'phone_exists'
+                ], 422);
+            }
+
+            // Validate the request
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email',
+                'phone' => 'required|string|max:20',
+                'password' => 'required|string|min:6'
+            ]);
+
+            \Log::info('Creating new user');
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
@@ -155,8 +171,9 @@ class UserProfileController extends Controller
             $user->phone = $request->phone;
             $user->password = $request->password;
             $user->is_admin = false;
-            $user->total_balance = 0;
             $user->save();
+            
+            \Log::info('User created successfully', ['user_id' => $user->id]);
             
             return response()->json([
                 'success' => true,
@@ -165,15 +182,18 @@ class UserProfileController extends Controller
             ], 201);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error', ['errors' => $e->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Registration error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Registration failed: ' . $e->getMessage()
+                'message' => 'Registration failed. Please try again.',
+                'error_type' => 'general_error'
             ], 500);
         }
     }

@@ -316,13 +316,9 @@ const handleRegister = async () => {
   }
   
   isLoading.value = true
-  console.log(111111111111);
+  
   try {
-  console.log(111111111111222222222,form,form.value);
-    // Simulate API call
-    // await new Promise(resolve => setTimeout(resolve, 2000))
-        const response = await axios.post('/register', form.value)
-        //  axios.post('/register', form.value);
+    const response = await axios.post('/register', form.value)
     
     toast.success('Account created successfully! Welcome to Macxgain.', {
       autoClose: 2000,
@@ -335,11 +331,34 @@ const handleRegister = async () => {
     }, 1500)
     
   } catch (error) {
-    errorMessage.value = 'Registration failed. Please try again.'
-    toast.error('Registration failed. Please try again.', {
-      autoClose: 3000,
-      position: "top-right"
-    })
+    console.log('Registration error:', error.response?.data)
+    
+    // Handle specific error types
+    if (error.response?.data?.error_type === 'email_exists') {
+      errorMessage.value = 'Email already registered. Please use a different email.'
+      toast.error('Email already registered. Please use a different email.', {
+        autoClose: 4000,
+        position: "top-right"
+      })
+    } else if (error.response?.data?.error_type === 'phone_exists') {
+      errorMessage.value = 'Mobile number already registered. Please use a different mobile number.'
+      toast.error('Mobile number already registered. Please use a different mobile number.', {
+        autoClose: 4000,
+        position: "top-right"
+      })
+    } else if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message
+      toast.error(error.response.data.message, {
+        autoClose: 4000,
+        position: "top-right"
+      })
+    } else {
+      errorMessage.value = 'Registration failed. Please try again.'
+      toast.error('Registration failed. Please try again.', {
+        autoClose: 3000,
+        position: "top-right"
+      })
+    }
   } finally {
     isLoading.value = false
   }
