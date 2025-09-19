@@ -17,13 +17,13 @@
     </div>
 
     <!-- Debug Info -->
-    <div style="background: #333; color: white; padding: 10px; margin: 10px 0; border-radius: 5px;">
+    <!-- <div style="background: #333; color: white; padding: 10px; margin: 10px 0; border-radius: 5px;">
       <strong>Debug Info:</strong><br>
       Loading: {{ loading }}<br>
       User Orders Length: {{ userOrders.length }}<br>
       Filtered Orders Length: {{ filteredOrders.length }}<br>
       User ID: {{ user.id }}
-    </div>
+    </div> -->
 
     <!-- Orders Summary -->
     <div class="orders-summary">

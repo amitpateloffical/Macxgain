@@ -53,10 +53,10 @@
           <i class="fas fa-plus"></i>
           Add Initial Funds
         </button>
-        <button class="debug-btn" @click="debugBalance" :disabled="loading">
+        <!-- <button class="debug-btn" @click="debugBalance" :disabled="loading">
           <i class="fas fa-bug"></i>
           Debug Balance
-        </button>
+        </button> -->
       </div>
     </div>
 
