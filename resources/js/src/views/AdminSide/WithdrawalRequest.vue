@@ -90,16 +90,17 @@
               <div class="user-avatar">
                 <img 
                   :src="getProfileImageUrl(request?.requester?.profile_image)"
-                  :alt="request.requester.name"
+                  :alt="request?.requester?.name || 'Unknown User'"
                   @error="handleProfileImageError($event, request.requester.name)"
                   @load="() => console.log('Profile image loaded successfully for:', request.requester.name)"
                 />
               </div>
               <div class="user-details">
-                <h4 class="user-name">{{ request.requester.name }}</h4>
-                <p class="user-email">{{ request.requester.email }}</p>
-                <p class="user-phone">{{ request.requester.mobile_code }} {{ request.requester.phone }}</p>
-              </div>
+          <h4 class="user-name">{{ request?.requester?.name || 'Unknown' }}</h4>
+          <p class="user-email">{{ request?.requester?.email || 'No Email' }}</p>
+          <p class="user-phone">
+            {{ request?.requester?.mobile_code || '' }} {{ request?.requester?.phone || '' }}
+          </p>              </div>
             </div>
             <div class="request-status" :class="getStatusClass(request.status)">
               <span class="status-badge">{{ getStatusLabel(request.status) }}</span>
