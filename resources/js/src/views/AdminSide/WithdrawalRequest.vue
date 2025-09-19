@@ -120,9 +120,7 @@
             <div class="detail-row" v-if="request.requester.bank_name">
               <span class="detail-label">Bank Details:</span>
               <span class="detail-value bank-details">
-                  {{ request?.requester?.bank_name || 'N/A' }} - 
-    {{ request?.requester?.account_no || 'N/A' }} - 
-    {{ request?.requester?.ifsc_code || 'N/A' }}
+   
               </span>
             </div>
 
