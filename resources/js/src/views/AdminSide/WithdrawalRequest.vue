@@ -117,14 +117,15 @@
               <span class="detail-label">Requested:</span>
               <span class="detail-value">{{ formatDate(request.created_at) }}</span>
             </div>
-            <!-- <div class="detail-row" v-if="request.requester.bank_name">
-              <span class="detail-label">Bank Details:</span>
-              <span class="detail-value bank-details">
-                  {{ request?.requester?.bank_name || 'N/A' }} - 
+           <div class="detail-row" v-if="request?.requester?.bank_name">
+  <span class="detail-label">Bank Details:</span>
+  <span class="detail-value bank-details">
+    {{ request?.requester?.bank_name || 'N/A' }} - 
     {{ request?.requester?.account_no || 'N/A' }} - 
     {{ request?.requester?.ifsc_code || 'N/A' }}
-              </span>
-            </div> -->
+  </span>
+</div>
+
 
             <div class="detail-row" v-if="request.reject_reason">
               <span class="detail-label">Rejection Reason:</span>
