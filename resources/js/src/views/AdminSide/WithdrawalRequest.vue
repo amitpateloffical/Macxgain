@@ -89,7 +89,7 @@
             <div class="user-info">
               <div class="user-avatar">
                 <img 
-                  :src="getProfileImageUrl(request.requester.profile_image)" 
+                  :src="getProfileImageUrl(request?.requester?.profile_image)"
                   :alt="request.requester.name"
                   @error="handleProfileImageError($event, request.requester.name)"
                   @load="() => console.log('Profile image loaded successfully for:', request.requester.name)"
@@ -289,15 +289,16 @@ const getProfileImageUrl = (profileImagePath) => {
   if (!profileImagePath) {
     return '/build/assets/tableprofileimg-DaN7tIxX.png'
   }
-  
+
   // If it's already a full URL, return as is
   if (profileImagePath.startsWith('http')) {
     return profileImagePath
   }
-  
+
   // Construct full URL for stored images
   return `${window.location.origin}/storage/${profileImagePath}`
 }
+
 
 const handleProfileImageError = (event, userName) => {
   console.log(`Profile image failed to load for ${userName}, creating initials fallback`)
