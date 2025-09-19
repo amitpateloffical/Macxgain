@@ -49,10 +49,10 @@
           <i class="fas fa-wallet"></i>
           Refresh Balance
         </button>
-        <button v-if="user.balance === 0" class="add-funds-btn" @click="addInitialFunds" :disabled="loading">
+        <!-- <button v-if="user.balance === 0" class="add-funds-btn" @click="addInitialFunds" :disabled="loading">
           <i class="fas fa-plus"></i>
           Add Initial Funds
-        </button>
+        </button> -->
         <!-- <button class="debug-btn" @click="debugBalance" :disabled="loading">
           <i class="fas fa-bug"></i>
           Debug Balance
