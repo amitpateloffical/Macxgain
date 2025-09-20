@@ -577,6 +577,9 @@ class AITradingController extends Controller
     {
         try {
             $orders = DB::table('ai_trading_orders')
+            ->select(
+                'ai_trading_orders.*',
+            )
                 ->where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->get();
