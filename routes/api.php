@@ -142,7 +142,7 @@ Route::get('/truedata/test-option/{symbol}', [TrueDataController::class, 'testOp
 Route::get('/truedata/simple-option/{symbol}', function($symbol) {
     try {
         // Simple direct implementation
-        $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial110&password=bikash110&symbol={$symbol}&expiry=20250916";
+        $trueDataUrl = "https://api.truedata.in/getOptionChain?user=Trial189&password=patel189&symbol={$symbol}&expiry=20250916";
         $rawResponse = file_get_contents($trueDataUrl);
         $trueDataResponse = json_decode($rawResponse, true);
         

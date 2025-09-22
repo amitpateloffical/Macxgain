@@ -41,8 +41,8 @@ return [
     ],
 
     'truedata' => [
-        'username' => env('TRUEDATA_USERNAME', 'Trial110'),
-        'password' => env('TRUEDATA_PASSWORD', 'bikash110'),
+        'username' => env('TRUEDATA_USERNAME', 'Trial189'),
+        'password' => env('TRUEDATA_PASSWORD', 'patel189'),
         'realtime_port' => env('TRUEDATA_PORT', 8086), // Sandbox port for trial
         'base_url' => env('TRUEDATA_HOST', 'push.truedata.in'), // Correct host
     ],

@@ -28,8 +28,8 @@ def fetch_live_data():
     
     # Configuration
     realtime_port = 8086  # Sandbox port for trial
-    username = 'Trial110'
-    password = 'bikash110'
+    username = 'Trial189'
+    password = 'patel189'
     
     # Force logout from previous sessions
     print("Attempting force logout from previous sessions...", file=sys.stderr)
