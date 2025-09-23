@@ -86,6 +86,7 @@ Route::get('/login-logs', [EmailLogsController::class, 'getLoginLogs']);
     Route::match(['patch', 'put'], '/withdrawal-request/{id}/status', [WithdrawalRequestController::class, 'updateStatus']);
     Route::get('/withdrawal-request/{id}', [WithdrawalRequestController::class, 'show']);
     Route::get('/checkBankInfo', [WithdrawalRequestController::class, 'checkBankInfo']);
+    Route::get('/withdrawal-balance', [WithdrawalRequestController::class, 'getWithdrawalBalance']);
 
 
     Route::middleware('auth:api')->get('/user-info', [UserController::class, 'getUserInfo']);

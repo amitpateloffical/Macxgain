@@ -12,10 +12,22 @@
             <div class="balance-card-small">
               <div class="balance-header-small">
                 <i class="bi bi-wallet2 me-1"></i>
-                <span>Available Balance</span>
+                <span>Total Balance</span>
               </div>
               <div class="balance-amount-small">
                 ₹{{ formatBalance(userBalance) }}
+              </div>
+              <button @click="fetchUserBalance" class="refresh-btn-small" :disabled="balanceLoading">
+                <i class="bi bi-arrow-clockwise" :class="{ 'spinning': balanceLoading }"></i>
+              </button>
+            </div>
+            <div class="balance-card-small available">
+              <div class="balance-header-small">
+                <i class="bi bi-check-circle me-1"></i>
+                <span>Available for Withdrawal</span>
+              </div>
+              <div class="balance-amount-small">
+                ₹{{ formatBalance(availableWithdrawalBalance) }}
               </div>
               <button @click="fetchUserBalance" class="refresh-btn-small" :disabled="balanceLoading">
                 <i class="bi bi-arrow-clockwise" :class="{ 'spinning': balanceLoading }"></i>
@@ -302,8 +314,18 @@
               <i class="fas fa-wallet"></i>
             </div>
             <div class="balance-info">
-              <span class="balance-label">Available Balance</span>
+              <span class="balance-label">Available for Withdrawal</span>
               <span class="balance-amount">₹{{ formatBalance(availableBalance) }}</span>
+              <div class="balance-breakdown">
+                <div class="balance-detail">
+                  <span class="detail-label">Total Balance:</span>
+                  <span class="detail-value">₹{{ formatBalance(balanceData.total_balance || 0) }}</span>
+                </div>
+                <div class="balance-detail">
+                  <span class="detail-label">Blocked in Trades:</span>
+                  <span class="detail-value blocked">₹{{ formatBalance(balanceData.blocked_amount || 0) }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -407,6 +429,8 @@ export default {
       showfilter: false,
       fetchRequests: [],
       userBalance: 0,
+      withdrawalBalance: 0,
+      blockedAmount: 0,
       balanceLoading: false,
       fields: [
         { key: "amount", label: "Amount", sortable: true },
@@ -451,6 +475,11 @@ export default {
       currentUserId: null,
       canWithdraw: false,
       availableBalance: 0,
+      balanceData: {
+        total_balance: 0,
+        blocked_amount: 0,
+        available_balance: 0
+      },
       errorMessage: "",
     };
   },
@@ -465,6 +494,9 @@ export default {
       } else {
         return this.currentPage * this.perPage;
       }
+    },
+    availableWithdrawalBalance() {
+      return Math.max(0, this.userBalance - this.blockedAmount);
     },
   },
   setup() {
@@ -521,6 +553,9 @@ export default {
             localStorage.setItem("userData", JSON.stringify(userData));
           }
         }
+        
+        // Also fetch withdrawal balance details
+        await this.fetchWithdrawalBalance();
       } catch (error) {
         console.error("Error fetching balance:", error);
         // Try to get balance from localStorage as fallback
@@ -530,6 +565,36 @@ export default {
         }
       } finally {
         this.balanceLoading = false;
+      }
+    },
+    
+    async fetchWithdrawalBalance() {
+      try {
+        const res = await axios.get('/withdrawal-balance');
+        console.log('Withdrawal balance response:', res.data);
+        
+        if (res.data.status === 'success') {
+          this.withdrawalBalance = res.data.data.available_balance;
+          this.blockedAmount = res.data.data.blocked_amount;
+          console.log('Updated withdrawal balance:', {
+            withdrawalBalance: this.withdrawalBalance,
+            blockedAmount: this.blockedAmount,
+            userBalance: this.userBalance,
+            availableWithdrawalBalance: this.availableWithdrawalBalance,
+            totalBalance: res.data.data.total_balance
+          });
+        } else {
+          console.log('withdrawal-balance returned error status:', res.data.status, res.data.message);
+          // If API fails, set blocked amount to 0 so available = total
+          this.blockedAmount = 0;
+          this.withdrawalBalance = this.userBalance;
+        }
+      } catch (error) {
+        console.error('Error fetching withdrawal balance:', error);
+        console.error('Error details:', error.response?.data);
+        // If API call fails, set blocked amount to 0 so available = total
+        this.blockedAmount = 0;
+        this.withdrawalBalance = this.userBalance;
       }
     },
     
@@ -580,7 +645,12 @@ export default {
         .get(`/checkBankInfo`)
         .then((res) => {
           if (res.data.status === "success") {
-            this.availableBalance = res.data.data.balance;
+            this.availableBalance = res.data.data.available_balance || res.data.data.balance;
+            this.balanceData = {
+              total_balance: res.data.data.total_balance || 0,
+              blocked_amount: res.data.data.blocked_amount || 0,
+              available_balance: res.data.data.available_balance || res.data.data.balance
+            };
             this.canWithdraw = true;
           } else {
             this.errorMessage = res.data.message;
@@ -1352,6 +1422,8 @@ export default {
 .balance-display {
   display: flex;
   justify-content: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .balance-card-small {
@@ -1371,6 +1443,25 @@ export default {
   border-color: rgba(0, 255, 128, 0.5);
   box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2);
   transform: translateY(-1px);
+}
+
+.balance-card-small.available {
+  background: linear-gradient(135deg, rgba(0, 191, 255, 0.1), rgba(0, 150, 255, 0.05));
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
+
+.balance-card-small.available:hover {
+  border-color: rgba(0, 191, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.2);
+}
+
+.balance-card-small.available .balance-header-small {
+  color: #00bfff;
+}
+
+.balance-card-small.available .balance-amount-small {
+  color: #00bfff;
+  text-shadow: 0 0 8px rgba(0, 191, 255, 0.3);
 }
 
 .balance-header-small {
@@ -1432,6 +1523,7 @@ export default {
   .balance-display {
     justify-content: center;
     width: 100%;
+    gap: 10px;
   }
   
   .balance-card-small {
@@ -1630,6 +1722,39 @@ export default {
   color: #00ff80;
   font-size: 1.8rem;
   font-weight: 700;
+}
+
+.balance-breakdown {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.balance-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.balance-detail:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #a1a1a1;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #e0e0e0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.detail-value.blocked {
+  color: #ff6b6b;
 }
 
 /* Form Styles */

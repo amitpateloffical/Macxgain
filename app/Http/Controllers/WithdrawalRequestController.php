@@ -6,6 +6,7 @@ use App\Models\WithdrawalRequest;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\User;
@@ -136,14 +137,23 @@ class WithdrawalRequestController extends Controller
             'reject_reason' => 'required_if:status,rejected|string|max:255',
         ]);
 
-        // ✅ Check available balance first
-        $lastBalance = WalletTransaction::where('user_id', $withdrawal->request_by)
+        // ✅ Check available balance first (excluding blocked trading amounts)
+        $totalBalance = WalletTransaction::where('user_id', $withdrawal->request_by)
             ->orderBy('id', 'desc')
             ->value('running_balance') ?? 0;
 
-        if ($request->status === 'approved' && $withdrawal->amount > $lastBalance) {
+        // Calculate blocked amount from active trades
+        $blockedAmount = DB::table('ai_trading_orders')
+            ->where('user_id', $withdrawal->request_by)
+            ->where('status', 'COMPLETED') // Active trades
+            ->sum('total_amount') ?? 0;
+
+        // Available balance = Total balance - Blocked amount
+        $availableBalance = $totalBalance - $blockedAmount;
+
+        if ($request->status === 'approved' && $withdrawal->amount > $availableBalance) {
             return response()->json([
-                'message' => 'Insufficient balance in wallet. Withdrawal cannot be approved.'
+                'message' => 'Insufficient available balance. Available: ₹' . number_format($availableBalance, 2) . ' (Total: ₹' . number_format($totalBalance, 2) . ', Blocked: ₹' . number_format($blockedAmount, 2) . ')'
             ], 200);
         }
 
@@ -165,12 +175,58 @@ class WithdrawalRequestController extends Controller
                 'transaction_code' => strtoupper(Str::random(12)),
                 'type' => 'debit',
                 'amount' => $withdrawal->amount,
-                'running_balance' => $lastBalance - $withdrawal->amount,
+                'running_balance' => $totalBalance - $withdrawal->amount,
                 'remark' => 'Withdrawal approved - ' . $withdrawal->id,
             ]);
         }
 
         return response()->json(['message' => 'Status updated successfully.']);
+    }
+
+    /**
+     * Get user's withdrawal balance information (always returns balance data)
+     */
+    public function getWithdrawalBalance(Request $request)
+    {
+        $login = Auth::guard('api')->user()->id;
+        $user = User::find($login);
+
+        // Check if user exists
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        // Get total balance from wallet transactions
+        $totalBalance = DB::table('wallet_transactions')
+            ->where('user_id', $login)
+            ->orderBy('created_at', 'desc')
+            ->value('running_balance') ?? 0;
+
+        // Calculate blocked amount from active trades
+        $blockedAmount = DB::table('ai_trading_orders')
+            ->where('user_id', $login)
+            ->where('status', 'COMPLETED') // Active trades
+            ->sum('total_amount') ?? 0;
+
+        // Available balance = Total balance - Blocked amount
+        $availableBalance = $totalBalance - $blockedAmount;
+
+        // Check bank details status
+        $hasBankDetails = !empty($user->bank_name) && !empty($user->account_no) && !empty($user->ifsc_code);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'total_balance' => $totalBalance,
+                'blocked_amount' => $blockedAmount,
+                'available_balance' => $availableBalance,
+                'has_bank_details' => $hasBankDetails,
+                'min_withdraw_amount' => 100,
+            ]
+        ], 200);
     }
 
     public function checkBankInfo(Request $request)
@@ -193,13 +249,31 @@ class WithdrawalRequestController extends Controller
             ], 200);
         }
 
-        $balance = $user->total_balance;
+        // Get total balance from wallet transactions
+        $totalBalance = \DB::table('wallet_transactions')
+            ->where('user_id', $login)
+            ->orderBy('created_at', 'desc')
+            ->value('running_balance') ?? 0;
 
-        if ($balance < 100) {
+        // Calculate blocked amount from active trades
+        $blockedAmount = \DB::table('ai_trading_orders')
+            ->where('user_id', $login)
+            ->where('status', 'COMPLETED') // Active trades
+            ->sum('total_amount') ?? 0;
+
+        // Available balance = Total balance - Blocked amount
+        $availableBalance = $totalBalance - $blockedAmount;
+
+        if ($availableBalance < 100) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Insufficient balance. Minimum balance of ₹100 is required for withdrawal.',
-                'balance' => $balance
+                'message' => 'Insufficient available balance. Minimum balance of ₹100 is required for withdrawal.',
+                'data' => [
+                    'total_balance' => $totalBalance,
+                    'blocked_amount' => $blockedAmount,
+                    'available_balance' => $availableBalance,
+                    'min_withdraw_amount' => 100,
+                ]
             ], 200);
         }
 
@@ -209,7 +283,10 @@ class WithdrawalRequestController extends Controller
             'message' => 'Withdrawal is available.',
             'data' => [
                 'user' => $user,
-                'balance' => $balance,
+                'total_balance' => $totalBalance,
+                'blocked_amount' => $blockedAmount,
+                'available_balance' => $availableBalance,
+                'balance' => $availableBalance, // For backward compatibility
                 'min_withdraw_amount' => 100,
             ]
         ], 200);
