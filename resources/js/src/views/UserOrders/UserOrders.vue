@@ -191,13 +191,19 @@
           <div class="order-details">
             <div class="detail-row">
               <div class="detail-group">
-                <span class="detail-label">Quantity</span>
+                <span class="detail-label">Lot Size</span>
                 <span class="detail-value">{{ order.quantity }}</span>
               </div>
 
               <div class="detail-group">
-                <span class="detail-label">Lot Size</span>
+                <span class="detail-label">Quantity</span>
                 <span class="detail-value">{{ order.lot_size }}</span>
+              </div>
+
+
+              <div class="detail-group">
+                <span class="detail-label">Purchase Price (Unit)</span>
+                <span class="detail-value">₹{{ order.unit_price.toFixed(2)}}</span>
               </div>
               <div class="detail-group">
                 <span class="detail-label">Strike Price</span>
@@ -223,6 +229,11 @@
               <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
                 <span class="detail-label">Exit Price</span>
                 <span class="detail-value">₹{{ order.executedPrice.toFixed(2) * order.quantity}}</span>
+              </div>
+
+              <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
+                <span class="detail-label">Exit Price(unit)</span>
+                <span class="detail-value">₹{{ order.executedPrice.toFixed(2)}}</span>
               </div>
               <div class="detail-group" v-if="order.status === 'CLOSED' && order.executedPrice && order.totalAmount">
                 <span class="detail-label">P&L</span>
@@ -513,6 +524,7 @@ export default {
             lot_size: parseInt(order.lot_size),
             price: parseFloat(order.strike_price),
             executedPrice: order.exit_price ? parseFloat(order.exit_price) : null,
+            unit_price: order.unit_price ? parseFloat(order.unit_price) : null,
             timestamp: new Date(order.created_at),
             executedAt: order.closed_at ? new Date(order.closed_at) : null,
             optionType: order.option_type,

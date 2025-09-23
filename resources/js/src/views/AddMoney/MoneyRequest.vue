@@ -105,8 +105,6 @@
         <b-table
           :items="fetchRequests"
           :fields="tableFields"
-          :current-page="currentPage"
-          :per-page="perPage"
           :busy="modalLoading"
           responsive
           class="requests-table dark-table"
@@ -678,9 +676,22 @@ export default {
         console.log('🚨 Length:', newVal ? newVal.length : 0);
       },
       immediate: true
+    },
+    // Refetch when page changes
+    currentPage(val) {
+      this.fetchRequestss();
+    },
+    // Refetch when per-page changes and reset to first page
+    perPage(val) {
+      this.currentPage = 1;
+      this.fetchRequestss();
     }
   },
   methods: {
+    // Unified handler for pagination component @input
+    fetchEntries() {
+      this.fetchRequestss();
+    },
     fetchUserInfo() {
       // Fetch current user info (you need to implement this API endpoint)
       axios

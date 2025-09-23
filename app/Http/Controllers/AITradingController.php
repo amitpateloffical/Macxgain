@@ -840,12 +840,13 @@ class AITradingController extends Controller
             DB::beginTransaction();
 
             try {
-                // Update order status to closed
+                // Update order status to closed and store exit_unit_price
                 DB::table('ai_trading_orders')
                     ->where('id', $orderId)
                     ->update([
                         'status' => 'CLOSED',
                         'exit_price' => $currentPrice,
+                        'exit_unit_price' => $exitUnitPrice ?? null,
                         'pnl' => $pnl,
                         'closed_at' => now(),
                         'updated_at' => now()
@@ -857,18 +858,20 @@ class AITradingController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->value('running_balance');
 
-                // Calculate final balance: current total balance + P&L
+                // Calculate final balance: unblocked amount is exit_amount; for options, use provided exit_price if any
                 $blockedAmount = $order->total_amount; // Amount that was blocked
-                $finalBalance = $currentTotalBalance + $request->input('exit_price') * $order->quantity - $order->total_amount;
+                $effectiveExitPrice = $exitPrice ?? $currentPrice; // total exit per unit
+                $exitAmount = $effectiveExitPrice * $order->quantity;
+                $finalBalance = ($currentTotalBalance - $blockedAmount) + $exitAmount;
 
                 // Create wallet transaction for trade exit (unblock + P&L)
                 DB::table('wallet_transactions')->insert([
                     'user_id' => $order->user_id,
                     'transaction_code' => 'AI_TRADE_EXIT_' . $orderId,
                     'type' => 'unblock',
-                    'amount' => $blockedAmount + $pnl, // Return blocked amount + P&L
+                    'amount' => $exitAmount, // Return actual exit proceeds
                     'running_balance' => $finalBalance,
-                    'remark' => "AI Trading Exit: Order #{$orderId} - Returned ₹{$blockedAmount} + " . ($pnl >= 0 ? 'Profit' : 'Loss') . " ₹" . abs($pnl) . " = Final: ₹" . ($blockedAmount + $pnl),
+                    'remark' => "AI Trading Exit: Order #{$orderId} - Exit @ ₹{$effectiveExitPrice} × {$order->quantity} = ₹{$exitAmount}",
                     'approved_by' => auth()->id() ?? 1,
                     'approved_at' => now(),
                     'created_at' => now(),
@@ -891,6 +894,7 @@ class AITradingController extends Controller
                     'data' => [
                         'order_id' => $orderId,
                         'exit_price' => $currentPrice,
+                        'exit_unit_price' => $exitUnitPrice ?? null,
                         'pnl' => $pnl,
                         'new_balance' => $finalBalance,
                         'pnl_type' => $pnl >= 0 ? 'profit' : 'loss'
@@ -1196,7 +1200,8 @@ class AITradingController extends Controller
                     'created_at' => $order->created_at,
                     'closed_at' => $order->closed_at ?? null,
                     'exit_price' => $order->exit_price ?? null,
-                    'final_pnl' => $order->pnl ?? null
+                    'final_pnl' => $order->pnl ?? null,
+                    'exit_unit_price' => $order->exit_unit_price ?? null
                 ]
             ]);
 

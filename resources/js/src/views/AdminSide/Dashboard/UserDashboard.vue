@@ -472,7 +472,7 @@ onMounted(() => {
 
 .section-container {
   margin: 0 auto 40px;
-  max-width: 1200px;
+  max-width: 1600px;
   width: 100%;
 }
 
@@ -647,7 +647,7 @@ onMounted(() => {
 
 .stocks-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
   max-height: 60vh;
   overflow-y: auto;

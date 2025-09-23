@@ -1418,7 +1418,7 @@ export default {
       // Standard lot sizes for different stocks (like Angel One)
       const lotSizes = {
         'NIFTY 50': 75,
-        'NIFTY BANK': 25,
+        'NIFTY BANK': 35,
         'NIFTY IT': 25,
         'SENSEX': 10,
         'FINNIFTY': 40,
