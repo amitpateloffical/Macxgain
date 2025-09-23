@@ -5,11 +5,11 @@
 from websocket._core import create_connection
 
 
-realtime_port = 8086  # 8082 for production & 8086 for sandbox environment during trial
+realtime_port = 8084  # 8082 for production & 8084 for sandbox environment during trial
 
 
-username = 'Trial189'
-password = 'patel189'
+username = 'tdwsp759'
+password = 'mosh@759'
 
 
 print("\nCreating a connection with the server...\n")

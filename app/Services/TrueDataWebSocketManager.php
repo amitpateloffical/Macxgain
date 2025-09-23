@@ -31,7 +31,7 @@ class TrueDataWebSocketManager
     {
         $this->username = config('services.truedata.username');
         $this->password = config('services.truedata.password');
-        $this->realtimePort = config('services.truedata.realtime_port', 8086);
+        $this->realtimePort = config('services.truedata.realtime_port', 8084);
         $this->baseUrl = config('services.truedata.base_url', 'push.truedata.in');
         $this->lastHeartbeat = time();
         $this->loop = Loop::get();

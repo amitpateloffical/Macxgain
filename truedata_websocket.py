@@ -6,7 +6,7 @@ import time
 import sys
 from websocket._core import create_connection
 
-def force_logout(username, password, port=8086):
+def force_logout(username, password, port=8084):
     """Force logout from all previous sessions"""
     import urllib.request
     import urllib.parse
@@ -27,9 +27,9 @@ def fetch_live_data():
     """Fetch live market data from TrueData WebSocket"""
     
     # Configuration
-    realtime_port = 8086  # Sandbox port for trial
-    username = 'Trial189'
-    password = 'patel189'
+    realtime_port = 8084  # Sandbox port for trial
+    username = 'tdwsp759'
+    password = 'mosh@759'
     
     # Force logout from previous sessions
     print("Attempting force logout from previous sessions...", file=sys.stderr)

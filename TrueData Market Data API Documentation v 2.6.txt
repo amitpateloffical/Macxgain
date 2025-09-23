@@ -582,7 +582,7 @@ Production Environment Port(s)
 –
 –
 
-Real Time – 8086
+Real Time – 8084
 Real Time – 8084
 
 iv)
@@ -722,7 +722,7 @@ iii)
 
 Heartbeat Messages
 a)
-Heartbeat messages have been added to the Real time stream (Ports 8084/8086). A
+Heartbeat messages have been added to the Real time stream (Ports 8084/8084). A
 heartbeat shall be sent at every 5-6 seconds interval.
 b)
 As soon as the client is connected to the Real time port, you would start receiving
