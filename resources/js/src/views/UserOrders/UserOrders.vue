@@ -202,7 +202,7 @@
 
 
               <div class="detail-group">
-                <span class="detail-label">Purchase Price (Unit)</span>
+                <span class="detail-label">Buying Price (Unit)</span>
                 <span class="detail-value">₹{{ order.unit_price.toFixed(2)}}</span>
               </div>
               <div class="detail-group">
@@ -227,12 +227,12 @@
             
             <div class="detail-row" v-if="order.status === 'EXECUTED' || order.status === 'CLOSED'">
               <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
-                <span class="detail-label">Exit Price</span>
+                <span class="detail-label">Selling Price</span>
                 <span class="detail-value">₹{{ order.executedPrice.toFixed(2) * order.quantity}}</span>
               </div>
 
               <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
-                <span class="detail-label">Exit Price(unit)</span>
+                <span class="detail-label">Selling Price(unit)</span>
                 <span class="detail-value">₹{{ order.executedPrice.toFixed(2)}}</span>
               </div>
               <div class="detail-group" v-if="order.status === 'CLOSED' && order.executedPrice && order.totalAmount">

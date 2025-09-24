@@ -105,7 +105,7 @@
           <div class="card-header">
             <div class="card-icon blue">📊</div>
             <div class="card-title-section">
-              <h3 class="card-title">All Live Stocks</h3>
+              <h3 class="card-title">Watchlist</h3>
               <p class="card-subtitle">
                 {{ searchQuery ? `${filteredStocks.length} of ${totalSymbols}` : totalSymbols }} symbols from database
                 <span class="update-indicator" v-if="!loading && lastUpdated">• Updated {{ lastUpdated }}</span>

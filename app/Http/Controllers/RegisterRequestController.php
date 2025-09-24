@@ -21,7 +21,10 @@ class RegisterRequestController extends Controller
             $requests = User::select([
                 'id', 'name', 'email', 'phone', 'profile_image', 'status',
                 'created_at', 'updated_at'
-            ])->orderBy('created_at', 'desc')->get();
+            ])
+            ->whereIn('status', ['I', 'A', 'D'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
             // Transform data to match frontend expectations
             $formattedRequests = $requests->map(function ($user) {
@@ -91,9 +94,9 @@ class RegisterRequestController extends Controller
         try {
             $user = User::findOrFail($id);
             
-            // Update user status to inactive (rejected)
+            // Update user status to rejected
             $user->update([
-                'status' => 'I', // Inactive
+                'status' => 'D', // Rejected/Disabled
                 'updated_at' => Carbon::now()
             ]);
 
