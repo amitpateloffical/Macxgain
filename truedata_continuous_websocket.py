@@ -22,7 +22,7 @@ class TrueDataWebSocket:
         # All symbols to fetch
         self.symbols = [
             # Major Indices
-            "NIFTY 50", "NIFTY BANK", "NIFTY IT", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY",
+            "NIFTY 50", "NIFTY BANK", "NIFTY IT", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY", "SENSEX",
             "NIFTY REALTY", "NIFTY PSU BANK", "NIFTY PVT BANK", "NIFTY MEDIA", "NIFTY INFRA", "NIFTY COMMODITIES",
             
             # Large Cap Stocks
@@ -133,10 +133,11 @@ class TrueDataWebSocket:
                 connection_msg = self.ws.recv()
                 print(f"Reconnection: {connection_msg}", file=sys.stderr)
             
-            # Subscribe to all symbols
+            # Subscribe to symbols (respect server maxsymbols=50)
+            symbols_to_send = self.symbols[:50]
             subscribe_msg = {
                 "method": "addsymbol",
-                "symbols": self.symbols
+                "symbols": symbols_to_send
             }
             self.ws.send(json.dumps(subscribe_msg))
             

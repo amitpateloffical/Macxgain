@@ -496,6 +496,40 @@ class TrueDataController extends Controller
                 }
             }
             
+            // Merge SENSEX from local market_data.json if missing or zeroed in DB
+            try {
+                $jsonPath = base_path('market_data.json');
+                if (file_exists($jsonPath)) {
+                    $jsonContent = file_get_contents($jsonPath);
+                    $fileData = json_decode($jsonContent, true);
+                    if (is_array($fileData) && isset($fileData['SENSEX'])) {
+                        $sx = $fileData['SENSEX'];
+                        $sensexValid = is_array($sx) && isset($sx['ltp']) && (float)$sx['ltp'] > 0;
+                        $dbSensex = $liveData['SENSEX'] ?? null;
+                        $dbSensexZero = !$dbSensex || ((float)($dbSensex['ltp'] ?? 0) <= 0);
+                        if ($sensexValid && $dbSensexZero) {
+                            $liveData['SENSEX'] = [
+                                'symbol' => 'SENSEX',
+                                'ltp' => (float)($sx['ltp'] ?? 0),
+                                'change' => (float)($sx['change'] ?? 0),
+                                'change_percent' => (float)($sx['change_percent'] ?? 0),
+                                'high' => (float)($sx['high'] ?? 0),
+                                'low' => (float)($sx['low'] ?? 0),
+                                'open' => (float)($sx['open'] ?? 0),
+                                'prev_close' => (float)($sx['prev_close'] ?? 0),
+                                'volume' => (float)($sx['volume'] ?? 0),
+                                'timestamp' => $sx['timestamp'] ?? now()->toISOString(),
+                                'data_source' => $sx['data_source'] ?? 'TrueData WebSocket Live',
+                                'is_live' => $isMarketLive,
+                                'market_status' => $marketStatus['status']
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Merge SENSEX from JSON failed: ' . $e->getMessage());
+            }
+
             // Add market status to each data item
             foreach ($liveData as $symbol => &$data) {
                 $data['market_status'] = $marketStatus['status'];

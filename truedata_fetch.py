@@ -36,7 +36,7 @@ def fetch_live_data():
     force_logout(username, password, realtime_port)
     time.sleep(2)  # Wait 2 seconds after logout
     
-    # All symbols to fetch (86 symbols - full list)
+    # All symbols to fetch (include popular indices)
     symbols = [
         # Major Indices
         "NIFTY 50", "NIFTY BANK", "NIFTY IT", "SENSEX", "FINNIFTY", "NIFTY MIDCAP", "BANKEX", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY",

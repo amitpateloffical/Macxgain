@@ -129,42 +129,47 @@
 
       <!-- Stock Cards - Simple List -->
       <div class="stocks-grid">
-        <div v-for="stock in filteredStocks" :key="stock.symbol" class="stock-card" @click="selectStock(stock)">
+        <div v-for="stock in filteredStocks" :key="stock.symbol" class="stock-card" @click="isDataAvailable(stock) ? selectStock(stock) : null">
           <div class="stock-header">
             <div class="stock-info">
               <h3 class="stock-symbol">{{ stock.symbol }}</h3>
-              <div class="stock-price">₹{{ stock.ltp?.toFixed(2) || '0.00' }}</div>
+              <div class="stock-price">{{ isDataAvailable(stock) ? `₹${formatNumber(stock.ltp)}` : '--' }}</div>
             </div>
-            <div class="stock-change" :class="stock.change >= 0 ? 'positive' : 'negative'">
+            <div v-if="isDataAvailable(stock)" class="stock-change" :class="stock.change >= 0 ? 'positive' : 'negative'">
               <i :class="stock.change >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
               {{ stock.change >= 0 ? '+' : '' }}{{ stock.change?.toFixed(2) || '0.00' }}
               ({{ stock.change_percent >= 0 ? '+' : '' }}{{ stock.change_percent?.toFixed(2) || '0.00' }}%)
             </div>
+            <div v-else class="stock-change neutral">N/A</div>
           </div>
 
           <div class="stock-details">
             <div class="detail-row">
               <span>High:</span>
-              <span>₹{{ stock.high?.toFixed(2) || '0.00' }}</span>
+              <span>{{ isDataAvailable(stock) ? `₹${(stock.high||0).toFixed(2)}` : '--' }}</span>
             </div>
             <div class="detail-row">
               <span>Low:</span>
-              <span>₹{{ stock.low?.toFixed(2) || '0.00' }}</span>
+              <span>{{ isDataAvailable(stock) ? `₹${(stock.low||0).toFixed(2)}` : '--' }}</span>
             </div>
             <div class="detail-row">
               <span>Volume:</span>
-              <span>{{ stock.volume?.toLocaleString() || '0' }}</span>
+              <span>{{ isDataAvailable(stock) ? (stock.volume?.toLocaleString() || '0') : '--' }}</span>
             </div>
           </div>
 
           <!-- Conditional Action Button -->
-          <div v-if="isNiftySymbol(stock.symbol)" class="click-hint">
+          <div v-if="isNiftySymbol(stock.symbol) && isDataAvailable(stock)" class="click-hint">
             <i class="fas fa-mouse-pointer"></i>
             <span>Click to view Options Trading</span>
           </div>
-          <div v-else class="buy-stock-button" @click.stop="buyStock(stock)">
+          <div v-else-if="isDataAvailable(stock)" class="buy-stock-button" @click.stop="buyStock(stock)">
             <i class="fas fa-shopping-cart"></i>
             <span>Buy Stock</span>
+          </div>
+          <div v-else class="click-hint">
+            <i class="fas fa-info-circle"></i>
+            <span>Live data unavailable</span>
           </div>
         </div>
       </div>
@@ -715,7 +720,7 @@ export default {
   methods: {
     // Check if symbol is NIFTY-related for options trading
     isNiftySymbol(symbol) {
-      const niftySymbols = ['NIFTY 50', 'NIFTY', 'NIFTY BANK', 'BANKNIFTY', 'BANK NIFTY', 'NIFTY IT', 'FINNIFTY', 'NIFTY MIDCAP'];
+      const niftySymbols = ['NIFTY 50', 'NIFTY', 'NIFTY BANK', 'BANKNIFTY', 'BANK NIFTY', 'NIFTY IT', 'FINNIFTY', 'NIFTY MIDCAP', 'SENSEX'];
       return niftySymbols.includes(symbol);
     },
     
@@ -1017,6 +1022,27 @@ export default {
           this.liveStocks = Object.values(dataObject).filter(item => 
             item && typeof item === 'object' && item.symbol && item.ltp
           );
+
+          // Ensure SENSEX appears in Live Market Data even if feed misses it
+          const hasSensex = this.liveStocks.some(s => s.symbol === 'SENSEX');
+          if (!hasSensex) {
+            const base = this.liveStocks.find(s => s.symbol === 'NIFTY 50') || {};
+            this.liveStocks.push({
+              symbol: 'SENSEX',
+              ltp: 0,
+              change: 0,
+              change_percent: 0,
+              high: 0,
+              low: 0,
+              open: 0,
+              prev_close: 0,
+              volume: 0,
+              timestamp: new Date().toISOString(),
+              is_live: base.is_live || false,
+              market_status: base.market_status || (this.marketStatus?.status || 'CLOSED'),
+              data_source: 'Placeholder (feed unavailable)'
+            });
+          }
           
           // Get market status from first stock or default
           const firstStock = this.liveStocks[0];
@@ -1031,6 +1057,24 @@ export default {
           console.log('💰 NIFTY 50 LTP:', this.liveStocks.find(s => s.symbol === 'NIFTY 50')?.ltp);
         } else {
           console.log('❌ No market data received:', response.data);
+          // Fallback: ensure at least Sensex placeholder shows when backend returns nothing
+          this.liveStocks = [
+            {
+              symbol: 'SENSEX',
+              ltp: 0,
+              change: 0,
+              change_percent: 0,
+              high: 0,
+              low: 0,
+              open: 0,
+              prev_close: 0,
+              volume: 0,
+              timestamp: new Date().toISOString(),
+              is_live: false,
+              market_status: 'CLOSED',
+              data_source: 'Placeholder (no live data)'
+            }
+          ];
         }
       } catch (error) {
         console.error('❌ Error loading market data:', error);
@@ -1055,6 +1099,11 @@ export default {
     },
     searchStocks() {
       // Search functionality is handled by computed property
+    },
+    formatNumber(value) {
+      const num = Number(value);
+      if (isNaN(num)) return '0.00';
+      return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     async selectStock(stock) {
       this.selectedStock = stock;
@@ -1104,7 +1153,7 @@ export default {
         
         // Check if symbol has options trading
         if (symbol === 'SENSEX') {
-          this.showError('SENSEX options are not actively traded. Please try NIFTY 50 or BANK NIFTY for options trading.');
+          // Silently skip opening options for SENSEX without showing an error
           this.closeStockOptions();
           return;
         }
@@ -1140,6 +1189,13 @@ export default {
           this.loadingOptions = false;
         }
       }
+    },
+    isDataAvailable(stock) {
+      // Consider data unavailable if all key fields are zero/null
+      if (!stock) return false;
+      const zeroish = (v) => v === null || v === undefined || Number(v) === 0;
+      const allZero = zeroish(stock.ltp) && zeroish(stock.high) && zeroish(stock.low) && zeroish(stock.volume);
+      return !allZero;
     },
     processOptionsData(data) {
       console.log('🔄 Processing options data:', data);
@@ -1420,7 +1476,7 @@ export default {
         'NIFTY 50': 75,
         'NIFTY BANK': 35,
         'NIFTY IT': 25,
-        'SENSEX': 10,
+        'SENSEX': 20,
         'FINNIFTY': 40,
         'NIFTY MIDCAP': 50,
         'BANKEX': 15,
@@ -1933,7 +1989,18 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       });
-    }
+    },
+    getLotSizeForSymbol(symbol) {
+      const lots = {
+        'NIFTY 50': 75,
+        'NIFTY BANK': 35,
+        'NIFTY IT': 25,
+        'SENSEX': 20,
+        'FINNIFTY': 40,
+        'NIFTY MIDCAP': 50,
+      };
+      return lots[symbol] || 1;
+    },
   }
 }
 </script>

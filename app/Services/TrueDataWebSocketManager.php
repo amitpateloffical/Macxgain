@@ -967,7 +967,7 @@ class TrueDataWebSocketManager
     private function getDefaultSymbols()
     {
         return [
-            "NIFTY 50", "NIFTY BANK", "MCXCOMPDEX", "AARTIIND",
+            "NIFTY 50", "NIFTY BANK", "SENSEX", "MCXCOMPDEX", "AARTIIND",
             "BRITANNIA", "COLPAL", "DMART", "EICHERMOT", "GILLETTE",
             "HDFCBANK", "ICICIBANK", "JKTYRE", "KAJARIACER", "LICHSGFIN",
             "MINDTREE", "OFSS", "PNB", "QUICKHEAL", "RELIANCE", "SBIN",

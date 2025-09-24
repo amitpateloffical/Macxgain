@@ -39,7 +39,7 @@ def fetch_live_data():
     # All symbols to fetch
     symbols = [
         # Major Indices
-        "NIFTY 50", "NIFTY BANK", "NIFTY IT", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY",
+        "NIFTY 50", "NIFTY BANK", "NIFTY IT", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY", "SENSEX",
         "NIFTY REALTY", "NIFTY PSU BANK", "NIFTY PVT BANK", "NIFTY MEDIA", "NIFTY INFRA", "NIFTY COMMODITIES",
         
         # Large Cap Stocks
