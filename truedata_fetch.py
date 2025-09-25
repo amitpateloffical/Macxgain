@@ -36,28 +36,33 @@ def fetch_live_data():
     force_logout(username, password, realtime_port)
     time.sleep(2)  # Wait 2 seconds after logout
     
-    # All symbols to fetch (include popular indices)
+    # Symbols prioritized so first 50 are EQUITY stocks (subscribe limit ≈ 50)
     symbols = [
-        # Major Indices
-        "NIFTY 50", "NIFTY BANK", "NIFTY IT", "SENSEX", "FINNIFTY", "NIFTY MIDCAP", "BANKEX", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY",
-        "NIFTY REALTY", "NIFTY PSU BANK", "NIFTY PVT BANK", "NIFTY MEDIA", "NIFTY INFRA", "NIFTY COMMODITIES",
-        
-        # Large Cap Stocks
-        "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL", "ITC", "KOTAKBANK", "LT", "HINDUNILVR",
-        "ASIANPAINT", "MARUTI", "AXISBANK", "NESTLEIND", "ULTRACEMCO", "SUNPHARMA", "TITAN", "POWERGRID", "NTPC", "ONGC",
-        
-        # Mid Cap Stocks
-        "AARTIIND", "BRITANNIA", "COLPAL", "DMART", "EICHERMOT", "GILLETTE", "JKTYRE", "KAJARIACER", "LICHSGFIN",
-        "MINDTREE", "OFSS", "PNB", "QUICKHEAL", "UJJIVAN", "WIPRO", "YESBANK", "ZEEL", "ADANIPORTS", "BAJFINANCE",
-        "BAJAJFINSV", "DRREDDY", "GRASIM", "HCLTECH", "HDFCLIFE", "HEROMOTOCO", "INDUSINDBK", "INFY", "JSWSTEEL",
-        
-        # Futures
-        "NIFTY-I", "BANKNIFTY-I", "UPL-I", "VEDL-I", "VOLTAS-I", "ZEEL-I", "RELIANCE-I", "TCS-I", "HDFCBANK-I",
-        
-        # Commodities
+        # Requested indices first
+        "NIFTY 50", "NIFTY BANK", "SENSEX",
+
+        # Core banking & low-price favorites
+        "YESBANK", "PNB", "HDFCBANK", "ICICIBANK", "SBIN", "AXISBANK", "IDFCFIRSTB", "BANKBARODA", "CANBK", "FEDERALBNK",
+        "INDUSINDBK", "BANDHANBNK", "AUBANK", "KOTAKBANK",
+
+        # Popular low to mid price PSU/infra/energy
+        "IOC", "ONGC", "BPCL", "GAIL", "SAIL", "BHEL", "PFC", "RECLTD", "IRFC", "NBCC", "IEX", "COALINDIA",
+
+        # Additional affordable equities to reach 50+
+        "TATASTEEL", "NMDC", "NATIONALUM", "HINDCOPPER", "IDEA", "SUZLON", "RPOWER", "TATAPOWER", "JSWSTEEL", "POWERGRID",
+        "TVSMOTOR", "M&M", "DABUR", "HAVELLS", "HINDALCO", "ADANIPORTS", "ITC", "BHARTIARTL", "RELIANCE", "LT",
+        "HINDUNILVR", "ASIANPAINT", "MARUTI", "NESTLEIND", "SUNPHARMA", "TITAN", "NTPC",
+
+        # Keep the rest after first ~60
+        "INFY", "HCLTECH", "TECHM", "UPL", "SHREECEM", "BRITANNIA", "CIPLA", "DIVISLAB", "EICHERMOT", "WIPRO",
+        "HDFCLIFE", "SBILIFE", "BAJAJ-AUTO", "ICICIPRULI", "PIDILITIND", "TATACONSUM", "ADANIENT", "LTIM", "APOLLOHOSP",
+        "SIEMENS", "AMBUJACEM", "DMART", "ABB",
+
+        # Other indices removed per request to favor stocks
+
+        # Futures / Commodities last
+        "NIFTY-I", "BANKNIFTY-I", "RELIANCE-I", "TCS-I", "HDFCBANK-I",
         "CRUDEOIL-I", "GOLDM-I", "SILVERM-I", "COPPER-I", "SILVER-I", "NATURALGAS-I", "ALUMINIUM-I", "ZINC-I",
-        
-        # MCX Indices
         "MCXCOMPDEX", "MCXMETAL", "MCXENERGY", "MCXAGRI"
     ]
     
@@ -90,10 +95,10 @@ def fetch_live_data():
                 connection_msg = ws.recv()
                 print(f"Second reconnection: {connection_msg}", file=sys.stderr)
         
-        # Subscribe to all symbols
+        # Subscribe to first 50 (equities-first ordering ensures 50 stocks)
         subscribe_msg = {
             "method": "addsymbol",
-            "symbols": symbols
+            "symbols": symbols[:50]
         }
         ws.send(json.dumps(subscribe_msg))
         

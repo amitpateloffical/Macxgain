@@ -496,6 +496,45 @@ class TrueDataController extends Controller
                 }
             }
             
+            // If WebSocket JSON has more symbols than DB, prefer it and backfill DB
+            try {
+                $jsonPath = base_path('market_data.json');
+                if (file_exists($jsonPath)) {
+                    $jsonContent = file_get_contents($jsonPath);
+                    $fileData = json_decode($jsonContent, true) ?: [];
+                    if (is_array($fileData) && count($fileData) > count($liveData)) {
+                        $formatted = [];
+                        foreach ($fileData as $symbol => $data) {
+                            if (!is_array($data)) { continue; }
+                            $formatted[$symbol] = [
+                                'symbol' => $symbol,
+                                'ltp' => (float)($data['ltp'] ?? 0),
+                                'change' => (float)($data['change'] ?? 0),
+                                'change_percent' => (float)($data['change_percent'] ?? 0),
+                                'high' => (float)($data['high'] ?? 0),
+                                'low' => (float)($data['low'] ?? 0),
+                                'open' => (float)($data['open'] ?? 0),
+                                'prev_close' => (float)($data['prev_close'] ?? 0),
+                                'volume' => (float)($data['volume'] ?? 0),
+                                'timestamp' => $data['timestamp'] ?? now()->toISOString(),
+                                'data_source' => $data['data_source'] ?? 'TrueData WebSocket Live',
+                                'is_live' => $isMarketLive,
+                                'market_status' => $marketStatus['status']
+                            ];
+                        }
+                        if (!empty($formatted)) {
+                            $liveData = $formatted;
+                            // Fire-and-forget DB backfill
+                            try {
+                                \App\Jobs\FetchTrueDataJob::dispatch();
+                            } catch (\Exception $e) { /* ignore */ }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Using JSON fallback failed: ' . $e->getMessage());
+            }
+
             // Merge SENSEX from local market_data.json if missing or zeroed in DB
             try {
                 $jsonPath = base_path('market_data.json');

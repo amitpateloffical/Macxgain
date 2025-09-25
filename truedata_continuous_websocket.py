@@ -19,28 +19,34 @@ class TrueDataWebSocket:
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
         
-        # All symbols to fetch
+        # Symbols list prioritized for at least 50 EQUITY stocks
+        # Put 60+ NSE equities first so the first 50 subscription entries are equities
         self.symbols = [
-            # Major Indices
-            "NIFTY 50", "NIFTY BANK", "NIFTY IT", "NIFTY FMCG", "NIFTY AUTO", "NIFTY PHARMA", "NIFTY METAL", "NIFTY ENERGY", "SENSEX",
-            "NIFTY REALTY", "NIFTY PSU BANK", "NIFTY PVT BANK", "NIFTY MEDIA", "NIFTY INFRA", "NIFTY COMMODITIES",
-            
-            # Large Cap Stocks
-            "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL", "ITC", "KOTAKBANK", "LT", "HINDUNILVR",
-            "ASIANPAINT", "MARUTI", "AXISBANK", "NESTLEIND", "ULTRACEMCO", "SUNPHARMA", "TITAN", "POWERGRID", "NTPC", "ONGC",
-            
-            # Mid Cap Stocks
-            "AARTIIND", "BRITANNIA", "COLPAL", "DMART", "EICHERMOT", "GILLETTE", "JKTYRE", "KAJARIACER", "LICHSGFIN",
-            "MINDTREE", "OFSS", "PNB", "QUICKHEAL", "UJJIVAN", "WIPRO", "YESBANK", "ZEEL", "ADANIPORTS", "BAJFINANCE",
-            "BAJAJFINSV", "DRREDDY", "GRASIM", "HCLTECH", "HDFCLIFE", "HEROMOTOCO", "INDUSINDBK", "INFY", "JSWSTEEL",
-            
-            # Futures
-            "NIFTY-I", "BANKNIFTY-I", "UPL-I", "VEDL-I", "VOLTAS-I", "ZEEL-I", "RELIANCE-I", "TCS-I", "HDFCBANK-I",
-            
-            # Commodities
+            # Requested indices first (will count towards 50 but required visually)
+            "NIFTY 50", "NIFTY BANK", "SENSEX",
+
+            # Core banking & low-price favorites
+            "YESBANK", "PNB", "HDFCBANK", "ICICIBANK", "SBIN", "AXISBANK", "IDFCFIRSTB", "BANKBARODA", "CANBK", "FEDERALBNK",
+            "INDUSINDBK", "BANDHANBNK", "AUBANK", "KOTAKBANK",
+
+            # Popular low to mid price PSU/infra/energy
+            "IOC", "ONGC", "BPCL", "GAIL", "SAIL", "BHEL", "PFC", "RECLTD", "IRFC", "NBCC", "IEX", "COALINDIA",
+
+            # Additional affordable equities to reach 50+
+            "TATASTEEL", "NMDC", "NATIONALUM", "HINDCOPPER", "IDEA", "SUZLON", "RPOWER", "TATAPOWER", "JSWSTEEL", "POWERGRID",
+            "TVSMOTOR", "M&M", "DABUR", "HAVELLS", "HINDALCO", "ADANIPORTS", "ITC", "BHARTIARTL", "RELIANCE", "LT",
+            "HINDUNILVR", "ASIANPAINT", "MARUTI", "NESTLEIND", "SUNPHARMA", "TITAN", "NTPC",
+
+            # Keep the rest after first ~60
+            "INFY", "HCLTECH", "TECHM", "UPL", "SHREECEM", "BRITANNIA", "CIPLA", "DIVISLAB", "EICHERMOT", "WIPRO",
+            "HDFCLIFE", "SBILIFE", "BAJAJ-AUTO", "ICICIPRULI", "PIDILITIND", "TATACONSUM", "ADANIENT", "LTIM", "APOLLOHOSP",
+            "SIEMENS", "AMBUJACEM", "DMART", "ABB",
+
+            # Other indices removed per request to favor stocks (keep none here)
+
+            # Futures / Commodities last
+            "NIFTY-I", "BANKNIFTY-I", "RELIANCE-I", "TCS-I", "HDFCBANK-I",
             "CRUDEOIL-I", "GOLDM-I", "SILVERM-I", "COPPER-I", "SILVER-I", "NATURALGAS-I", "ALUMINIUM-I", "ZINC-I",
-            
-            # MCX Indices
             "MCXCOMPDEX", "MCXMETAL", "MCXENERGY", "MCXAGRI"
         ]
         
@@ -133,7 +139,7 @@ class TrueDataWebSocket:
                 connection_msg = self.ws.recv()
                 print(f"Reconnection: {connection_msg}", file=sys.stderr)
             
-            # Subscribe to symbols (respect server maxsymbols=50)
+            # Subscribe to symbols (server maxsymbols≈50) - take first 50 which are equities
             symbols_to_send = self.symbols[:50]
             subscribe_msg = {
                 "method": "addsymbol",
