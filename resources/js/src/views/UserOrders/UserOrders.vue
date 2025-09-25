@@ -202,7 +202,7 @@
 
 
               <div class="detail-group">
-                <span class="detail-label">Buying Price (Unit)</span>
+                <span class="detail-label">Buying Price</span>
                 <span class="detail-value">₹{{ order.unit_price.toFixed(2)}}</span>
               </div>
               <div class="detail-group">
@@ -228,12 +228,7 @@
             <div class="detail-row" v-if="order.status === 'EXECUTED' || order.status === 'CLOSED'">
               <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
                 <span class="detail-label">Selling Price</span>
-                <span class="detail-value">₹{{ order.executedPrice.toFixed(2) * order.quantity}}</span>
-              </div>
-
-              <div class="detail-group" v-if="order.executedPrice && order.status === 'CLOSED'">
-                <span class="detail-label">Selling Price(unit)</span>
-                <span class="detail-value">₹{{ order.executedPrice.toFixed(2)}}</span>
+                <span class="detail-value">₹{{ order.exit_unit_price}}</span>
               </div>
               <div class="detail-group" v-if="order.status === 'CLOSED' && order.executedPrice && order.totalAmount">
                 <span class="detail-label">P&L</span>
@@ -524,6 +519,7 @@ export default {
             lot_size: parseInt(order.lot_size),
             price: parseFloat(order.strike_price),
             executedPrice: order.exit_price ? parseFloat(order.exit_price) : null,
+            exit_unit_price: order.exit_unit_price ? parseFloat(order.exit_unit_price) : null,
             unit_price: order.unit_price ? parseFloat(order.unit_price) : null,
             timestamp: new Date(order.created_at),
             executedAt: order.closed_at ? new Date(order.closed_at) : null,
@@ -582,8 +578,6 @@ export default {
       return new Date(timestamp).toLocaleString('en-IN', {
         day: '2-digit',
         month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
       });
     },
     searchStocks() {
