@@ -11,7 +11,7 @@ class TrueDataWebSocket:
     def __init__(self):
         self.running = True
         self.ws = None
-        self.realtime_port = 8084
+        self.realtime_port = 8086
         self.username = 'tdwsp759'
         self.password = 'mosh@759'
         

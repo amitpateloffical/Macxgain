@@ -5,7 +5,7 @@
 from websocket._core import create_connection
 
 
-realtime_port = 8084  # 8082 for production & 8084 for sandbox environment during trial
+realtime_port = 8086  # 8082 for production & 8086 for sandbox environment during trial
 
 
 username = 'tdwsp759'
