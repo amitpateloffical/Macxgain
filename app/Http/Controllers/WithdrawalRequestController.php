@@ -264,15 +264,15 @@ class WithdrawalRequestController extends Controller
         // Available balance = Total balance - Blocked amount
         $availableBalance = $totalBalance - $blockedAmount;
 
-        if ($availableBalance < 100) {
+        if ($availableBalance < 1) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Insufficient available balance. Minimum balance of ₹100 is required for withdrawal.',
+                'message' => 'Insufficient available balance. Minimum balance of ₹1 is required for withdrawal.',
                 'data' => [
                     'total_balance' => $totalBalance,
                     'blocked_amount' => $blockedAmount,
                     'available_balance' => $availableBalance,
-                    'min_withdraw_amount' => 100,
+                    'min_withdraw_amount' => 1,
                 ]
             ], 200);
         }
