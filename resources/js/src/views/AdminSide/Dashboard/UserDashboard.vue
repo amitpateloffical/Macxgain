@@ -297,10 +297,10 @@ onMounted(() => {
   fetchMarketStatus();
   fetchLiveData();
   
-  // Auto-refresh every 10 seconds for more real-time updates
+  // Auto-refresh every 5 seconds for real-time updates
   setInterval(() => {
     fetchLiveData();
-  }, 10000);
+  }, 5000);
   
   // Also refresh market status every 30 seconds
   setInterval(() => {

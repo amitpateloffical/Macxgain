@@ -3,14 +3,14 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Jobs\FetchTrueDataJob;
+use App\Jobs\FetchMarketDataJob;
 use App\Jobs\UpdateOptionChainJob;
 use App\Services\MarketStatusService;
 use Illuminate\Support\Facades\Log;
 
-class SmartTrueDataScheduler extends Command
+class SmartMarketScheduler extends Command
 {
-    protected $signature = 'truedata:smart-schedule';
+    protected $signature = 'market:smart-schedule';
     protected $description = 'Smart scheduler that adjusts data fetch frequency based on market hours';
 
     private $marketStatusService;
@@ -27,13 +27,13 @@ class SmartTrueDataScheduler extends Command
             $marketStatus = $this->marketStatusService->getMarketStatus();
             $refreshInterval = $this->marketStatusService->getDataRefreshInterval();
             
-            Log::info("Smart TrueData Scheduler - Market Status: {$marketStatus['status']}, Refresh Interval: {$refreshInterval}s");
+            Log::info("Smart Market Scheduler - Market Status: {$marketStatus['status']}, Refresh Interval: {$refreshInterval}s");
             
             // Dispatch the jobs
-            FetchTrueDataJob::dispatch();
+            FetchMarketDataJob::dispatch();
             UpdateOptionChainJob::dispatch();
             
-            $this->info("🚀 Smart TrueData fetch dispatched");
+            $this->info("🚀 Smart Market Data fetch dispatched");
             $this->info("📈 Option chain update dispatched");
             $this->info("📊 Market Status: {$marketStatus['status']}");
             $this->info("⏱️  Refresh Interval: {$refreshInterval} seconds");
@@ -48,7 +48,7 @@ class SmartTrueDataScheduler extends Command
             }
             
         } catch (\Exception $e) {
-            Log::error('Smart TrueData Scheduler Error: ' . $e->getMessage());
+            Log::error('Smart Market Scheduler Error: ' . $e->getMessage());
             $this->error('❌ Error in smart scheduler: ' . $e->getMessage());
         }
     }

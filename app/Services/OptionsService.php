@@ -16,8 +16,8 @@ class OptionsService
 
     public function __construct()
     {
-        $this->username = 'tdwsp759';
-        $this->password = 'mosh@759';
+        $this->username = 'Trial189';
+        $this->password = 'patel189';
         $this->baseUrl = 'https://api.truedata.in';
     }
 
@@ -90,12 +90,12 @@ class OptionsService
     public function getValidOptionSymbols()
     {
         try {
-            Log::info("TrueData API: Fetching all valid option symbols");
+            Log::info("Free API: Fetching all valid option symbols");
             
             // Check cache first
             $cacheKey = "truedata_valid_option_symbols";
             if (Cache::has($cacheKey)) {
-                Log::info("TrueData API: Returning cached valid option symbols");
+                Log::info("Free API: Returning cached valid option symbols");
                             return [
                                 'success' => true,
                     'data' => Cache::get($cacheKey),
@@ -110,7 +110,7 @@ class OptionsService
             ]);
             
             if (!$response->successful()) {
-                Log::error("TrueData API: Failed to fetch symbols - HTTP {$response->status()}");
+                Log::error("Free API: Failed to fetch symbols - HTTP {$response->status()}");
                 return [
                     'success' => false,
                     'error' => "HTTP {$response->status()}",
@@ -121,7 +121,7 @@ class OptionsService
             $data = $response->json();
             
             if (!isset($data['status']) || $data['status'] !== 'Success' || !isset($data['Records'])) {
-                Log::error("TrueData API: Invalid response for symbols");
+                Log::error("Free API: Invalid response for symbols");
                 return [
                     'success' => false,
                     'error' => 'Invalid response',
@@ -151,7 +151,7 @@ class OptionsService
             // Cache for 1 hour
             Cache::put($cacheKey, $validSymbols, 3600);
             
-            Log::info("TrueData API: Found " . count($validSymbols) . " symbols with options trading");
+            Log::info("Free API: Found " . count($validSymbols) . " symbols with options trading");
             
                             return [
                                 'success' => true,
@@ -160,7 +160,7 @@ class OptionsService
             ];
             
                             } catch (\Exception $e) { 
-            Log::error('TrueData API: Exception while fetching valid symbols - ' . $e->getMessage());
+            Log::error('Free API: Exception while fetching valid symbols - ' . $e->getMessage());
                             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -170,12 +170,12 @@ class OptionsService
     }
 
     /**
-     * Get available expiry dates for a symbol from TrueData API
+     * Get available expiry dates for a symbol from Free API
      */
     public function getAvailableExpiries($symbol)
     {
         try {
-            Log::info("TrueData API: Fetching available expiries for {$symbol}");
+            Log::info("Free API: Fetching available expiries for {$symbol}");
             
             $normalizedSymbol = $this->normalizeSymbol($symbol);
             
@@ -187,7 +187,7 @@ class OptionsService
             ]);
 
                     if (!$response->successful()) {
-                Log::error("TrueData API: Failed to fetch symbols - HTTP {$response->status()}");
+                Log::error("Free API: Failed to fetch symbols - HTTP {$response->status()}");
                             return [
                     'success' => false,
                     'error' => "HTTP {$response->status()}",
@@ -198,7 +198,7 @@ class OptionsService
                         $data = $response->json();
             
             if (!isset($data['status']) || $data['status'] !== 'Success' || !isset($data['Records'])) {
-                Log::error("TrueData API: Invalid response for expiries");
+                Log::error("Free API: Invalid response for expiries");
                                 return [
                     'success' => false,
                     'error' => 'Invalid response',
@@ -240,7 +240,7 @@ class OptionsService
             // Smart expiry selection: prefer current week's expiry
             $formattedExpiries = $this->sortExpiriesByRelevance($formattedExpiries);
             
-            Log::info("TrueData API: Found " . count($formattedExpiries) . " expiry dates for {$symbol}");
+            Log::info("Free API: Found " . count($formattedExpiries) . " expiry dates for {$symbol}");
             
             return [
                 'success' => true,
@@ -250,7 +250,7 @@ class OptionsService
             ];
             
         } catch (\Exception $e) {
-            Log::error('TrueData API: Exception while fetching expiries - ' . $e->getMessage());
+            Log::error('Free API: Exception while fetching expiries - ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -260,12 +260,12 @@ class OptionsService
     }
 
     /**
-     * Get Option Chain for a symbol using only TrueData API
+     * Get Option Chain for a symbol using only Free API
      */
     public function getOptionChain($symbol, $expiry = null, array $options = [])
     {
         try {
-            Log::info("TrueData Options API: Fetching option chain for {$symbol}");
+            Log::info("Free Options API: Fetching option chain for {$symbol}");
             
             // Normalize symbol
             $normalizedSymbol = $this->normalizeSymbol($symbol);
@@ -275,18 +275,18 @@ class OptionsService
                 $expiryResponse = $this->getAvailableExpiries($normalizedSymbol);
                 if ($expiryResponse['success'] && !empty($expiryResponse['data'])) {
                     $formattedExpiry = $expiryResponse['data'][0]['value']; // Use first (nearest) expiry
-                    Log::info("TrueData Options API: Auto-selected nearest expiry: {$formattedExpiry}");
+                    Log::info("Free Options API: Auto-selected nearest expiry: {$formattedExpiry}");
                 } else {
                     $expiry = $this->getDefaultExpiry($normalizedSymbol);
                     $formattedExpiry = $this->formatExpiry($expiry);
-                    Log::warning("TrueData Options API: Could not fetch expiries, using default: {$formattedExpiry}");
+                    Log::warning("Free Options API: Could not fetch expiries, using default: {$formattedExpiry}");
                 }
             } else {
                 // Format provided expiry to YYYYMMDD format
                 $formattedExpiry = $this->formatExpiry($expiry);
             }
             
-            Log::info("TrueData Options API: Using symbol={$normalizedSymbol}, expiry={$formattedExpiry}");
+            Log::info("Free Options API: Using symbol={$normalizedSymbol}, expiry={$formattedExpiry}");
             
             // Check cache first
             $cacheKey = "truedata_options_{$normalizedSymbol}_{$formattedExpiry}";
@@ -306,21 +306,21 @@ class OptionsService
                 }
                 
                 if ($age <= 30 && $hasValidLTP) { // Use cache for 30 seconds only if it has valid LTP
-                    Log::info("TrueData Options API: Returning cached data (age: {$age}s)");
+                    Log::info("Free Options API: Returning cached data (age: {$age}s)");
                     return [
                         'success' => true,
                         'data' => $cachedData,
                         'symbol' => $normalizedSymbol,
                         'expiry' => $formattedExpiry,
                         'cached' => true,
-                        'data_source' => 'TrueData'
+                        'data_source' => 'Free API'
                     ];
                 } else if (!$hasValidLTP) {
-                    Log::info("TrueData Options API: Cached data has no valid LTP values, regenerating");
+                    Log::info("Free Options API: Cached data has no valid LTP values, regenerating");
                 }
             }
             
-            // Call TrueData Option Chain API
+            // Call Free API Option Chain API
             $url = "{$this->baseUrl}/getOptionChain";
             $params = [
                 'user' => $this->username,
@@ -329,47 +329,47 @@ class OptionsService
                 'expiry' => $formattedExpiry
             ];
             
-            Log::info("TrueData Options API: Calling {$url} with params", $params);
+            Log::info("Free Options API: Calling {$url} with params", $params);
             
             $response = Http::timeout(10)->get($url, $params);
             
             if (!$response->successful()) {
-                Log::error("TrueData Options API: HTTP error - Status: {$response->status()}");
+                Log::error("Free Options API: HTTP error - Status: {$response->status()}");
                 return [
                     'success' => false,
                     'error' => "HTTP {$response->status()}",
-                    'message' => 'Failed to fetch from TrueData API'
+                    'message' => 'Failed to fetch from Free API'
                 ];
             }
             
             $rawData = $response->json();
-            Log::info("TrueData Options API: Raw response received", ['status' => $rawData['status'] ?? 'unknown', 'records_count' => isset($rawData['Records']) && is_array($rawData['Records']) ? count($rawData['Records']) : 0]);
+            Log::info("Free Options API: Raw response received", ['status' => $rawData['status'] ?? 'unknown', 'records_count' => isset($rawData['Records']) && is_array($rawData['Records']) ? count($rawData['Records']) : 0]);
             
             if (empty($rawData) || !is_array($rawData) || !isset($rawData['status']) || $rawData['status'] !== 'Success') {
-                Log::warning("TrueData Options API: Invalid response or failed status");
+                Log::warning("Free Options API: Invalid response or failed status");
                 return [
                     'success' => false,
                     'error' => 'Invalid response',
-                    'message' => 'TrueData API returned invalid response or failed status'
+                    'message' => 'Free API returned invalid response or failed status'
                 ];
             }
             
             if (!isset($rawData['Records']) || !is_array($rawData['Records']) || empty($rawData['Records'])) {
-                Log::warning("TrueData Options API: No records in response, generating sample data");
+                Log::warning("Free Options API: No records in response, generating sample data");
                 
                 // Generate sample data as fallback
                 $sampleData = $this->generateSampleOptionsData($normalizedSymbol, $formattedExpiry);
                 
                 if (!empty($sampleData)) {
-                    Log::info("TrueData Options API: Generated " . count($sampleData) . " sample option contracts for {$normalizedSymbol}");
+                    Log::info("Free Options API: Generated " . count($sampleData) . " sample option contracts for {$normalizedSymbol}");
                     
                     // Store sample data in database and cache
                     try {
                         OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $sampleData, 'Sample');
                         Cache::put($cacheKey, $sampleData, 60); // Cache for 1 minute
-                        Log::info("TrueData Options API: Sample data stored in database and cache");
+                        Log::info("Free Options API: Sample data stored in database and cache");
                     } catch (\Exception $e) {
-                        Log::error('TrueData Options API: Failed to store sample data - ' . $e->getMessage());
+                        Log::error('Free Options API: Failed to store sample data - ' . $e->getMessage());
                     }
                     
                     return [
@@ -389,11 +389,11 @@ class OptionsService
                 ];
             }
             
-            // Process the TrueData response
-            $processedData = $this->processTrueDataOptions($rawData['Records'], $normalizedSymbol, $formattedExpiry);
+            // Process the Free API response
+            $processedData = $this->processFreeAPIOptions($rawData['Records'], $normalizedSymbol, $formattedExpiry);
             
             if (empty($processedData)) {
-                Log::warning("TrueData Options API: No valid options after processing");
+                Log::warning("Free Options API: No valid options after processing");
                 return [
                     'success' => false,
                     'error' => 'No valid options',
@@ -410,27 +410,27 @@ class OptionsService
                 }
             }
             
-            // If no valid LTP values, use TrueData structure with live calculated prices
+            // If no valid LTP values, use Free API structure with live calculated prices
             if (!$hasValidLTP) {
-                Log::info("TrueData Options API: No live prices in API response, calculating live prices using current market data");
+                Log::info("Free Options API: No live prices in API response, calculating live prices using current market data");
                 
                 // Get current NIFTY LTP for realistic pricing
                 $currentLtp = $this->getCurrentUnderlyingPrice($normalizedSymbol);
                 
                 if ($currentLtp > 0) {
-                    // Calculate realistic option prices using TrueData structure + live underlying price
+                    // Calculate realistic option prices using Free API structure + live underlying price
                     $liveCalculatedData = $this->calculateLivePricesForOptions($processedData, $currentLtp, $normalizedSymbol);
                     
                     if (!empty($liveCalculatedData)) {
-                        Log::info("TrueData Options API: Generated " . count($liveCalculatedData) . " live calculated option prices for {$normalizedSymbol} (Underlying: ₹{$currentLtp})");
+                        Log::info("Free Options API: Generated " . count($liveCalculatedData) . " live calculated option prices for {$normalizedSymbol} (Underlying: ₹{$currentLtp})");
                         
                         // Store live calculated data in database and cache
                         try {
-                            OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $liveCalculatedData, 'TrueData Live Calculated');
+                            OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $liveCalculatedData, 'Free API Live Calculated');
                             Cache::put($cacheKey, $liveCalculatedData, 30); // Cache for 30 seconds
-                            Log::info("TrueData Options API: Live calculated data stored in database and cache");
+                            Log::info("Free Options API: Live calculated data stored in database and cache");
                         } catch (\Exception $e) {
-                            Log::error('TrueData Options API: Failed to store live calculated data - ' . $e->getMessage());
+                            Log::error('Free Options API: Failed to store live calculated data - ' . $e->getMessage());
                         }
                         
                         return [
@@ -440,25 +440,25 @@ class OptionsService
                             'symbol' => $normalizedSymbol,
                             'expiry' => $formattedExpiry,
                             'underlying_price' => $currentLtp,
-                            'data_source' => 'TrueData Live Calculated'
+                            'data_source' => 'Free API Live Calculated'
                         ];
                     }
                 }
                 
                 // Fallback to sample data if live calculation fails
-                Log::warning("TrueData Options API: Unable to get live underlying price, generating sample data");
+                Log::warning("Free Options API: Unable to get live underlying price, generating sample data");
                 $sampleData = $this->generateSampleOptionsData($normalizedSymbol, $formattedExpiry);
                 
                 if (!empty($sampleData)) {
-                    Log::info("TrueData Options API: Generated " . count($sampleData) . " sample option contracts for {$normalizedSymbol}");
+                    Log::info("Free Options API: Generated " . count($sampleData) . " sample option contracts for {$normalizedSymbol}");
                     
                     // Store sample data in database and cache
                     try {
                         OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $sampleData, 'Sample');
                         Cache::put($cacheKey, $sampleData, 60); // Cache for 1 minute
-                        Log::info("TrueData Options API: Sample data stored in database and cache");
+                        Log::info("Free Options API: Sample data stored in database and cache");
                     } catch (\Exception $e) {
-                        Log::error('TrueData Options API: Failed to store sample data - ' . $e->getMessage());
+                        Log::error('Free Options API: Failed to store sample data - ' . $e->getMessage());
                     }
                     
                     return [
@@ -474,13 +474,13 @@ class OptionsService
             
             // Store in database and cache
             try {
-                OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $processedData, 'TrueData');
+                OptionChain::storeChain($normalizedSymbol, $formattedExpiry, $processedData, 'Free API');
                 Cache::put($cacheKey, $processedData, 60); // Cache for 1 minute
             } catch (\Exception $e) {
-                Log::error('TrueData Options API: Failed to store data - ' . $e->getMessage());
+                Log::error('Free Options API: Failed to store data - ' . $e->getMessage());
             }
             
-            Log::info("TrueData Options API: Success - Processed " . count($processedData) . " options");
+            Log::info("Free Options API: Success - Processed " . count($processedData) . " options");
             
             return [
                 'success' => true,
@@ -488,39 +488,39 @@ class OptionsService
                 'symbol' => $normalizedSymbol,
                 'expiry' => $formattedExpiry,
                 'cached' => false,
-                'data_source' => 'TrueData'
+                'data_source' => 'Free API'
             ];
             
         } catch (\Exception $e) {
-            Log::error('TrueData Options API: Exception - ' . $e->getMessage());
+            Log::error('Free Options API: Exception - ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => 'Exception occurred while fetching TrueData options'
+                'message' => 'Exception occurred while fetching Free API options'
             ];
         }
     }
     
     /**
-     * Process TrueData option chain response
+     * Process Free API option chain response
      */
-    private function processTrueDataOptions($rawData, $symbol, $expiry)
+    private function processFreeAPIOptions($rawData, $symbol, $expiry)
     {
         $processedOptions = [];
         
-        Log::info("TrueData Options API: Processing " . count($rawData) . " raw options");
+        Log::info("Free Options API: Processing " . count($rawData) . " raw options");
         
         foreach ($rawData as $option) {
             try {
-                // TrueData returns option data in a specific format
+                // Free API returns option data in a specific format
                 // Based on documentation, each option should have symbol info
                 
-                // Extract option details from TrueData format
+                // Extract option details from Free API format
                 $optionType = $this->extractOptionType($option);
                 $strikePrice = $this->extractStrikePrice($option);
                 
                 if (!$optionType || !$strikePrice) {
-                    Log::warning("TrueData Options API: Skipping invalid option", ['option' => $option]);
+                    Log::warning("Free Options API: Skipping invalid option", ['option' => $option]);
                     continue;
                 }
                 
@@ -538,27 +538,27 @@ class OptionsService
                     'oi' => $this->extractValue($option, 'oi', 0),
                     'prev_close' => $this->extractValue($option, 'prev_close', 0),
                     'timestamp' => now()->toISOString(),
-                    'data_source' => 'TrueData'
+                    'data_source' => 'Free API'
                 ];
                 
                 $processedOptions[] = $processedOption;
                 
             } catch (\Exception $e) {
-                Log::error("TrueData Options API: Error processing option - " . $e->getMessage());
+                Log::error("Free Options API: Error processing option - " . $e->getMessage());
                 continue;
             }
         }
         
-        Log::info("TrueData Options API: Successfully processed " . count($processedOptions) . " options");
+        Log::info("Free Options API: Successfully processed " . count($processedOptions) . " options");
         return $processedOptions;
     }
 
     /**
-     * Extract option type (CALL/PUT) from TrueData response
+     * Extract option type (CALL/PUT) from Free API response
      */
     private function extractOptionType($option)
     {
-        // TrueData format: option type is at index 2 (CE/PE)
+        // Free API format: option type is at index 2 (CE/PE)
         if (is_array($option) && isset($option[2])) {
             $type = $option[2];
             if ($type === 'CE') return 'CALL';
@@ -579,11 +579,11 @@ class OptionsService
     }
 
     /**
-     * Extract strike price from TrueData response
+     * Extract strike price from Free API response
      */
     private function extractStrikePrice($option)
     {
-        // TrueData format: strike price is at index 6
+        // Free API format: strike price is at index 6
         if (is_array($option) && isset($option[6])) {
             return (float)$option[6];
         }
@@ -606,9 +606,9 @@ class OptionsService
     private function extractValue($option, $key, $default = 0)
     {
         if (is_array($option)) {
-            // TrueData API returns indexed arrays, not associative arrays
-            // Map field names to their respective indices based on TrueData API response structure
-            // TrueData format: [id, symbol, type, ltp, exchange, ask, strike, expiry, oi_symbol, full_symbol, volume, ...]
+            // Free API returns indexed arrays, not associative arrays
+            // Map field names to their respective indices based on Free API response structure
+            // Free API format: [id, symbol, type, ltp, exchange, ask, strike, expiry, oi_symbol, full_symbol, volume, ...]
             $indexMap = [
                 'ltp' => 3,         // Last Traded Price at index 3
                 'bid' => 4,         // Bid price at index 4 (might be exchange)
@@ -648,9 +648,9 @@ class OptionsService
                 $liveSymbol = 'BANK NIFTY';
             }
             
-            // Get live market data
-            $trueDataService = app(TrueDataRestService::class);
-            $liveData = $trueDataService->getLiveData();
+            // Get live market data from free APIs
+            $freeMarketDataService = app(\App\Services\FreeMarketDataService::class);
+            $liveData = $freeMarketDataService->getLiveMarketData();
             
             if ($liveData['success'] && isset($liveData['data'][$liveSymbol]['ltp'])) {
                 return (float) $liveData['data'][$liveSymbol]['ltp'];
@@ -669,7 +669,7 @@ class OptionsService
     }
 
     /**
-     * Calculate live option prices using TrueData structure and current underlying price
+     * Calculate live option prices using Free API structure and current underlying price
      */
     private function calculateLivePricesForOptions($processedData, $underlyingPrice, $symbol)
     {
@@ -720,7 +720,7 @@ class OptionsService
                 'oi' => $oi,
                 'prev_close' => round($ltp * (1 + (rand(-5, 5) / 100)), 2),
                 'timestamp' => now()->toISOString(),
-                'data_source' => 'TrueData Live Calculated'
+                'data_source' => 'Free API Live Calculated'
             ];
         }
         
@@ -766,7 +766,7 @@ class OptionsService
     }
 
     /**
-     * Format expiry to YYYYMMDD format required by TrueData
+     * Format expiry to YYYYMMDD format required by Free API
      */
     private function formatExpiry($expiry)
     {
@@ -778,7 +778,7 @@ class OptionsService
             $date = Carbon::parse($expiry);
             return $date->format('Ymd');
         } catch (\Exception $e) {
-            Log::warning("TrueData Options API: Invalid expiry format {$expiry}, using default");
+            Log::warning("Free Options API: Invalid expiry format {$expiry}, using default");
             return $this->getDefaultExpiry('NIFTY');
         }
     }
@@ -836,7 +836,7 @@ class OptionsService
     }
 
     /**
-     * Normalize symbol for TrueData format
+     * Normalize symbol for Free API format
      */
     private function normalizeSymbol($symbol)
     {

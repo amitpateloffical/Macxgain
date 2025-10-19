@@ -523,7 +523,7 @@ export default {
     async loadMarketData() {
       this.loading = true;
       this.isRefreshing = true;
-      console.log('📊 Loading TrueData live market data at:', new Date().toLocaleTimeString());
+      console.log('📊 Loading live market data at:', new Date().toLocaleTimeString());
       
       try {
         const token = localStorage.getItem('access_token');
@@ -539,7 +539,7 @@ export default {
            params: { _t: Date.now() } // Cache busting parameter
          });
 
-         console.log('✅ TrueData Live Data API Response:', liveResponse.data);
+         console.log('✅ Live Data API Response:', liveResponse.data);
          console.log('📈 Response status:', liveResponse.status);
          console.log('🔢 Data keys count:', Object.keys(liveResponse.data.data || {}).length);
 
@@ -569,7 +569,7 @@ export default {
            this.connectionStatus.is_connected = true;
            console.log('Live stocks processed:', this.liveStocks);
            
-           // Extract specific major indices (FINNIFTY and NIFTY MIDCAP available with paid TrueData account)
+           // Extract specific major indices (available through free APIs)
            const majorIndices = ['NIFTY 50', 'NIFTY BANK', 'SENSEX', 'FINNIFTY', 'NIFTY MIDCAP'];
            this.marketIndices = majorIndices
              .filter(symbol => liveData[symbol]) // Only include if data exists
@@ -769,7 +769,7 @@ export default {
       this.autoRefreshInterval = setInterval(() => {
         console.log('🔄 Auto-refresh triggered at:', new Date().toLocaleTimeString(), 'Market status:', this.marketStatus);
         this.loadMarketData();
-      }, 10000); // 10 seconds for faster updates
+      }, 5000); // 5 seconds for real-time updates
     },
 
     stopAutoRefresh() {
@@ -1146,20 +1146,20 @@ export default {
         
         console.log(`🌐 API URL: ${apiUrl}`);
         
-        // Call the TrueData options API
+        // Call the market data options API
         const response = await axios.get(apiUrl);
-        console.log('📡 TrueData API response:', response);
+        console.log('📡 Market Data API response:', response);
         console.log('📊 Response data:', response.data);
         console.log('✅ Response status:', response.status);
         
         if (response.data.success && response.data.data && response.data.data.length > 0) {
-          console.log('🎯 Processing live TrueData API data...');
-          console.log(`📈 Data source: ${response.data.data_source || 'TrueData'}`);
+          console.log('🎯 Processing live market data...');
+          console.log(`📈 Data source: ${response.data.data_source || 'Free API'}`);
           console.log(`📊 Total options: ${response.data.data.length}`);
-          this.dataSource = response.data.data_source || 'TrueData';
+          this.dataSource = response.data.data_source || 'Free API';
           this.processOptionsData(response.data.data);
         } else {
-          console.log('⚠️ No options data available from TrueData API');
+          console.log('⚠️ No options data available from market API');
           console.log('Response success:', response.data.success);
           console.log('Response data length:', response.data.data?.length || 0);
           this.showError(`No options data available for ${symbol}. This might be due to market hours or symbol not having active options.`);

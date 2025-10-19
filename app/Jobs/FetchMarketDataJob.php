@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Models\MarketData;
 use App\Services\MarketStatusService;
+use App\Services\FreeMarketDataService;
 
-class FetchTrueDataJob implements ShouldQueue
+class FetchMarketDataJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,33 +32,53 @@ class FetchTrueDataJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info('FetchTrueDataJob: Starting TrueData fetch...');
+            Log::info('FetchMarketDataJob: Starting market data fetch...');
             
             // Get market status
             $marketStatusService = new MarketStatusService();
             $isMarketLive = $marketStatusService->isMarketLive();
             $marketStatus = $isMarketLive ? 'OPEN' : 'CLOSED';
             
-            // Try to get data from the running WebSocket daemon first
+            // Try to get data from market_data.json first (most recent)
             $webSocketData = $this->getDataFromWebSocketDaemon();
             
             if (!empty($webSocketData)) {
                 // Store in database
                 $storedCount = MarketData::storeMarketData($webSocketData, $isMarketLive, $marketStatus);
                 
-                // Also store in cache with short expiry (30 seconds) for real-time data
-                Cache::put('truedata_live_data', $webSocketData, 30);
-                Cache::put('truedata_last_update', now(), 30);
-                Cache::put('truedata_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 30);
+                // Also store in cache with short expiry (10 seconds) for real-time data
+                $cacheKey = 'free_market_data_' . md5(implode(',', []));
+                Cache::put('free_market_data', $webSocketData, 10);
+                Cache::put('free_market_last_update', now(), 10);
+                Cache::put('free_market_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 10);
+                Cache::put($cacheKey, ['success' => true, 'data' => $webSocketData, 'source' => 'WebSocket'], 10);
                 
-                Log::info("FetchTrueDataJob: WebSocket data stored in database ({$storedCount} symbols) and cached for 30 seconds");
+                Log::info("FetchMarketDataJob: WebSocket data stored in database ({$storedCount} symbols) and cached for 10 seconds");
             } else {
-                // Fallback: Run Python script to fetch data
-                $result = Process::timeout(45)->run('python3 truedata_fetch.py');
+                // Fallback: Try to get data from free APIs
+                $freeMarketDataService = new FreeMarketDataService();
+                $freeDataResult = $freeMarketDataService->getLiveMarketData();
+                
+                if ($freeDataResult['success'] && !empty($freeDataResult['data'])) {
+                // Store in database
+                $storedCount = MarketData::storeMarketData($freeDataResult['data'], $isMarketLive, $marketStatus);
+                
+                // Also store in cache with short expiry (10 seconds) for real-time data
+                $cacheKey = 'free_market_data_' . md5(implode(',', []));
+                Cache::put('free_market_data', $freeDataResult['data'], 10);
+                Cache::put('free_market_last_update', now(), 10);
+                Cache::put('free_market_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 10);
+                Cache::put($cacheKey, $freeDataResult, 10);
+                
+                Log::info("FetchMarketDataJob: Free API data stored in database ({$storedCount} symbols) and cached for 10 seconds");
+                Log::info("FetchMarketDataJob: Data source: {$freeDataResult['source']}");
+            } else {
+                // Final fallback: Run Python script to fetch data
+                $result = Process::timeout(45)->run('python3 free_market_data_fetch.py');
                 
                 if ($result->successful()) {
                     $output = $result->output();
-                    Log::info('FetchTrueDataJob: Python script executed successfully');
+                    Log::info('FetchMarketDataJob: Python script executed successfully');
                     
                     // Parse the output and extract market data
                     $marketData = $this->parsePythonOutput($output);
@@ -66,23 +87,26 @@ class FetchTrueDataJob implements ShouldQueue
                         // Store in database
                         $storedCount = MarketData::storeMarketData($marketData, $isMarketLive, $marketStatus);
                         
-                        // Also store in cache with short expiry (30 seconds) for real-time data
-                        Cache::put('truedata_live_data', $marketData, 30);
-                        Cache::put('truedata_last_update', now(), 30);
-                        Cache::put('truedata_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 30);
+                        // Also store in cache with short expiry (10 seconds) for real-time data
+                        $cacheKey = 'free_market_data_' . md5(implode(',', []));
+                        Cache::put('free_market_data', $marketData, 10);
+                        Cache::put('free_market_last_update', now(), 10);
+                        Cache::put('free_market_data_type', $isMarketLive ? 'LIVE' : 'HISTORICAL', 10);
+                        Cache::put($cacheKey, ['success' => true, 'data' => $marketData, 'source' => 'Python Script'], 10);
                         
-                        Log::info("FetchTrueDataJob: Market data stored in database ({$storedCount} symbols) and cached for 30 seconds");
+                        Log::info("FetchMarketDataJob: Market data stored in database ({$storedCount} symbols) and cached for 30 seconds");
                     } else {
-                        Log::warning('FetchTrueDataJob: No market data parsed from Python output');
+                        Log::warning('FetchMarketDataJob: No market data parsed from Python output');
                     }
                     
                 } else {
-                    Log::error('FetchTrueDataJob: Python script failed - ' . $result->errorOutput());
+                    Log::error('FetchMarketDataJob: Python script failed - ' . $result->errorOutput());
+                }
                 }
             }
             
         } catch (\Exception $e) {
-            Log::error('FetchTrueDataJob: Error - ' . $e->getMessage());
+            Log::error('FetchMarketDataJob: Error - ' . $e->getMessage());
         }
     }
     
@@ -99,8 +123,8 @@ class FetchTrueDataJob implements ShouldQueue
                 $fileTime = filemtime($jsonFile);
                 $currentTime = time();
                 
-                // Only use file if it's reasonably fresh (less than 120 seconds old)
-                if (($currentTime - $fileTime) < 120) {
+                // Only use file if it's reasonably fresh (less than 300 seconds old)
+                if (($currentTime - $fileTime) < 300) {
                     $jsonContent = file_get_contents($jsonFile);
                     $webSocketData = json_decode($jsonContent, true);
                     
@@ -123,17 +147,17 @@ class FetchTrueDataJob implements ShouldQueue
                             ];
                         }
                         
-                        Log::info('FetchTrueDataJob: Retrieved ' . count($marketData) . ' symbols from WebSocket JSON file');
+                        Log::info('FetchMarketDataJob: Retrieved ' . count($marketData) . ' symbols from WebSocket JSON file');
                         return $marketData;
                     }
                 } else {
-                    Log::info('FetchTrueDataJob: JSON file is too old (' . ($currentTime - $fileTime) . ' seconds)');
+                    Log::info('FetchMarketDataJob: JSON file is too old (' . ($currentTime - $fileTime) . ' seconds)');
                 }
             }
             
             return [];
         } catch (\Exception $e) {
-            Log::error('FetchTrueDataJob: Error getting WebSocket data - ' . $e->getMessage());
+            Log::error('FetchMarketDataJob: Error getting WebSocket data - ' . $e->getMessage());
             return [];
         }
     }

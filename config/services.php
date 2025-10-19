@@ -40,12 +40,6 @@ return [
         'base_url' => env('UPSTOX_BASE_URL', 'https://api.upstox.com/v2'),
     ],
 
-    'truedata' => [
-        'username' => env('TRUEDATA_USERNAME', 'tdwsp759'),
-        'password' => env('TRUEDATA_PASSWORD', 'mosh@759'),
-        'realtime_port' => env('TRUEDATA_PORT', 8086), // Sandbox port for trial
-        'base_url' => env('TRUEDATA_HOST', 'push.truedata.in'), // Correct host
-    ],
 
     'alphavantage' => [
         'api_key' => env('ALPHAVANTAGE_API_KEY', 'II73DAUC1KB906VM'),

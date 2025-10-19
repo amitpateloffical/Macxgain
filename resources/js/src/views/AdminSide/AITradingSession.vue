@@ -952,7 +952,7 @@ export default {
         this.loadMarketStatus();
         
         // Get current refresh interval based on market status
-        const refreshInterval = this.marketStatus?.is_open ? 3000 : 10000; // 3s during market hours, 10s after hours
+        const refreshInterval = this.marketStatus?.is_open ? 5000 : 10000; // 5s during market hours, 10s after hours
         
         // Clear and restart with appropriate interval if needed
         if (this.currentRefreshInterval !== refreshInterval) {
@@ -974,9 +974,9 @@ export default {
 
         const marketStatus = this.marketStatus?.is_open ? 'MARKET OPEN' : 'AFTER HOURS';
         console.log(`🚀 Auto-refresh: Market data, P&L and option chain updated - ${marketStatus} (${refreshInterval/1000}s interval)`);
-      }, 3000); // Start with 3 seconds, will adjust based on market status
+      }, 5000); // Start with 5 seconds, will adjust based on market status
       
-      this.currentRefreshInterval = 3000;
+      this.currentRefreshInterval = 5000;
     },
     
     startAutoRefreshWithInterval(interval) {

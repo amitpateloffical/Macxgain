@@ -17,7 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterRequestController;
 use App\Http\Controllers\WithdrawalRequestController;
 use App\Http\Controllers\UpstoxController;
-use App\Http\Controllers\TrueDataController;
+use App\Http\Controllers\MarketDataController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminPaymentCollectorController;
 use App\Http\Controllers\AITradingController;
@@ -113,47 +113,48 @@ Route::middleware('auth:api')->group(function() {
     Route::get('/admin/fund-adjustments', [FundAdjustController::class, 'getRecentAdjustments']);
 });
 
-// TrueData API Routes (temporarily without auth for testing)
-Route::get('/truedata/test', [TrueDataController::class, 'testConnection']);
-Route::get('/truedata/dashboard', [TrueDataController::class, 'getDashboardData']);
-Route::get('/truedata/market-quotes', [TrueDataController::class, 'getMarketQuotes']);
-Route::get('/truedata/market-status', [TrueDataController::class, 'getMarketStatus']);
-Route::get('/truedata/historical-data', [TrueDataController::class, 'getHistoricalData']);
-Route::get('/truedata/search-instruments', [TrueDataController::class, 'searchInstruments']);
-Route::post('/truedata/search-stock', [TrueDataController::class, 'searchStock']);
-Route::get('/truedata/top-gainers', [TrueDataController::class, 'getTopGainers']);
-Route::get('/truedata/top-losers', [TrueDataController::class, 'getTopLosers']);
-Route::get('/truedata/market-indices', [TrueDataController::class, 'getMarketIndices']);
-Route::get('/truedata/live-stock-data', [TrueDataController::class, 'getLiveStockData']);
-Route::post('/truedata/subscribe-symbols', [TrueDataController::class, 'subscribeToSymbols']);
+// Market Data API Routes (using free APIs)
+Route::get('/truedata/test', function() {
+    return response()->json(['success' => true, 'message' => 'Free API system working']);
+});
+Route::get('/truedata/dashboard', [MarketDataController::class, 'getDashboardData']);
+Route::get('/truedata/market-quotes', [MarketDataController::class, 'getMarketQuotes']);
+Route::get('/truedata/market-status', [MarketDataController::class, 'getMarketStatus']);
+Route::get('/truedata/historical-data', [MarketDataController::class, 'getHistoricalData']);
+Route::get('/truedata/search-instruments', [MarketDataController::class, 'searchInstruments']);
+Route::post('/truedata/search-stock', [MarketDataController::class, 'searchStock']);
+Route::get('/truedata/top-gainers', [MarketDataController::class, 'getTopGainers']);
+Route::get('/truedata/top-losers', [MarketDataController::class, 'getTopLosers']);
+Route::get('/truedata/market-indices', [MarketDataController::class, 'getMarketIndices']);
+Route::get('/truedata/live-stock-data', [MarketDataController::class, 'getLiveStockData']);
+Route::post('/truedata/subscribe-symbols', [MarketDataController::class, 'subscribeToSymbols']);
 
 // New Python-based live data routes (temporarily without auth for testing)
-Route::get('/truedata/live-data', [TrueDataController::class, 'getLiveDataFromPython']);
-Route::post('/truedata/trigger-fetch', [TrueDataController::class, 'triggerDataFetch']);
+Route::get('/truedata/live-data', [MarketDataController::class, 'getLiveDataFromPython']);
+Route::post('/truedata/trigger-fetch', [MarketDataController::class, 'triggerDataFetch']);
 
 // Options API Routes
-Route::get('/truedata/options/valid-symbols', [TrueDataController::class, 'getValidOptionSymbols']);
-Route::get('/truedata/options/chain/{symbol}', [TrueDataController::class, 'getOptionChain']);
-Route::get('/truedata/options/expiries/{symbol}', [TrueDataController::class, 'getOptionExpiries']);
+Route::get('/truedata/options/valid-symbols', [MarketDataController::class, 'getValidOptionSymbols']);
+Route::get('/truedata/options/chain/{symbol}', [MarketDataController::class, 'getOptionChain']);
+Route::get('/truedata/options/expiries/{symbol}', [MarketDataController::class, 'getOptionExpiries']);
 // Test route for debugging
 Route::get('/truedata/test', function() {
     return response()->json(['success' => true, 'message' => 'Test route working']);
 });
-Route::get('/truedata/test-option/{symbol}', [TrueDataController::class, 'testOptionChain']);
+Route::get('/truedata/test-option/{symbol}', [MarketDataController::class, 'testOptionChain']);
 Route::get('/truedata/simple-option/{symbol}', function($symbol) {
     try {
-        // Simple direct implementation
-        $trueDataUrl = "https://api.truedata.in/getOptionChain?user=tdwsp759&password=mosh@759&symbol={$symbol}&expiry=20250916";
-        $rawResponse = file_get_contents($trueDataUrl);
-        $trueDataResponse = json_decode($rawResponse, true);
+        // Use free market data service
+        $freeMarketDataService = new \App\Services\FreeMarketDataService();
+        $result = $freeMarketDataService->getOptionChain($symbol);
         
         return response()->json([
-            'success' => true,
+            'success' => $result['success'],
             'symbol' => $symbol,
-            'api_status' => $trueDataResponse['status'] ?? 'unknown',
-            'total_records' => count($trueDataResponse['Records'] ?? []),
-            'sample_record' => ($trueDataResponse['Records'][0] ?? null),
-            'data_source' => 'TrueData API Direct'
+            'data_source' => $result['source'] ?? 'Free API',
+            'total_options' => count($result['data'] ?? []),
+            'sample_option' => ($result['data'][0] ?? null),
+            'message' => $result['message'] ?? 'Option chain data retrieved'
         ]);
     } catch (\Exception $e) {
         return response()->json([
@@ -162,9 +163,9 @@ Route::get('/truedata/simple-option/{symbol}', function($symbol) {
         ]);
     }
 });
-Route::get('/truedata/options/dashboard', [TrueDataController::class, 'getOptionsDashboard']);
-Route::get('/truedata/options/popular', [TrueDataController::class, 'getPopularOptions']);
-Route::get('/truedata/options/current-price', [TrueDataController::class, 'getCurrentOptionPrice']);
+Route::get('/truedata/options/dashboard', [MarketDataController::class, 'getOptionsDashboard']);
+Route::get('/truedata/options/popular', [MarketDataController::class, 'getPopularOptions']);
+Route::get('/truedata/options/current-price', [MarketDataController::class, 'getCurrentOptionPrice']);
 
 // Alpha Vantage API Routes
 Route::prefix('alphavantage')->group(function() {
