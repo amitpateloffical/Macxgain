@@ -133,6 +133,10 @@ Route::post('/truedata/subscribe-symbols', [MarketDataController::class, 'subscr
 Route::get('/truedata/live-data', [MarketDataController::class, 'getLiveDataFromPython']);
 Route::post('/truedata/trigger-fetch', [MarketDataController::class, 'triggerDataFetch']);
 
+// Market data update routes
+Route::post('/truedata/update-market-data', [MarketDataController::class, 'updateMarketData']);
+Route::get('/truedata/market-stats', [MarketDataController::class, 'getMarketDataStats']);
+
 // Options API Routes
 Route::get('/truedata/options/valid-symbols', [MarketDataController::class, 'getValidOptionSymbols']);
 Route::get('/truedata/options/chain/{symbol}', [MarketDataController::class, 'getOptionChain']);

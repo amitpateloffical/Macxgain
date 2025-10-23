@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Jobs\FetchMarketDataJob;
 use App\Jobs\UpdateOptionChainJob;
+use App\Jobs\UpdateMarketDataJob;
 use App\Services\MarketStatusService;
 use Illuminate\Support\Facades\Log;
 
@@ -32,9 +33,11 @@ class SmartMarketScheduler extends Command
             // Dispatch the jobs
             FetchMarketDataJob::dispatch();
             UpdateOptionChainJob::dispatch();
+            UpdateMarketDataJob::dispatch();
             
             $this->info("🚀 Smart Market Data fetch dispatched");
             $this->info("📈 Option chain update dispatched");
+            $this->info("💾 Database market data update dispatched");
             $this->info("📊 Market Status: {$marketStatus['status']}");
             $this->info("⏱️  Refresh Interval: {$refreshInterval} seconds");
             $this->info("🕐 Current Time: " . now('Asia/Kolkata')->format('H:i:s'));

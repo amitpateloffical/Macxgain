@@ -1031,48 +1031,190 @@ const generateChartData = (currentPrice, timeframe = '1D') => {
   }
 }
 
-// Fetch stock data - now using mock data for reliability
+// Fetch stock data from database via API
 const fetchStockData = async (symbol) => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300))
+    const response = await fetch(`/api/truedata/search-stock?symbol=${symbol}`)
+    const result = await response.json()
     
-    // Return mock data for now
-    return generateMockStockData(symbol)
+    if (result.success && result.data) {
+      // Convert database format to frontend format
+      const stockData = {
+        symbol: result.data.symbol,
+        name: result.data.symbol, // Use symbol as name if name not available
+        price: result.data.ltp,
+        change: result.data.change,
+        changePercent: result.data.change_percent,
+        high: result.data.high,
+        low: result.data.low,
+        open: result.data.open,
+        prevClose: result.data.prev_close,
+        volume: result.data.volume,
+        timestamp: result.data.timestamp,
+        isLive: result.data.is_live,
+        marketStatus: result.data.market_status
+      }
+      
+      return stockData
+    } else {
+      // Fallback to mock data if not found in database
+      console.warn(`Stock ${symbol} not found in database, using mock data`)
+      return generateMockStockData(symbol)
+    }
   } catch (error) {
-    console.error('Error generating stock data:', error)
+    console.error('Error fetching stock data from API:', error)
     return generateMockStockData(symbol) // Fallback to mock data
   }
 }
 
 
 
-// Fetch top 10 stocks data
+// Fetch major indices data (NIFTY 50, NIFTY BANK, SENSEX) from database
 const fetchTopStocks = async () => {
   isLoading.value = true
   
   try {
-    // Generate mock data for popular stocks
-    const mockStocks = popularStocks.slice(0, 10).map(stock => {
-      const data = generateMockStockData(stock.symbol)
-      // Generate realistic chart data for visualization
-      data.chartData = Array.from({ length: 20 }, () => {
+    // Fetch live market data from database
+    const response = await fetch('/api/truedata/live-data')
+    const result = await response.json()
+    
+    if (result.success && result.data && Object.keys(result.data).length > 0) {
+      // Filter to show priority symbols in order (50+ symbols)
+      const prioritySymbols = [
+        // Major indices first
+        'NIFTY 50', 'NIFTY BANK', 'SENSEX',
+        // Popular NSE stocks (50+ symbols)
+        'RELIANCE', 'TCS', 'HDFCBANK', 'ICICIBANK', 'HINDUNILVR', 'ITC', 'KOTAKBANK', 'SBIN', 'BHARTIARTL', 'LT',
+        'AXISBANK', 'ASIANPAINT', 'MARUTI', 'NESTLEIND', 'ULTRACEMCO', 'SUNPHARMA', 'TITAN', 'POWERGRID', 'NTPC', 'TECHM',
+        'WIPRO', 'ONGC', 'TATAMOTORS', 'BAJFINANCE', 'BAJAJFINSV', 'BAJAJ-AUTO', 'DRREDDY', 'CIPLA', 'COALINDIA', 'BPCL',
+        'HCLTECH', 'INFY', 'INDUSINDBK', 'GRASIM', 'JSWSTEEL', 'TATASTEEL', 'ADANIENT', 'ADANIPORTS', 'ADANIGREEN', 'ADANIENSOL',
+        'BRITANNIA', 'COLPAL', 'DMART', 'EICHERMOT', 'HDFC', 'HDFCLIFE', 'ICICIGI', 'ICICIPRULI', 'LICHSGFIN', 'M&M',
+        'TATACONSUM', 'TATAPOWER', 'UPL', 'VEDL', 'ZEEL', 'APOLLOHOSP', 'DIVISLAB', 'HEROMOTOCO', 'SHREECEM', 'TATACHEM',
+        // Additional popular symbols
+        'MCXCOMPDEX', 'AARTIIND', 'GILLETTE', 'JKTYRE', 'KAJARIACER', 'MINDTREE', 'OFSS', 'PNB', 'QUICKHEAL', 'UJJIVAN',
+        'YESBANK', 'NIFTY-I', 'BANKNIFTY-I', 'UPL-I', 'VEDL-I', 'VOLTAS-I', 'ZEEL-I', 'CRUDEOIL-I', 'GOLDM-I', 'SILVERM-I',
+        'COPPER-I', 'SILVER-I', 'NIFTY NEXT 50', 'NIFTY 100', 'NIFTY 200', 'NIFTY 500', 'NIFTY MIDCAP 100', 'NIFTY SMALLCAP 100'
+      ]
+      const filteredStocks = []
+      
+      // Add symbols in priority order
+      prioritySymbols.forEach(symbol => {
+        if (result.data[symbol]) {
+          const stock = result.data[symbol]
+          const data = {
+            symbol: stock.symbol,
+            name: stock.symbol, // Use symbol as name if name not available
+            price: stock.ltp,
+            change: stock.change,
+            changePercent: stock.change_percent,
+            high: stock.high,
+            low: stock.low,
+            open: stock.open,
+            prevClose: stock.prev_close,
+            volume: stock.volume,
+            timestamp: stock.timestamp,
+            isLive: stock.is_live,
+            marketStatus: stock.market_status,
+            // Generate realistic chart data for visualization
+            chartData: Array.from({ length: 20 }, () => {
+              const base = 50
+              const variation = (Math.random() - 0.5) * 40
+              return Math.max(10, Math.min(90, base + variation))
+            })
+          }
+          filteredStocks.push(data)
+        }
+      })
+      
+      topStocks.value = filteredStocks
+      console.log(`Loaded ${filteredStocks.length} priority symbols from database:`, filteredStocks.map(s => s.symbol))
+      
+    } else {
+      console.warn('No data from database, using mock data')
+      // Fallback to mock data if no database data
+      topStocks.value = generateMockMajorIndices()
+    }
+    
+  } catch (error) {
+    console.error('Error fetching major indices from API:', error)
+    // Fallback to mock data if API fails
+    topStocks.value = generateMockMajorIndices()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Generate mock data for priority symbols
+const generateMockMajorIndices = () => {
+  const prioritySymbols = [
+    // Major indices first
+    { symbol: 'NIFTY 50', name: 'NIFTY 50', basePrice: 25000, priceRange: 200 },
+    { symbol: 'NIFTY BANK', name: 'NIFTY BANK', basePrice: 50000, priceRange: 300 },
+    { symbol: 'SENSEX', name: 'SENSEX', basePrice: 65000, priceRange: 500 },
+    // Additional symbols
+    { symbol: 'MCXCOMPDEX', name: 'MCXCOMPDEX', basePrice: 15000, priceRange: 100 },
+    { symbol: 'AARTIIND', name: 'AARTIIND', basePrice: 800, priceRange: 50 },
+    { symbol: 'BRITANNIA', name: 'BRITANNIA', basePrice: 4500, priceRange: 200 },
+    { symbol: 'COLPAL', name: 'COLPAL', basePrice: 1800, priceRange: 100 },
+    { symbol: 'DMART', name: 'DMART', basePrice: 4200, priceRange: 200 },
+    { symbol: 'EICHERMOT', name: 'EICHERMOT', basePrice: 3500, priceRange: 150 },
+    { symbol: 'GILLETTE', name: 'GILLETTE', basePrice: 1200, priceRange: 80 },
+    { symbol: 'HDFCBANK', name: 'HDFCBANK', basePrice: 1600, priceRange: 100 },
+    { symbol: 'ICICIBANK', name: 'ICICIBANK', basePrice: 950, priceRange: 60 },
+    { symbol: 'JKTYRE', name: 'JKTYRE', basePrice: 200, priceRange: 20 },
+    { symbol: 'KAJARIACER', name: 'KAJARIACER', basePrice: 1200, priceRange: 80 },
+    { symbol: 'LICHSGFIN', name: 'LICHSGFIN', basePrice: 500, priceRange: 30 },
+    { symbol: 'MINDTREE', name: 'MINDTREE', basePrice: 3500, priceRange: 200 },
+    { symbol: 'OFSS', name: 'OFSS', basePrice: 4500, priceRange: 250 },
+    { symbol: 'PNB', name: 'PNB', basePrice: 80, priceRange: 10 },
+    { symbol: 'QUICKHEAL', name: 'QUICKHEAL', basePrice: 300, priceRange: 25 },
+    { symbol: 'RELIANCE', name: 'RELIANCE', basePrice: 2500, priceRange: 150 },
+    { symbol: 'SBIN', name: 'SBIN', basePrice: 580, priceRange: 40 },
+    { symbol: 'TCS', name: 'TCS', basePrice: 3800, priceRange: 200 },
+    { symbol: 'UJJIVAN', name: 'UJJIVAN', basePrice: 400, priceRange: 30 },
+    { symbol: 'WIPRO', name: 'WIPRO', basePrice: 450, priceRange: 30 },
+    { symbol: 'YESBANK', name: 'YESBANK', basePrice: 25, priceRange: 5 },
+    { symbol: 'ZEEL', name: 'ZEEL', basePrice: 200, priceRange: 20 },
+    { symbol: 'NIFTY-I', name: 'NIFTY-I', basePrice: 25000, priceRange: 200 },
+    { symbol: 'BANKNIFTY-I', name: 'BANKNIFTY-I', basePrice: 50000, priceRange: 300 },
+    { symbol: 'UPL-I', name: 'UPL-I', basePrice: 600, priceRange: 40 },
+    { symbol: 'VEDL-I', name: 'VEDL-I', basePrice: 250, priceRange: 20 },
+    { symbol: 'VOLTAS-I', name: 'VOLTAS-I', basePrice: 800, priceRange: 50 },
+    { symbol: 'ZEEL-I', name: 'ZEEL-I', basePrice: 200, priceRange: 20 },
+    { symbol: 'CRUDEOIL-I', name: 'CRUDEOIL-I', basePrice: 6000, priceRange: 300 },
+    { symbol: 'GOLDM-I', name: 'GOLDM-I', basePrice: 55000, priceRange: 2000 },
+    { symbol: 'SILVERM-I', name: 'SILVERM-I', basePrice: 75000, priceRange: 3000 },
+    { symbol: 'COPPER-I', name: 'COPPER-I', basePrice: 800, priceRange: 50 },
+    { symbol: 'SILVER-I', name: 'SILVER-I', basePrice: 75000, priceRange: 3000 }
+  ]
+  
+  return prioritySymbols.map(index => {
+    const variation = (Math.random() - 0.5) * index.priceRange
+    const price = index.basePrice + variation
+    const change = variation
+    const changePercent = (change / index.basePrice) * 100
+    
+    return {
+      symbol: index.symbol,
+      name: index.name,
+      price: Math.round(price * 100) / 100,
+      change: Math.round(change * 100) / 100,
+      changePercent: Math.round(changePercent * 100) / 100,
+      high: Math.round((price + index.priceRange * 0.3) * 100) / 100,
+      low: Math.round((price - index.priceRange * 0.3) * 100) / 100,
+      open: index.basePrice,
+      prevClose: index.basePrice,
+      volume: Math.floor(Math.random() * 2000000) + 500000,
+      timestamp: new Date().toISOString(),
+      isLive: true,
+      marketStatus: 'OPEN',
+      chartData: Array.from({ length: 20 }, () => {
         const base = 50
         const variation = (Math.random() - 0.5) * 40
         return Math.max(10, Math.min(90, base + variation))
       })
-        return data
-    })
-    
-    topStocks.value = mockStocks
-    
-  } catch (error) {
-    console.error('Error fetching top stocks:', error)
-    // Fallback to mock data if API fails
-    topStocks.value = generateMockTopStocks()
-  } finally {
-    isLoading.value = false
-  }
+    }
+  })
 }
 
 // Generate mock data for top Indian stocks (fallback)
