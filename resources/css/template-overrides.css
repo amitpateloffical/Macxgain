@@ -295,6 +295,149 @@ textarea:focus {
   color: var(--color-text-primary) !important;
 }
 
+/* Landing Page Header Overrides */
+.header,
+.main-header {
+  background: var(--color-bg-primary, rgba(10, 10, 26, 0.95)) !important;
+  border-bottom-color: var(--color-border-secondary, rgba(255, 255, 255, 0.1)) !important;
+}
+
+.header .brand-name,
+.main-header .brand-name {
+  color: var(--color-primary) !important;
+}
+
+.header .nav-link,
+.main-header .nav-link {
+  color: var(--color-text-primary, white) !important;
+}
+
+.header .nav-link:hover,
+.main-header .nav-link:hover,
+.header .nav-link.active,
+.main-header .nav-link.active {
+  color: var(--color-primary) !important;
+}
+
+.header .btn-outline,
+.main-header .btn-outline {
+  color: var(--color-text-primary, white) !important;
+  border-color: var(--color-border-secondary, rgba(255, 255, 255, 0.3)) !important;
+}
+
+.header .btn-outline:hover,
+.main-header .btn-outline:hover {
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.header .btn-primary,
+.main-header .btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)) !important;
+  color: var(--color-bg-primary, #0a0a1a) !important;
+}
+
+.header .btn-primary:hover,
+.main-header .btn-primary:hover {
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+}
+
+.header .mobile-menu-toggle span,
+.main-header .mobile-menu-toggle span {
+  background-color: var(--color-text-primary, white) !important;
+}
+
+/* Login Page Specific Overrides */
+.login-container,
+.login-background {
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e), var(--color-bg-quaternary, #16213e), var(--color-bg-primary, #0f3460)) !important;
+}
+
+.login-card {
+  background: var(--color-bg-secondary, rgba(255, 255, 255, 0.95)) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.login-button {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  color: var(--color-bg-primary, white) !important;
+}
+
+.login-button:hover:not(:disabled) {
+  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 0, 212, 170), 0.4) !important;
+}
+
+/* Login Form Elements */
+.login-card .form-input {
+  background: var(--color-bg-tertiary, white) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.login-card .form-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 212, 170), 0.1) !important;
+}
+
+.login-card .form-label,
+.login-card .checkbox-container {
+  color: var(--color-text-primary) !important;
+}
+
+.login-card .form-label i,
+.login-card .input-icon {
+  color: var(--color-primary) !important;
+}
+
+.login-card .password-toggle {
+  color: var(--color-text-muted) !important;
+}
+
+.login-card .password-toggle:hover,
+.login-card .password-toggle.active {
+  color: var(--color-primary) !important;
+}
+
+.login-card .forgot-link,
+.login-card .signup-link,
+.login-card .register-link {
+  color: var(--color-primary) !important;
+}
+
+.login-card .forgot-link:hover,
+.login-card .signup-link:hover {
+  color: var(--color-primary-dark) !important;
+}
+
+.login-card .checkmark {
+  border-color: var(--color-border-secondary) !important;
+}
+
+.login-card .checkbox-input:checked ~ .checkmark {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Login Background Elements */
+.login-container .candlestick.up,
+.login-container .ticker .price.up,
+.login-container .number {
+  color: var(--color-success) !important;
+  background: var(--color-success) !important;
+}
+
+.login-container .candlestick.down,
+.login-container .ticker .price.down {
+  color: var(--color-error) !important;
+  background: var(--color-error) !important;
+}
+
+.login-container .indicator .line,
+.login-container .indicator .dot {
+  background: var(--color-primary) !important;
+}
+
 /* User Management Page Specific Overrides */
 .user-management-screen {
   background: linear-gradient(135deg, var(--color-bg-primary), var(--color-bg-secondary)) !important;

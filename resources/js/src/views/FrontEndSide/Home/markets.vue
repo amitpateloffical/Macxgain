@@ -2549,9 +2549,9 @@ const handleIframeError = () => {
 .main-header {
   position: relative;
   z-index: 15;
-  background: rgba(10, 10, 26, 0.95);
+  background: var(--color-bg-primary, rgba(10, 10, 26, 0.95)) !important;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-secondary, rgba(255, 255, 255, 0.1)) !important;
   padding: 1rem 0;
   overflow: visible;
 }
@@ -2579,7 +2579,7 @@ const handleIframeError = () => {
 .main-header .brand-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #00ff88;
+  color: var(--color-primary, #00ff88) !important;
   margin: 0;
 }
 
@@ -2590,18 +2590,18 @@ const handleIframeError = () => {
 }
 
 .main-header .nav-link {
-  color: white;
+  color: var(--color-text-primary, white) !important;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .main-header .nav-link:hover {
-  color: #00ff88;
+  color: var(--color-primary, #00ff88) !important;
 }
 
 .main-header .nav-link.active {
-  color: #00ff88;
+  color: var(--color-primary, #00ff88) !important;
 }
 
 .main-header .auth-buttons {
@@ -2621,23 +2621,23 @@ const handleIframeError = () => {
 
 .main-header .btn-outline {
   background: transparent;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-text-primary, white) !important;
+  border: 2px solid var(--color-border-secondary, rgba(255, 255, 255, 0.3)) !important;
 }
 
 .main-header .btn-outline:hover {
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #00ff88) !important;
 }
 
 .main-header .btn-primary {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0a0a1a;
+  background: linear-gradient(135deg, var(--color-primary, #00ff88) 0%, var(--color-primary-light, #00d4aa) 100%) !important;
+  color: var(--color-bg-primary, #0a0a1a) !important;
 }
 
 .main-header .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
 }
 
 /* Markets Header */

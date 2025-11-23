@@ -336,7 +336,7 @@ const login = () => {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e) 0%, var(--color-bg-quaternary, #16213e) 50%, var(--color-bg-primary, #0f3460) 100%) !important;
   padding: 20px;
 }
 
@@ -347,7 +347,7 @@ const login = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e) 0%, var(--color-bg-quaternary, #16213e) 50%, var(--color-bg-primary, #0f3460) 100%) !important;
   z-index: 1;
 }
 
@@ -358,26 +358,28 @@ const login = () => {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 25% 25%, rgba(0,212,170,0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(0,212,170,0.1) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 49%, rgba(0,212,170,0.05) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(0,212,170,0.05) 50%, transparent 51%);
+    radial-gradient(circle at 25% 25%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.05) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.05) 50%, transparent 51%);
   background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
   animation: float 6s ease-in-out infinite;
 }
 
 /* Login card */
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-bg-secondary, rgba(255, 255, 255, 0.95)) !important;
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 40px;
   width: 100%;
   max-width: 450px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--color-border-primary, rgba(0, 255, 136, 0.2)) !important;
   position: relative;
   z-index: 2;
   animation: slideUp 0.6s ease-out;
+  color: var(--color-text-primary, #000) !important;
 }
 
 /* Header */
@@ -417,13 +419,13 @@ const login = () => {
 .logo-text {
   font-size: 28px;
   font-weight: 700;
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   margin: 0;
-  text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
+  text-shadow: 0 0 10px rgba(var(--color-primary-rgb, 0, 212, 170), 0.3);
 }
 
 .tagline {
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   font-size: 14px;
   font-weight: 500;
   margin: 5px 0 0 0;
@@ -433,13 +435,13 @@ const login = () => {
 .welcome-text {
   font-size: 24px;
   font-weight: 600;
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   margin: 0 0 8px 0;
-  text-shadow: 0 0 8px rgba(0, 212, 170, 0.2);
+  text-shadow: 0 0 8px rgba(var(--color-primary-rgb, 0, 212, 170), 0.2);
 }
 
 .subtitle {
-  color: #718096;
+  color: var(--color-text-muted, #718096) !important;
   font-size: 16px;
   margin: 0;
 }
@@ -464,7 +466,7 @@ const login = () => {
 
 .form-label i {
   margin-right: 8px;
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
 }
 
 .input-container {
@@ -474,22 +476,23 @@ const login = () => {
 .form-input {
   width: 100%;
   padding: 16px 20px 16px 50px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-border-secondary, #e2e8f0) !important;
   border-radius: 12px;
   font-size: 16px;
-  background: white;
+  background: var(--color-bg-tertiary, white) !important;
+  color: var(--color-text-primary, #000) !important;
   transition: all 0.3s ease;
   outline: none;
 }
 
 .form-input:focus {
-  border-color: #00d4aa;
-  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+  border-color: var(--color-primary, #00d4aa) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 212, 170), 0.1) !important;
 }
 
 .form-input.error {
-  border-color: #e53e3e;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+  border-color: var(--color-error, #e53e3e) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-error-rgb, 229, 62, 62), 0.1) !important;
 }
 
 .input-icon {
@@ -497,7 +500,7 @@ const login = () => {
   left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a0aec0;
+  color: var(--color-text-muted, #a0aec0) !important;
   font-size: 16px;
 }
 
@@ -508,7 +511,7 @@ const login = () => {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #a0aec0;
+  color: var(--color-text-muted, #a0aec0) !important;
   cursor: pointer;
   padding: 0;
   font-size: 16px;
@@ -516,11 +519,11 @@ const login = () => {
 }
 
 .password-toggle:hover {
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
 }
 
 .password-toggle.active {
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
 }
 
 /* Form options */
@@ -538,7 +541,7 @@ const login = () => {
   align-items: center;
   cursor: pointer;
   font-size: 14px;
-  color: #4a5568;
+  color: var(--color-text-primary, #4a5568) !important;
   user-select: none;
 }
 
@@ -562,8 +565,8 @@ const login = () => {
 }
 
 .checkbox-input:checked ~ .checkmark {
-  background-color: #00d4aa;
-  border-color: #00d4aa;
+  background-color: var(--color-primary, #00d4aa) !important;
+  border-color: var(--color-primary, #00d4aa) !important;
 }
 
 .checkmark:after {
@@ -584,7 +587,7 @@ const login = () => {
 }
 
 .forgot-link {
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -592,15 +595,15 @@ const login = () => {
 }
 
 .forgot-link:hover {
-  color: #00b894;
+  color: var(--color-primary-dark, #00b894) !important;
   text-decoration: underline;
 }
 
 /* Error message */
 .error-message {
-  background: #fed7d7;
-  border: 1px solid #feb2b2;
-  color: #c53030;
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.1) !important;
+  border: 1px solid var(--color-error, #c53030) !important;
+  color: var(--color-error, #c53030) !important;
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -617,8 +620,8 @@ const login = () => {
 .login-button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #00d4aa, #00b894);
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary, #00d4aa), var(--color-primary-dark, #00b894)) !important;
+  color: var(--color-bg-primary, white) !important;
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -646,7 +649,7 @@ const login = () => {
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 212, 170, 0.4);
+  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 0, 212, 170), 0.4) !important;
 }
 
 .login-button:hover:not(:disabled)::before {
@@ -667,12 +670,12 @@ const login = () => {
 /* Footer */
 .login-footer {
   text-align: center;
-  color: #718096;
+  color: var(--color-text-muted, #718096) !important;
   font-size: 14px;
 }
 
 .signup-link {
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   text-decoration: none;
   font-weight: 600;
 }
@@ -722,18 +725,18 @@ const login = () => {
 
 .candlestick {
   width: 4px;
-  background: #00d4aa;
+  background: var(--color-primary, #00d4aa) !important;
   border-radius: 1px;
   position: relative;
 }
 
 .candlestick.up {
-  background: #00d4aa;
+  background: var(--color-success, #00d4aa) !important;
   height: 20px;
 }
 
 .candlestick.down {
-  background: #ff6b6b;
+  background: var(--color-error, #ff6b6b) !important;
   height: 15px;
 }
 
@@ -783,14 +786,14 @@ const login = () => {
 .indicator .line {
   width: 40px;
   height: 2px;
-  background: #00d4aa;
+  background: var(--color-primary, #00d4aa) !important;
   border-radius: 1px;
 }
 
 .indicator .dot {
   width: 6px;
   height: 6px;
-  background: #00d4aa;
+  background: var(--color-primary, #00d4aa) !important;
   border-radius: 50%;
   position: absolute;
   right: 0;
@@ -835,11 +838,11 @@ const login = () => {
 }
 
 .ticker .price.up {
-  color: #00d4aa;
+  color: var(--color-success, #00d4aa) !important;
 }
 
 .ticker .price.down {
-  color: #ff6b6b;
+  color: var(--color-error, #ff6b6b) !important;
 }
 
 .ticker .change {
@@ -858,13 +861,13 @@ const login = () => {
 .ticker .change:contains('+')::before {
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-bottom: 5px solid #00d4aa;
+  border-bottom: 5px solid var(--color-success, #00d4aa);
 }
 
 .ticker .change:contains('-')::before {
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-top: 5px solid #ff6b6b;
+  border-top: 5px solid var(--color-error, #ff6b6b);
 }
 
 /* Floating Numbers */
@@ -878,7 +881,7 @@ const login = () => {
 
 .number {
   position: absolute;
-  color: #00d4aa;
+  color: var(--color-primary, #00d4aa) !important;
   font-size: 14px;
   font-weight: 600;
   opacity: 0.7;

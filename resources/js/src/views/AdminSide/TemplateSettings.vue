@@ -167,6 +167,146 @@
           </div>
         </div>
 
+        <!-- Template 6: Red Energy -->
+        <div 
+          class="template-card" 
+          :class="{ active: selectedTemplate === 'template6' }"
+          @click="selectTemplate('template6')"
+        >
+          <div class="template-preview" style="background: linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #3d0000 100%);">
+            <div class="preview-header" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
+              <div class="preview-logo" style="background: #ef4444; color: #1a0000;">LG</div>
+              <div class="preview-title" style="color: #ef4444;">Red Energy</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-card" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
+                <div class="preview-text" style="color: #ef4444;">Sample Card</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3 class="template-name">Red Energy</h3>
+            <p class="template-desc">Bold red energy theme</p>
+            <div class="template-colors">
+              <span class="color-dot" style="background: #ef4444;"></span>
+              <span class="color-dot" style="background: #1a0000;"></span>
+              <span class="color-dot" style="background: #2d0000;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 7: Pink Neon -->
+        <div 
+          class="template-card" 
+          :class="{ active: selectedTemplate === 'template7' }"
+          @click="selectTemplate('template7')"
+        >
+          <div class="template-preview" style="background: linear-gradient(135deg, #1a0a14 0%, #2d1a24 50%, #3d2a34 100%);">
+            <div class="preview-header" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.2);">
+              <div class="preview-logo" style="background: #ec4899; color: #1a0a14;">LG</div>
+              <div class="preview-title" style="color: #ec4899;">Pink Neon</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-card" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.2);">
+                <div class="preview-text" style="color: #ec4899;">Sample Card</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3 class="template-name">Pink Neon</h3>
+            <p class="template-desc">Vibrant pink neon theme</p>
+            <div class="template-colors">
+              <span class="color-dot" style="background: #ec4899;"></span>
+              <span class="color-dot" style="background: #1a0a14;"></span>
+              <span class="color-dot" style="background: #2d1a24;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 8: Teal Ocean -->
+        <div 
+          class="template-card" 
+          :class="{ active: selectedTemplate === 'template8' }"
+          @click="selectTemplate('template8')"
+        >
+          <div class="template-preview" style="background: linear-gradient(135deg, #0a1a18 0%, #1a2a28 50%, #2a3a38 100%);">
+            <div class="preview-header" style="background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.2);">
+              <div class="preview-logo" style="background: #14b8a6; color: #0a1a18;">LG</div>
+              <div class="preview-title" style="color: #14b8a6;">Teal Ocean</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-card" style="background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.2);">
+                <div class="preview-text" style="color: #14b8a6;">Sample Card</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3 class="template-name">Teal Ocean</h3>
+            <p class="template-desc">Calm teal ocean theme</p>
+            <div class="template-colors">
+              <span class="color-dot" style="background: #14b8a6;"></span>
+              <span class="color-dot" style="background: #0a1a18;"></span>
+              <span class="color-dot" style="background: #1a2a28;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 9: Gold Luxury -->
+        <div 
+          class="template-card" 
+          :class="{ active: selectedTemplate === 'template9' }"
+          @click="selectTemplate('template9')"
+        >
+          <div class="template-preview" style="background: linear-gradient(135deg, #1a1400 0%, #2d2400 50%, #3d3400 100%);">
+            <div class="preview-header" style="background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2);">
+              <div class="preview-logo" style="background: #fbbf24; color: #1a1400;">LG</div>
+              <div class="preview-title" style="color: #fbbf24;">Gold Luxury</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-card" style="background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2);">
+                <div class="preview-text" style="color: #fbbf24;">Sample Card</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3 class="template-name">Gold Luxury</h3>
+            <p class="template-desc">Premium gold luxury theme</p>
+            <div class="template-colors">
+              <span class="color-dot" style="background: #fbbf24;"></span>
+              <span class="color-dot" style="background: #1a1400;"></span>
+              <span class="color-dot" style="background: #2d2400;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 10: Indigo Night -->
+        <div 
+          class="template-card" 
+          :class="{ active: selectedTemplate === 'template10' }"
+          @click="selectTemplate('template10')"
+        >
+          <div class="template-preview" style="background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #2a2a3e 100%);">
+            <div class="preview-header" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2);">
+              <div class="preview-logo" style="background: #6366f1; color: #0f0f1a;">LG</div>
+              <div class="preview-title" style="color: #6366f1;">Indigo Night</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-card" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2);">
+                <div class="preview-text" style="color: #6366f1;">Sample Card</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3 class="template-name">Indigo Night</h3>
+            <p class="template-desc">Deep indigo night theme</p>
+            <div class="template-colors">
+              <span class="color-dot" style="background: #6366f1;"></span>
+              <span class="color-dot" style="background: #0f0f1a;"></span>
+              <span class="color-dot" style="background: #1a1a2e;"></span>
+            </div>
+          </div>
+        </div>
+
         <!-- Custom Templates -->
         <div 
           v-for="(template, templateId) in customTemplates" 
