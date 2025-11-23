@@ -76,8 +76,8 @@
     <header class="header">
       <div class="header-container">
         <div class="logo-section">
-          <img src="../logo.png" alt="Macxgain Logo" class="logo" />
-          <h1 class="brand-name">Macxgain</h1>
+          <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+          <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
         </div>
         
         <!-- Mobile Menu Toggle -->
@@ -115,7 +115,7 @@
           </h1>
           
           <p class="hero-subtitle fade-in-left">
-            Experience next-generation trading with Macxgain's revolutionary AI algorithms. 
+            Experience next-generation trading with {{ brandConfig.companyName }}'s revolutionary AI algorithms. 
             Our machine learning models analyze 10,000+ data points per second to deliver 
             <span class="ai-highlight">95.8% accuracy</span> in market predictions.
           </p>
@@ -784,7 +784,7 @@
       <div class="container">
         <div class="section-header fade-in-up">
           <h2>Success Stories</h2>
-          <p>Real traders, real results with Macxgain</p>
+          <p>Real traders, real results with {{ brandConfig.companyName }}</p>
         </div>
         
         <div class="stories-grid">
@@ -1009,7 +1009,7 @@
                 <div class="screen">
                   <div class="app-header">
                     <div class="app-logo">M</div>
-                    <div class="app-title">Macxgain</div>
+                    <div class="app-title">{{ brandConfig.companyName }}</div>
                   </div>
                   <div class="app-content">
                     <div class="market-card">
@@ -1054,7 +1054,7 @@
                 <div class="screen">
                   <div class="app-header">
                     <div class="app-logo">M</div>
-                    <div class="app-title">Macxgain</div>
+                    <div class="app-title">{{ brandConfig.companyName }}</div>
                   </div>
                   <div class="app-content">
                     <div class="trading-panel">
@@ -1152,7 +1152,7 @@
             <div class="testimonial-rating">
               ⭐⭐⭐⭐⭐
             </div>
-            <p class="testimonial-text">"Macxgain has transformed my trading experience. The real-time data and advanced tools have helped me make better decisions."</p>
+            <p class="testimonial-text">"{{ brandConfig.companyName }} has transformed my trading experience. The real-time data and advanced tools have helped me make better decisions."</p>
             <div class="testimonial-author">
               <div class="author-avatar">RK</div>
               <div class="author-info">
@@ -1222,7 +1222,7 @@
       <div class="container">
         <div class="section-header">
           <h2>Reason For Choose Us</h2>
-          <p>Why traders trust Macxgain for their trading needs</p>
+          <p>Why traders trust {{ brandConfig.companyName }} for their trading needs</p>
         </div>
         
         <div class="features-grid">
@@ -1259,7 +1259,7 @@
         <div class="footer-content">
           <div class="footer-section">
             <div class="footer-logo">
-              <img src="../logo.png" alt="Macxgain Logo" class="logo" />
+              <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
               <h3>Macxgain</h3>
             </div>
             <p>Your trusted partner for futures and options trading. Start your trading journey with us today.</p>
@@ -1300,6 +1300,8 @@
 </template>
 
 <script>
+import { getBrandConfig } from '@/config/brand';
+
 export default {
   name: "MacxgainLandingPage",
   data() {
@@ -1319,10 +1321,23 @@ export default {
       ],
       currentTextIndex: 0,
       isTyping: true,
-      typingTimeout: null
+      typingTimeout: null,
+      brandConfig: getBrandConfig()
     };
   },
+  computed: {
+    // Brand config is reactive through data property
+  },
   mounted() {
+    // Listen for brand config updates
+    const handleUpdate = () => {
+      this.brandConfig = getBrandConfig();
+    };
+    window.addEventListener('brandConfigUpdated', handleUpdate);
+    
+    this.$options._brandUpdateHandler = handleUpdate;
+    
+    // Call original mounted logic
     this.initScrollAnimations();
     
     // Start typing effect after a short delay to ensure DOM is ready
@@ -1335,8 +1350,12 @@ export default {
     // Add click outside handler for mobile menu
     document.addEventListener('click', this.handleClickOutside);
   },
-  
   beforeUnmount() {
+    // Remove brand config update listener
+    if (this.$options._brandUpdateHandler) {
+      window.removeEventListener('brandConfigUpdated', this.$options._brandUpdateHandler);
+    }
+    
     // Remove click outside handler
     document.removeEventListener('click', this.handleClickOutside);
     

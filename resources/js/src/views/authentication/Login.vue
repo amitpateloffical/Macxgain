@@ -11,13 +11,13 @@
       <div class="login-header">
         <div class="logo-container">
           <div class="logo-image">
-            <img src="../assest/img/logo.png" alt="Macxgain Logo" />
+            <img :src="brandConfig.logoPath" :alt="brandConfig.companyName + ' Logo'" />
           </div>
-          <h1 class="logo-text">Macxgain</h1>
-          <p class="tagline">Smart Trading Solutions</p>
+          <h1 class="logo-text">{{ brandConfig.companyName }}</h1>
+          <p class="tagline">{{ brandConfig.tagline }}</p>
         </div>
-        <h2 class="welcome-text">Welcome Back</h2>
-        <p class="subtitle">Sign in to your account to continue</p>
+        <h2 class="welcome-text">{{ brandConfig.welcomeText }}</h2>
+        <p class="subtitle">{{ brandConfig.subtitle }}</p>
       </div>
 
       <!-- Login form -->
@@ -200,12 +200,32 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import mitt from 'mitt'; 
 import axios from '@axios';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import { getBrandConfig } from '@/config/brand';
+
+// Create reactive brand config
+const brandConfigRef = ref(getBrandConfig());
+
+// Listen for brand config updates
+onMounted(() => {
+  const handleUpdate = () => {
+    // Reload config and update reactive ref
+    brandConfigRef.value = getBrandConfig();
+  };
+  window.addEventListener('brandConfigUpdated', handleUpdate);
+  
+  onBeforeUnmount(() => {
+    window.removeEventListener('brandConfigUpdated', handleUpdate);
+  });
+});
+
+// Use computed to access brand config reactively
+const brandConfig = computed(() => brandConfigRef.value);
 
 // Form data
 const formData = ref({

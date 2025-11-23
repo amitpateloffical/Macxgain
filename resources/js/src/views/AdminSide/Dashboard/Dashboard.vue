@@ -116,6 +116,16 @@
           </p>
         </div>
       </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/brand-settings')">
+        <div class="card-content">
+          <div class="card-icon">🎨</div>
+          <h3 class="card-title">Brand Settings</h3>
+          <p class="card-description">
+            Customize logo and company name
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Navigation Component -->

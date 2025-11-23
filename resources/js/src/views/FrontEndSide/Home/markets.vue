@@ -40,8 +40,8 @@
     <header class="main-header">
       <div class="header-container">
         <div class="logo-section">
-          <img src="../logo.png" alt="Macxgain Logo" class="logo" />
-          <h1 class="brand-name">Macxgain</h1>
+          <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+          <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
         </div>
         
         <!-- Mobile Menu Toggle -->
@@ -698,6 +698,25 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { getBrandConfig } from '@/config/brand'
+
+// Create reactive brand config
+const brandConfigRef = ref(getBrandConfig())
+
+// Listen for brand config updates
+onMounted(() => {
+  const handleUpdate = () => {
+    brandConfigRef.value = getBrandConfig()
+  };
+  window.addEventListener('brandConfigUpdated', handleUpdate);
+  
+  onUnmounted(() => {
+    window.removeEventListener('brandConfigUpdated', handleUpdate);
+  });
+})
+
+// Use computed to access brand config reactively
+const brandConfig = computed(() => brandConfigRef.value)
 
 const router = useRouter()
 const goBack = () => {

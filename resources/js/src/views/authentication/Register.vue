@@ -11,10 +11,10 @@
       <div class="register-header">
         <div class="logo-container">
           <div class="logo-image">
-            <img src="../assest/img/logo.png" alt="Macxgain Logo" class="logo" />
+            <img :src="brandConfig.logoPath" :alt="brandConfig.companyName + ' Logo'" class="logo" />
           </div>
-          <h1 class="brand-name">Macxgain</h1>
-          <p class="tagline">Smart Trading Solutions</p>
+          <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
+          <p class="tagline">{{ brandConfig.tagline }}</p>
         </div>
         <h2 class="welcome-text">Create Account</h2>
         <p class="subtitle">Join thousands of successful traders</p>
@@ -264,10 +264,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import axios from "@axios";
+import { getBrandConfig } from '@/config/brand';
+
+// Create reactive brand config
+const brandConfigRef = ref(getBrandConfig());
+
+// Listen for brand config updates
+onMounted(() => {
+  const handleUpdate = () => {
+    brandConfigRef.value = getBrandConfig();
+  };
+  window.addEventListener('brandConfigUpdated', handleUpdate);
+  
+  onBeforeUnmount(() => {
+    window.removeEventListener('brandConfigUpdated', handleUpdate);
+  });
+});
+
+// Use computed to access brand config reactively
+const brandConfig = computed(() => brandConfigRef.value);
 
 const router = useRouter()
 
@@ -320,7 +339,7 @@ const handleRegister = async () => {
   try {
     const response = await axios.post('/register', form.value)
     
-    toast.success('Account created successfully! Welcome to Macxgain.', {
+    toast.success(`Account created successfully! Welcome to ${brandConfig.companyName}.`, {
       autoClose: 2000,
       position: "top-right"
     })

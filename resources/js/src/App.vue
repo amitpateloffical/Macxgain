@@ -21,6 +21,7 @@ import { watch, computed, onMounted, ref, onBeforeUnmount } from 'vue'
 import Header from "./views/Layout/Header.vue";
 import BottomAppBar from "./components/BottomAppBar.vue";
 import { useRouter } from 'vue-router';
+import { getBrandConfig } from '@/config/brand';
 
 const route = useRouter();
 const isMobile = ref(false);
@@ -80,9 +81,21 @@ const checkDeviceType = () => {
 
 // Set default title
 onMounted(() => {
-  document.title = 'Macxgain - Trading with AI and Gain Profit';
+  const updateTitle = () => {
+    const config = getBrandConfig();
+    document.title = config.pageTitle;
+  };
+  
+  updateTitle();
   checkDeviceType();
   window.addEventListener('resize', checkDeviceType);
+  
+  // Listen for brand config updates
+  window.addEventListener('brandConfigUpdated', updateTitle);
+  
+  onBeforeUnmount(() => {
+    window.removeEventListener('brandConfigUpdated', updateTitle);
+  });
 })
 
 onBeforeUnmount(() => {

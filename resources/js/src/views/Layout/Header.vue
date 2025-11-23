@@ -5,8 +5,8 @@
   class="logo-section"
   @click="storedUser.is_admin ? router.push('/admin/dashboard') : router.push('/user/dashboard')"
 >
-  <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
-  <h1 class="brand-name">Macxgain</h1>
+  <img :src="brandConfig.logoPathHeader" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+  <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
 </div>
 
 
@@ -69,9 +69,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import axios from "@axios";
+import { getBrandConfig } from '@/config/brand';
+
+// Create reactive brand config
+const brandConfigRef = ref(getBrandConfig());
+
+// Listen for brand config updates
+const handleBrandUpdate = () => {
+  brandConfigRef.value = getBrandConfig();
+};
+
+onMounted(() => {
+  window.addEventListener('brandConfigUpdated', handleBrandUpdate);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('brandConfigUpdated', handleBrandUpdate);
+});
+
+// Use computed to access brand config reactively
+const brandConfig = computed(() => brandConfigRef.value);
 
 const router = useRouter();
 const sidebarOpen = ref(false);
