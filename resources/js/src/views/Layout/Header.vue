@@ -170,9 +170,9 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  background: linear-gradient(90deg, #0d0d1a, #101022);
-  color: white;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+  background: linear-gradient(90deg, var(--color-bg-primary, #0d0d1a), var(--color-bg-secondary, #101022)) !important;
+  color: var(--color-text-primary, white) !important;
+  border-bottom: 1px solid var(--color-border-primary, rgba(0, 255, 128, 0.2)) !important;
   flex-wrap: wrap;
   gap: 10px;
   min-height: 60px;
@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
 .brand-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #00ff80;
+  color: var(--color-primary, #00ff80) !important;
   white-space: nowrap;
 }
 
@@ -216,12 +216,12 @@ onBeforeUnmount(() => {
 
 .header_menu i {
   font-size: 1.2rem;
-  color: #00ff80;
+  color: var(--color-primary, #00ff80) !important;
   transition: color 0.3s ease;
 }
 
 .header_menu i:hover {
-  color: #00cc66;
+  color: var(--color-primary-dark, #00cc66) !important;
 }
 
 .profile_dropdown {
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   width: 50px;
   height: 50px;
-  border: 2px solid rgba(0, 255, 128, 0.3);
+  border: 2px solid var(--color-border-primary, rgba(0, 255, 128, 0.3)) !important;
   position: relative;
   overflow: hidden;
 }
@@ -245,8 +245,8 @@ onBeforeUnmount(() => {
 .profile_dropdown:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: scale(1.08);
-  border-color: rgba(0, 255, 128, 0.6);
-  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.2);
+  border-color: var(--color-primary, rgba(0, 255, 128, 0.6)) !important;
+  box-shadow: 0 4px 12px var(--color-border-primary, rgba(0, 255, 128, 0.2)) !important;
 }
 
 .profile_dropdown:active {
@@ -265,14 +265,14 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid #00ff80;
+  border: 2px solid var(--color-primary, #00ff80) !important;
   flex-shrink: 0;
   object-fit: cover;
   transition: all 0.3s ease;
 }
 
 .profile_dropdown:hover .header_profile_pic img {
-  border-color: #00ff80;
+  border-color: var(--color-primary, #00ff80) !important;
   transform: scale(1.05);
 }
 
@@ -304,9 +304,9 @@ onBeforeUnmount(() => {
   right: -100%;
   width: 280px;
   height: 100%;
-  background: rgba(16, 16, 34, 0.95);
+  background: var(--color-bg-secondary, rgba(16, 16, 34, 0.95)) !important;
   backdrop-filter: blur(10px);
-  color: white;
+  color: var(--color-text-primary, white) !important;
   transition: right 0.3s ease;
   z-index: 1200;
   padding: 20px;
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 3px solid #00ff80;
+  border: 3px solid var(--color-primary, #00ff80) !important;
   object-fit: cover;
 }
 
@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 
 .balance {
   font-weight: bold;
-  color: #00ff80;
+  color: var(--color-primary, #00ff80) !important;
 }
 
 .close-btn {
@@ -366,7 +366,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-link:hover {
-  background: rgba(0, 255, 128, 0.15);
+  background: var(--color-border-primary, rgba(0, 255, 128, 0.15)) !important;
   transform: translateX(4px);
 }
 
@@ -562,7 +562,7 @@ onBeforeUnmount(() => {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .header_screen {
-    background: linear-gradient(90deg, #0d0d1a, #101022);
+    background: linear-gradient(90deg, var(--color-bg-primary, #0d0d1a), var(--color-bg-secondary, #101022)) !important;
   }
 }
 

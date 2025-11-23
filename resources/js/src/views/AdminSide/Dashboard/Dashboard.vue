@@ -126,6 +126,16 @@
           </p>
         </div>
       </div>
+
+      <div class="dashboard-card" @click="navigateTo('/admin/template-settings')">
+        <div class="card-content">
+          <div class="card-icon">🎭</div>
+          <h3 class="card-title">Template Settings</h3>
+          <p class="card-description">
+            Choose color theme for entire website
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Navigation Component -->

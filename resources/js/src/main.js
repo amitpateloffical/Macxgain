@@ -9,7 +9,12 @@ import Swal from 'sweetalert2';
 import mitt from 'mitt'; 
 import axios from "@axios";
 import "../src/views/assest/scss/style.scss"
+import "../../css/template-themes.css"
 import BottomAppBar from "./components/BottomAppBar.vue";
+// Initialize template system (must be after styles)
+import '@/config/templates';
+// Load aggressive overrides last to ensure they take precedence
+import "../../css/template-overrides.css";
 
 
 

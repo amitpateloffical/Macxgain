@@ -1,0 +1,696 @@
+/**
+ * Template Overrides - Aggressive CSS to override hardcoded colors
+ * This file uses !important to ensure template colors apply everywhere
+ */
+
+/* Force override all hardcoded primary colors */
+* {
+  /* Override #00ff88 and #00ff80 with template primary */
+}
+
+/* Background overrides */
+.ai-trading-screen,
+.money-request-screen,
+.dashboard-screen,
+.landing-page,
+.markets-page,
+.brand-settings-screen,
+.template-settings-screen,
+.orders-container,
+.summary-card,
+.withdrawal-request-screen,
+.withdrawal-screen,
+.withdrawal-form-container,
+.money-form-container,
+.user-management-screen {
+  background-color: var(--color-bg-primary) !important;
+  background: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Page headers */
+.page-header {
+  background: linear-gradient(145deg, var(--color-bg-secondary), var(--color-bg-primary)) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.page-title {
+  color: var(--color-primary) !important;
+}
+
+.page-subtitle {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Buttons - Override all hardcoded button colors */
+.btn-primary,
+button.btn-primary,
+.refresh-btn,
+.apply-btn {
+  background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark)) !important;
+  background-color: var(--color-primary) !important;
+  color: var(--color-bg-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.btn-primary:hover,
+button.btn-primary:hover,
+.refresh-btn:hover:not(:disabled),
+.apply-btn:hover:not(:disabled) {
+  background: linear-gradient(145deg, var(--color-primary-dark), var(--color-primary)) !important;
+  box-shadow: 0 8px 25px var(--color-primary) !important;
+}
+
+.btn-secondary,
+.preview-btn {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.btn-secondary:hover,
+.preview-btn:hover {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Cards and stat cards */
+.stat-card,
+.dashboard-card,
+.card {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.stat-card:hover,
+.dashboard-card:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.stat-icon {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.stat-number,
+.stat-content h3 {
+  color: var(--color-primary) !important;
+}
+
+.stat-label,
+.stat-content p {
+  color: var(--color-text-muted) !important;
+}
+
+/* Success alerts */
+.success-alert {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Headers and titles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-primary) !important;
+}
+
+h1.page-title,
+h2.page-title,
+.page-title {
+  color: var(--color-primary) !important;
+}
+
+/* Links */
+a {
+  color: var(--color-primary) !important;
+}
+
+a:hover {
+  color: var(--color-primary-light) !important;
+}
+
+/* Tables */
+.table {
+  color: var(--color-text-primary) !important;
+}
+
+.table-dark {
+  background-color: var(--color-bg-secondary) !important;
+}
+
+.table-dark th,
+.table-dark td {
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Forms */
+.form-control,
+.form-select,
+input,
+select,
+textarea {
+  background-color: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  background-color: var(--color-bg-tertiary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Specific component overrides */
+.header-content h1.page-title,
+.header-content .page-title {
+  color: var(--color-primary) !important;
+}
+
+.header-content p.page-subtitle {
+  color: var(--color-text-muted) !important;
+}
+
+/* Trading specific */
+.trade-item.profit .pnl-amount,
+.profit-section .section-total,
+.summary-value.completed {
+  color: var(--color-success) !important;
+}
+
+.trade-item.loss .pnl-amount,
+.loss-section .section-total,
+.summary-value.closed {
+  color: var(--color-error) !important;
+}
+
+.trade-item.active .pnl-amount,
+.active-section .section-total,
+.summary-value.pending {
+  color: var(--color-warning) !important;
+}
+
+/* Market specific */
+.candlestick.up,
+.ticker .price.up,
+.ticker .change.up {
+  color: var(--color-success) !important;
+  background: var(--color-success) !important;
+}
+
+.candlestick.down,
+.ticker .price.down,
+.ticker .change.down {
+  color: var(--color-error) !important;
+  background: var(--color-error) !important;
+}
+
+/* Gradient backgrounds */
+[style*="linear-gradient"][style*="#101022"],
+[style*="linear-gradient"][style*="#0d0d1a"] {
+  background: linear-gradient(145deg, var(--color-bg-secondary), var(--color-bg-primary)) !important;
+}
+
+/* Force text colors */
+.white,
+[style*="color: white"],
+[style*="color:white"],
+[style*="color:#fff"],
+[style*="color: #fff"] {
+  color: var(--color-text-primary) !important;
+}
+
+/* Force border colors */
+[style*="border-color: rgba(0, 255, 136"],
+[style*="border-color:rgba(0, 255, 136"],
+[style*="border-color: rgba(0, 255, 128"],
+[style*="border-color:rgba(0, 255, 128"] {
+  border-color: var(--color-border-primary) !important;
+}
+
+/* Override specific rgba values */
+[style*="rgba(0, 255, 136"],
+[style*="rgba(0, 255, 128"] {
+  /* Use CSS variables instead */
+}
+
+/* Dashboard specific */
+.dashboard-subtitle {
+  color: var(--color-text-secondary) !important;
+}
+
+.card-icon {
+  color: var(--color-primary) !important;
+}
+
+.card-title {
+  color: var(--color-text-primary) !important;
+}
+
+.card-description {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Header component */
+.header-nav {
+  background: linear-gradient(90deg, var(--color-bg-primary), var(--color-bg-secondary)) !important;
+}
+
+.nav-link,
+.nav-item {
+  color: var(--color-text-primary) !important;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--color-primary) !important;
+}
+
+/* Footer */
+.footer {
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-secondary) !important;
+  border-top-color: var(--color-border-secondary) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary) !important;
+}
+
+/* Withdrawal Request Page Specific Overrides */
+.withdrawal-request-screen,
+.withdrawal-screen {
+  background-color: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* User Management Page Specific Overrides */
+.user-management-screen {
+  background: linear-gradient(135deg, var(--color-bg-primary), var(--color-bg-secondary)) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.user-management-screen .page-header {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.user-management-screen .header-content h1,
+.user-management-screen .page-title {
+  color: var(--color-primary) !important;
+}
+
+.user-management-screen .header-content p,
+.user-management-screen .page-subtitle {
+  color: var(--color-text-muted) !important;
+}
+
+/* Search Box */
+.search-box,
+.search-input {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+}
+
+.search-icon {
+  color: var(--color-text-muted) !important;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted) !important;
+}
+
+/* Filter Selects */
+.filter-select {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.filter-select:focus {
+  border-color: var(--color-primary) !important;
+}
+
+/* Users Container */
+.users-container {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.table-header h3 {
+  color: var(--color-text-primary) !important;
+}
+
+/* Table Rows */
+.header-row {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  color: var(--color-primary) !important;
+}
+
+.table-row:hover,
+.user-row:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Action Buttons */
+.btn-refresh,
+.btn-export {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.btn-refresh:hover,
+.btn-export:hover {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Action Icons */
+.action-btn {
+  color: var(--color-text-primary) !important;
+}
+
+.action-btn.view {
+  color: var(--color-primary) !important;
+}
+
+.action-btn.edit {
+  color: var(--color-warning) !important;
+}
+
+.action-btn.delete {
+  color: var(--color-error) !important;
+}
+
+/* Role Badges */
+.role-badge.admin {
+  background: rgba(var(--color-warning-rgb, 255, 170, 0), 0.2) !important;
+  color: var(--color-warning) !important;
+  border-color: var(--color-warning) !important;
+}
+
+.role-badge.user {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Status Badges in User Management */
+.status-badge.active {
+  background: rgba(var(--color-success-rgb, 0, 255, 136), 0.2) !important;
+  color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+}
+
+.status-badge.inactive {
+  background: rgba(var(--color-text-muted-rgb, 156, 163, 175), 0.2) !important;
+  color: var(--color-text-muted) !important;
+}
+
+.status-badge.suspended {
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.2) !important;
+  color: var(--color-error) !important;
+  border-color: var(--color-error) !important;
+}
+
+/* No Users State */
+.no-users {
+  color: var(--color-text-muted) !important;
+}
+
+.no-users h3 {
+  color: var(--color-text-primary) !important;
+}
+
+.no-users-icon {
+  color: var(--color-text-muted) !important;
+}
+
+/* Duplicate stat-card styles removed - using the ones above */
+
+/* Request Cards */
+.request-card,
+.withdrawal-card {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.request-card:hover,
+.withdrawal-card:hover {
+  border-color: var(--color-border-primary) !important;
+}
+
+/* Status Badges */
+.status-badge.pending,
+.badge-warning {
+  background: rgba(var(--color-warning-rgb, 255, 170, 0), 0.2) !important;
+  color: var(--color-warning) !important;
+  border-color: var(--color-warning) !important;
+}
+
+.status-badge.approved,
+.badge-success {
+  background: rgba(var(--color-success-rgb, 0, 255, 136), 0.2) !important;
+  color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+}
+
+.status-badge.rejected,
+.badge-danger {
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.2) !important;
+  color: var(--color-error) !important;
+  border-color: var(--color-error) !important;
+}
+
+/* Action Buttons */
+.btn-approve,
+.btn-success {
+  background: var(--color-success) !important;
+  color: var(--color-bg-primary) !important;
+  border-color: var(--color-success) !important;
+}
+
+.btn-approve:hover,
+.btn-success:hover {
+  background: var(--color-success) !important;
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--color-success) !important;
+}
+
+.btn-reject,
+.btn-danger {
+  background: var(--color-error) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-error) !important;
+}
+
+.btn-reject:hover,
+.btn-danger:hover {
+  background: var(--color-error) !important;
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--color-error) !important;
+}
+
+/* Tables */
+.staticTable th {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.staticTable td {
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.staticTable tbody tr:hover {
+  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.05) !important;
+}
+
+.staticTable tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Form Controls - Enhanced */
+.form-control,
+.form-select,
+.form-input-modern,
+.form-textarea-modern {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-input-modern:focus,
+.form-textarea-modern:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: var(--color-bg-tertiary) !important;
+}
+
+.form-label,
+.form-label-modern {
+  color: var(--color-text-primary) !important;
+}
+
+.form-label-modern i {
+  color: var(--color-primary) !important;
+}
+
+/* Modals */
+.modal-content,
+.modern-modal .modal-content {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.modal-header,
+.modal-header-content {
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 0, 255, 136), 0.1), rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1)) !important;
+  border-bottom-color: var(--color-border-primary) !important;
+}
+
+.modal-title,
+.modal-header h3 {
+  color: var(--color-primary) !important;
+}
+
+.modal-subtitle {
+  color: var(--color-text-muted) !important;
+}
+
+.modal-icon,
+.balance-icon {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)) !important;
+  color: var(--color-bg-primary) !important;
+  box-shadow: 0 8px 25px var(--color-primary) !important;
+}
+
+.modal-body,
+.modern-modal .modal-body {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.modal-close-btn,
+.close-btn {
+  color: var(--color-text-muted) !important;
+}
+
+.modal-close-btn:hover,
+.close-btn:hover {
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.2) !important;
+  color: var(--color-error) !important;
+}
+
+/* Balance Display */
+.balance-display-card {
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 0, 255, 136), 0.1), rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1)) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.balance-amount,
+.balance-amount-small {
+  color: var(--color-primary) !important;
+}
+
+.balance-label {
+  color: var(--color-text-muted) !important;
+}
+
+/* Input Icons */
+.input-icon {
+  color: var(--color-primary) !important;
+}
+
+.input-help {
+  color: var(--color-text-muted) !important;
+}
+
+.error-text {
+  color: var(--color-error) !important;
+}
+
+/* Loading and Error States */
+.loading-spinner {
+  color: var(--color-primary) !important;
+}
+
+.loading-text {
+  color: var(--color-text-muted) !important;
+}
+
+.error-icon {
+  color: var(--color-error) !important;
+}
+
+.error-title {
+  color: var(--color-error) !important;
+}
+
+.error-message {
+  color: var(--color-text-muted) !important;
+}
+
+/* Pagination */
+.pagination {
+  --bs-pagination-bg: var(--color-bg-tertiary) !important;
+  --bs-pagination-color: var(--color-text-primary) !important;
+  --bs-pagination-border-color: var(--color-border-secondary) !important;
+  --bs-pagination-hover-bg: var(--color-bg-secondary) !important;
+  --bs-pagination-hover-color: var(--color-primary) !important;
+  --bs-pagination-active-bg: var(--color-primary) !important;
+  --bs-pagination-active-color: var(--color-bg-primary) !important;
+}
+
+/* Profile Images and User Info */
+.user-info,
+.profile-info {
+  color: var(--color-text-primary) !important;
+}
+
+.user-email,
+.user-phone {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Detail Values */
+.detail-value {
+  color: var(--color-text-primary) !important;
+}
+
+.detail-value.blocked {
+  color: var(--color-error) !important;
+}
+
+.detail-label {
+  color: var(--color-text-muted) !important;
+}
+
+/* Override any remaining hardcoded colors with CSS variables */
+/* This is a catch-all for any missed hardcoded values */
+

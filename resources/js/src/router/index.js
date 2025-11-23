@@ -199,6 +199,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/BrandSettings.vue"),
   },
+  {
+    path: "/admin/template-settings",
+    name: "template_settings",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/TemplateSettings.vue"),
+  },
   
   // Catch-all route - must be last
   { path: '/:pathMatch(.*)*', redirect: '/' }

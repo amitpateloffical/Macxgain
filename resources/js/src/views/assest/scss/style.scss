@@ -2976,9 +2976,9 @@ table{
   height: auto !important;
   min-height: 100vh !important;
   
-  // Force colors
-  background-color: #0d0d1a !important;
-  color: white !important;
+  // Force colors - Use CSS variables for template support
+  background-color: var(--color-bg-primary, #0d0d1a) !important;
+  color: var(--color-text-primary, white) !important;
 }
 
 // Override any conflicting styles that might hide content
