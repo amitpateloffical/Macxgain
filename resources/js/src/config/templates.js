@@ -4,15 +4,17 @@
  * Select from Admin Dashboard -> Template Settings
  */
 
+import axios from '@axios';
+
 export const templates = {
   template1: {
     id: 'template1',
-    name: 'Green Tech (Default)',
-    description: 'Modern green tech theme with dark backgrounds',
+    name: 'Golden Luxury (Default)',
+    description: 'Premium golden luxury theme with elegant dark backgrounds',
     colors: {
-      primary: '#00ff88',
-      primaryDark: '#00cc66',
-      primaryLight: '#00d4aa',
+      primary: '#FFD700',
+      primaryDark: '#DAA520',
+      primaryLight: '#FFE55C',
       bgPrimary: '#0d0d1a',
       bgSecondary: '#101022',
       bgTertiary: '#1a1a2e',
@@ -20,10 +22,10 @@ export const templates = {
       textPrimary: '#ffffff',
       textSecondary: 'rgba(255, 255, 255, 0.7)',
       textMuted: '#9ca3af',
-      success: '#00ff88',
+      success: '#FFD700',
       error: '#ff4444',
       warning: '#ffaa00',
-      borderPrimary: 'rgba(0, 255, 136, 0.2)',
+      borderPrimary: 'rgba(255, 215, 0, 0.2)',
       borderSecondary: 'rgba(255, 255, 255, 0.1)',
     }
   },
@@ -255,8 +257,48 @@ export const getAllTemplates = () => {
   return { ...templates, ...custom };
 };
 
-// Get current template from localStorage
-export const getCurrentTemplate = () => {
+// Get current template from backend (with localStorage fallback)
+// Uses timeout to prevent blocking
+export const getCurrentTemplate = async () => {
+  try {
+    // Try to fetch from backend with timeout (non-blocking)
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 2000) // 2 second timeout
+      );
+      
+      const response = await Promise.race([
+        axios.get('/app-settings/template', { timeout: 2000 }),
+        timeoutPromise
+      ]);
+      
+      if (response.data.success && response.data.template_id) {
+        const allTemplates = getAllTemplates();
+        const templateId = response.data.template_id;
+        if (allTemplates[templateId]) {
+          // Sync with localStorage for offline support
+          localStorage.setItem('selectedTemplate', templateId);
+          return allTemplates[templateId];
+        }
+      }
+    } catch (apiError) {
+      // Silently fail - don't log to avoid console spam
+    }
+    
+    // Fallback to localStorage (always fast)
+    const saved = localStorage.getItem('selectedTemplate');
+    const allTemplates = getAllTemplates();
+    if (saved && allTemplates[saved]) {
+      return allTemplates[saved];
+    }
+  } catch (e) {
+    // Silently fail
+  }
+  return templates.template1; // Default template
+};
+
+// Synchronous version for immediate use (uses localStorage)
+export const getCurrentTemplateSync = () => {
   try {
     const saved = localStorage.getItem('selectedTemplate');
     const allTemplates = getAllTemplates();
@@ -362,18 +404,66 @@ export const applyTemplate = (templateId) => {
     }
   }
 
-  // Save to localStorage
+  // Save to localStorage (for immediate access)
   localStorage.setItem('selectedTemplate', templateId);
+  
+  // Save to backend (async, don't wait, with timeout)
+  axios.put('/app-settings/template', { template_id: templateId }, { timeout: 2000 })
+    .then(() => {
+      // Success - no logging to avoid console spam
+    })
+    .catch((error) => {
+      // Silently fail - localStorage is saved, that's what matters
+    });
   
   // Dispatch event for components to react
   window.dispatchEvent(new CustomEvent('templateChanged', { detail: template }));
   
+  // Update meta theme-color (lightweight, no DOM traversal)
+  if (typeof document !== 'undefined') {
+    requestAnimationFrame(() => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', colors.primary);
+      }
+    });
+  }
+  
   return template;
 };
 
-// Initialize template on load
+// Initialize template on load - immediate sync only (fast, non-blocking)
 if (typeof window !== 'undefined') {
-  const currentTemplate = getCurrentTemplate();
+  // Apply template immediately from localStorage (for instant visual feedback)
+  const currentTemplate = getCurrentTemplateSync();
   applyTemplate(currentTemplate.id);
+  
+  // Fetch from backend in background (non-blocking, low priority, after page is fully loaded)
+  // Use requestIdleCallback if available, otherwise setTimeout with longer delay
+  const fetchBackendTemplate = () => {
+    (async () => {
+      try {
+        const backendTemplate = await getCurrentTemplate();
+        if (backendTemplate.id !== currentTemplate.id) {
+          applyTemplate(backendTemplate.id);
+        }
+      } catch (error) {
+        // Silently fail
+      }
+    })();
+  };
+  
+  if (window.requestIdleCallback) {
+    requestIdleCallback(fetchBackendTemplate, { timeout: 3000 });
+  } else {
+    setTimeout(fetchBackendTemplate, 3000); // Wait 3 seconds after page load
+  }
+  
+  // Listen for storage changes (cross-tab sync)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'selectedTemplate' && e.newValue) {
+      applyTemplate(e.newValue);
+    }
+  });
 }
 

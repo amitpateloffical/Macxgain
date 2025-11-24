@@ -20,10 +20,11 @@
 import { watch, computed, onMounted, ref, onBeforeUnmount } from 'vue'
 import Header from "./views/Layout/Header.vue";
 import BottomAppBar from "./components/BottomAppBar.vue";
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { getBrandConfig } from '@/config/brand';
 
 const route = useRouter();
+const currentRoute = useRoute();
 const isMobile = ref(false);
 
 const layout = computed(() => {  
@@ -79,22 +80,44 @@ const checkDeviceType = () => {
   isMobile.value = window.innerWidth <= 768;
 };
 
-// Set default title
+// Set default title and listen for template changes
 onMounted(() => {
   const updateTitle = () => {
     const config = getBrandConfig();
     document.title = config.pageTitle;
   };
   
+  // Template is already applied by templates.js initialization
+  // No need to re-apply on mount (would cause double application)
+  
   updateTitle();
   checkDeviceType();
+  
   window.addEventListener('resize', checkDeviceType);
   
   // Listen for brand config updates
   window.addEventListener('brandConfigUpdated', updateTitle);
   
+  // Listen for template changes (but don't re-apply - template.js already handles it)
+  // Just listen for the event to know when template changes
+  const handleTemplateChange = () => {
+    // Template is already applied by templates.js
+    // Just ensure CSS variables are updated
+    if (document.documentElement) {
+      // Force a style recalculation
+      void document.documentElement.offsetHeight;
+    }
+  };
+  
+  window.addEventListener('templateChanged', handleTemplateChange);
+  
+  // Don't watch route changes - template persists across routes
+  // Removing route watcher to improve performance
+  
   onBeforeUnmount(() => {
     window.removeEventListener('brandConfigUpdated', updateTitle);
+    window.removeEventListener('templateChanged', handleTemplateChange);
+    window.removeEventListener('forceTemplateUpdate', handleTemplateChange);
   });
 })
 
@@ -109,7 +132,7 @@ html, body, #app {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #0d0d1a; /* Dark background everywhere */
+  background-color: var(--color-bg-primary, #0d0d1a) !important; /* Use template variable */
 }
 
 .app {
@@ -125,7 +148,7 @@ html, body, #app {
 
 .main_content_screen {
   flex: 1;
-  background-color: #0d0d1a; /* Keep background consistent */
+  background-color: var(--color-bg-primary, #0d0d1a) !important; /* Use template variable */
   padding-bottom: 0; /* Default no padding */
 }
 

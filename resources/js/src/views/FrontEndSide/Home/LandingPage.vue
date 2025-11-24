@@ -1,5 +1,5 @@
 <template>
-  <div class="landing-page">
+  <div class="landing-page" :class="landingTemplateClass">
     <!-- AI Neural Network Background -->
     <div class="ai-background">
       <!-- Neural Network Visualization -->
@@ -104,9 +104,41 @@
     <section class="hero">
       <div class="hero-container">
         <div class="hero-content">
-          <div class="trust-badge fade-in-left">
-            <span class="badge-icon">🚀</span>
-            <span>Limited Time: 50% Off on Premium Plans + Free Trading Course</span>
+          <!-- Live Market Stats Widget -->
+          <div class="live-market-widget fade-in-left">
+            <div class="widget-header">
+              <div class="live-indicator">
+                <span class="pulse-dot"></span>
+                <span>Live Market Data</span>
+              </div>
+              <div class="market-time">{{ currentTime }}</div>
+            </div>
+            <div class="widget-stats">
+              <div class="stat-item">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                  <div class="stat-label">NIFTY 50</div>
+                  <div class="stat-value up">{{ niftyPrice }}</div>
+                  <div class="stat-change up">{{ niftyChange }}</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">🏦</div>
+                <div class="stat-content">
+                  <div class="stat-label">BANK NIFTY</div>
+                  <div class="stat-value up">{{ bankNiftyPrice }}</div>
+                  <div class="stat-change up">{{ bankNiftyChange }}</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <div class="stat-label">SENSEX</div>
+                  <div class="stat-value up">{{ sensexPrice }}</div>
+                  <div class="stat-change up">{{ sensexChange }}</div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <h1 class="hero-title fade-in-left">
@@ -156,100 +188,151 @@
         </div>
         
         <div class="hero-visual">
-          <div class="ai-trading-dashboard">
-            <!-- AI Trading Bot Visualization -->
-            <div class="ai-bot-container">
-              <div class="ai-bot">
-                <div class="bot-head">
-                  <div class="bot-eyes">
-                    <div class="eye left-eye"></div>
-                    <div class="eye right-eye"></div>
-                  </div>
-                  <div class="bot-antenna">
-                    <div class="antenna-signal"></div>
+          <div class="data-visualization-container">
+            <!-- Bar Charts Section (Upper Right) -->
+            <div class="bar-charts-section">
+              <div class="bar-chart-container">
+                <div class="chart-label">Market Performance</div>
+                <div class="bars-wrapper">
+                  <div 
+                    v-for="i in 12" 
+                    :key="i" 
+                    class="bar" 
+                    :style="{ 
+                      height: (Math.random() * 60 + 20) + '%',
+                      animationDelay: (i * 0.1) + 's'
+                    }"
+                  ></div>
+                </div>
+                <div class="chart-footer">
+                  <span class="chart-value up">+12.5%</span>
+                  <span class="chart-period">Last 24H</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Server Stacks Section (Lower Right) -->
+            <div class="server-stacks-section">
+              <div class="server-stack" v-for="stack in 2" :key="stack">
+                <div 
+                  class="server-unit" 
+                  v-for="unit in 4" 
+                  :key="unit"
+                  :style="{ animationDelay: ((stack - 1) * 4 + unit) * 0.2 + 's' }"
+                >
+                  <div class="server-grid">
+                    <div 
+                      class="grid-dot" 
+                      v-for="dot in 12" 
+                      :key="dot"
+                      :class="{ active: Math.random() > 0.5 }"
+                    ></div>
                   </div>
                 </div>
-                <div class="bot-body">
-                  <div class="ai-status">
-                    <span class="status-text">AI ACTIVE</span>
-                    <div class="status-indicator"></div>
+                <div class="server-connection"></div>
+              </div>
+            </div>
+
+            <!-- Floating Coins -->
+            <div class="floating-coins">
+              <div 
+                class="coin" 
+                v-for="i in 6" 
+                :key="i"
+                :style="{ 
+                  left: (Math.random() * 80 + 10) + '%',
+                  top: (Math.random() * 60 + 20) + '%',
+                  animationDelay: (i * 0.5) + 's',
+                  animationDuration: (Math.random() * 3 + 4) + 's'
+                }"
+              >
+                <div class="coin-face">$</div>
+                <div class="coin-glow"></div>
+              </div>
+            </div>
+
+            <!-- Laptop with Graph -->
+            <div class="laptop-container">
+              <div class="laptop-base">
+                <div class="laptop-screen">
+                  <div class="screen-header">
+                    <div class="screen-dots">
+                      <span class="dot red"></span>
+                      <span class="dot yellow"></span>
+                      <span class="dot green"></span>
+                    </div>
+                    <div class="screen-title">Trading Analytics</div>
                   </div>
-                  <div class="processing-lines">
-                    <div class="line" v-for="i in 5" :key="i" :style="{ animationDelay: i * 0.2 + 's' }"></div>
+                  <div class="screen-content">
+                    <div class="graph-container">
+                      <svg class="line-graph" viewBox="0 0 300 150" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" :style="{ stopColor: primaryColor, stopOpacity: 0.8 }" />
+                            <stop offset="100%" :style="{ stopColor: primaryColor, stopOpacity: 0.1 }" />
+                          </linearGradient>
+                        </defs>
+                        <path 
+                          class="graph-line" 
+                          :d="generateGraphPath()"
+                          fill="none"
+                          :stroke="primaryColor"
+                          stroke-width="2"
+                        />
+                        <path 
+                          class="graph-area" 
+                          :d="generateGraphArea()"
+                          fill="url(#lineGradient)"
+                        />
+                        <circle 
+                          v-for="(point, index) in graphPoints" 
+                          :key="index"
+                          class="graph-point"
+                          :cx="point.x" 
+                          :cy="point.y" 
+                          r="3"
+                          :fill="primaryColor"
+                        />
+                      </svg>
+                      <div class="graph-labels">
+                        <span class="label">Mon</span>
+                        <span class="label">Tue</span>
+                        <span class="label">Wed</span>
+                        <span class="label">Thu</span>
+                        <span class="label">Fri</span>
+                      </div>
+                    </div>
+                    <div class="graph-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Volume</span>
+                        <span class="stat-value">2.5M</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Profit</span>
+                        <span class="stat-value up">+15.2%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="laptop-keyboard">
+                  <div class="key-row" v-for="row in 3" :key="row">
+                    <div class="key" v-for="key in 10" :key="key"></div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <!-- AI Prediction Chart -->
-            <div class="ai-prediction-chart">
-              <div class="chart-header">
-                <div class="chart-info">
-                  <span class="chart-title">AI Market Prediction</span>
-                  <span class="chart-subtitle">Neural Network Analysis</span>
-                </div>
-                <div class="ai-confidence">
-                  <span class="confidence-label">AI Confidence</span>
-                  <span class="confidence-value">94.7%</span>
-                </div>
-              </div>
-              <div class="prediction-chart">
-                <div class="prediction-line"></div>
-                <div class="prediction-points">
-                  <div class="prediction-point" v-for="i in 8" :key="i" :style="{ 
-                    left: (i * 12.5) + '%',
-                    animationDelay: i * 0.3 + 's'
-                  }"></div>
-                </div>
-                <div class="ai-signals">
-                  <div class="signal buy-signal">BUY</div>
-                  <div class="signal hold-signal">HOLD</div>
-                  <div class="signal sell-signal">SELL</div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Mini Charts -->
-            <div class="mini-charts">
-              <div class="mini-chart">
-                <div class="mini-header">
-                  <span class="mini-title">BANKNIFTY</span>
-                  <span class="mini-price up">₹44,570 +2.1%</span>
-                </div>
-                <div class="mini-line up"></div>
-              </div>
-              
-              <div class="mini-chart">
-                <div class="mini-header">
-                  <span class="mini-title">RELIANCE</span>
-                  <span class="mini-price up">₹2,845 +0.8%</span>
-                </div>
-                <div class="mini-line up"></div>
-              </div>
-              
-              <div class="mini-chart">
-                <div class="mini-header">
-                  <span class="mini-title">TCS</span>
-                  <span class="mini-price up">₹4,050 +2.5%</span>
-                </div>
-                <div class="mini-line up"></div>
-              </div>
-            </div>
-            
-            <!-- Live Ticker -->
-            <div class="live-ticker">
-              <div class="ticker-item">
-                <span class="ticker-symbol">HDFC</span>
-                <span class="ticker-price up">₹1,650 +1.2%</span>
-              </div>
-              <div class="ticker-item">
-                <span class="ticker-symbol">INFY</span>
-                <span class="ticker-price up">₹1,480 +0.9%</span>
-              </div>
-              <div class="ticker-item">
-                <span class="ticker-symbol">WIPRO</span>
-                <span class="ticker-price down">₹420 -0.3%</span>
-              </div>
+
+            <!-- Data Flow Lines -->
+            <div class="data-flow-lines">
+              <div 
+                class="flow-line" 
+                v-for="i in 8" 
+                :key="i"
+                :style="{ 
+                  left: (i * 12.5) + '%',
+                  animationDelay: (i * 0.3) + 's'
+                }"
+              ></div>
             </div>
           </div>
         </div>
@@ -1301,6 +1384,7 @@
 
 <script>
 import { getBrandConfig } from '@/config/brand';
+import { getCurrentLandingTemplate, getLandingTemplate } from '@/config/landingPageTemplates';
 
 export default {
   name: "MacxgainLandingPage",
@@ -1322,20 +1406,98 @@ export default {
       currentTextIndex: 0,
       isTyping: true,
       typingTimeout: null,
-      brandConfig: getBrandConfig()
+      brandConfig: getBrandConfig(),
+      currentLandingTemplate: getCurrentLandingTemplate(),
+      // Chart data
+      aiConfidence: 94.7,
+      aiSignal: 'BUY',
+      buyPercentage: 65,
+      holdPercentage: 25,
+      sellPercentage: 10,
+      predictionChartData: [],
+      graphPoints: [],
+      // Live market data
+      currentTime: '',
+      niftyPrice: '24,563.30',
+      niftyChange: '+434.50 (+1.80%)',
+      bankNiftyPrice: '44,570.89',
+      bankNiftyChange: '+705.30 (+1.56%)',
+      sensexPrice: '79,857.79',
+      sensexChange: '+765.20 (+0.95%)'
     };
   },
   computed: {
     // Brand config is reactive through data property
+    landingTemplateClass() {
+      const template = getLandingTemplate(this.currentLandingTemplate);
+      return `landing-template-${template.style}`;
+    },
+    primaryColor() {
+      if (typeof document !== 'undefined' && document.documentElement) {
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim();
+        return color || '#FFD700';
+      }
+      return '#FFD700';
+    }
   },
   mounted() {
     // Listen for brand config updates
     const handleUpdate = () => {
       this.brandConfig = getBrandConfig();
     };
+    
+    // Listen for template changes
+    const handleTemplateChange = () => {
+      // Force re-render to apply new template colors
+      this.$forceUpdate();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('resize'));
+      }
+    };
+    
+    // Listen for landing template updates
+    const handleTemplateUpdate = (event) => {
+      this.currentLandingTemplate = event.detail.templateId || getCurrentLandingTemplate();
+    };
+    
     window.addEventListener('brandConfigUpdated', handleUpdate);
+    window.addEventListener('templateChanged', handleTemplateChange);
+    window.addEventListener('forceTemplateUpdate', handleTemplateChange);
+    window.addEventListener('landingTemplateUpdated', handleTemplateUpdate);
     
     this.$options._brandUpdateHandler = handleUpdate;
+    this.$options._templateChangeHandler = handleTemplateChange;
+    this.$options._templateUpdateHandler = handleTemplateUpdate;
+    
+    // Initialize chart data
+    this.generateChartData();
+    this.updateAISignal();
+    this.generateGraphPoints();
+    this.updateMarketTime();
+    this.updateMarketData();
+    
+    // Update chart and signals periodically
+    this.chartUpdateInterval = setInterval(() => {
+      this.generateChartData();
+      this.updateAISignal();
+      this.generateGraphPoints();
+    }, 5000);
+    
+    // Update bar chart heights periodically for animation
+    this.barUpdateInterval = setInterval(() => {
+      // Trigger re-render of bars by updating a reactive property
+      this.$forceUpdate();
+    }, 3000);
+    
+    // Update market time every second
+    this.timeUpdateInterval = setInterval(() => {
+      this.updateMarketTime();
+    }, 1000);
+    
+    // Update market data every 10 seconds
+    this.marketDataInterval = setInterval(() => {
+      this.updateMarketData();
+    }, 10000);
     
     // Call original mounted logic
     this.initScrollAnimations();
@@ -1356,6 +1518,37 @@ export default {
       window.removeEventListener('brandConfigUpdated', this.$options._brandUpdateHandler);
     }
     
+    // Remove template change listener
+    if (this.$options._templateChangeHandler) {
+      window.removeEventListener('templateChanged', this.$options._templateChangeHandler);
+      window.removeEventListener('forceTemplateUpdate', this.$options._templateChangeHandler);
+    }
+    
+    // Remove landing template update listener
+    if (this.$options._templateUpdateHandler) {
+      window.removeEventListener('landingTemplateUpdated', this.$options._templateUpdateHandler);
+    }
+    
+    // Clear chart update interval
+    if (this.chartUpdateInterval) {
+      clearInterval(this.chartUpdateInterval);
+    }
+    
+    // Clear bar update interval
+    if (this.barUpdateInterval) {
+      clearInterval(this.barUpdateInterval);
+    }
+    
+    // Clear time update interval
+    if (this.timeUpdateInterval) {
+      clearInterval(this.timeUpdateInterval);
+    }
+    
+    // Clear market data interval
+    if (this.marketDataInterval) {
+      clearInterval(this.marketDataInterval);
+    }
+    
     // Remove click outside handler
     document.removeEventListener('click', this.handleClickOutside);
     
@@ -1365,6 +1558,40 @@ export default {
     }
   },
   methods: {
+    generateChartData() {
+      // Generate realistic market prediction data
+      const data = [];
+      const baseValue = 100;
+      for (let i = 0; i < 30; i++) {
+        const trend = Math.sin(i / 5) * 15;
+        const volatility = (Math.random() - 0.5) * 10;
+        data.push(Math.max(50, baseValue + trend + volatility));
+      }
+      this.predictionChartData = data;
+    },
+    updateAISignal() {
+      // Simulate AI signal changes
+      const random = Math.random();
+      if (random < 0.5) {
+        this.aiSignal = 'BUY';
+        this.buyPercentage = 60 + Math.floor(Math.random() * 15);
+        this.holdPercentage = 20 + Math.floor(Math.random() * 10);
+        this.sellPercentage = 100 - this.buyPercentage - this.holdPercentage;
+      } else if (random < 0.8) {
+        this.aiSignal = 'HOLD';
+        this.holdPercentage = 40 + Math.floor(Math.random() * 20);
+        this.buyPercentage = 30 + Math.floor(Math.random() * 15);
+        this.sellPercentage = 100 - this.buyPercentage - this.holdPercentage;
+      } else {
+        this.aiSignal = 'SELL';
+        this.sellPercentage = 50 + Math.floor(Math.random() * 20);
+        this.holdPercentage = 25 + Math.floor(Math.random() * 10);
+        this.buyPercentage = 100 - this.sellPercentage - this.holdPercentage;
+      }
+      
+      // Update AI confidence
+      this.aiConfidence = (90 + Math.random() * 8).toFixed(1);
+    },
     startTypingEffect() {
       // Reset typing state
       this.currentTypingText = '';
@@ -1441,6 +1668,78 @@ export default {
           !mobileToggle?.contains(event.target)) {
         this.mobileMenuOpen = false;
       }
+    },
+    generateGraphPoints() {
+      const points = [];
+      const width = 300;
+      const height = 150;
+      const pointCount = 20;
+      
+      for (let i = 0; i <= pointCount; i++) {
+        const x = (i / pointCount) * width;
+        const baseY = height / 2;
+        const variation = Math.sin(i / 2) * 30 + Math.cos(i / 3) * 20;
+        const y = baseY - variation;
+        points.push({ x, y });
+      }
+      
+      this.graphPoints = points;
+    },
+    generateGraphPath() {
+      if (this.graphPoints.length === 0) return '';
+      
+      let path = `M ${this.graphPoints[0].x} ${this.graphPoints[0].y}`;
+      for (let i = 1; i < this.graphPoints.length; i++) {
+        path += ` L ${this.graphPoints[i].x} ${this.graphPoints[i].y}`;
+      }
+      return path;
+    },
+    generateGraphArea() {
+      if (this.graphPoints.length === 0) return '';
+      
+      const width = 300;
+      const height = 150;
+      let path = `M ${this.graphPoints[0].x} ${height}`;
+      path += ` L ${this.graphPoints[0].x} ${this.graphPoints[0].y}`;
+      
+      for (let i = 1; i < this.graphPoints.length; i++) {
+        path += ` L ${this.graphPoints[i].x} ${this.graphPoints[i].y}`;
+      }
+      
+      path += ` L ${this.graphPoints[this.graphPoints.length - 1].x} ${height} Z`;
+      return path;
+    },
+    updateMarketTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      this.currentTime = `${hours}:${minutes}:${seconds} IST`;
+    },
+    updateMarketData() {
+      // Simulate market data updates with slight variations
+      const baseNifty = 24563.30;
+      const baseBankNifty = 44570.89;
+      const baseSensex = 79857.79;
+      
+      const niftyVariation = (Math.random() - 0.5) * 100;
+      const bankNiftyVariation = (Math.random() - 0.5) * 200;
+      const sensexVariation = (Math.random() - 0.5) * 300;
+      
+      this.niftyPrice = (baseNifty + niftyVariation).toFixed(2);
+      const niftyChangeVal = niftyVariation > 0 ? `+${niftyVariation.toFixed(2)}` : niftyVariation.toFixed(2);
+      const niftyChangePercent = ((niftyVariation / baseNifty) * 100).toFixed(2);
+      this.niftyChange = `${niftyChangeVal} (${niftyChangePercent > 0 ? '+' : ''}${niftyChangePercent}%)`;
+      
+      this.bankNiftyPrice = (baseBankNifty + bankNiftyVariation).toFixed(2);
+      const bankNiftyChangeVal = bankNiftyVariation > 0 ? `+${bankNiftyVariation.toFixed(2)}` : bankNiftyVariation.toFixed(2);
+      const bankNiftyChangePercent = ((bankNiftyVariation / baseBankNifty) * 100).toFixed(2);
+      this.bankNiftyChange = `${bankNiftyChangeVal} (${bankNiftyChangePercent > 0 ? '+' : ''}${bankNiftyChangePercent}%)`;
+      
+      this.sensexPrice = (baseSensex + sensexVariation).toFixed(2);
+      const sensexChangeVal = sensexVariation > 0 ? `+${sensexVariation.toFixed(2)}` : sensexVariation.toFixed(2);
+      const sensexChangePercent = ((sensexVariation / baseSensex) * 100).toFixed(2);
+      this.sensexChange = `${sensexChangeVal} (${sensexChangePercent > 0 ? '+' : ''}${sensexChangePercent}%)`;
     }
   }
 };
@@ -1450,8 +1749,8 @@ export default {
 /* Landing Page Styles */
 .landing-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-bg-primary, #0a0a1a) 0%, var(--color-bg-tertiary, #1a1a2e) 50%, var(--color-bg-quaternary, #16213e) 100%);
+  color: var(--color-text-primary, white);
   position: relative;
   overflow-x: hidden;
   scroll-behavior: smooth;
@@ -1505,10 +1804,10 @@ export default {
 .neuron {
   width: 12px;
   height: 12px;
-  background: #00ff88;
+  background: var(--color-primary, #FFD700);
   border-radius: 50%;
   animation: neuronPulse 3s ease-in-out infinite;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .neural-connections {
@@ -1522,7 +1821,7 @@ export default {
 .connection {
   position: absolute;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary, #FFD700), transparent);
   animation: connectionFlow 4s linear infinite;
 }
 
@@ -1539,7 +1838,7 @@ export default {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: #00ff88;
+  background: var(--color-primary, #FFD700);
   border-radius: 50%;
   animation: particleFloat 15s linear infinite;
   opacity: 0.6;
@@ -1578,14 +1877,14 @@ export default {
 }
 
 .data-bit {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
+  color: var(--color-primary, #FFD700);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 10px;
   font-family: 'Courier New', monospace;
   animation: dataFlow 8s linear infinite;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 /* AI Brain Visualization */
@@ -1606,7 +1905,7 @@ export default {
 .brain-pulse {
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(0, 255, 136, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) 0%, transparent 70%);
   border-radius: 50%;
   animation: brainPulse 2s ease-in-out infinite;
 }
@@ -1624,7 +1923,7 @@ export default {
   position: absolute;
   width: 2px;
   height: 20px;
-  background: #00ff88;
+  background: var(--color-primary, #FFD700);
   top: 50%;
   left: 50%;
   transform-origin: 0 0;
@@ -1645,7 +1944,7 @@ export default {
   position: absolute;
   width: 200px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary, #FFD700), transparent);
   top: 30%;
   animation: signalWave 3s ease-in-out infinite;
 }
@@ -1707,12 +2006,12 @@ export default {
   0%, 100% { 
     transform: scale(1);
     opacity: 0.6;
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
   }
   50% { 
     transform: scale(1.2);
     opacity: 1;
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+    box-shadow: 0 0 30px rgba(var(--color-primary-rgb, 255, 215, 0), 0.6);
   }
 }
 
@@ -1853,7 +2152,7 @@ export default {
 .brand-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #FFD700) !important;
   margin: 0;
 }
 
@@ -1871,7 +2170,7 @@ export default {
 }
 
 .nav-link:hover {
-  color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .auth-buttons {
@@ -1896,18 +2195,18 @@ export default {
 }
 
 .btn-outline:hover {
-  border-color: var(--color-primary, #00ff88) !important;
-  color: var(--color-primary, #00ff88) !important;
+  border-color: var(--color-primary, #FFD700) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary, #00ff88) 0%, var(--color-primary-light, #00d4aa) 100%) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%) !important;
   color: var(--color-bg-primary, #0a0a1a) !important;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) !important;
 }
 
 .btn-large {
@@ -1971,16 +2270,163 @@ export default {
   align-items: center;
 }
 
-.trust-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
+/* Live Market Widget */
+.live-market-widget {
+  background: linear-gradient(135deg, rgba(var(--color-bg-secondary-rgb, 16, 16, 34), 0.8) 0%, rgba(var(--color-bg-primary-rgb, 13, 13, 26), 0.9) 100%);
+  border: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.live-market-widget::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(var(--color-primary-rgb, 255, 215, 0), 0.1), transparent);
+  animation: widgetScan 3s ease-in-out infinite;
+}
+
+@keyframes widgetScan {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary, #FFD700);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary, #FFD700);
+  border-radius: 50%;
+  animation: pulseDot 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(var(--color-primary-rgb, 255, 215, 0), 0.8);
+}
+
+@keyframes pulseDot {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb, 255, 215, 0), 0.8);
+  }
+  50% { 
+    opacity: 0.5;
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 255, 215, 0), 1);
+  }
+}
+
+.market-time {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.widget-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  font-family: 'Courier New', monospace;
+}
+
+.stat-value.up {
+  color: var(--color-primary, #FFD700);
+}
+
+.stat-value.down {
+  color: var(--color-error, #ff4757);
+}
+
+.stat-change {
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.stat-change.up {
+  color: var(--color-primary, #FFD700);
+}
+
+.stat-change.down {
+  color: var(--color-error, #ff4757);
 }
 
 .hero-title {
@@ -1994,19 +2440,19 @@ export default {
 }
 
 .ai-typing-text {
-  color: white;
+  color: var(--color-text-primary, white);
 }
 
 .typing-cursor {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
   animation: cursorBlink 1s infinite;
   margin-left: 4px;
 }
 
 .ai-highlight {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
   font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  text-shadow: 0 0 10px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 @keyframes cursorBlink {
@@ -2040,7 +2486,7 @@ export default {
   display: block;
   font-size: 2rem;
   font-weight: bold;
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
 }
 
 .stat-label {
@@ -2048,38 +2494,423 @@ export default {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* AI Trading Dashboard Visual */
+/* Data Visualization Container */
 .hero-visual {
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 500px;
 }
 
-.ai-trading-dashboard {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  width: 400px;
+.data-visualization-container {
   position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
   overflow: hidden;
 }
 
-.ai-trading-dashboard::before {
-  content: '';
+/* Bar Charts Section */
+.bar-charts-section {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
-  animation: dashboardScan 3s ease-in-out infinite;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-@keyframes dashboardScan {
-  0% { left: -100%; }
-  50% { left: 100%; }
-  100% { left: 100%; }
+.bar-chart-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.bars-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 10px;
+  animation: barGrow 1.5s ease-out;
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
+}
+
+@keyframes barGrow {
+  0% { height: 0; opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.chart-value {
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.chart-value.up {
+  color: var(--color-primary, #FFD700);
+}
+
+.chart-period {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+}
+
+/* Server Stacks Section */
+.server-stacks-section {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.server-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+
+.server-unit {
+  width: 50px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 4px;
+  animation: serverPulse 2s ease-in-out infinite;
+}
+
+@keyframes serverPulse {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.5);
+  }
+}
+
+.server-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  height: 100%;
+}
+
+.grid-dot {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+.grid-dot.active {
+  background: var(--color-primary, #FFD700);
+  box-shadow: 0 0 4px rgba(var(--color-primary-rgb, 255, 215, 0), 0.8);
+  animation: dotBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.server-connection {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 8px;
+  background: var(--color-primary, #FFD700);
+  opacity: 0.6;
+}
+
+/* Floating Coins */
+.floating-coins {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.coin {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 193, 7, 0.2) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: coinFloat 6s ease-in-out infinite;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.coin-face {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: rgba(255, 215, 0, 0.9);
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.coin-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+  animation: coinGlow 2s ease-in-out infinite;
+}
+
+@keyframes coinFloat {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+@keyframes coinGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Laptop Container */
+.laptop-container {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  perspective: 1000px;
+}
+
+.laptop-base {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: laptopFloat 3s ease-in-out infinite;
+}
+
+@keyframes laptopFloat {
+  0%, 100% { transform: translateY(0) rotateX(0deg); }
+  50% { transform: translateY(-5px) rotateX(2deg); }
+}
+
+.laptop-screen {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 100%);
+  border-radius: 8px 8px 0 0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: none;
+  padding: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.screen-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.red { background: #ff5f56; }
+.dot.yellow { background: #ffbd2e; }
+.dot.green { background: #FFD700; }
+
+.screen-title {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.screen-content {
+  height: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-container {
+  flex: 1;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.line-graph {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-line {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px rgba(var(--color-primary-rgb, 255, 215, 0), 0.5));
+  animation: graphDraw 2s ease-out;
+}
+
+.graph-area {
+  opacity: 0.3;
+  animation: graphDraw 2s ease-out;
+}
+
+@keyframes graphDraw {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.graph-point {
+  animation: pointPulse 2s ease-in-out infinite;
+}
+
+.graph-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+.graph-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.55rem;
+}
+
+.stat-value {
+  font-weight: bold;
+  color: white;
+  font-size: 0.7rem;
+}
+
+.stat-value.up {
+  color: var(--color-primary, #FFD700);
+}
+
+.laptop-keyboard {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 4px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: none;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.key-row {
+  display: flex;
+  gap: 1px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+  max-width: 8px;
+}
+
+/* Data Flow Lines */
+.data-flow-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.flow-line {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    var(--color-primary, #FFD700) 20%, 
+    var(--color-primary, #FFD700) 80%, 
+    transparent 100%
+  );
+  opacity: 0.3;
+  animation: flowMove 3s linear infinite;
+}
+
+@keyframes flowMove {
+  0% { 
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { 
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
 
 /* AI Bot Container */
@@ -2099,11 +2930,11 @@ export default {
 .bot-head {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 50%;
   position: relative;
   margin: 0 auto;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 .bot-eyes {
@@ -2118,7 +2949,7 @@ export default {
 .eye {
   width: 8px;
   height: 8px;
-  background: #0a0a1a;
+  background: var(--color-bg-primary, #0a0a1a);
   border-radius: 50%;
   animation: eyeBlink 3s ease-in-out infinite;
 }
@@ -2135,7 +2966,7 @@ export default {
   transform: translateX(-50%);
   width: 2px;
   height: 15px;
-  background: #00ff88;
+  background: var(--color-primary, #FFD700);
 }
 
 .antenna-signal {
@@ -2144,7 +2975,7 @@ export default {
   left: -2px;
   width: 6px;
   height: 6px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 50%;
   animation: signalPulse 1s ease-in-out infinite;
 }
@@ -2157,8 +2988,8 @@ export default {
 .bot-body {
   width: 70px;
   height: 40px;
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 8px;
   margin: 0 auto;
   margin-top: 5px;
@@ -2176,7 +3007,7 @@ export default {
 
 .status-text {
   font-size: 8px;
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
   font-family: 'Courier New', monospace;
 }
@@ -2184,7 +3015,7 @@ export default {
 .status-indicator {
   width: 6px;
   height: 6px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 50%;
   animation: statusBlink 1s ease-in-out infinite;
 }
@@ -2206,7 +3037,7 @@ export default {
 .line {
   flex: 1;
   height: 2px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 1px;
   animation: processingWave 1.5s ease-in-out infinite;
 }
@@ -2223,11 +3054,11 @@ export default {
 
 /* AI Prediction Chart */
 .ai-prediction-chart {
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 215, 0, 0.05);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   position: relative;
 }
 
@@ -2271,13 +3102,16 @@ export default {
 .confidence-value {
   font-weight: bold;
   font-size: 0.9rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
-.prediction-chart {
-  height: 80px;
+.prediction-chart-wrapper {
+  height: 200px;
   position: relative;
   margin-bottom: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 .prediction-line {
@@ -2286,7 +3120,7 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(90deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 1px;
   animation: predictionFlow 2s ease-in-out infinite;
 }
@@ -2308,7 +3142,7 @@ export default {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 50%;
   bottom: 0;
   animation: pointPulse 1.5s ease-in-out infinite;
@@ -2327,44 +3161,82 @@ export default {
 
 .signal {
   flex: 1;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: bold;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-align: center;
-  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.signal-icon {
+  font-size: 1.2rem;
+}
+
+.signal-percentage {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-top: 0.25rem;
 }
 
 .buy-signal {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.4);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
+  color: var(--color-primary, #FFD700);
+  border: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
+}
+
+.buy-signal.active {
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  border-color: var(--color-primary, #FFD700);
+  box-shadow: 0 0 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.4);
+  transform: scale(1.05);
   animation: signalGlow 2s ease-in-out infinite;
 }
 
 .hold-signal {
   background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-primary, #fff);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.hold-signal.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
 .sell-signal {
-  background: rgba(255, 71, 87, 0.2);
-  color: #ff4757;
-  border: 1px solid rgba(255, 71, 87, 0.4);
+  background: rgba(var(--color-error-rgb, 255, 71, 87), 0.1);
+  color: var(--color-error, #ff4757);
+  border: 1px solid rgba(var(--color-error-rgb, 255, 71, 87), 0.3);
+}
+
+.sell-signal.active {
+  background: rgba(var(--color-error-rgb, 255, 71, 87), 0.2);
+  border-color: var(--color-error, #ff4757);
+  box-shadow: 0 0 15px rgba(var(--color-error-rgb, 255, 71, 87), 0.4);
+  transform: scale(1.05);
 }
 
 @keyframes signalGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.6); }
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
 }
 
 /* AI Voice Assistant */
 .ai-voice-assistant {
   margin-top: 2rem;
   padding: 1rem;
-  background: rgba(0, 255, 136, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   position: relative;
   overflow: hidden;
@@ -2382,7 +3254,7 @@ export default {
 
 .wave {
   width: 3px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 2px;
   animation: voiceWave 1.5s ease-in-out infinite;
 }
@@ -2427,7 +3299,7 @@ export default {
 
 .voice-label {
   font-size: 0.8rem;
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
   font-family: 'Courier New', monospace;
 }
@@ -2445,11 +3317,11 @@ export default {
 }
 
 .main-chart {
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 215, 0, 0.05);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .chart-header {
@@ -2491,7 +3363,7 @@ export default {
 }
 
 .chart-change.up {
-  color: #00ff88;
+  color: #FFD700;
   font-weight: 600;
 }
 
@@ -2517,7 +3389,7 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(90deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 1px;
 }
 
@@ -2539,7 +3411,7 @@ export default {
 
 .point.up {
   height: 60%;
-  background: #00ff88;
+  background: #FFD700;
 }
 
 .point.down {
@@ -2603,7 +3475,7 @@ export default {
 }
 
 .mini-price.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .mini-price.down {
@@ -2616,7 +3488,7 @@ export default {
 }
 
 .mini-line.up {
-  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(90deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
 }
 
 .mini-line.down {
@@ -2653,7 +3525,7 @@ export default {
 }
 
 .ticker-price.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .ticker-price.down {
@@ -2706,12 +3578,12 @@ export default {
 
 .account-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .account-card.featured {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.05);
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .card-header {
@@ -2728,8 +3600,8 @@ export default {
 }
 
 .card-badge {
-  background: #00ff88;
-  color: #0a0a1a;
+  background: #FFD700;
+  color: var(--color-bg-primary, #0a0a1a);
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
   font-size: 0.8rem;
@@ -2773,7 +3645,7 @@ export default {
 
 .tool-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .tool-icon {
@@ -2794,14 +3666,14 @@ export default {
 }
 
 .tool-link {
-  color: #00ff88;
+  color: #FFD700;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .tool-link:hover {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 /* How It Works Section */
@@ -2824,8 +3696,8 @@ export default {
 .step-number {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  color: #0a0a1a;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
+  color: var(--color-bg-primary, #0a0a1a);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2862,7 +3734,7 @@ export default {
 }
 
 .feature-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-5px);
 }
 
@@ -2898,7 +3770,7 @@ export default {
   display: block;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 0.25rem;
 }
 
@@ -2927,7 +3799,7 @@ export default {
 }
 
 .analysis-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -2953,9 +3825,9 @@ export default {
 }
 
 .market-status.up {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .market-status.down {
@@ -2987,7 +3859,7 @@ export default {
 }
 
 .price-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .price-change.down {
@@ -3024,7 +3896,7 @@ export default {
 }
 
 .indicator-value.bullish {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .indicator-value.bearish {
@@ -3057,7 +3929,7 @@ export default {
 }
 
 .resource-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-5px);
 }
 
@@ -3089,19 +3961,19 @@ export default {
 
 .resource-link {
   display: inline-block;
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .resource-link:hover {
-  background: rgba(0, 255, 136, 0.2);
-  border-color: rgba(0, 255, 136, 0.5);
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 /* Trading Instruments Section */
@@ -3125,7 +3997,7 @@ export default {
 }
 
 .instrument-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-5px);
 }
 
@@ -3187,13 +4059,13 @@ export default {
 }
 
 .stock-tag {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 500;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 /* Platform Features Section */
@@ -3247,7 +4119,7 @@ export default {
 }
 
 .data-time {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.8rem;
   font-weight: 500;
 }
@@ -3285,7 +4157,7 @@ export default {
 }
 
 .data-item .change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .data-item .change.down {
@@ -3329,8 +4201,8 @@ export default {
 }
 
 .control.active {
-  background: #00ff88;
-  color: #0a0a1a;
+  background: #FFD700;
+  color: var(--color-bg-primary, #0a0a1a);
 }
 
 .chart-content {
@@ -3345,7 +4217,7 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(90deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 1px;
 }
 
@@ -3362,7 +4234,7 @@ export default {
 
 .volume-bar {
   flex: 1;
-  background: rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   border-radius: 1px;
   min-height: 10px;
 }
@@ -3402,7 +4274,7 @@ export default {
 }
 
 .story-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3416,13 +4288,13 @@ export default {
 .trader-avatar {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: #0a0a1a;
+  color: var(--color-bg-primary, #0a0a1a);
   font-size: 1rem;
 }
 
@@ -3447,9 +4319,9 @@ export default {
 }
 
 .profit-badge.up {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .story-text {
@@ -3473,7 +4345,7 @@ export default {
   display: block;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 0.25rem;
 }
 
@@ -3504,7 +4376,7 @@ export default {
 }
 
 .tool-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-5px);
 }
 
@@ -3534,13 +4406,13 @@ export default {
 }
 
 .feature-tag {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 500;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 /* App Features Section */
@@ -3604,13 +4476,13 @@ export default {
 .app-logo {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: #0a0a1a;
+  color: var(--color-bg-primary, #0a0a1a);
   font-size: 0.9rem;
 }
 
@@ -3653,7 +4525,7 @@ export default {
 }
 
 .market-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .market-change.down {
@@ -3678,8 +4550,8 @@ export default {
 }
 
 .trade-button.buy {
-  background: #00ff88;
-  color: #0a0a1a;
+  background: #FFD700;
+  color: var(--color-bg-primary, #0a0a1a);
 }
 
 .trade-button.sell {
@@ -3735,7 +4607,7 @@ export default {
   content: "✓";
   position: absolute;
   left: 0;
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
 }
 
@@ -3763,13 +4635,13 @@ export default {
 }
 
 .account-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-5px);
 }
 
 .account-card.featured {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.05);
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .account-badge {
@@ -3777,8 +4649,8 @@ export default {
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  background: #00ff88;
-  color: #0a0a1a;
+  background: #FFD700;
+  color: var(--color-bg-primary, #0a0a1a);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: bold;
@@ -3795,7 +4667,7 @@ export default {
 .account-price {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 0.5rem;
 }
 
@@ -3834,14 +4706,14 @@ export default {
 }
 
 .account-btn.featured {
-  background: #00ff88;
-  color: #0a0a1a;
-  border-color: #00ff88;
+  background: #FFD700;
+  color: var(--color-bg-primary, #0a0a1a);
+  border-color: #FFD700;
 }
 
 .account-btn.featured:hover {
-  background: #00d4aa;
-  border-color: #00d4aa;
+  background: var(--color-primary-light, #FFE55C);
+  border-color: var(--color-primary-light, #FFE55C);
 }
 
 /* Testimonials Section */
@@ -3864,7 +4736,7 @@ export default {
 }
 
 .testimonial-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3889,13 +4761,13 @@ export default {
 .author-avatar {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: #0a0a1a;
+  color: var(--color-bg-primary, #0a0a1a);
   font-size: 1rem;
 }
 
@@ -4036,9 +4908,9 @@ export default {
 /* Statistics Section */
 .statistics {
   padding: 4rem 0;
-  background: rgba(0, 255, 136, 0.05);
-  border-top: 1px solid rgba(0, 255, 136, 0.1);
-  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.05);
+  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
 }
 
 .stats-grid {
@@ -4054,7 +4926,7 @@ export default {
 .stat-number {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 0.5rem;
 }
 
@@ -4124,7 +4996,7 @@ export default {
 .footer-logo h3 {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
 }
 
@@ -4132,7 +5004,7 @@ export default {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .footer-section ul {
@@ -4151,7 +5023,7 @@ export default {
 }
 
 .footer-section ul li a:hover {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .footer-section p {
@@ -4207,51 +5079,52 @@ export default {
     font-size: 0.9rem;
   }
   
-  /* AI Trading Dashboard Mobile */
-  .ai-trading-dashboard {
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
+  /* Data Visualization Mobile */
+  .data-visualization-container {
+    max-width: 100%;
+    height: 400px;
+    padding: 1.5rem;
   }
   
-  .ai-prediction-chart {
-    padding: 1rem;
+  .bar-charts-section {
+    top: 15px;
+    right: 15px;
+    width: 150px;
+    height: 120px;
+    padding: 0.75rem;
   }
   
-  .chart-title {
-    font-size: 0.9rem;
-  }
-  
-  .chart-subtitle {
+  .chart-label {
     font-size: 0.6rem;
   }
   
-  .confidence-value {
-    font-size: 0.8rem;
+  .server-stacks-section {
+    bottom: 15px;
+    right: 15px;
+    gap: 10px;
   }
   
-  .ai-bot {
-    width: 60px;
-    height: 80px;
+  .server-unit {
+    width: 40px;
+    height: 32px;
   }
   
-  .bot-head {
-    width: 50px;
-    height: 50px;
+  .laptop-container {
+    width: 220px;
+    bottom: 50px;
   }
   
-  .bot-body {
-    width: 60px;
-    height: 35px;
+  .laptop-screen {
+    height: 140px;
   }
   
-  .status-text {
-    font-size: 7px;
+  .coin {
+    width: 30px;
+    height: 30px;
   }
   
-  .signal {
-    font-size: 0.6rem;
-    padding: 0.2rem 0.4rem;
+  .coin-face {
+    font-size: 1rem;
   }
   
   /* AI Voice Assistant Mobile */
@@ -4348,8 +5221,8 @@ export default {
   }
   
   .nav-menu .nav-link:hover {
-    background: rgba(0, 255, 136, 0.1);
-    color: #00ff88;
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
   }
   
   .auth-buttons {
@@ -4545,9 +5418,46 @@ export default {
     font-size: 0.9rem;
   }
   
-  .trust-badge {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
+  .live-market-widget {
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .widget-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+  
+  .live-indicator {
+    font-size: 0.75rem;
+  }
+  
+  .market-time {
+    font-size: 0.7rem;
+  }
+  
+  .widget-stats {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  
+  .stat-item {
+    padding: 0.5rem;
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 0.85rem;
+  }
+  
+  .stat-change {
+    font-size: 0.6rem;
   }
   
   .hero-actions {
@@ -4571,54 +5481,47 @@ export default {
     font-size: 0.8rem;
   }
   
-  /* AI Trading Dashboard Small Mobile */
-  .ai-trading-dashboard {
-    max-width: 300px;
+  /* Data Visualization Small Mobile */
+  .data-visualization-container {
+    height: 350px;
     padding: 1rem;
   }
   
-  .ai-prediction-chart {
-    padding: 0.8rem;
+  .bar-charts-section {
+    top: 10px;
+    right: 10px;
+    width: 120px;
+    height: 100px;
+    padding: 0.5rem;
   }
   
-  .chart-title {
-    font-size: 0.8rem;
+  .server-stacks-section {
+    bottom: 10px;
+    right: 10px;
+    gap: 8px;
   }
   
-  .chart-subtitle {
-    font-size: 0.6rem;
+  .server-unit {
+    width: 35px;
+    height: 28px;
   }
   
-  .confidence-value {
-    font-size: 0.7rem;
+  .laptop-container {
+    width: 180px;
+    bottom: 40px;
   }
   
-  .ai-bot {
-    width: 50px;
-    height: 70px;
+  .laptop-screen {
+    height: 120px;
   }
   
-  .bot-head {
-    width: 40px;
-    height: 40px;
+  .coin {
+    width: 25px;
+    height: 25px;
   }
   
-  .bot-body {
-    width: 50px;
-    height: 30px;
-  }
-  
-  .status-text {
-    font-size: 6px;
-  }
-  
-  .signal {
-    font-size: 0.5rem;
-    padding: 0.15rem 0.3rem;
-  }
-  
-  .prediction-chart {
-    height: 60px;
+  .coin-face {
+    font-size: 0.9rem;
   }
   
   /* AI Voice Assistant Small Mobile */

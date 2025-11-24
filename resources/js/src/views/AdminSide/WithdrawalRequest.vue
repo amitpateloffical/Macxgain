@@ -316,14 +316,14 @@ const handleProfileImageError = (event, userName) => {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00ff80, #00cc66);
+    background: linear-gradient(135deg, #FFD700, #DAA520);
     color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 14px;
-    border: 3px solid #00ff80;
+    border: 3px solid #FFD700;
   `
   event.target.parentNode.appendChild(fallbackDiv)
 }
@@ -477,13 +477,13 @@ watch(activeStatus, (newVal, oldVal) => {
   padding: 24px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .header-content h1 {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff80;
+  color: #FFD700;
   margin: 0 0 8px 0;
 }
 
@@ -530,9 +530,9 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .stat-card.clickable.active {
-  background: rgba(0, 255, 136, 0.1);
-  border-color: #00ff88;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 .stat-card.clickable.active::before {
@@ -542,7 +542,7 @@ watch(activeStatus, (newVal, oldVal) => {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #FFD700, #00d4ff);
 }
 
 .stat-card.total {
@@ -588,7 +588,7 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 12px 24px;
@@ -604,7 +604,7 @@ watch(activeStatus, (newVal, oldVal) => {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Modal Styles */
@@ -628,7 +628,7 @@ watch(activeStatus, (newVal, oldVal) => {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .modal-header {
@@ -641,7 +641,7 @@ watch(activeStatus, (newVal, oldVal) => {
 
 .modal-header h3 {
   margin: 0;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 1.5rem;
 }
 
@@ -701,8 +701,8 @@ watch(activeStatus, (newVal, oldVal) => {
 
 .form-control:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-control::placeholder {
@@ -753,9 +753,9 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .status-tab.active {
-  background: #00ff80;
+  background: #FFD700;
   color: #0d0d1a;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .status-count {
@@ -811,7 +811,7 @@ watch(activeStatus, (newVal, oldVal) => {
 .request-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 255, 128, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 /* Status Classes */
@@ -824,7 +824,7 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .status-completed {
-  border-left: 4px solid #00ff80;
+  border-left: 4px solid #FFD700;
 }
 
 .status-rejected {
@@ -849,7 +849,7 @@ watch(activeStatus, (newVal, oldVal) => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid #00ff80;
+  border: 2px solid #FFD700;
   object-fit: cover;
 }
 
@@ -884,8 +884,8 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .status-completed .status-badge {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .status-rejected .status-badge {
@@ -922,7 +922,7 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .amount {
-  color: #00ff80;
+  color: #FFD700;
   font-weight: 600;
   font-size: 1.1rem;
 }
@@ -962,12 +962,12 @@ watch(activeStatus, (newVal, oldVal) => {
 }
 
 .btn-approve {
-  background: #00ff80;
+  background: #FFD700;
   color: #0d0d1a;
 }
 
 .btn-approve:hover:not(:disabled) {
-  background: #00cc66;
+  background: #DAA520;
   transform: translateY(-2px);
 }
 
@@ -1657,15 +1657,15 @@ watch(activeStatus, (newVal, oldVal) => {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 14px;
-  border: 3px solid #00ff80;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  border: 3px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 /* Touch Device Optimizations */

@@ -230,6 +230,9 @@
 
         <!-- Action Buttons -->
         <div class="form-actions">
+          <button type="button" class="btn-profitmaxo" @click="setProfitMaxoDefault">
+            <i class="fas fa-star"></i> Set as Default (ProfitMaxo)
+          </button>
           <button type="button" class="btn-secondary" @click="resetToDefault">
             <i class="fas fa-undo"></i> Reset to Default
           </button>
@@ -279,21 +282,40 @@ import { toast } from 'vue3-toastify';
 
 // Default brand configuration (fallback)
 const defaultBrandConfig = {
-  companyName: 'Macxgain',
-  tagline: 'Smart Trading Solutions',
+  companyName: 'ProfitMaxo',
+  tagline: 'Maximize Your Trading Profits',
   welcomeText: 'Welcome Back',
   subtitle: 'Sign in to your account to continue',
   logoPath: '../assest/img/logo.png',
   logoPathPublic: '/logo.png',
   logoPathFrontend: '../FrontEndSide/logo.png',
   logoPathHeader: '../FrontEndSide/logo.png',
-  pageTitle: 'Macxgain - Trading with AI and Gain Profit',
-  loginTitle: 'Login - Macxgain',
-  registerTitle: 'Register - Macxgain',
-  email: 'info@macxgain.com',
-  website: 'https://macxgain.com',
+  pageTitle: 'ProfitMaxo - Trading with AI and Gain Profit',
+  loginTitle: 'Login - ProfitMaxo',
+  registerTitle: 'Register - ProfitMaxo',
+  email: 'info@profitmaxo.com',
+  website: 'https://profitmaxo.com',
   copyrightYear: '2025',
-  copyrightText: 'Macxgain. All Rights Reserved.'
+  copyrightText: 'ProfitMaxo. All Rights Reserved.'
+};
+
+// ProfitMaxo default configuration
+const profitMaxoConfig = {
+  companyName: 'ProfitMaxo',
+  tagline: 'Maximize Your Trading Profits',
+  welcomeText: 'Welcome Back',
+  subtitle: 'Sign in to your account to continue',
+  logoPath: '../assest/img/logo.png',
+  logoPathPublic: '/logo.png',
+  logoPathFrontend: '../FrontEndSide/logo.png',
+  logoPathHeader: '../FrontEndSide/logo.png',
+  pageTitle: 'ProfitMaxo - Trading with AI and Gain Profit',
+  loginTitle: 'Login - ProfitMaxo',
+  registerTitle: 'Register - ProfitMaxo',
+  email: 'info@profitmaxo.com',
+  website: 'https://profitmaxo.com',
+  copyrightYear: '2025',
+  copyrightText: 'ProfitMaxo. All Rights Reserved.'
 };
 
 // Form data
@@ -580,6 +602,97 @@ const removeHeaderLogo = () => {
   });
 };
 
+// Set ProfitMaxo as default
+const setProfitMaxoDefault = async () => {
+  if (confirm('Set ProfitMaxo as the default brand? This will update all brand settings to ProfitMaxo and load default logos.')) {
+    try {
+      // Load default logos from public path (most reliable)
+      const loadLogoAsBase64 = async (publicPath) => {
+        try {
+          // Try multiple paths in order of preference
+          const pathsToTry = [
+            publicPath, // Direct path
+            window.location.origin + publicPath, // Full URL
+            '/logo.png', // Fallback to public logo
+            window.location.origin + '/logo.png' // Full URL fallback
+          ];
+          
+          for (const path of pathsToTry) {
+            try {
+              const response = await fetch(path, { cache: 'no-cache' });
+              if (response.ok) {
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result);
+                  reader.onerror = () => resolve(null);
+                  reader.readAsDataURL(blob);
+                });
+              }
+            } catch (e) {
+              // Try next path
+              continue;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not load logo from any path');
+        }
+        return null;
+      };
+
+      // Show loading toast
+      toast.info('Loading ProfitMaxo logos...', {
+        autoClose: 2000,
+        position: "top-right"
+      });
+
+      // Try to load logos from multiple possible locations
+      const [loginLogo, headerLogo] = await Promise.all([
+        loadLogoAsBase64('/logo.png'),
+        loadLogoAsBase64('/logo.png')
+      ]);
+
+      // Update form data with ProfitMaxo config
+      formData.value = { 
+        ...profitMaxoConfig,
+        // Use loaded logos if available, otherwise clear to use file paths
+        loginLogoBase64: loginLogo || '',
+        headerLogoBase64: headerLogo || '',
+        // Ensure logo paths are set (use base64 if loaded, otherwise use file path)
+        logoPath: loginLogo || profitMaxoConfig.logoPath,
+        logoPathHeader: headerLogo || profitMaxoConfig.logoPathHeader,
+        logoPathFrontend: headerLogo || profitMaxoConfig.logoPathFrontend,
+        logoPathPublic: profitMaxoConfig.logoPathPublic,
+      };
+
+      if (loginLogo && headerLogo) {
+        toast.success('ProfitMaxo settings applied! Default logos loaded successfully. Click "Save Settings" to save permanently.', {
+          autoClose: 3000,
+          position: "top-right"
+        });
+      } else {
+        // Logos will use file paths - that's fine
+        toast.success('ProfitMaxo settings applied! (Using default logo paths). Click "Save Settings" to save permanently.', {
+          autoClose: 3000,
+          position: "top-right"
+        });
+      }
+    } catch (error) {
+      console.error('Error loading default logos:', error);
+      // Fallback: just set the config with file paths
+      formData.value = { 
+        ...profitMaxoConfig,
+        loginLogoBase64: '',
+        headerLogoBase64: ''
+      };
+      toast.success('ProfitMaxo settings applied! Click "Save Settings" to save permanently.', {
+        autoClose: 3000,
+        position: "top-right"
+      });
+    }
+  }
+};
+
 // Reset to default
 const resetToDefault = () => {
   if (confirm('Are you sure you want to reset to default settings? This will remove uploaded logos.')) {
@@ -616,14 +729,14 @@ onMounted(() => {
   margin-bottom: 24px;
   padding: 20px;
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
 }
 
 .page-title {
   font-size: 28px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 8px 0;
 }
 
@@ -635,9 +748,9 @@ onMounted(() => {
 
 /* Success Alert */
 .success-alert {
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -650,7 +763,7 @@ onMounted(() => {
 /* Settings Card */
 .settings-card {
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
   padding: 30px;
   margin-bottom: 24px;
@@ -659,10 +772,10 @@ onMounted(() => {
 .card-title {
   font-size: 20px;
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 24px 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 /* Form Styles */
@@ -688,7 +801,7 @@ onMounted(() => {
 }
 
 .form-label i {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .form-input {
@@ -704,9 +817,9 @@ onMounted(() => {
 
 .form-input:focus {
   outline: none;
-  border-color: #00ff88;
+  border-color: #FFD700;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-input::placeholder {
@@ -784,7 +897,7 @@ onMounted(() => {
 .file-upload-btn {
   flex: 1;
   padding: 10px 16px;
-  background: linear-gradient(145deg, #00ff88, #00cc66);
+  background: linear-gradient(145deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   border-radius: 8px;
@@ -800,7 +913,7 @@ onMounted(() => {
 
 .file-upload-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .remove-logo-btn {
@@ -842,7 +955,7 @@ onMounted(() => {
 
 .upload-overlay i {
   font-size: 24px;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .upload-overlay span {
@@ -873,13 +986,13 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(145deg, #00ff88, #00cc66);
+  background: linear-gradient(145deg, #FFD700, #DAA520);
   color: #0d0d1a;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .btn-primary:disabled {
@@ -887,21 +1000,32 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
+.btn-profitmaxo {
+  background: linear-gradient(145deg, #FFD700, #DAA520);
+  color: #0d0d1a;
+  border: none;
+}
+
+.btn-profitmaxo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
 .btn-secondary {
-  background: rgba(0, 255, 128, 0.1);
-  color: #00ff80;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .btn-secondary:hover {
-  background: rgba(0, 255, 128, 0.2);
-  border-color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #FFD700;
 }
 
 /* Info Card */
 .info-card {
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
   padding: 24px;
 }
@@ -909,7 +1033,7 @@ onMounted(() => {
 .info-title {
   font-size: 18px;
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 16px 0;
   display: flex;
   align-items: center;
@@ -934,11 +1058,11 @@ onMounted(() => {
 }
 
 .info-list code {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 /* Responsive */

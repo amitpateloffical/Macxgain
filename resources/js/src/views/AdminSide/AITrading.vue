@@ -498,14 +498,14 @@ export default {
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #00ff80, #00cc66);
+        background: linear-gradient(135deg, #FFD700, #DAA520);
         color: #000;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
         font-size: 16px;
-        border: 3px solid #00ff80;
+        border: 3px solid #FFD700;
       `
       event.target.parentNode.appendChild(fallbackDiv)
     },
@@ -611,14 +611,14 @@ export default {
   margin-bottom: 24px;
   padding: 20px;
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
 }
 
 .page-title {
   font-size: 28px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 8px 0;
 }
 
@@ -629,7 +629,7 @@ export default {
 }
 
 .refresh-btn {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   color: #0d0d1a;
   border: none;
   padding: 12px 20px;
@@ -644,7 +644,7 @@ export default {
 
 .refresh-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .refresh-btn:disabled {
@@ -662,7 +662,7 @@ export default {
 
 .stat-card {
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -672,7 +672,7 @@ export default {
 }
 
 .stat-card:hover {
-  border-color: #00ff88;
+  border-color: #FFD700;
   transform: translateY(-2px);
 }
 
@@ -680,7 +680,7 @@ export default {
   font-size: 32px;
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -741,7 +741,7 @@ export default {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff88;
+  border-color: #FFD700;
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -767,9 +767,9 @@ export default {
 }
 
 .filter-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0d0d1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 /* Users Grid */
@@ -792,8 +792,8 @@ export default {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 255, 136, 0.2);
-  border-top: 3px solid #00ff88;
+  border: 3px solid rgba(255, 215, 0, 0.2);
+  border-top: 3px solid #FFD700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -832,7 +832,7 @@ export default {
 
 .user-card {
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -850,15 +850,15 @@ export default {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #00ff88, #00d4aa, #00ff88);
+  background: linear-gradient(90deg, #FFD700, #FFE55C, #FFD700);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .user-card:hover {
-  border-color: #00ff88;
+  border-color: #FFD700;
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.15);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.15);
 }
 
 .user-card:hover::before {
@@ -874,12 +874,12 @@ export default {
 .user-avatar {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -912,9 +912,9 @@ export default {
 }
 
 .status-badge.active {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .status-badge.inactive {
@@ -947,7 +947,7 @@ export default {
 }
 
 .user-mobile i {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 12px;
 }
 
@@ -966,9 +966,9 @@ export default {
   flex-direction: column;
   gap: 6px;
   padding: 12px;
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 215, 0, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.1);
 }
 
 .balance-label {
@@ -982,7 +982,7 @@ export default {
 .balance-amount {
   font-size: 24px;
   font-weight: 700;
-  color: #00ff88;
+  color: #FFD700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -994,7 +994,7 @@ export default {
 }
 
 .balance-status.high {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .balance-status.medium {
@@ -1029,14 +1029,14 @@ export default {
 }
 
 .view-btn {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   color: #0d0d1a;
   width: 100%;
 }
 
 .view-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
 }
 
 .trade-btn {
@@ -1130,9 +1130,9 @@ export default {
 }
 
 .page-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0d0d1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .page-btn:disabled {
@@ -1153,7 +1153,7 @@ export default {
   right: 0;
   background: rgba(13, 13, 26, 0.95);
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 255, 136, 0.2);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
   padding: 12px 0;
   display: none;
   z-index: 1000;
@@ -1173,13 +1173,13 @@ export default {
 }
 
 .mobile-bottom-nav .nav-item:active {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   transform: scale(0.95);
 }
 
 .mobile-bottom-nav .nav-item.active {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .mobile-bottom-nav .nav-icon {
@@ -1385,7 +1385,7 @@ export default {
 
   .modal-content {
     background: linear-gradient(145deg, #101022, #0d0d1a);
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: 20px;
     width: 100%;
     max-width: 600px;
@@ -1406,7 +1406,7 @@ export default {
   .modal-title {
     font-size: 24px;
     font-weight: 700;
-    color: #00ff88;
+    color: #FFD700;
     margin: 0;
   }
 
@@ -1439,20 +1439,20 @@ export default {
     gap: 20px;
     margin-bottom: 32px;
     padding: 20px;
-    background: rgba(0, 255, 136, 0.05);
+    background: rgba(255, 215, 0, 0.05);
     border-radius: 16px;
-    border: 1px solid rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.1);
   }
 
   .profile-avatar {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+    background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
   }
 
   .avatar-text-large {
@@ -1493,8 +1493,8 @@ export default {
   }
 
   .detail-item:hover {
-    border-color: rgba(0, 255, 136, 0.2);
-    background: rgba(0, 255, 136, 0.02);
+    border-color: rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.02);
   }
 
   .detail-label {
@@ -1510,7 +1510,7 @@ export default {
   }
 
   .detail-label i {
-    color: #00ff88;
+    color: #FFD700;
     font-size: 16px;
   }
 
@@ -1522,7 +1522,7 @@ export default {
   }
 
   .balance-highlight {
-    color: #00ff88;
+    color: #FFD700;
     font-size: 20px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -1538,9 +1538,9 @@ export default {
   }
 
   .balance-status-badge.high {
-    background: rgba(0, 255, 136, 0.2);
-    color: #00ff88;
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
   }
 
   .balance-status-badge.medium {
@@ -1658,14 +1658,14 @@ export default {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00ff80, #00cc66);
+    background: linear-gradient(135deg, #FFD700, #DAA520);
     color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 16px;
-    border: 3px solid #00ff80;
-    box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+    border: 3px solid #FFD700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
   }
 </style>

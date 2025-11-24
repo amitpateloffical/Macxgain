@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
   padding: 12px 20px;
   background: linear-gradient(90deg, var(--color-bg-primary, #0d0d1a), var(--color-bg-secondary, #101022)) !important;
   color: var(--color-text-primary, white) !important;
-  border-bottom: 1px solid var(--color-border-primary, rgba(0, 255, 128, 0.2)) !important;
+  border-bottom: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2)) !important;
   flex-wrap: wrap;
   gap: 10px;
   min-height: 60px;
@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
 .brand-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--color-primary, #00ff80) !important;
+  color: var(--color-primary, #FFD700) !important;
   white-space: nowrap;
 }
 
@@ -216,12 +216,12 @@ onBeforeUnmount(() => {
 
 .header_menu i {
   font-size: 1.2rem;
-  color: var(--color-primary, #00ff80) !important;
+  color: var(--color-primary, #FFD700) !important;
   transition: color 0.3s ease;
 }
 
 .header_menu i:hover {
-  color: var(--color-primary-dark, #00cc66) !important;
+  color: var(--color-primary-dark, #DAA520) !important;
 }
 
 .profile_dropdown {
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   width: 50px;
   height: 50px;
-  border: 2px solid var(--color-border-primary, rgba(0, 255, 128, 0.3)) !important;
+  border: 2px solid var(--color-border-primary, rgba(255, 215, 0, 0.3)) !important;
   position: relative;
   overflow: hidden;
 }
@@ -245,8 +245,8 @@ onBeforeUnmount(() => {
 .profile_dropdown:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: scale(1.08);
-  border-color: var(--color-primary, rgba(0, 255, 128, 0.6)) !important;
-  box-shadow: 0 4px 12px var(--color-border-primary, rgba(0, 255, 128, 0.2)) !important;
+  border-color: var(--color-primary, rgba(255, 215, 0, 0.6)) !important;
+  box-shadow: 0 4px 12px var(--color-border-primary, rgba(255, 215, 0, 0.2)) !important;
 }
 
 .profile_dropdown:active {
@@ -265,14 +265,14 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid var(--color-primary, #00ff80) !important;
+  border: 2px solid var(--color-primary, #FFD700) !important;
   flex-shrink: 0;
   object-fit: cover;
   transition: all 0.3s ease;
 }
 
 .profile_dropdown:hover .header_profile_pic img {
-  border-color: var(--color-primary, #00ff80) !important;
+  border-color: var(--color-primary, #FFD700) !important;
   transform: scale(1.05);
 }
 
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 3px solid var(--color-primary, #00ff80) !important;
+  border: 3px solid var(--color-primary, #FFD700) !important;
   object-fit: cover;
 }
 
@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 
 .balance {
   font-weight: bold;
-  color: var(--color-primary, #00ff80) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .close-btn {
@@ -366,7 +366,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-link:hover {
-  background: var(--color-border-primary, rgba(0, 255, 128, 0.15)) !important;
+  background: var(--color-border-primary, rgba(255, 215, 0, 0.15)) !important;
   transform: translateX(4px);
 }
 

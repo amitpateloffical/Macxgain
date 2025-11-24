@@ -376,14 +376,14 @@ const handleProfileImageError = (event, userName) => {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00ff80, #00cc66);
+    background: linear-gradient(135deg, #FFD700, #DAA520);
     color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 14px;
-    border: 3px solid #00ff80;
+    border: 3px solid #FFD700;
   `
   event.target.parentNode.appendChild(fallbackDiv)
 }
@@ -600,7 +600,7 @@ onMounted(() => {
 .header-left h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #00ff80;
+  color: #FFD700;
   margin: 0 0 10px 0;
   display: flex;
   align-items: center;
@@ -618,7 +618,7 @@ onMounted(() => {
 }
 
 .btn-refresh {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 12px 24px;
@@ -634,7 +634,7 @@ onMounted(() => {
 
 .btn-refresh:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .btn-refresh:disabled {
@@ -740,7 +740,7 @@ onMounted(() => {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .filter-options {
@@ -760,7 +760,7 @@ onMounted(() => {
 
 .filter-select:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .results-info {
@@ -803,7 +803,7 @@ onMounted(() => {
 }
 
 .btn-retry {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 10px 20px;
@@ -858,7 +858,7 @@ onMounted(() => {
   height: 60px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #00ff80;
+  border: 3px solid #FFD700;
 }
 
 .user-avatar img {
@@ -1447,15 +1447,15 @@ onMounted(() => {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 14px;
-  border: 3px solid #00ff80;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  border: 3px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 /* Touch Device Optimizations */

@@ -6,9 +6,9 @@
 
 :root {
   /* Primary Colors */
-  --color-primary: #00ff88;
-  --color-primary-dark: #00cc66;
-  --color-primary-light: #00d4aa;
+  --color-primary: #FFD700;
+  --color-primary-dark: #DAA520;
+  --color-primary-light: #FFE55C;
   
   /* Background Colors */
   --color-bg-primary: #0d0d1a;
@@ -22,17 +22,17 @@
   --color-text-muted: #9ca3af;
   
   /* Status Colors */
-  --color-success: #00ff88;
+  --color-success: #FFD700;
   --color-error: #ff4444;
   --color-warning: #ffaa00;
   
   /* Border Colors */
-  --color-border-primary: rgba(0, 255, 136, 0.2);
+  --color-border-primary: rgba(255, 215, 0, 0.2);
   --color-border-secondary: rgba(255, 255, 255, 0.1);
   
   /* RGB values for rgba() usage (will be set dynamically) */
-  --color-primary-rgb: 0, 255, 136;
-  --color-success-rgb: 0, 255, 136;
+  --color-primary-rgb: 255, 215, 0;
+  --color-success-rgb: 255, 215, 0;
   --color-error-rgb: 255, 68, 68;
   --color-warning-rgb: 255, 170, 0;
   --color-primary-light-rgb: 0, 212, 170;
@@ -87,14 +87,14 @@ html {
 }
 
 /* Override hardcoded primary colors */
-[style*="color: #00ff88"],
-[style*="color:#00ff88"],
-[style*="color: #00ff80"],
-[style*="color:#00ff80"],
-[style*="border-color: #00ff88"],
-[style*="border-color:#00ff88"],
-[style*="border-color: #00ff80"],
-[style*="border-color:#00ff80"] {
+[style*="color: #FFD700"],
+[style*="color:#FFD700"],
+[style*="color: #FFD700"],
+[style*="color:#FFD700"],
+[style*="border-color: #FFD700"],
+[style*="border-color:#FFD700"],
+[style*="border-color: #FFD700"],
+[style*="border-color:#FFD700"] {
   color: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
 }
@@ -181,7 +181,7 @@ a:hover {
 
 /* Alerts */
 .alert-success {
-  background-color: rgba(0, 255, 136, 0.1);
+  background-color: rgba(255, 215, 0, 0.1);
   border-color: var(--color-success);
   color: var(--color-success);
 }

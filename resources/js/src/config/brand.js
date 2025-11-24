@@ -7,8 +7,8 @@
 // Default brand configuration
 const defaultBrandConfig = {
   // Company Information
-  companyName: 'Macxgain',
-  tagline: 'Smart Trading Solutions',
+  companyName: 'ProfitMaxo',
+  tagline: 'Maximize Your Trading Profits',
   welcomeText: 'Welcome Back',
   subtitle: 'Sign in to your account to continue',
   
@@ -19,17 +19,17 @@ const defaultBrandConfig = {
   logoPathHeader: '../FrontEndSide/logo.png',   // Header component (same as frontend)
   
   // Page Titles
-  pageTitle: 'Macxgain - Trading with AI and Gain Profit',
-  loginTitle: 'Login - Macxgain',
-  registerTitle: 'Register - Macxgain',
+  pageTitle: 'ProfitMaxo - Trading with AI and Gain Profit',
+  loginTitle: 'Login - ProfitMaxo',
+  registerTitle: 'Register - ProfitMaxo',
   
   // Contact Information
-  email: 'info@macxgain.com',
-  website: 'https://macxgain.com',
+  email: 'info@profitmaxo.com',
+  website: 'https://profitmaxo.com',
   
   // Copyright
   copyrightYear: '2025',
-  copyrightText: 'Macxgain. All Rights Reserved.'
+  copyrightText: 'ProfitMaxo. All Rights Reserved.'
 };
 
 // Load saved settings from localStorage or use defaults

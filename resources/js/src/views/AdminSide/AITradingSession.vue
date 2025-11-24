@@ -1,175 +1,262 @@
 <template>
   <div class="ai-trading-session">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <button class="back-btn" @click="goBack">
-          <i class="fas fa-arrow-left"></i>
-          Back to AI Trading
+    <!-- Modern Header -->
+    <div class="modern-header">
+      <button class="back-btn-modern" @click="goBack">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+      </button>
+      
+      <div class="header-main">
+        <div class="header-title-section">
+          <div class="title-icon-wrapper">
+            <div class="title-icon">🤖</div>
+          </div>
+          <div>
+            <h1 class="page-title-modern">AI Trading Session</h1>
+            <p class="page-subtitle-modern">
+              Trading for <strong>{{ user.name || 'Loading...' }}</strong>
+            </p>
+          </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="quick-stat-item">
+            <div class="quick-stat-label">Available</div>
+            <div class="quick-stat-value">₹{{ user.balance?.toLocaleString() || '0' }}</div>
+          </div>
+          <div class="quick-stat-divider"></div>
+          <div class="quick-stat-item">
+            <div class="quick-stat-label">Total</div>
+            <div class="quick-stat-value">₹{{ user.total_balance?.toLocaleString() || '0' }}</div>
+          </div>
+          <div class="quick-stat-divider"></div>
+          <div class="quick-stat-item">
+            <div class="quick-stat-label">Blocked</div>
+            <div class="quick-stat-value blocked">₹{{ user.blocked_amount?.toLocaleString() || '0' }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-actions-modern">
+        <button class="action-btn-modern" @click="refreshMarketData" :disabled="loading">
+          <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+          <span>Refresh</span>
         </button>
-        <div class="user-info">
-          <h1 class="page-title">🤖 AI Trading Session</h1>
-          <p class="page-subtitle">
-            Trading for: <strong>{{ user.name || 'Loading...' }}</strong> 
-            (Available: ₹{{ user.balance?.toLocaleString() || '0' }} | Total: ₹{{ user.total_balance?.toLocaleString() || '0' }} | Blocked: ₹{{ user.blocked_amount?.toLocaleString() || '0' }})
-          </p>
-          
-          <!-- Live P&L Display -->
-          <div v-if="livePnLData" class="live-pnl-card">
-            <div class="pnl-header">
-              <h3>📊 Live P&L Summary</h3>
-              <span class="update-time">Updated every 5 seconds</span>
-            </div>
-            <div class="pnl-content">
-              <div class="pnl-stat">
-                <span class="pnl-label">Total Live P&L:</span>
-                <span :class="['pnl-value', livePnLData.total_live_pnl >= 0 ? 'profit' : 'loss']">
-                  ₹{{ livePnLData.total_live_pnl?.toLocaleString() || '0' }}
-                </span>
-              </div>
-              <div class="pnl-stat">
-                <span class="pnl-label">Active Trades:</span>
-                <span class="pnl-count">{{ livePnLData.active_trades_count || 0 }}</span>
-              </div>
+        <button class="action-btn-modern" @click="viewOrders">
+          <i class="fas fa-list"></i>
+          <span>Orders</span>
+        </button>
+        <button class="action-btn-modern" @click="loadUserBalance(true)" :disabled="loading">
+          <i class="fas fa-wallet"></i>
+          <span>Balance</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Enhanced Live P&L Card -->
+    <div v-if="livePnLData" class="live-pnl-card-modern">
+      <div class="pnl-card-header">
+        <div class="pnl-title-section">
+          <div class="pnl-icon-wrapper">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div>
+            <h3 class="pnl-title">Live P&L Summary</h3>
+            <p class="pnl-subtitle">Real-time profit & loss tracking</p>
+          </div>
+        </div>
+        <div class="update-badge">
+          <i class="fas fa-circle"></i>
+          <span>Live • Updated every 5s</span>
+        </div>
+      </div>
+      <div class="pnl-card-body">
+        <div class="pnl-stat-modern">
+          <div class="pnl-stat-icon profit-icon">
+            <i class="fas fa-rupee-sign"></i>
+          </div>
+          <div class="pnl-stat-content">
+            <div class="pnl-stat-label">Total Live P&L</div>
+            <div :class="['pnl-stat-value-modern', livePnLData.total_live_pnl >= 0 ? 'profit' : 'loss']">
+              {{ livePnLData.total_live_pnl >= 0 ? '+' : '' }}₹{{ livePnLData.total_live_pnl?.toLocaleString() || '0' }}
             </div>
           </div>
-
         </div>
-      </div>
-      <div class="header-actions">
-        <button class="refresh-btn" @click="refreshMarketData" :disabled="loading">
-          <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-          {{ loading ? 'Loading...' : 'Refresh Data' }}
-        </button>
-        <button class="orders-btn" @click="viewOrders">
-          <i class="fas fa-list"></i>
-          View Orders
-        </button>
-        <button class="refresh-btn" @click="loadUserBalance(true)" :disabled="loading">
-          <i class="fas fa-wallet"></i>
-          Refresh Balance
-        </button>
-        <!-- <button v-if="user.balance === 0" class="add-funds-btn" @click="addInitialFunds" :disabled="loading">
-          <i class="fas fa-plus"></i>
-          Add Initial Funds
-        </button> -->
-        <!-- <button class="debug-btn" @click="debugBalance" :disabled="loading">
-          <i class="fas fa-bug"></i>
-          Debug Balance
-        </button> -->
+        <div class="pnl-stat-divider"></div>
+        <div class="pnl-stat-modern">
+          <div class="pnl-stat-icon trade-icon">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+          <div class="pnl-stat-content">
+            <div class="pnl-stat-label">Active Trades</div>
+            <div class="pnl-stat-value-modern count">{{ livePnLData.active_trades_count || 0 }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Market Status -->
-    <div class="market-status">
-      <div class="market-status-top">
-        <div class="status-indicator" :class="marketStatus.is_open ? 'open' : 'closed'">
-          <div class="status-dot"></div>
-          <span>{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
-          <span class="market-time">{{ marketStatus.current_time }} IST</span>
+    <!-- Modern Market Status -->
+    <div class="market-status-modern">
+      <div class="status-card-modern">
+        <div class="status-main">
+          <div class="status-indicator-modern" :class="marketStatus.is_open ? 'open' : 'closed'">
+            <div class="status-pulse"></div>
+            <div class="status-dot-modern"></div>
+            <div class="status-text">
+              <span class="status-title">{{ marketStatus.is_open ? 'Market LIVE' : 'Market CLOSED' }}</span>
+              <span class="status-time">{{ marketStatus.current_time }} IST</span>
+            </div>
+          </div>
+          <div class="last-update-modern">
+            <i class="fas fa-clock"></i>
+            <span>{{ lastUpdate || 'Never' }}</span>
+          </div>
         </div>
-        <div class="last-update">
-          Last Update: {{ lastUpdate || 'Never' }}
+        <div v-if="!marketStatus.is_open && marketStatus.next_open_time" class="next-open-modern">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Next Open: {{ formatDateTime(marketStatus.next_open_time) }}</span>
         </div>
-      </div>
-      <div v-if="!marketStatus.is_open && marketStatus.next_open_time" class="next-open">
-        Next Open: {{ formatDateTime(marketStatus.next_open_time) }}
-      </div>
-      <!-- Trading Status Notice -->
-      <div v-if="!marketStatus.is_open" class="trading-enabled-notice">
-        <i class="fas fa-check-circle"></i>
-        <span>Trading is enabled 24/7 for testing purposes</span>
       </div>
     </div>
 
-
-
-    <!-- 24/7 Trading Notice -->
-    <div class="trading-enabled-notice">
-      <div class="notice-content">
+    <!-- Enhanced 24/7 Trading Notice -->
+    <div class="trading-notice-modern">
+      <div class="notice-icon-wrapper">
+        <div class="notice-icon-glow"></div>
         <i class="fas fa-rocket"></i>
-        <div class="notice-text">
-          <h3>🚀 Trading Enabled 24/7</h3>
-          <p class="notice-info"><strong>Trading is enabled 24/7 for testing purposes! You can trade anytime!</strong></p>
-          <p class="notice-sub">Normal market hours: <strong>{{ marketStatus.market_hours?.days || 'Monday to Friday' }}, {{ marketStatus.market_hours?.open || '9:15 AM' }} - {{ marketStatus.market_hours?.close || '3:30 PM' }} {{ marketStatus.market_hours?.timezone || 'IST' }}</strong> (for reference only)</p>
+      </div>
+      <div class="notice-content-modern">
+        <h3 class="notice-title-modern">Trading Enabled 24/7</h3>
+        <p class="notice-text-modern">Trade anytime! Testing mode active for round-the-clock trading.</p>
+        <div class="notice-footer">
+          <i class="fas fa-info-circle"></i>
+          <span>Normal hours: {{ marketStatus.market_hours?.days || 'Monday to Friday' }}, {{ marketStatus.market_hours?.open || '9:15 AM' }} - {{ marketStatus.market_hours?.close || '3:30 PM' }} {{ marketStatus.market_hours?.timezone || 'IST' }} (for reference only)</span>
         </div>
       </div>
     </div>
 
-    <!-- Live Market Data -->
-    <div class="market-data-section">
-      <h2 class="section-title">
-        <i class="fas fa-chart-line"></i>
-        Live Market Data
-        <span class="stock-count">({{ liveStocks.length }} stocks)</span>
-      </h2>
+    <!-- Modern Live Market Data Section -->
+    <div class="market-data-section-modern">
+      <div class="section-header-modern">
+        <div class="section-title-wrapper">
+          <div class="section-icon-wrapper">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div>
+            <h2 class="section-title-modern">Live Market Data</h2>
+            <p class="section-subtitle-modern">{{ liveStocks.length }} stocks available for trading</p>
+          </div>
+        </div>
+      </div>
 
-      <!-- Search and Filters -->
-      <div class="filters-section">
-        <div class="search-input-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            class="filter-input" 
-            placeholder="Search stocks..."
-            @keyup.enter="searchStocks"
-          >
-          <button class="search-btn" @click="searchStocks">
+      <!-- Enhanced Search and Filters -->
+      <div class="filters-section-modern">
+        <div class="search-wrapper-modern">
+          <div class="search-input-wrapper-modern">
+            <i class="fas fa-search search-icon-modern"></i>
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              class="search-input-modern" 
+              placeholder="Search stocks by symbol or name..."
+              @keyup.enter="searchStocks"
+            >
+          </div>
+          <button class="search-btn-modern" @click="searchStocks">
             <i class="fas fa-search"></i>
+            <span>Search</span>
           </button>
         </div>
-        <select v-model="sortBy" class="filter-select">
-          <option value="symbol">Sort by Symbol</option>
-          <option value="price">Sort by Price</option>
-          <option value="change">Sort by Change</option>
-          <option value="volume">Sort by Volume</option>
-        </select>
+        <div class="sort-wrapper-modern">
+          <i class="fas fa-sort"></i>
+          <select v-model="sortBy" class="sort-select-modern">
+            <option value="symbol">Sort by Symbol</option>
+            <option value="price">Sort by Price</option>
+            <option value="change">Sort by Change</option>
+            <option value="volume">Sort by Volume</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Stock Cards - Simple List -->
-      <div class="stocks-grid">
-        <div v-for="stock in filteredStocks" :key="stock.symbol" class="stock-card" @click="isDataAvailable(stock) ? selectStock(stock) : null">
-          <div class="stock-header">
-            <div class="stock-info">
-              <h3 class="stock-symbol">{{ stock.symbol }}</h3>
-              <div class="stock-price">{{ isDataAvailable(stock) ? `₹${formatNumber(stock.ltp)}` : '--' }}</div>
+      <!-- Modern Stock Cards -->
+      <div class="stocks-grid-modern">
+        <div 
+          v-for="stock in filteredStocks" 
+          :key="stock.symbol" 
+          class="stock-card-modern" 
+          :class="{ 
+            'has-data': isDataAvailable(stock),
+            'no-data': !isDataAvailable(stock),
+            'positive': isDataAvailable(stock) && stock.change >= 0,
+            'negative': isDataAvailable(stock) && stock.change < 0
+          }"
+          @click="isDataAvailable(stock) ? selectStock(stock) : null"
+        >
+          <div class="stock-card-top">
+            <div class="stock-symbol-modern">
+              <div class="symbol-icon-wrapper">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h3 class="symbol-text">{{ stock.symbol }}</h3>
             </div>
-            <div v-if="isDataAvailable(stock)" class="stock-change" :class="stock.change >= 0 ? 'positive' : 'negative'">
+            <div v-if="isDataAvailable(stock)" class="stock-change-modern" :class="stock.change >= 0 ? 'positive' : 'negative'">
               <i :class="stock.change >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-              {{ stock.change >= 0 ? '+' : '' }}{{ stock.change?.toFixed(2) || '0.00' }}
-              ({{ stock.change_percent >= 0 ? '+' : '' }}{{ stock.change_percent?.toFixed(2) || '0.00' }}%)
+              <span class="change-value">{{ stock.change >= 0 ? '+' : '' }}{{ stock.change?.toFixed(2) || '0.00' }}</span>
+              <span class="change-percent">({{ stock.change_percent >= 0 ? '+' : '' }}{{ stock.change_percent?.toFixed(2) || '0.00' }}%)</span>
             </div>
-            <div v-else class="stock-change neutral">N/A</div>
-          </div>
-
-          <div class="stock-details">
-            <div class="detail-row">
-              <span>High:</span>
-              <span>{{ isDataAvailable(stock) ? `₹${(stock.high||0).toFixed(2)}` : '--' }}</span>
-            </div>
-            <div class="detail-row">
-              <span>Low:</span>
-              <span>{{ isDataAvailable(stock) ? `₹${(stock.low||0).toFixed(2)}` : '--' }}</span>
-            </div>
-            <div class="detail-row">
-              <span>Volume:</span>
-              <span>{{ isDataAvailable(stock) ? (stock.volume?.toLocaleString() || '0') : '--' }}</span>
+            <div v-else class="stock-change-modern neutral">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>N/A</span>
             </div>
           </div>
 
-          <!-- Conditional Action Button -->
-          <div v-if="isNiftySymbol(stock.symbol) && isDataAvailable(stock)" class="click-hint">
-            <i class="fas fa-mouse-pointer"></i>
-            <span>Click to view Options Trading</span>
+          <div class="stock-price-modern">
+            <span class="price-label">Current Price</span>
+            <span class="price-value">{{ isDataAvailable(stock) ? `₹${formatNumber(stock.ltp)}` : '--' }}</span>
           </div>
-          <div v-else-if="isDataAvailable(stock)" class="buy-stock-button" @click.stop="buyStock(stock)">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Buy Stock</span>
+
+          <div class="stock-stats-modern">
+            <div class="stat-item-modern">
+              <i class="fas fa-arrow-up stat-icon"></i>
+              <div class="stat-content-modern">
+                <span class="stat-label-modern">High</span>
+                <span class="stat-value-modern">{{ isDataAvailable(stock) ? `₹${(stock.high||0).toFixed(2)}` : '--' }}</span>
+              </div>
+            </div>
+            <div class="stat-item-modern">
+              <i class="fas fa-arrow-down stat-icon"></i>
+              <div class="stat-content-modern">
+                <span class="stat-label-modern">Low</span>
+                <span class="stat-value-modern">{{ isDataAvailable(stock) ? `₹${(stock.low||0).toFixed(2)}` : '--' }}</span>
+              </div>
+            </div>
+            <div class="stat-item-modern">
+              <i class="fas fa-chart-bar stat-icon"></i>
+              <div class="stat-content-modern">
+                <span class="stat-label-modern">Volume</span>
+                <span class="stat-value-modern">{{ isDataAvailable(stock) ? (stock.volume?.toLocaleString() || '0') : '--' }}</span>
+              </div>
+            </div>
           </div>
-          <div v-else class="click-hint">
-            <i class="fas fa-info-circle"></i>
-            <span>Live data unavailable</span>
+
+          <!-- Action Button -->
+          <div class="stock-action-modern">
+            <div v-if="isNiftySymbol(stock.symbol) && isDataAvailable(stock)" class="action-btn-options">
+              <i class="fas fa-chart-area"></i>
+              <span>View Options</span>
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div v-else-if="isDataAvailable(stock)" class="action-btn-buy" @click.stop="buyStock(stock)">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Buy Stock</span>
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div v-else class="action-btn-unavailable">
+              <i class="fas fa-info-circle"></i>
+              <span>Data Unavailable</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2006,18 +2093,903 @@ export default {
 </script>
 
 <style scoped>
-/* AI Trading Session Styles */
+/* AI Trading Session - Modern Design */
 .ai-trading-session {
-  background-color: #0d0d1a;
+  background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+  background-attachment: fixed;
   color: white;
   min-height: 100vh;
-  padding: 20px;
+  padding: 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
+  position: relative;
 }
+
+.ai-trading-session::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Modern Header */
+.modern-header {
+  background: linear-gradient(145deg, rgba(16, 16, 34, 0.95), rgba(13, 13, 26, 0.98));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 24px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.back-btn-modern {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.back-btn-modern:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.5);
+  transform: translateX(-3px);
+}
+
+.header-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.title-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.1));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.page-title-modern {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-subtitle-modern {
+  color: #b0b0b0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 16px;
+}
+
+.quick-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quick-stat-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFD700;
+}
+
+.quick-stat-value.blocked {
+  color: #ff6b6b;
+}
+
+.quick-stat-divider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.header-actions-modern {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-btn-modern {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.action-btn-modern:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  color: #0d0d1a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+}
+
+.action-btn-modern:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Enhanced Live P&L Card */
+.live-pnl-card-modern {
+  background: linear-gradient(145deg, rgba(16, 16, 34, 0.95), rgba(13, 13, 26, 0.98));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.15);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.live-pnl-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FFD700, #DAA520);
+}
+
+.pnl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pnl-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pnl-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+  font-size: 20px;
+}
+
+.pnl-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 4px 0;
+}
+
+.pnl-subtitle {
+  font-size: 13px;
+  color: #b0b0b0;
+  margin: 0;
+}
+
+.update-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #FFD700;
+}
+
+.update-badge i {
+  font-size: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pnl-card-body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pnl-stat-modern {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 16px;
+}
+
+.pnl-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.pnl-stat-icon.profit-icon {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.1));
+  color: #FFD700;
+}
+
+.pnl-stat-icon.trade-icon {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+  color: #3b82f6;
+}
+
+.pnl-stat-content {
+  flex: 1;
+}
+
+.pnl-stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pnl-stat-value-modern {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pnl-stat-value-modern.profit {
+  color: #FFD700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.pnl-stat-value-modern.loss {
+  color: #ff6b6b;
+}
+
+.pnl-stat-value-modern.count {
+  color: #3b82f6;
+}
+
+.pnl-stat-divider {
+  width: 2px;
+  height: 60px;
+  background: rgba(255, 215, 0, 0.2);
+}
+
+/* Modern Market Status */
+.market-status-modern {
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.status-card-modern {
+  background: linear-gradient(145deg, rgba(16, 16, 34, 0.95), rgba(13, 13, 26, 0.98));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 20px;
+  padding: 20px 24px;
+  backdrop-filter: blur(20px);
+}
+
+.status-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.status-indicator-modern {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.status-pulse {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: statusPulse 2s infinite;
+}
+
+.status-indicator-modern.open .status-pulse {
+  background: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.status-indicator-modern.closed .status-pulse {
+  background: rgba(255, 107, 107, 0.6);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+.status-dot-modern {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+}
+
+.status-indicator-modern.open .status-dot-modern {
+  background: #FFD700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.status-indicator-modern.closed .status-dot-modern {
+  background: #ff6b6b;
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.status-time {
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.last-update-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b0b0b0;
+  font-size: 13px;
+}
+
+.next-open-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 215, 0, 0.05);
+  border-radius: 12px;
+  color: #FFD700;
+  font-size: 13px;
+}
+
+/* Enhanced Trading Notice */
+.trading-notice-modern {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.1));
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.notice-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #0d0d1a;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notice-icon-glow {
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  border-radius: 20px;
+  opacity: 0.3;
+  filter: blur(8px);
+  z-index: -1;
+  animation: iconGlow 3s ease-in-out infinite;
+}
+
+@keyframes iconGlow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+.notice-content-modern {
+  flex: 1;
+}
+
+.notice-title-modern {
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFD700;
+  margin: 0 0 8px 0;
+}
+
+.notice-text-modern {
+  font-size: 15px;
+  color: white;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.notice-footer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #b0b0b0;
+  line-height: 1.4;
+}
+
+/* Modern Market Data Section */
+.market-data-section-modern {
+  position: relative;
+  z-index: 1;
+}
+
+.section-header-modern {
+  margin-bottom: 24px;
+}
+
+.section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.section-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.1));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+  font-size: 24px;
+}
+
+.section-title-modern {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 4px 0;
+}
+
+.section-subtitle-modern {
+  font-size: 14px;
+  color: #b0b0b0;
+  margin: 0;
+}
+
+/* Enhanced Filters */
+.filters-section-modern {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search-wrapper-modern {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  gap: 12px;
+}
+
+.search-input-wrapper-modern {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon-modern {
+  position: absolute;
+  left: 16px;
+  color: #b0b0b0;
+  font-size: 16px;
+  z-index: 1;
+}
+
+.search-input-modern {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search-input-modern:focus {
+  outline: none;
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.search-input-modern::placeholder {
+  color: #666;
+}
+
+.search-btn-modern {
+  background: linear-gradient(135deg, #FFD700, #DAA520);
+  border: none;
+  color: #0d0d1a;
+  padding: 14px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.search-btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+}
+
+.sort-wrapper-modern {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  color: #b0b0b0;
+}
+
+.sort-select-modern {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.sort-select-modern option {
+  background: #1a1a2e;
+  color: white;
+}
+
+/* Modern Stock Cards */
+.stocks-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.stock-card-modern {
+  background: linear-gradient(145deg, rgba(16, 16, 34, 0.95), rgba(13, 13, 26, 0.98));
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.stock-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #FFD700, #DAA520);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.stock-card-modern:hover::before {
+  transform: scaleY(1);
+}
+
+.stock-card-modern:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(255, 215, 0, 0.25);
+  background: linear-gradient(145deg, rgba(20, 20, 40, 0.98), rgba(15, 15, 30, 1));
+}
+
+.stock-card-modern.positive {
+  border-left: 4px solid rgba(255, 215, 0, 0.5);
+}
+
+.stock-card-modern.negative {
+  border-left: 4px solid rgba(255, 107, 107, 0.5);
+}
+
+.stock-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.stock-symbol-modern {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.symbol-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+  font-size: 16px;
+}
+
+.symbol-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.stock-change-modern {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stock-change-modern.positive {
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFD700;
+}
+
+.stock-change-modern.negative {
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff6b6b;
+}
+
+.stock-change-modern.neutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: #999;
+}
+
+.stock-price-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.price-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.price-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFD700;
+}
+
+.stock-stats-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-item-modern {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+}
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 8px;
+  color: #FFD700;
+  font-size: 14px;
+}
+
+.stat-content-modern {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label-modern {
+  font-size: 12px;
+  color: #999;
+}
+
+.stat-value-modern {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.stock-action-modern {
+  margin-top: auto;
+}
+
+.action-btn-options,
+.action-btn-buy,
+.action-btn-unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.action-btn-options {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
+}
+
+.action-btn-buy {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.action-btn-unavailable {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #999;
+  cursor: not-allowed;
+}
+
+.action-btn-options:hover,
+.action-btn-buy:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+/* Keep existing styles for modals and other components */
 
 /* Page Header */
 .page-header {
@@ -2026,8 +2998,8 @@ export default {
   align-items: flex-start;
   margin-bottom: 24px;
   padding: 20px;
-  background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: linear-gradient(145deg, var(--color-bg-secondary, #101022), var(--color-bg-primary, #0d0d1a));
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   border-radius: 16px;
   gap: 16px;
 }
@@ -2060,19 +3032,19 @@ export default {
 }
 
 .back-btn:focus {
-  outline: 2px solid #00ff88;
+  outline: 2px solid var(--color-primary, #FFD700);
   outline-offset: 2px;
 }
 
 .page-title {
   font-size: 28px;
   font-weight: bold;
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
   margin: 0;
 }
 
 .page-subtitle {
-  color: #a0a0a0;
+  color: var(--color-text-muted, #a0a0a0);
   margin: 4px 0 0 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -2089,8 +3061,8 @@ export default {
 }
 
 .refresh-btn, .orders-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
-  color: #000000;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
+  color: var(--color-bg-primary, #000000);
   border: none;
   padding: 12px 20px;
   border-radius: 10px;
@@ -2101,11 +3073,11 @@ export default {
 
 .refresh-btn:hover, .orders-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .refresh-btn:focus, .orders-btn:focus {
-  outline: 2px solid #00ff88;
+  outline: 2px solid var(--color-primary, #FFD700);
   outline-offset: 2px;
 }
 
@@ -2226,7 +3198,7 @@ export default {
 }
 
 .status-indicator.open .status-dot {
-  background: #00ff88;
+  background: #FFD700;
 }
 
 .last-update {
@@ -2250,7 +3222,7 @@ export default {
   gap: 12px;
   font-size: 24px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 20px;
 }
 
@@ -2303,12 +3275,12 @@ export default {
 
 .filter-input:focus {
   outline: none;
-  border-color: #00ff88 !important;
-  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #FFD700, #00d4ff);
   color: #000000;
   border: none;
   padding: 8px 12px;
@@ -2322,7 +3294,7 @@ export default {
 }
 
 .search-btn:focus {
-  outline: 2px solid #00ff88;
+  outline: 2px solid #FFD700;
   outline-offset: 2px;
 }
 
@@ -2342,7 +3314,7 @@ export default {
 }
 
 .filter-select:focus {
-  outline: 2px solid #00ff88;
+  outline: 2px solid #FFD700;
   outline-offset: 2px;
 }
 
@@ -2369,12 +3341,12 @@ export default {
 
 .stock-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 255, 136, 0.2);
-  border-color: rgba(0, 255, 136, 0.3);
+  box-shadow: 0 12px 40px rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .stock-card:focus {
-  outline: 2px solid #00ff88;
+  outline: 2px solid #FFD700;
   outline-offset: 2px;
   transform: translateY(-2px);
 }
@@ -2400,7 +3372,7 @@ export default {
 .stock-info h3 {
   font-size: 20px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -2430,8 +3402,8 @@ export default {
 }
 
 .stock-change.positive {
-  color: #00ff88;
-  background: rgba(0, 255, 136, 0.1);
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .stock-change.negative {
@@ -2457,10 +3429,10 @@ export default {
   gap: 8px;
   margin-top: 16px;
   padding: 12px;
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 8px;
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -2499,7 +3471,7 @@ export default {
 /* Stock Options Modal */
 .stock-options-modal {
   background: linear-gradient(145deg, #1a1a2e, #16213e);
-  border: 2px solid rgba(0, 255, 136, 0.3);
+  border: 2px solid rgba(255, 215, 0, 0.3);
   border-radius: 20px;
   max-width: 800px;
   width: 90%;
@@ -2648,7 +3620,7 @@ export default {
 
 .modal-title {
   font-size: 1.5rem;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
   display: flex;
   align-items: center;
@@ -2686,7 +3658,7 @@ export default {
 .stock-price-large {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 10px;
 }
 
@@ -2700,7 +3672,7 @@ export default {
 }
 
 .stock-change-large.positive {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .stock-change-large.negative {
@@ -2720,7 +3692,7 @@ export default {
 
 .options-main-title {
   font-size: 1.5rem;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
 }
 
@@ -2731,7 +3703,7 @@ export default {
 }
 
 .live-badge {
-  background: linear-gradient(135deg, #00ff88, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   padding: 4px 8px;
   border-radius: 12px;
@@ -2763,7 +3735,7 @@ export default {
 /* Price Change Animation Styles */
 .price-up-flash {
   animation: priceUpFlash 2s ease-out;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
   background-size: 200% 100%;
 }
 
@@ -2774,7 +3746,7 @@ export default {
 }
 
 .price-arrow-up {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 8px;
   margin-left: 4px;
   animation: arrowBounce 0.6s ease-out;
@@ -2818,8 +3790,8 @@ export default {
 }
 
 .option-card.call-option {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .option-card.put-option {
@@ -2874,7 +3846,7 @@ export default {
 .loading-spinner {
   font-size: 2rem;
   margin-bottom: 16px;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 /* Options Chain */
@@ -2901,7 +3873,7 @@ export default {
 }
 
 .call-title {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .put-title {
@@ -2945,8 +3917,8 @@ export default {
 }
 
 .call-row {
-  background: rgba(0, 255, 136, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .put-row {
@@ -2970,7 +3942,7 @@ export default {
 }
 
 .option-cell.bid {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .option-cell.ask {
@@ -3015,13 +3987,13 @@ export default {
 }
 
 .mini-btn.buy-btn {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.4);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.4);
 }
 
 .mini-btn.buy-btn:hover {
-  background: rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   transform: scale(1.05);
 }
 
@@ -3066,7 +4038,7 @@ export default {
 .options-title {
   font-size: 16px;
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 12px;
 }
 
@@ -3078,8 +4050,8 @@ export default {
 }
 
 .call-option {
-  background: rgba(0, 255, 136, 0.05);
-  border-color: rgba(0, 255, 136, 0.2);
+  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(255, 215, 0, 0.2);
 }
 
 .put-option {
@@ -3121,7 +4093,7 @@ export default {
 }
 
 .buy-btn {
-  background: #00ff88;
+  background: #FFD700;
   color: #000000;
 }
 
@@ -3154,7 +4126,7 @@ export default {
 .empty-title {
   font-size: 24px;
   font-weight: bold;
-  color: #00ff88 !important;
+  color: #FFD700 !important;
   margin-bottom: 12px;
 }
 
@@ -3165,7 +4137,7 @@ export default {
 }
 
 .retry-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #FFD700, #00d4ff);
   color: #000000;
   border: none;
   padding: 12px 24px;
@@ -3177,7 +4149,7 @@ export default {
 
 .retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Modal Styles */
@@ -3233,7 +4205,7 @@ export default {
 .user-avatar {
   width: 48px;
   height: 48px;
-  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  background: linear-gradient(145deg, #FFD700, #00cc6a);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3245,7 +4217,7 @@ export default {
 .header-info h3 {
   font-size: 24px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
 }
 
@@ -3281,14 +4253,14 @@ export default {
 }
 
 .stat-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
 .stat-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  background: linear-gradient(145deg, #FFD700, #00cc6a);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -3305,7 +4277,7 @@ export default {
 .stat-number {
   font-size: 24px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   line-height: 1;
 }
 
@@ -3330,7 +4302,7 @@ export default {
 }
 
 .order-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3339,7 +4311,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 215, 0, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -3352,7 +4324,7 @@ export default {
 .order-id {
   font-size: 18px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .order-date {
@@ -3371,8 +4343,8 @@ export default {
 }
 
 .order-status.completed {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .order-status.pending {
@@ -3425,8 +4397,8 @@ export default {
 }
 
 .option-type.call {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .option-type.put {
@@ -3451,8 +4423,8 @@ export default {
 }
 
 .action.buy {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .action.sell {
@@ -3480,8 +4452,8 @@ export default {
 }
 
 .pnl-item.profit {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .pnl-item.loss {
@@ -3509,12 +4481,12 @@ export default {
 }
 
 .price-item .value.total {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 16px;
 }
 
 .price-item .value.profit {
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
   font-size: 16px;
 }
@@ -3552,7 +4524,7 @@ export default {
 .empty-orders .empty-icon {
   width: 80px;
   height: 80px;
-  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  background: linear-gradient(145deg, #FFD700, #00cc6a);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3564,7 +4536,7 @@ export default {
 
 .empty-orders h4 {
   font-size: 24px;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 12px 0;
 }
 
@@ -3575,7 +4547,7 @@ export default {
 }
 
 .start-trading-btn {
-  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  background: linear-gradient(145deg, #FFD700, #00cc6a);
   color: #0d0d1a;
   border: none;
   padding: 12px 24px;
@@ -3591,7 +4563,7 @@ export default {
 
 .start-trading-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Order Actions */
@@ -3658,7 +4630,7 @@ export default {
 .next-open {
   display: block;
   font-size: 12px;
-  color: #00ff88;
+  color: #FFD700;
   margin-top: 4px;
 }
 
@@ -3705,11 +4677,11 @@ export default {
 }
 
 .notice-text strong {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .notice-info {
-  color: #00ff88 !important;
+  color: #FFD700 !important;
   font-weight: 500;
   margin-top: 8px !important;
 }
@@ -3725,7 +4697,7 @@ export default {
 .modal-title {
   font-size: 20px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0;
   display: flex;
   align-items: center;
@@ -3765,8 +4737,8 @@ export default {
 }
 
 .option-type-badge.call {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .option-type-badge.put {
@@ -3782,8 +4754,8 @@ export default {
 }
 
 .action-badge.buy {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .action-badge.sell {
@@ -3799,7 +4771,7 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .lot-info {
@@ -3826,12 +4798,12 @@ export default {
 
 .lot-value {
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .quantity-display {
   font-weight: 600;
-  color: #00ff88;
+  color: #FFD700;
   font-size: 16px;
 }
 
@@ -3911,12 +4883,12 @@ export default {
 }
 
 .summary-row.sufficient {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .total-amount {
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .modal-footer {
@@ -3956,7 +4928,7 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #FFD700, #00d4ff);
   color: #000000;
 }
 
@@ -4006,7 +4978,7 @@ export default {
 }
 
 .empty-orders h4 {
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 8px;
 }
 
@@ -4036,7 +5008,7 @@ export default {
 
 .order-id {
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .order-status {
@@ -4047,8 +5019,8 @@ export default {
 }
 
 .order-status.completed {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .order-status.pending {
@@ -5327,7 +6299,7 @@ export default {
   border-radius: 12px;
   padding: 16px;
   margin-top: 16px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -5341,7 +6313,7 @@ export default {
 .pnl-header h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .update-time {
@@ -5376,7 +6348,7 @@ export default {
 }
 
 .pnl-value.profit {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .pnl-value.loss {

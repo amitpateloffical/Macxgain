@@ -252,8 +252,8 @@ export default {
 .password-icon {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
-  border: 3px solid rgba(0, 255, 128, 0.3);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.05));
+  border: 3px solid rgba(255, 215, 0, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -262,20 +262,20 @@ export default {
 }
 
 .password-icon:hover {
-  border-color: rgba(0, 255, 128, 0.6);
+  border-color: rgba(255, 215, 0, 0.6);
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
 }
 
 .password-icon i {
   font-size: 3rem;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 /* Security Tips Card */
 .security-tips-card {
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 16px;
   padding: 20px;
   text-align: left;
@@ -284,8 +284,8 @@ export default {
 }
 
 .security-tips-card:hover {
-  border-color: rgba(0, 255, 128, 0.5);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
   transform: translateY(-2px);
 }
 
@@ -293,7 +293,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00ff80;
+  color: #FFD700;
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 15px;
@@ -319,7 +319,7 @@ export default {
   content: "✓";
   position: absolute;
   left: 0;
-  color: #00ff80;
+  color: #FFD700;
   font-weight: bold;
 }
 
@@ -337,8 +337,8 @@ export default {
 }
 
 .input-group-merge:focus-within {
-  border-color: #00ff80;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-control, input.form-control {
@@ -352,8 +352,8 @@ export default {
 
 .form-control:focus, input.form-control:focus {
   background-color: rgba(255, 255, 255, 0.1) !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1) !important;
   color: white !important;
 }
 
@@ -365,9 +365,9 @@ export default {
 
 .toggle-password-btn {
   border: none;
-  background: rgba(0, 255, 128, 0.15) !important;
+  background: rgba(255, 215, 0, 0.15) !important;
   cursor: pointer;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 1.1rem;
   padding: 0 12px;
   transition: all 0.3s ease;
@@ -382,9 +382,9 @@ export default {
 
 .toggle-password-btn:hover {
   color: #0d0d1a;
-  background: rgba(0, 255, 128, 0.4) !important;
+  background: rgba(255, 215, 0, 0.4) !important;
   transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .toggle-password-btn:active {
@@ -393,20 +393,20 @@ export default {
 
 /* Modern Buttons - Matching Profile Tab */
 .change-password-btn {
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  background: linear-gradient(135deg, #FFD700, #DAA520) !important;
   border: none !important;
   color: #0d0d1a !important;
   font-weight: 600 !important;
   padding: 12px 24px !important;
   border-radius: 12px !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2) !important;
 }
 
 .change-password-btn:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.4) !important;
-  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4) !important;
+  background: linear-gradient(135deg, #DAA520, #00aa55) !important;
 }
 
 .change-password-btn:disabled {
@@ -417,7 +417,7 @@ export default {
 
 /* Text Styling */
 .text-primary {
-  color: #00ff80 !important;
+  color: #FFD700 !important;
 }
 
 .text-muted {
@@ -680,7 +680,7 @@ export default {
   /* Enhanced touch targets */
   .password-icon {
     cursor: pointer;
-    -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+    -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
   }
 }
 

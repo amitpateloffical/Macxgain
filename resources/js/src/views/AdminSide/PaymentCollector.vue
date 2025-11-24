@@ -555,8 +555,8 @@ export default {
 <style scoped>
 .payment-collector-screen {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-bg-primary, #0f0f23) 0%, var(--color-bg-tertiary, #1a1a2e) 50%, var(--color-bg-quaternary, #16213e) 100%);
+  color: var(--color-text-primary, #ffffff);
   padding: 20px;
 }
 
@@ -601,22 +601,22 @@ export default {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .page-subtitle {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
   margin: 5px 0 0 0;
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
   border: none;
   border-radius: 12px;
   padding: 12px 20px;
-  color: #000000;
+  color: var(--color-bg-primary, #000000);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -627,7 +627,7 @@ export default {
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 5px 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 /* Modal */
@@ -645,14 +645,14 @@ export default {
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e), var(--color-bg-quaternary, #16213e));
   border-radius: 20px;
   padding: 30px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border-secondary, rgba(255, 255, 255, 0.1));
 }
 
 .modal-header {
@@ -723,8 +723,8 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #00ff88;
-  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  border-color: var(--color-primary, #FFD700);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
 }
 
 .form-input::placeholder,
@@ -743,8 +743,8 @@ export default {
 }
 
 .file-upload-area:hover {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.05);
+  border-color: var(--color-primary, #FFD700);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.05);
 }
 
 .file-input {
@@ -767,7 +767,7 @@ export default {
 
 .upload-placeholder i {
   font-size: 2rem;
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
 }
 
 .image-preview {
@@ -807,7 +807,7 @@ export default {
 .form-checkbox {
   width: 18px;
   height: 18px;
-  accent-color: #00ff88;
+  accent-color: var(--color-primary, #FFD700);
 }
 
 .checkbox-text {
@@ -839,11 +839,11 @@ export default {
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
   border: none;
   border-radius: 8px;
   padding: 12px 24px;
-  color: #000000;
+  color: var(--color-bg-primary, #000000);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -854,7 +854,7 @@ export default {
 
 .btn-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 5px 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .btn-submit:disabled {
@@ -908,7 +908,7 @@ export default {
 .empty-state h3 {
   font-size: 1.5rem;
   margin-bottom: 10px;
-  color: #ffffff;
+  color: var(--color-text-primary, #ffffff);
 }
 
 .empty-state p {
@@ -917,11 +917,11 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
   border: none;
   border-radius: 12px;
   padding: 12px 24px;
-  color: #000000;
+  color: var(--color-bg-primary, #000000);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -932,7 +932,7 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 5px 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 /* Collectors Grid */
@@ -951,8 +951,8 @@ export default {
 }
 
 .collector-card.primary {
-  border-left: 4px solid #00ff88;
-  background: rgba(0, 255, 136, 0.05);
+  border-left: 4px solid var(--color-primary, #FFD700);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.05);
 }
 
 .collector-card.inactive {
@@ -1002,18 +1002,18 @@ export default {
 }
 
 .badge.primary {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  color: var(--color-primary, #FFD700);
 }
 
 .badge.active {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  color: var(--color-primary, #FFD700);
 }
 
 .badge.inactive {
-  background: rgba(255, 68, 68, 0.2);
-  color: #ff4444;
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.2);
+  color: var(--color-error, #ff4444);
 }
 
 .card-content {
@@ -1068,7 +1068,7 @@ export default {
 
 .barcode-image:hover {
   transform: scale(1.05);
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .image-error {
@@ -1120,19 +1120,19 @@ export default {
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
+  background: linear-gradient(135deg, #FFD700, #00d4ff);
   color: #000000;
 }
 
 .primary-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
 }
 
 .status-btn.activate {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .status-btn.deactivate {
@@ -1183,7 +1183,7 @@ export default {
 
 .loading-spinner i {
   font-size: 3rem;
-  color: #00ff88;
+  color: #FFD700;
   margin-bottom: 15px;
 }
 

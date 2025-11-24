@@ -415,7 +415,7 @@ export default {
 /* Header Section */
 .watchlist-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .header-content {
@@ -435,7 +435,7 @@ export default {
 .header-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@ export default {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -461,7 +461,7 @@ export default {
 }
 
 .btn-add-stock {
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   color: #0f0f23;
   border: none;
   padding: 12px 24px;
@@ -476,7 +476,7 @@ export default {
 
 .btn-add-stock:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Search Section */
@@ -521,8 +521,8 @@ export default {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .clear-search {
@@ -552,7 +552,7 @@ export default {
   right: 0;
   background: rgba(26, 26, 46, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 12px;
   margin-top: 8px;
   max-height: 300px;
@@ -584,7 +584,7 @@ export default {
 }
 
 .search-result-item:hover {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .search-result-item .result-info {
@@ -605,7 +605,7 @@ export default {
 
 .search-result-item .result-price {
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   margin-right: 12px;
   font-size: 0.875rem;
 }
@@ -613,18 +613,18 @@ export default {
 .search-result-item .result-add-btn {
   width: 24px;
   height: 24px;
-  background: rgba(0, 255, 128, 0.2);
+  background: rgba(255, 215, 0, 0.2);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 0.75rem;
   transition: all 0.3s ease;
 }
 
 .search-result-item:hover .result-add-btn {
-  background: rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   transform: scale(1.1);
 }
 
@@ -645,9 +645,9 @@ export default {
 
 .filter-btn:hover,
 .filter-btn.active {
-  background: rgba(0, 255, 128, 0.2);
-  border-color: #00ff80;
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #FFD700;
+  color: #FFD700;
 }
 
 /* Stats Section */
@@ -682,13 +682,13 @@ export default {
 .stat-icon {
   width: 48px;
   height: 48px;
-  background: rgba(0, 255, 128, 0.2);
+  background: rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 .stat-icon.gainers {
@@ -744,7 +744,7 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   color: #0f0f23;
   border: none;
   padding: 12px 24px;
@@ -759,7 +759,7 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Loading State */
@@ -845,8 +845,8 @@ export default {
 }
 
 .action-btn:hover {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .action-btn.remove:hover {

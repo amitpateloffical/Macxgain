@@ -15,6 +15,54 @@ import BottomAppBar from "./components/BottomAppBar.vue";
 import '@/config/templates';
 // Load aggressive overrides last to ensure they take precedence
 import "../../css/template-overrides.css";
+// Load landing page templates
+import "../../css/landing-templates.css";
+
+// Global template sync mechanism
+if (typeof window !== 'undefined') {
+  // Listen for template changes from other tabs/windows
+  if (typeof BroadcastChannel !== 'undefined') {
+    const templateChannel = new BroadcastChannel('template-updates');
+    templateChannel.addEventListener('message', (event) => {
+      if (event.data.action === 'templateChanged') {
+        // Just reload page - simpler and faster than async operations
+        setTimeout(() => {
+          window.location.reload();
+        }, 300);
+      }
+    });
+  }
+  
+  // Listen for templateChanged events - force re-render
+  window.addEventListener('templateChanged', (event) => {
+    console.log('Template changed event received:', event.detail?.id);
+    // Force all Vue components to update by triggering a resize event
+    window.dispatchEvent(new Event('resize'));
+    // Also trigger a custom event that components can listen to
+    window.dispatchEvent(new CustomEvent('forceTemplateUpdate'));
+  });
+  
+  // Periodically check for template updates (every 5 minutes - very infrequent)
+  // Only check when page is visible to save resources
+  setInterval(() => {
+    if (document.hidden) return; // Don't check when tab is hidden
+    
+    import('@/config/templates').then(({ getCurrentTemplate, applyTemplate, getCurrentTemplateSync }) => {
+      // Use Promise.race with timeout to prevent blocking
+      Promise.race([
+        getCurrentTemplate(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+      ]).then((template) => {
+        const currentLocal = getCurrentTemplateSync();
+        if (template.id !== currentLocal.id) {
+          applyTemplate(template.id);
+        }
+      }).catch(() => {
+        // Silently fail
+      });
+    });
+  }, 300000); // Check every 5 minutes (much less frequent)
+}
 
 
 

@@ -1,0 +1,366 @@
+/**
+ * Landing Page Template Styles
+ * Different layout designs inspired by popular trading platforms
+ * All templates use CSS variables to maintain consistent colors
+ */
+
+/* ============================================
+   GROWW STYLE TEMPLATE - Card-Based Layout
+   ============================================ */
+.landing-template-groww .header {
+  background: var(--color-bg-secondary, rgba(255, 255, 255, 0.95)) !important;
+  border-bottom: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.1)) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.landing-template-groww .hero {
+  padding: 3rem 0 4rem !important;
+  background: var(--color-bg-primary) !important;
+}
+
+.landing-template-groww .hero-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.landing-template-groww .hero-title {
+  font-size: 3rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 1rem !important;
+}
+
+.landing-template-groww .hero-subtitle {
+  font-size: 1.1rem !important;
+  line-height: 1.6 !important;
+  margin-bottom: 2rem !important;
+}
+
+.landing-template-groww .card {
+  border-radius: 16px !important;
+  padding: 2rem !important;
+  margin-bottom: 1.5rem !important;
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-secondary) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.landing-template-groww .card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.landing-template-groww .account-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.landing-template-groww .account-card {
+  border-radius: 16px !important;
+  padding: 2rem !important;
+}
+
+/* ============================================
+   UPSTOX STYLE TEMPLATE - Data-Focused Layout
+   ============================================ */
+.landing-template-upstox .header {
+  background: var(--color-bg-primary) !important;
+  border-bottom: 2px solid var(--color-primary) !important;
+}
+
+.landing-template-upstox .hero {
+  padding: 2rem 0 !important;
+  background: var(--color-bg-primary) !important;
+}
+
+.landing-template-upstox .hero-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.landing-template-upstox .hero-content {
+  max-width: 100% !important;
+}
+
+.landing-template-upstox .hero-visual {
+  width: 100% !important;
+  margin-top: 2rem !important;
+}
+
+.landing-template-upstox .hero-title {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 1rem !important;
+}
+
+.landing-template-upstox .hero-subtitle {
+  font-size: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.landing-template-upstox .card {
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  background: var(--color-bg-secondary) !important;
+  border-left: 4px solid var(--color-primary) !important;
+}
+
+.landing-template-upstox .account-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.landing-template-upstox .account-card {
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  border-left: 4px solid var(--color-primary) !important;
+}
+
+.landing-template-upstox .section {
+  padding: 3rem 0 !important;
+}
+
+/* ============================================
+   ZERODHA STYLE TEMPLATE - Minimalist Layout
+   ============================================ */
+.landing-template-zerodha .header {
+  background: var(--color-bg-primary) !important;
+  border-bottom: 3px solid var(--color-primary) !important;
+  padding: 1rem 0 !important;
+}
+
+.landing-template-zerodha .hero {
+  padding: 4rem 0 !important;
+  background: var(--color-bg-primary) !important;
+}
+
+.landing-template-zerodha .hero-container {
+  max-width: 900px !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+.landing-template-zerodha .hero-title {
+  font-size: 3.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.1 !important;
+}
+
+.landing-template-zerodha .hero-subtitle {
+  font-size: 1.2rem !important;
+  max-width: 700px !important;
+  margin: 0 auto 2rem !important;
+}
+
+.landing-template-zerodha .hero-actions {
+  justify-content: center !important;
+}
+
+.landing-template-zerodha .card {
+  border-radius: 4px !important;
+  padding: 2rem !important;
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-secondary) !important;
+  box-shadow: none !important;
+}
+
+.landing-template-zerodha .account-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.landing-template-zerodha .account-card {
+  border-radius: 4px !important;
+  padding: 2rem !important;
+  border-top: 3px solid var(--color-primary) !important;
+}
+
+.landing-template-zerodha .section {
+  padding: 4rem 0 !important;
+}
+
+/* ============================================
+   PAYTM MONEY STYLE TEMPLATE - Gradient Layout
+   ============================================ */
+.landing-template-paytm .header {
+  background: var(--color-bg-primary) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.landing-template-paytm .hero {
+  padding: 5rem 0 !important;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 50%, var(--color-bg-tertiary) 100%) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.landing-template-paytm .hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.landing-template-paytm .hero-container {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-template-paytm .hero-title {
+  font-size: 4rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 1.5rem !important;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.landing-template-paytm .hero-subtitle {
+  font-size: 1.3rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.landing-template-paytm .card {
+  border-radius: 20px !important;
+  padding: 2.5rem !important;
+  background: var(--color-bg-secondary) !important;
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.landing-template-paytm .account-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.landing-template-paytm .account-card {
+  border-radius: 20px !important;
+  padding: 2.5rem !important;
+  background: linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary)) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  transition: all 0.3s ease !important;
+}
+
+.landing-template-paytm .account-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 0 16px 48px rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
+}
+
+/* ============================================
+   ANGEL ONE STYLE TEMPLATE - Bold Layout
+   ============================================ */
+.landing-template-angelone .header {
+  background: var(--color-bg-primary) !important;
+  border-bottom: 4px solid var(--color-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.landing-template-angelone .brand-name {
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.landing-template-angelone .nav-link {
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  font-size: 0.9rem !important;
+}
+
+.landing-template-angelone .hero {
+  padding: 6rem 0 !important;
+  background: var(--color-bg-primary) !important;
+  position: relative !important;
+}
+
+.landing-template-angelone .hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+}
+
+.landing-template-angelone .hero-title {
+  font-size: 4.5rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: -1px !important;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.1 !important;
+}
+
+.landing-template-angelone .hero-subtitle {
+  font-size: 1.4rem !important;
+  font-weight: 500 !important;
+  margin-bottom: 2.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.landing-template-angelone .btn-primary {
+  padding: 1.25rem 3rem !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) !important;
+}
+
+.landing-template-angelone .card {
+  border-radius: 12px !important;
+  padding: 2.5rem !important;
+  background: var(--color-bg-secondary) !important;
+  border: 2px solid var(--color-border-primary) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.landing-template-angelone .account-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.landing-template-angelone .account-card {
+  border-radius: 12px !important;
+  padding: 2.5rem !important;
+  border-left: 6px solid var(--color-primary) !important;
+  background: var(--color-bg-secondary) !important;
+  transition: all 0.3s ease !important;
+}
+
+.landing-template-angelone .account-card:hover {
+  border-left-width: 8px !important;
+  transform: translateX(8px) !important;
+  box-shadow: 0 8px 32px rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
+}
+
+.landing-template-angelone .section {
+  padding: 5rem 0 !important;
+}
+
+.landing-template-angelone .section-header h2 {
+  text-transform: uppercase !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px !important;
+}

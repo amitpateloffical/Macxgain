@@ -923,7 +923,7 @@ export default {
         }
         
         .capture-btn {
-          background: linear-gradient(135deg, #00ff80, #00cc66);
+          background: linear-gradient(135deg, #FFD700, #DAA520);
           color: #000;
         }
         
@@ -1232,7 +1232,7 @@ async handleKYCImageUpload(field, event) {
 <style scoped>
 /* Modern Profile Card Styles */
 .main-content {
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+  background: linear-gradient(135deg, var(--color-bg-primary, #0d0d1a) 0%, var(--color-bg-tertiary, #1a1a2e) 100%);
   min-height: 100vh;
   padding: 20px;
 }
@@ -1251,9 +1251,9 @@ async handleKYCImageUpload(field, event) {
   width: 160px;
   height: 160px;
   object-fit: cover;
-  border: 4px solid #00ff80;
+  border: 4px solid #FFD700;
   border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
   transition: transform 0.3s ease;
 }
 
@@ -1285,9 +1285,9 @@ async handleKYCImageUpload(field, event) {
 
 .form-control:focus, input:focus {
   background-color: rgba(255, 255, 255, 0.1) !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1) !important;
-  color: white !important;
+  border-color: var(--color-primary, #FFD700) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
+  color: var(--color-text-primary, white) !important;
 }
 
 .form-control[readonly] {
@@ -1297,9 +1297,9 @@ async handleKYCImageUpload(field, event) {
 
 /* Modern Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520)) !important;
   border: none !important;
-  color: #0d0d1a !important;
+  color: var(--color-bg-primary, #0d0d1a) !important;
   font-weight: 600 !important;
   padding: 12px 24px !important;
   border-radius: 12px !important;
@@ -1308,7 +1308,7 @@ async handleKYCImageUpload(field, event) {
 
 .btn-primary:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3) !important;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3) !important;
 }
 
 .btn-secondary {
@@ -1328,15 +1328,15 @@ async handleKYCImageUpload(field, event) {
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520)) !important;
   border: none !important;
-  color: #0d0d1a !important;
+  color: var(--color-bg-primary, #0d0d1a) !important;
   font-weight: 600 !important;
 }
 
 /* Profile Info Section */
 .text-primary {
-  color: #00ff80 !important;
+  color: #FFD700 !important;
 }
 
 .text-muted {
@@ -1561,7 +1561,7 @@ async handleKYCImageUpload(field, event) {
   /* Enhanced touch targets */
   .profile-avatar {
     cursor: pointer;
-    -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+    -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
   }
 }
 
@@ -1599,8 +1599,8 @@ async handleKYCImageUpload(field, event) {
 
 /* Balance Card Styles */
 .balance-card {
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), rgba(0, 204, 102, 0.05));
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 255, 215, 0), 0.1), rgba(var(--color-primary-dark-rgb, 218, 165, 32), 0.05));
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.3));
   border-radius: 16px;
   padding: 20px;
   text-align: center;
@@ -1609,8 +1609,8 @@ async handleKYCImageUpload(field, event) {
 }
 
 .balance-card:hover {
-  border-color: rgba(0, 255, 128, 0.5);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.2);
+  border-color: rgba(var(--color-primary-rgb, 255, 215, 0), 0.5);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
   transform: translateY(-2px);
 }
 
@@ -1618,7 +1618,7 @@ async handleKYCImageUpload(field, event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 10px;
@@ -1627,9 +1627,9 @@ async handleKYCImageUpload(field, event) {
 .balance-amount {
   font-size: 28px;
   font-weight: bold;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   margin-bottom: 15px;
-  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+  text-shadow: 0 0 10px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .balance-refresh {
@@ -1637,9 +1637,9 @@ async handleKYCImageUpload(field, event) {
 }
 
 .refresh-btn {
-  background: rgba(0, 255, 128, 0.1);
-  border: 1px solid rgba(0, 255, 128, 0.3);
-  color: #00ff80;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.3));
+  color: var(--color-primary, #FFD700);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
@@ -1651,8 +1651,8 @@ async handleKYCImageUpload(field, event) {
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: rgba(0, 255, 128, 0.2);
-  border-color: rgba(0, 255, 128, 0.5);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  border-color: rgba(var(--color-primary-rgb, 255, 215, 0), 0.5);
   transform: translateY(-1px);
 }
 
@@ -1695,21 +1695,21 @@ async handleKYCImageUpload(field, event) {
 
 /* Save Button Animation */
 .btn-success {
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  background: linear-gradient(135deg, #FFD700, #DAA520) !important;
   border: none !important;
   transition: all 0.3s ease;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+  background: linear-gradient(135deg, #DAA520, #00aa55) !important;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Form Field Focus in Edit Mode */
 .form-control:not([readonly]):focus {
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25) !important;
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -1723,8 +1723,8 @@ async handleKYCImageUpload(field, event) {
 }
 
 textarea.form-control:not([readonly]):focus {
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25) !important;
   background: rgba(255, 255, 255, 0.1) !important;
   resize: vertical;
 }
@@ -1771,11 +1771,11 @@ textarea.form-control {
 .file-input-label {
   display: block;
   padding: 12px 16px;
-  background: rgba(0, 255, 128, 0.1);
-  border: 2px dashed rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  border: 2px dashed rgba(255, 215, 0, 0.3);
   border-radius: 8px;
   text-align: center;
-  color: #00ff80;
+  color: #FFD700;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1783,8 +1783,8 @@ textarea.form-control {
 }
 
 .file-input-label:hover {
-  background: rgba(0, 255, 128, 0.15);
-  border-color: rgba(0, 255, 128, 0.5);
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.5);
   transform: translateY(-1px);
 }
 
@@ -1794,8 +1794,8 @@ textarea.form-control {
 
 /* File input focus state */
 .file-input-wrapper input[type="file"]:focus + .file-input-label {
-  border-color: #00ff80;
-  box-shadow: 0 0 0 0.2rem rgba(0, 255, 128, 0.25);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
 }
 
 /* Invalid state */
@@ -1809,14 +1809,14 @@ textarea.form-control {
 .image-preview-container {
   margin-top: 15px;
   padding: 15px;
-  background: rgba(0, 255, 128, 0.05);
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.05);
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   border-radius: 8px;
 }
 
 .preview-label {
   font-weight: 600;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   margin-bottom: 10px;
   font-size: 0.9rem;
 }
@@ -1826,7 +1826,7 @@ textarea.form-control {
   max-height: 150px;
   object-fit: cover;
   border-radius: 6px;
-  border: 2px solid rgba(0, 255, 128, 0.3);
+  border: 2px solid var(--color-border-primary, rgba(255, 215, 0, 0.3));
   margin-bottom: 10px;
 }
 
@@ -1867,20 +1867,20 @@ textarea.form-control {
 }
 
 .edit-profile-btn {
-  background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520)) !important;
   border: none !important;
-  color: #0d0d1a !important;
+  color: var(--color-bg-primary, #0d0d1a) !important;
   font-weight: 600 !important;
   padding: 12px 24px !important;
   border-radius: 12px !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
 }
 
 .edit-profile-btn:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.4) !important;
-  background: linear-gradient(135deg, #00cc66, #00aa55) !important;
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.4) !important;
+  background: linear-gradient(135deg, var(--color-primary-dark, #DAA520), var(--color-primary-darker, #00aa55)) !important;
 }
 
 .edit-profile-btn i.bi-pencil {
@@ -1935,12 +1935,12 @@ textarea.form-control {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid rgba(0, 255, 128, 0.3);
+  border: 4px solid var(--color-border-primary, rgba(255, 215, 0, 0.3));
   transition: all 0.3s ease;
 }
 
 .profile-avatar:hover {
-  border-color: rgba(0, 255, 128, 0.6);
+  border-color: rgba(var(--color-primary-rgb, 255, 215, 0), 0.6);
   transform: scale(1.05);
 }
 
@@ -2001,8 +2001,8 @@ textarea.form-control {
 .file-info {
   margin-top: 10px;
   padding: 8px 12px;
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 6px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 </style>

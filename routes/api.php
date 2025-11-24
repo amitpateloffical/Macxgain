@@ -24,6 +24,7 @@ use App\Http\Controllers\AITradingController;
 use App\Http\Controllers\FundAdjustController;
 use App\Http\Controllers\AlphaVantageController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\AppSettingController;
 
 
 
@@ -228,6 +229,12 @@ Route::middleware('auth:sanctum')->group(function() {
 
 // Public Payment Collector Routes (for users to see payment details)
 Route::get('/payment-collector/primary', [AdminPaymentCollectorController::class, 'getPrimary']);
+
+// Template Settings API Routes (public - no auth needed for getting template)
+Route::get('/app-settings/template', [AppSettingController::class, 'getTemplate']);
+Route::middleware('auth:api')->group(function() {
+    Route::put('/app-settings/template', [AppSettingController::class, 'updateTemplate']);
+});
 
 // AI Trading API Routes
 Route::middleware('auth:api')->group(function() {

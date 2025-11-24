@@ -145,17 +145,17 @@
   }
   
   :deep(.nav-pills .nav-link:hover) {
-    background: rgba(0, 255, 128, 0.1) !important;
-    border-color: rgba(0, 255, 128, 0.3) !important;
-    color: #00ff80 !important;
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.3) !important;
+    color: #FFD700 !important;
     transform: translateY(-2px);
   }
   
   :deep(.nav-pills .nav-link.active) {
-    background: linear-gradient(135deg, #00ff80, #00cc66) !important;
+    background: linear-gradient(135deg, #FFD700, #DAA520) !important;
     border-color: transparent !important;
     color: #0d0d1a !important;
-    box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
   }
   
   /* Tab Content */
@@ -267,7 +267,7 @@
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      -webkit-tap-highlight-color: rgba(0, 255, 128, 0.2);
+      -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
     }
   }
   

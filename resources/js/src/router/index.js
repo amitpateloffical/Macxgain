@@ -205,6 +205,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true },
     component: () => import("../views/AdminSide/TemplateSettings.vue"),
   },
+  {
+    path: "/admin/landing-page-settings",
+    name: "landing-page-settings",
+    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import("../views/AdminSide/LandingPageSettings.vue"),
+  },
   
   // Catch-all route - must be last
   { path: '/:pathMatch(.*)*', redirect: '/' }

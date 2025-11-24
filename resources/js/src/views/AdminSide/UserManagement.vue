@@ -1102,14 +1102,14 @@ const handleProfileImageError = (event, userName) => {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00ff80, #00cc66);
+    background: linear-gradient(135deg, #FFD700, #DAA520);
     color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 14px;
-    border: 3px solid #00ff80;
+    border: 3px solid #FFD700;
   `
   event.target.parentNode.appendChild(fallbackDiv)
 }
@@ -1129,15 +1129,15 @@ const handleViewUserImageError = (event, userName) => {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00ff80, #00cc66);
+    background: linear-gradient(135deg, #FFD700, #DAA520);
     color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 36px;
-    border: 4px solid #00ff80;
-    box-shadow: 0 4px 20px rgba(0, 255, 128, 0.3);
+    border: 4px solid #FFD700;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
   `
   event.target.parentNode.appendChild(fallbackDiv)
 }
@@ -1611,7 +1611,7 @@ const viewImage = (imagePath, title) => {
         max-width: 90vw;
         max-height: 90vh;
         overflow: hidden;
-        border: 1px solid rgba(0, 255, 128, 0.3);
+        border: 1px solid rgba(255, 215, 0, 0.3);
       }
       .image-view-header {
         display: flex;
@@ -1622,7 +1622,7 @@ const viewImage = (imagePath, title) => {
       }
       .image-view-header h4 {
         margin: 0;
-        color: #00ff80;
+        color: #FFD700;
       }
       .close-btn {
         background: none;
@@ -1661,7 +1661,7 @@ const viewImage = (imagePath, title) => {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #00ff80, #00cc66);
+        background: linear-gradient(135deg, #FFD700, #DAA520);
         color: #000;
         text-decoration: none;
         padding: 10px 20px;
@@ -1671,7 +1671,7 @@ const viewImage = (imagePath, title) => {
       }
       .btn-download:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
         color: #000;
       }
     `;
@@ -1763,13 +1763,13 @@ const handleClickOutside = (event, modalRef) => {
   padding: 24px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .header-content h1 {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff80;
+  color: #FFD700;
   margin: 0 0 8px 0;
 }
 
@@ -1780,7 +1780,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 12px 24px;
@@ -1796,7 +1796,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* Search and Filters */
@@ -1837,8 +1837,8 @@ const handleClickOutside = (event, modalRef) => {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .search-input::placeholder {
@@ -1865,7 +1865,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .filter-select:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .btn-secondary {
@@ -1907,7 +1907,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .stat-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 255, 128, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -1918,16 +1918,16 @@ const handleClickOutside = (event, modalRef) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 50%;
-  border: 2px solid rgba(0, 255, 128, 0.3);
+  border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 .stat-content h3 {
   margin: 0 0 4px 0;
   font-size: 2rem;
   font-weight: bold;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 .stat-content p {
@@ -2018,10 +2018,10 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .header-row {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 8px;
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
@@ -2055,17 +2055,17 @@ const handleClickOutside = (event, modalRef) => {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  border: 3px solid #00ff80;
+  border: 3px solid #FFD700;
   object-fit: cover;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .user-avatar:hover {
   transform: scale(1.1);
-  border-color: #00cc66;
-  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.5);
+  border-color: #DAA520;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
 }
 
 .user-details h4 {
@@ -2101,8 +2101,8 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .status-active {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .status-inactive {
@@ -2166,12 +2166,12 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .btn-activate {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .btn-activate:hover {
-  background: rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   transform: scale(1.1);
 }
 
@@ -2247,7 +2247,7 @@ const handleClickOutside = (event, modalRef) => {
   max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .modal-header {
@@ -2260,7 +2260,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .modal-header h3 {
   margin: 0;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 1.5rem;
 }
 
@@ -2326,8 +2326,8 @@ const handleClickOutside = (event, modalRef) => {
 
 .form-control:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-control::placeholder {
@@ -2361,7 +2361,7 @@ const handleClickOutside = (event, modalRef) => {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 0.95rem;
 }
 
@@ -2378,9 +2378,9 @@ const handleClickOutside = (event, modalRef) => {
 
 .user-form .form-control:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .user-form .form-control::placeholder {
@@ -2405,7 +2405,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .user-form .file-input::-webkit-file-upload-button {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 8px 16px;
@@ -2418,7 +2418,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .user-form .file-input::-webkit-file-upload-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .user-form .form-actions {
@@ -2447,7 +2447,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .user-form .btn-primary {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 12px 28px;
@@ -2463,7 +2463,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .user-form .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .user-form .btn-primary:disabled {
@@ -2565,43 +2565,43 @@ const handleClickOutside = (event, modalRef) => {
   .col-user::before {
     content: "User: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-email::before {
     content: "Email: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-phone::before {
     content: "Phone: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-role::before {
     content: "Role: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-status::before {
     content: "Status: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-joined::before {
     content: "Joined: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
   
   .col-actions::before {
     content: "Actions: ";
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
   }
 }
 
@@ -2949,9 +2949,9 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .btn-refresh {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -2964,8 +2964,8 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background: rgba(0, 255, 128, 0.3);
-  border-color: rgba(0, 255, 128, 0.5);
+  background: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .btn-refresh:disabled {
@@ -2996,7 +2996,7 @@ const handleClickOutside = (event, modalRef) => {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  border: 3px solid #00ff80;
+  border: 3px solid #FFD700;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -3009,7 +3009,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .sub-section-title {
-  color: #00ff80;
+  color: #FFD700;
   font-size: 1.1rem;
   margin-bottom: 16px;
   display: flex;
@@ -3028,19 +3028,19 @@ const handleClickOutside = (event, modalRef) => {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .kyc-image-item:hover {
-  border-color: rgba(0, 255, 128, 0.4);
+  border-color: rgba(255, 215, 0, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.1);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.1);
 }
 
 .image-label {
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   margin-bottom: 12px;
   text-align: center;
   font-size: 0.9rem;
@@ -3062,8 +3062,8 @@ const handleClickOutside = (event, modalRef) => {
 
 .kyc-document-image:hover {
   transform: scale(1.05);
-  border-color: rgba(0, 255, 128, 0.5);
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
 }
 
 .no-images-message {
@@ -3101,7 +3101,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .info-label {
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 .info-value {
@@ -3111,14 +3111,14 @@ const handleClickOutside = (event, modalRef) => {
 
 .password-value {
   font-family: 'Courier New', monospace;
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   padding: 4px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .password-text {
-  color: #00ff80;
+  color: #FFD700;
   font-weight: 600;
   letter-spacing: 1px;
 }
@@ -3131,17 +3131,17 @@ const handleClickOutside = (event, modalRef) => {
 .balance-value {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #00ff80 !important;
-  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+  color: #FFD700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .bank-details-section {
   margin-top: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.05) 0%, rgba(0, 212, 170, 0.05) 100%);
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(255, 229, 92, 0.05) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 255, 128, 0.1);
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.1);
 }
 
 .kyc-details-section {
@@ -3172,7 +3172,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .section-title {
-  color: #00ff80;
+  color: #FFD700;
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 16px 0;
@@ -3219,8 +3219,8 @@ const handleClickOutside = (event, modalRef) => {
   height: 80px;
   border-radius: 8px;
   object-fit: cover;
-  border: 2px solid #00ff80;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  border: 2px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .remove-image-btn {
@@ -3247,9 +3247,9 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .file-input {
-  border: 2px dashed rgba(0, 255, 128, 0.3);
-  background: rgba(0, 255, 128, 0.05);
-  color: #00ff80;
+  border: 2px dashed rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.05);
+  color: #FFD700;
   padding: 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -3257,14 +3257,14 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .file-input:hover {
-  border-color: rgba(0, 255, 128, 0.6);
-  background: rgba(0, 255, 128, 0.1);
+  border-color: rgba(255, 215, 0, 0.6);
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .file-input:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 0 2px rgba(0, 255, 128, 0.2);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
 }
 
 /* Profile Initials Fallback */
@@ -3272,15 +3272,15 @@ const handleClickOutside = (event, modalRef) => {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 14px;
-  border: 3px solid #00ff80;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  border: 3px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 /* Large Profile Initials Fallback for View Modal */
@@ -3288,15 +3288,15 @@ const handleClickOutside = (event, modalRef) => {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 36px;
-  border: 4px solid #00ff80;
-  box-shadow: 0 4px 20px rgba(0, 255, 128, 0.3);
+  border: 4px solid #FFD700;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
 }
 
 .btn-secondary.modal-action-btn:hover {
@@ -3304,7 +3304,7 @@ const handleClickOutside = (event, modalRef) => {
 }
 
 .btn-primary.modal-action-btn {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
   padding: 12px 24px;
@@ -3320,7 +3320,7 @@ const handleClickOutside = (event, modalRef) => {
 
 .btn-primary.modal-action-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 /* ===== COMPREHENSIVE RESPONSIVE DESIGN ===== */
@@ -3470,7 +3470,7 @@ const handleClickOutside = (event, modalRef) => {
     gap: 20px;
     text-align: center;
     padding: 20px;
-    background: rgba(0, 255, 128, 0.05);
+    background: rgba(255, 215, 0, 0.05);
     border-radius: 12px;
     margin-bottom: 24px;
   }
@@ -3531,7 +3531,7 @@ const handleClickOutside = (event, modalRef) => {
   .col-joined::before,
   .col-actions::before {
     font-weight: 600;
-    color: #00ff80;
+    color: #FFD700;
     font-size: 0.9rem;
     margin-bottom: 4px;
   }
@@ -3670,7 +3670,7 @@ const handleClickOutside = (event, modalRef) => {
   
   .info-label {
     font-size: 1rem;
-    color: #00ff80;
+    color: #FFD700;
     font-weight: 600;
   }
   
@@ -3683,7 +3683,7 @@ const handleClickOutside = (event, modalRef) => {
   .balance-value {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #00ff80 !important;
+    color: #FFD700 !important;
   }
   
   /* Enhanced KYC Section */

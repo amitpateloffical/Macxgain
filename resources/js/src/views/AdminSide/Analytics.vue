@@ -688,11 +688,11 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 /* Header Section */
 .analytics-header {
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1) 0%, rgba(0, 204, 102, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(218, 165, 32, 0.05) 100%);
   border-radius: 24px;
   padding: 32px;
   margin-bottom: 24px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   backdrop-filter: blur(20px);
 }
 
@@ -705,7 +705,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 .header-left h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -758,18 +758,18 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 .btn-refresh:hover, .btn-export:hover {
   background: rgba(255, 255, 255, 0.2);
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .btn-export {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
+  background: linear-gradient(135deg, #FFD700, #DAA520);
   color: #0d0d1a;
   border: none;
 }
 
 .btn-export:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .btn-export.csv {
@@ -846,7 +846,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 .filter-select:focus, .filter-input:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 /* Metrics Section */
@@ -889,7 +889,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 .metric-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 255, 128, 0.2);
+  border-color: rgba(255, 215, 0, 0.2);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -969,9 +969,9 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 }
 
 .tab-btn.active {
-  color: #00ff80;
-  border-bottom: 2px solid #00ff80;
-  background: rgba(0, 255, 128, 0.05);
+  color: #FFD700;
+  border-bottom: 2px solid #FFD700;
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .tab-content {
@@ -1009,7 +1009,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: #FFD700;
 }
 
 .table-container {
@@ -1101,7 +1101,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
 .loading-content i {
   font-size: 3rem;
   margin-bottom: 16px;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 /* Responsive Design */
@@ -1179,7 +1179,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
   }
   
   .tab-btn.active {
-    border-bottom: 2px solid #00ff80;
+    border-bottom: 2px solid #FFD700;
     border-radius: 8px 8px 0 0;
   }
   
@@ -1391,7 +1391,7 @@ watch([selectedPeriod, customStartDate, customEndDate], () => {
   }
   
   .tab-btn:active {
-    background: rgba(0, 255, 128, 0.1);
+    background: rgba(255, 215, 0, 0.1);
   }
 }
 

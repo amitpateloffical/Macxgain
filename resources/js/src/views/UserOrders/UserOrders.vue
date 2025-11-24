@@ -643,15 +643,15 @@ export default {
 <style scoped>
 .orders-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-bg-primary, #0f0f23) 0%, var(--color-bg-tertiary, #1a1a2e) 50%, var(--color-bg-quaternary, #16213e) 100%);
+  color: var(--color-text-primary, white);
   padding-bottom: 100px; /* Space for app bar */
 }
 
 /* Header Section */
 .orders-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.2);
+  border-bottom: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
 }
 
 .header-content {
@@ -671,27 +671,27 @@ export default {
 .header-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  color: #0f0f23;
+  color: var(--color-bg-primary, #0f0f23);
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .page-subtitle {
-  color: #a1a1a1;
+  color: var(--color-text-muted, #a1a1a1);
   margin: 4px 0 0 0;
   font-size: 1rem;
 }
@@ -722,8 +722,8 @@ export default {
 }
 
 .btn-place-order {
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
-  color: #0f0f23;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
+  color: var(--color-bg-primary, #0f0f23);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -737,7 +737,7 @@ export default {
 
 .btn-place-order:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 
@@ -774,13 +774,13 @@ export default {
 .stat-icon {
   width: 48px;
   height: 48px;
-  background: rgba(0, 255, 128, 0.2);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
 }
 
 .stat-icon.pending {
@@ -805,7 +805,7 @@ export default {
 }
 
 .stat-label {
-  color: #a1a1a1;
+  color: var(--color-text-muted, #a1a1a1);
   font-size: 0.875rem;
 }
 
@@ -841,8 +841,8 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%);
-  color: #0f0f23;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%);
+  color: var(--color-bg-primary, #0f0f23);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -856,7 +856,7 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 /* Loading State */
@@ -923,8 +923,8 @@ export default {
 }
 
 .stock-exchange {
-  background: rgba(0, 255, 128, 0.2);
-  color: #00ff80;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  color: var(--color-primary, #FFD700);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -979,7 +979,7 @@ export default {
 }
 
 .order-time {
-  color: #a1a1a1;
+  color: var(--color-text-muted, #a1a1a1);
   font-size: 0.75rem;
 }
 
@@ -1000,7 +1000,7 @@ export default {
 }
 
 .detail-label {
-  color: #a1a1a1;
+  color: var(--color-text-muted, #a1a1a1);
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -1036,11 +1036,11 @@ export default {
 
 /* P&L Analysis Section */
 .pnl-analysis-section {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e) 0%, var(--color-bg-quaternary, #16213e) 100%);
   border-radius: 16px;
   padding: 24px;
   margin: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border-secondary, rgba(255, 255, 255, 0.1));
 }
 
 .section-header {
@@ -1231,7 +1231,7 @@ export default {
 
 .place-order-modal .modal-content {
   background: #1a1a2e !important;
-  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
   overflow: hidden;
@@ -1239,7 +1239,7 @@ export default {
 
 .place-order-modal .modal-header {
   background: #1a1a2e !important;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.2) !important;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2) !important;
   color: white !important;
   padding: 20px 24px;
   border: none !important;
@@ -1269,7 +1269,7 @@ export default {
 
 .place-order-modal .btn-close:hover {
   opacity: 1;
-  color: #00ff80 !important;
+  color: #FFD700 !important;
   box-shadow: none !important;
 }
 
@@ -1289,7 +1289,7 @@ export default {
 .place-order-modal select,
 .place-order-modal textarea {
   background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(0, 255, 128, 0.4) !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
   color: white !important;
   border-radius: 8px !important;
 }
@@ -1298,8 +1298,8 @@ export default {
 .place-order-modal select:focus,
 .place-order-modal textarea:focus {
   background: rgba(0, 0, 0, 0.5) !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 2px rgba(0, 255, 128, 0.3) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3) !important;
   outline: none !important;
 }
 
@@ -1356,13 +1356,13 @@ export default {
 }
 
 .place-order-modal .radio-option input[type="radio"]:checked + .radio-label {
-  background: rgba(0, 255, 128, 0.2) !important;
+  background: rgba(255, 215, 0, 0.2) !important;
 }
 
 /* Search results dropdown */
 .place-order-modal .search-results {
   background: rgba(0, 0, 0, 0.9) !important;
-  border: 1px solid rgba(0, 255, 128, 0.4) !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
   border-radius: 8px;
   backdrop-filter: blur(10px);
 }
@@ -1374,7 +1374,7 @@ export default {
 }
 
 .place-order-modal .search-result-item:hover {
-  background: rgba(0, 255, 128, 0.1) !important;
+  background: rgba(255, 215, 0, 0.1) !important;
 }
 
 .place-order-modal .result-symbol {
@@ -1386,13 +1386,13 @@ export default {
 }
 
 .place-order-modal .result-price {
-  color: #00ff80 !important;
+  color: #FFD700 !important;
 }
 
 /* Order summary styling */
 .place-order-modal .order-summary {
   background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 12px;
   padding: 16px;
   margin-top: 20px;
@@ -1445,7 +1445,7 @@ export default {
 }
 
 .place-order-modal .btn-place-order {
-  background: linear-gradient(135deg, #00ff80 0%, #00d4aa 100%) !important;
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%) !important;
   color: #0f0f23 !important;
   border: none !important;
   padding: 10px 20px;
@@ -1457,7 +1457,7 @@ export default {
 
 .place-order-modal .btn-place-order:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
 
 .place-order-modal .btn-place-order:disabled {
@@ -1469,7 +1469,7 @@ export default {
 
 /* Remove all white borders and backgrounds */
 .place-order-modal * {
-  border-color: rgba(0, 255, 128, 0.3) !important;
+  border-color: rgba(255, 215, 0, 0.3) !important;
 }
 
 .place-order-modal .modal-content,
@@ -1483,15 +1483,15 @@ export default {
 .place-order-modal .form-control,
 .place-order-modal .form-select {
   background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(0, 255, 128, 0.4) !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
   color: white !important;
 }
 
 .place-order-modal .form-control:focus,
 .place-order-modal .form-select:focus {
   background: rgba(0, 0, 0, 0.5) !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 2px rgba(0, 255, 128, 0.3) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3) !important;
 }
 
 /* Responsive Design */
@@ -1604,7 +1604,7 @@ export default {
 .place-order-modal select,
 .place-order-modal textarea {
   background-color: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(0, 255, 128, 0.4) !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
   color: white !important;
 }
 
@@ -1613,8 +1613,8 @@ export default {
 .place-order-modal select:focus,
 .place-order-modal textarea:focus {
   background-color: rgba(0, 0, 0, 0.5) !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 2px rgba(0, 255, 128, 0.3) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3) !important;
   outline: none !important;
 }
 
@@ -1658,7 +1658,7 @@ export default {
   width: 100%;
   padding: 12px 16px 12px 48px;
   background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 12px;
   color: white !important;
   font-size: 1rem;
@@ -1673,8 +1673,8 @@ export default {
 .form-input:focus,
 .form-select:focus {
   outline: none !important;
-  border-color: #00ff80 !important;
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.2) !important;
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2) !important;
   background: rgba(0, 0, 0, 0.4) !important;
 }
 
@@ -1682,7 +1682,7 @@ export default {
   width: 100%;
   padding: 12px 16px;
   background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(0, 255, 128, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 12px;
   color: white !important;
   font-size: 1rem;
@@ -1702,7 +1702,7 @@ export default {
   right: 0;
   background: rgba(26, 26, 46, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 12px;
   margin-top: 8px;
   max-height: 200px;
@@ -1725,7 +1725,7 @@ export default {
 }
 
 .search-result-item:hover {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .result-symbol {
@@ -1742,7 +1742,7 @@ export default {
 
 .result-price {
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 0.875rem;
 }
 
@@ -1785,7 +1785,7 @@ export default {
 
 .order-summary {
   background: rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba(0, 255, 128, 0.2) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
   border-radius: 12px;
   padding: 16px;
   margin-top: 20px;

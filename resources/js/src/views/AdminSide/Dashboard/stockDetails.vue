@@ -164,13 +164,13 @@ const createPriceChart = () => {
       datasets: [{
         label: 'Price (₹)',
         data: priceData,
-        borderColor: '#00ff80',
-        backgroundColor: 'rgba(0, 255, 128, 0.1)',
+        borderColor: '#FFD700',
+        backgroundColor: 'rgba(255, 215, 0, 0.1)',
         borderWidth: 3,
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#00ff80',
-        pointBorderColor: '#00ff80',
+        pointBackgroundColor: '#FFD700',
+        pointBorderColor: '#FFD700',
         pointRadius: 5,
         pointHoverRadius: 7
       }]
@@ -206,7 +206,7 @@ const createPriceChart = () => {
       },
       elements: {
         point: {
-          hoverBackgroundColor: '#00ff80'
+          hoverBackgroundColor: '#FFD700'
         }
       }
     }

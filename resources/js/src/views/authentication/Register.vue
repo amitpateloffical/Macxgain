@@ -393,7 +393,7 @@ const handleRegister = async () => {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e) 0%, var(--color-bg-quaternary, #16213e) 50%, var(--color-bg-primary, #0f3460) 100%);
   padding: 20px;
 }
 
@@ -404,7 +404,7 @@ const handleRegister = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, var(--color-bg-tertiary, #1a1a2e) 0%, var(--color-bg-quaternary, #16213e) 50%, var(--color-bg-primary, #0f3460) 100%);
   z-index: 1;
 }
 
@@ -415,9 +415,9 @@ const handleRegister = async () => {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 255, 136, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(var(--color-primary-rgb, 255, 215, 0), 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(var(--color-primary-rgb, 255, 215, 0), 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(var(--color-primary-rgb, 255, 215, 0), 0.02) 0%, transparent 50%);
 }
 
 /* Main register card - matches login page */
@@ -456,7 +456,7 @@ const handleRegister = async () => {
 .brand-name {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
   margin: 0;
 }
 
@@ -527,7 +527,7 @@ const handleRegister = async () => {
 
 .form-input:focus {
   outline: none;
-  border-color: #00d4aa;
+  border-color: var(--color-primary-light, #FFE55C);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -560,11 +560,11 @@ const handleRegister = async () => {
 }
 
 .password-toggle:hover {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 .password-toggle.active {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 /* Form options - matches login page */
@@ -607,12 +607,12 @@ const handleRegister = async () => {
 }
 
 .checkbox-container:hover .checkmark {
-  border-color: #00d4aa;
+  border-color: var(--color-primary-light, #FFE55C);
 }
 
 .checkbox-input:checked ~ .checkmark {
-  background-color: #00d4aa;
-  border-color: #00d4aa;
+  background-color: var(--color-primary-light, #FFE55C);
+  border-color: var(--color-primary-light, #FFE55C);
 }
 
 .checkmark:after {
@@ -633,14 +633,14 @@ const handleRegister = async () => {
 }
 
 .terms-link {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .terms-link:hover {
-  color: #00b894;
+  color: var(--color-primary, #00b894);
   text-decoration: underline;
 }
 
@@ -665,8 +665,8 @@ const handleRegister = async () => {
 .register-button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #00d4aa, #00b894);
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary-light, #FFE55C), var(--color-primary, #00b894));
+  color: var(--color-text-primary, white);
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -695,7 +695,7 @@ const handleRegister = async () => {
 
 .register-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 212, 170, 0.4);
+  box-shadow: 0 10px 25px rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.4);
 }
 
 .register-button:hover:not(:disabled)::before {
@@ -721,7 +721,7 @@ const handleRegister = async () => {
 }
 
 .login-link {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
   text-decoration: none;
   font-weight: 600;
 }
@@ -774,7 +774,7 @@ const handleRegister = async () => {
 
 .candlestick.up {
   height: 20px;
-  background: #00d4aa;
+  background: var(--color-primary-light, #FFE55C);
 }
 
 .candlestick.down {
@@ -798,14 +798,14 @@ const handleRegister = async () => {
 .indicator .line {
   width: 40px;
   height: 2px;
-  background: #00d4aa;
+  background: var(--color-primary-light, #FFE55C);
   margin-right: 8px;
 }
 
 .indicator .dot {
   width: 6px;
   height: 6px;
-  background: #00d4aa;
+  background: var(--color-primary-light, #FFE55C);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -818,7 +818,7 @@ const handleRegister = async () => {
 }
 
 .ticker {
-  background: rgba(0, 212, 170, 0.1);
+  background: rgba(255, 229, 92, 0.1);
   padding: 6px 10px;
   border-radius: 4px;
   margin-bottom: 6px;
@@ -830,11 +830,11 @@ const handleRegister = async () => {
 
 .ticker .symbol {
   font-weight: bold;
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 .ticker .price.up {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 .ticker .price.down {
@@ -842,7 +842,7 @@ const handleRegister = async () => {
 }
 
 .ticker .change.up {
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
 }
 
 .ticker .change.down {
@@ -858,7 +858,7 @@ const handleRegister = async () => {
 
 .number {
   font-size: 12px;
-  color: #00d4aa;
+  color: var(--color-primary-light, #FFE55C);
   margin-bottom: 8px;
   animation: floatUp 6s ease-in-out infinite;
 }

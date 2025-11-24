@@ -317,8 +317,8 @@ onMounted(() => {
 <style scoped>
 .modern-dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-bg-primary, #0f0f23) 0%, var(--color-bg-tertiary, #1a1a2e) 50%, var(--color-bg-quaternary, #16213e) 100%);
+  color: var(--color-text-primary, white);
   padding: 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   box-sizing: border-box;
@@ -342,7 +342,7 @@ onMounted(() => {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #00ff80, #00d4ff);
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -387,7 +387,7 @@ onMounted(() => {
 }
 
 .live-indicator {
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   animation: pulse 2s infinite;
   margin-left: 8px;
   font-size: 0.8rem;
@@ -399,7 +399,7 @@ onMounted(() => {
 }
 
 .update-indicator {
-  color: #00ff80;
+  color: #FFD700;
   font-size: 0.8rem;
   margin-left: 8px;
   opacity: 0.8;
@@ -441,13 +441,13 @@ onMounted(() => {
 .stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 255, 128, 0.3);
+  border-color: var(--color-border-primary, rgba(255, 215, 0, 0.3));
 }
 
 .stat-icon {
   font-size: 2rem;
   margin-bottom: 16px;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
 }
 
 .stat-content h3 {
@@ -515,9 +515,9 @@ onMounted(() => {
 
 .search-input:focus {
   outline: none;
-  border-color: #00ff80;
+  border-color: var(--color-primary, #FFD700);
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 3px rgba(0, 255, 128, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
 }
 
 .search-icon {
@@ -535,8 +535,8 @@ onMounted(() => {
 }
 
 .refresh-btn {
-  background: linear-gradient(135deg, #00ff80, #00d4ff);
-  color: #0f0f23;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
+  color: var(--color-bg-primary, #0f0f23);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -550,7 +550,7 @@ onMounted(() => {
 
 .refresh-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .refresh-btn:disabled {
@@ -576,7 +576,7 @@ onMounted(() => {
 .market-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 255, 128, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .card-header {
@@ -628,8 +628,8 @@ onMounted(() => {
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(0, 255, 128, 0.2);
-  border-top: 3px solid #00ff80;
+  border: 3px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  border-top: 3px solid var(--color-primary, #FFD700);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
@@ -659,17 +659,17 @@ onMounted(() => {
 }
 
 .stocks-list::-webkit-scrollbar-track {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
   border-radius: 3px;
 }
 
 .stocks-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 128, 0.3);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
   border-radius: 3px;
 }
 
 .stocks-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 128, 0.5);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.5);
 }
 
 .stock-item {
@@ -679,13 +679,13 @@ onMounted(() => {
   padding: 16px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  border: 1px solid rgba(0, 255, 128, 0.1);
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.1));
   transition: all 0.3s ease;
 }
 
 .stock-item:hover {
-  background: rgba(0, 255, 128, 0.05);
-  border-color: rgba(0, 255, 128, 0.2);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.05);
+  border-color: var(--color-border-primary, rgba(255, 215, 0, 0.2));
   transform: translateY(-2px);
 }
 

@@ -62,8 +62,8 @@ const createPerformanceChart = () => {
       datasets: [{
         label: 'Volume (in Lakhs)',
         data: volumes.map(v => v / 100000),
-        backgroundColor: changes.map(change => change >= 0 ? 'rgba(0, 255, 128, 0.7)' : 'rgba(255, 59, 48, 0.7)'),
-        borderColor: changes.map(change => change >= 0 ? '#00ff80' : '#ff3b30'),
+        backgroundColor: changes.map(change => change >= 0 ? 'rgba(255, 215, 0, 0.7)' : 'rgba(255, 59, 48, 0.7)'),
+        borderColor: changes.map(change => change >= 0 ? '#FFD700' : '#ff3b30'),
         borderWidth: 2
       }]
     },

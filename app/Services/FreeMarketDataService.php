@@ -671,6 +671,12 @@ class FreeMarketDataService
         $prioritySymbols = [
             // Major indices first
             'NIFTY 50', 'NIFTY BANK', 'SENSEX',
+            // Additional NIFTY indices
+            'NIFTY IT', 'NIFTY FMCG', 'NIFTY AUTO', 'NIFTY PHARMA', 'NIFTY METAL', 'NIFTY ENERGY', 
+            'NIFTY REALTY', 'NIFTY PSU BANK', 'NIFTY PVT BANK', 'NIFTY MEDIA', 'NIFTY INFRA', 
+            'FINNIFTY', 'NIFTY MIDCAP', 'NIFTY COMMODITIES', 'NIFTY NEXT 50', 'NIFTY 100', 
+            'NIFTY 200', 'NIFTY 500', 'NIFTY MIDCAP 100', 'NIFTY SMALLCAP 100', 'NIFTY MIDCAP 50',
+            'NIFTY SMALLCAP 50', 'NIFTY 1000', 'NIFTY ALPHA 50', 'NIFTY QUALITY 50',
             // Popular NSE stocks (50+ symbols)
             'RELIANCE', 'TCS', 'HDFCBANK', 'ICICIBANK', 'HINDUNILVR', 'ITC', 'KOTAKBANK', 'SBIN', 'BHARTIARTL', 'LT',
             'AXISBANK', 'ASIANPAINT', 'MARUTI', 'NESTLEIND', 'ULTRACEMCO', 'SUNPHARMA', 'TITAN', 'POWERGRID', 'NTPC', 'TECHM',
@@ -680,9 +686,7 @@ class FreeMarketDataService
             'TATACONSUM', 'TATAPOWER', 'UPL', 'VEDL', 'ZEEL', 'APOLLOHOSP', 'DIVISLAB', 'HEROMOTOCO', 'SHREECEM', 'TATACHEM',
             // Additional popular symbols
             'MCXCOMPDEX', 'AARTIIND', 'GILLETTE', 'JKTYRE', 'KAJARIACER', 'MINDTREE', 'OFSS', 'PNB', 'QUICKHEAL', 'UJJIVAN',
-            'YESBANK', 
-            // 'NIFTY-I', 'BANKNIFTY-I', 'UPL-I', 'VEDL-I', 'VOLTAS-I', 'ZEEL-I', 'CRUDEOIL-I', 'GOLDM-I', 'SILVERM-I',
-            // 'COPPER-I', 'SILVER-I', 'NIFTY NEXT 50', 'NIFTY 100', 'NIFTY 200', 'NIFTY 500', 'NIFTY MIDCAP 100', 'NIFTY SMALLCAP 100'
+            'YESBANK'
         ];
         
         $filteredData = [];

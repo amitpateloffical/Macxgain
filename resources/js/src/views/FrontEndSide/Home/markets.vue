@@ -2478,13 +2478,13 @@ const handleIframeError = () => {
 
 .candlestick {
   width: 4px;
-  background: #00ff88;
+  background: #FFD700;
   border-radius: 1px;
 }
 
 .candlestick.up {
   height: 20px;
-  background: #00ff88;
+  background: #FFD700;
 }
 
 .candlestick.down {
@@ -2500,7 +2500,7 @@ const handleIframeError = () => {
 }
 
 .ticker {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 8px;
@@ -2515,7 +2515,7 @@ const handleIframeError = () => {
 }
 
 .ticker .price.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .ticker .price.down {
@@ -2523,7 +2523,7 @@ const handleIframeError = () => {
 }
 
 .ticker .change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .ticker .change.down {
@@ -2579,7 +2579,7 @@ const handleIframeError = () => {
 .main-header .brand-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #FFD700) !important;
   margin: 0;
 }
 
@@ -2597,11 +2597,11 @@ const handleIframeError = () => {
 }
 
 .main-header .nav-link:hover {
-  color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .main-header .nav-link.active {
-  color: var(--color-primary, #00ff88) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .main-header .auth-buttons {
@@ -2626,18 +2626,18 @@ const handleIframeError = () => {
 }
 
 .main-header .btn-outline:hover {
-  border-color: var(--color-primary, #00ff88) !important;
-  color: var(--color-primary, #00ff88) !important;
+  border-color: var(--color-primary, #FFD700) !important;
+  color: var(--color-primary, #FFD700) !important;
 }
 
 .main-header .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary, #00ff88) 0%, var(--color-primary-light, #00d4aa) 100%) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700) 0%, var(--color-primary-light, #FFE55C) 100%) !important;
   color: var(--color-bg-primary, #0a0a1a) !important;
 }
 
 .main-header .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) !important;
 }
 
 /* Markets Header */
@@ -2686,7 +2686,7 @@ const handleIframeError = () => {
   font-size: 2.5rem;
   font-weight: bold;
   margin: 0;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .header-content p {
@@ -2698,7 +2698,7 @@ const handleIframeError = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #00ff88;
+  color: #FFD700;
   font-weight: 500;
 }
 
@@ -2706,7 +2706,7 @@ const handleIframeError = () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #00ff88;
+  background: #FFD700;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -2734,7 +2734,7 @@ const handleIframeError = () => {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-    border: 2px solid rgba(0, 255, 136, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.3);
     border-top: none;
   }
   
@@ -2744,14 +2744,14 @@ const handleIframeError = () => {
   }
   
   .suggestion-item:hover {
-    background: rgba(0, 255, 136, 0.15);
-    border-left: 4px solid #00ff88;
+    background: rgba(255, 215, 0, 0.15);
+    border-left: 4px solid #FFD700;
   }
   
   .suggestions-header {
     padding: 1.25rem 1.5rem;
     border-radius: 16px 16px 0 0;
-    background: rgba(0, 255, 136, 0.1);
+    background: rgba(255, 215, 0, 0.1);
   }
   
   .suggestions-footer {
@@ -2777,7 +2777,7 @@ const handleIframeError = () => {
     max-height: 250px !important;
     z-index: 99999 !important;
     background: rgba(10, 10, 26, 0.99) !important;
-    border: 2px solid rgba(0, 255, 136, 0.3) !important;
+    border: 2px solid rgba(255, 215, 0, 0.3) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
     /* Force above everything */
     transform: translateZ(0);
@@ -2881,9 +2881,9 @@ const handleIframeError = () => {
 }
 
 .filter-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 /* Market Tabs */
@@ -2936,9 +2936,9 @@ const handleIframeError = () => {
 }
 
 .tab-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .tab-btn i {
@@ -2977,7 +2977,7 @@ const handleIframeError = () => {
 }
 
 .index-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -2997,7 +2997,7 @@ const handleIframeError = () => {
 .index-logo {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3027,7 +3027,7 @@ const handleIframeError = () => {
 }
 
 .index-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .index-change.down {
@@ -3081,14 +3081,14 @@ const handleIframeError = () => {
 }
 
 .indian-stock-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
 .stock-logo {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3132,7 +3132,7 @@ const handleIframeError = () => {
 }
 
 .stock-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .stock-change.down {
@@ -3185,7 +3185,7 @@ const handleIframeError = () => {
 .stock-logo-small {
   width: 35px;
   height: 35px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3228,7 +3228,7 @@ const handleIframeError = () => {
 }
 
 .stock-change-small.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .stock-change-small.down {
@@ -3236,7 +3236,7 @@ const handleIframeError = () => {
 }
 
 .see-all-link {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
@@ -3247,7 +3247,7 @@ const handleIframeError = () => {
 }
 
 .see-all-link:hover {
-  color: #00d4aa;
+  color: #FFE55C;
 }
 
 /* Stocks Grid */
@@ -3267,7 +3267,7 @@ const handleIframeError = () => {
 }
 
 .stock-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3293,7 +3293,7 @@ const handleIframeError = () => {
 }
 
 .stock-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .stock-change.down {
@@ -3330,7 +3330,7 @@ const handleIframeError = () => {
 }
 
 .crypto-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3350,13 +3350,13 @@ const handleIframeError = () => {
 .crypto-icon {
   width: 40px;
   height: 40px;
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .crypto-info h3 {
@@ -3374,7 +3374,7 @@ const handleIframeError = () => {
 }
 
 .crypto-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .crypto-change.down {
@@ -3411,7 +3411,7 @@ const handleIframeError = () => {
 }
 
 .forex-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3437,7 +3437,7 @@ const handleIframeError = () => {
 }
 
 .forex-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .forex-change.down {
@@ -3474,7 +3474,7 @@ const handleIframeError = () => {
 }
 
 .commodity-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -3494,13 +3494,13 @@ const handleIframeError = () => {
 .commodity-icon {
   width: 40px;
   height: 40px;
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .commodity-info h3 {
@@ -3518,7 +3518,7 @@ const handleIframeError = () => {
 }
 
 .commodity-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .commodity-change.down {
@@ -3595,7 +3595,7 @@ const handleIframeError = () => {
 }
 
 .chart-bar.up {
-  background: #00ff88;
+  background: #FFD700;
 }
 
 .chart-bar.down {
@@ -3629,9 +3629,9 @@ const handleIframeError = () => {
 }
 
 .timeframe-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .charts-grid {
@@ -3680,7 +3680,7 @@ const handleIframeError = () => {
 }
 
 .price-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .price-change.down {
@@ -3717,7 +3717,7 @@ const handleIframeError = () => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(90deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 1px;
 }
 
@@ -3739,7 +3739,7 @@ const handleIframeError = () => {
 
 .volume-bar {
   flex: 1;
-  background: rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   border-radius: 1px;
   min-height: 10px;
 }
@@ -3792,13 +3792,13 @@ const handleIframeError = () => {
 }
 
 .category-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
 .category-icon {
   font-size: 2rem;
-  color: #00ff88;
+  color: #FFD700;
   width: 50px;
   text-align: center;
 }
@@ -3881,7 +3881,7 @@ const handleIframeError = () => {
 }
 
 .widget-time {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.9rem;
 }
 
@@ -3912,7 +3912,7 @@ const handleIframeError = () => {
 }
 
 .data-row .change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .data-row .change.down {
@@ -3945,7 +3945,7 @@ const handleIframeError = () => {
 }
 
 .indicator-value.bullish {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .indicator-value.bearish {
@@ -4079,14 +4079,14 @@ const handleIframeError = () => {
   }
   
   .main-header .nav-menu .nav-link:hover {
-    background: rgba(0, 255, 136, 0.1);
-    color: #00ff88;
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
   }
   
   .main-header .nav-menu .nav-link.active {
-    background: rgba(0, 255, 136, 0.15);
-    color: #00ff88;
-    border-left: 4px solid #00ff88;
+    background: rgba(255, 215, 0, 0.15);
+    color: #FFD700;
+    border-left: 4px solid #FFD700;
   }
   
   .main-header .auth-buttons {
@@ -4682,7 +4682,7 @@ const handleIframeError = () => {
 .modal-title h2 {
   font-size: 2rem;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 0.5rem 0;
 }
 
@@ -4745,7 +4745,7 @@ const handleIframeError = () => {
 }
 
 .current-price .change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .current-price .change.down {
@@ -4796,9 +4796,9 @@ const handleIframeError = () => {
 }
 
 .timeframe-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .chart-container {
@@ -4847,9 +4847,9 @@ const handleIframeError = () => {
 }
 
 .candlestick.up .candle-body {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
-  border: 1px solid #00ff88;
-  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
+  border: 1px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .candlestick.down .candle-body {
@@ -4859,8 +4859,8 @@ const handleIframeError = () => {
 }
 
 .candlestick.up .candle-wick {
-  background: #00ff88;
-  box-shadow: 0 0 4px rgba(0, 255, 136, 0.5);
+  background: #FFD700;
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
 .candlestick.down .candle-wick {
@@ -4903,7 +4903,7 @@ const handleIframeError = () => {
 
 .candle-price-labels .candle-high {
   display: block;
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
@@ -4931,7 +4931,7 @@ const handleIframeError = () => {
 
 .volume-bar {
   flex: 1;
-  background: rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   border-radius: 2px;
   min-height: 5px;
   transition: all 0.2s ease;
@@ -4939,8 +4939,8 @@ const handleIframeError = () => {
 }
 
 .volume-bar.up {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 136, 0.2) 100%);
-  border: 1px solid rgba(0, 255, 136, 0.5);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0.2) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.5);
 }
 
 .volume-bar:not(.up) {
@@ -4977,7 +4977,7 @@ const handleIframeError = () => {
 
 .chart-control-btn:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(0, 255, 136, 0.5);
+  border-color: rgba(255, 215, 0, 0.5);
   transform: translateY(-1px);
 }
 
@@ -5061,9 +5061,9 @@ const handleIframeError = () => {
 }
 
 .timeframe-btn.active {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 /* Chart Info Bar Enhancements */
@@ -5167,7 +5167,7 @@ const handleIframeError = () => {
 }
 
 .indicator-value.bullish {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .indicator-value.bearish {
@@ -5346,8 +5346,8 @@ const handleIframeError = () => {
 }
 
 .search-input-wrapper:focus-within {
-  border-color: #00ff88;
-  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .search-icon {
@@ -5371,7 +5371,7 @@ const handleIframeError = () => {
 }
 
 .search-btn {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
   border: none;
   border-radius: 8px;
@@ -5383,7 +5383,7 @@ const handleIframeError = () => {
 }
 
 .search-btn:hover {
-  background: #00d4aa;
+  background: #FFE55C;
   transform: translateY(-1px);
 }
 
@@ -5438,8 +5438,8 @@ const handleIframeError = () => {
 }
 
 .suggestion-item:hover {
-  background: rgba(0, 255, 136, 0.1);
-  border-left: 3px solid #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  border-left: 3px solid #FFD700;
 }
 
 .suggestion-item:last-child {
@@ -5464,10 +5464,10 @@ const handleIframeError = () => {
 }
 
 .suggestion-category {
-  color: #00ff88;
+  color: #FFD700;
   font-weight: 500;
   font-size: 0.8rem;
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   white-space: nowrap;
@@ -5490,7 +5490,7 @@ const handleIframeError = () => {
 }
 
 .view-all {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -5498,7 +5498,7 @@ const handleIframeError = () => {
 }
 
 .view-all:hover {
-  color: #00d4aa;
+  color: #FFE55C;
 }
 
 .suggestions-footer {
@@ -5510,7 +5510,7 @@ const handleIframeError = () => {
 }
 
 .view-all-btn {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
   border: none;
   border-radius: 6px;
@@ -5522,7 +5522,7 @@ const handleIframeError = () => {
 }
 
 .view-all-btn:hover {
-  background: #00d4aa;
+  background: #FFE55C;
   transform: translateY(-1px);
 }
 
@@ -5577,7 +5577,7 @@ const handleIframeError = () => {
 }
 
 .result-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .result-change.down {
@@ -5629,9 +5629,9 @@ const handleIframeError = () => {
 }
 
 .refresh-btn {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
@@ -5643,8 +5643,8 @@ const handleIframeError = () => {
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: rgba(0, 255, 136, 0.2);
-  border-color: rgba(0, 255, 136, 0.5);
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .refresh-btn:disabled {
@@ -5665,7 +5665,7 @@ const handleIframeError = () => {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid #00ff88;
+  border-top: 3px solid #FFD700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -5693,7 +5693,7 @@ const handleIframeError = () => {
 }
 
 .top-stocks-grid .stock-card:hover {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -5725,7 +5725,7 @@ const handleIframeError = () => {
 }
 
 .top-stocks-grid .stock-change.up {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .top-stocks-grid .stock-change.down {
@@ -5842,7 +5842,7 @@ const handleIframeError = () => {
 }
 
 .view-all {
-  color: #00ff88;
+  color: #FFD700;
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
@@ -5851,7 +5851,7 @@ const handleIframeError = () => {
 }
 
 .view-all:hover {
-  color: #00d4aa;
+  color: #FFE55C;
 }
 
 .suggestions-footer {
@@ -5860,7 +5860,7 @@ const handleIframeError = () => {
 }
 
 .view-all-btn {
-  background: #00ff88;
+  background: #FFD700;
   color: #0a0a1a;
   border: none;
   border-radius: 6px;
@@ -5870,7 +5870,7 @@ const handleIframeError = () => {
 }
 
 .view-all-btn:hover {
-  background-color: #00d4aa;
+  background-color: #FFE55C;
 }
   
   /* TradingEconomics India Iframe Section */
@@ -5908,10 +5908,10 @@ const handleIframeError = () => {
   }
   
   .live-markets-dashboard h4 {
-    color: #00ff88;
+    color: #FFD700;
     font-size: 1.3rem;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
     padding-bottom: 0.5rem;
     display: flex;
     justify-content: space-between;
@@ -5929,8 +5929,8 @@ const handleIframeError = () => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(0, 255, 136, 0.2);
-    color: #00ff88;
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.9rem;
@@ -5940,7 +5940,7 @@ const handleIframeError = () => {
   .pulse {
     width: 8px;
     height: 8px;
-    background: #00ff88;
+    background: #FFD700;
     border-radius: 50%;
     animation: pulse 2s infinite;
   }
@@ -5948,7 +5948,7 @@ const handleIframeError = () => {
   .pulse-small {
     width: 6px;
     height: 6px;
-    background: #00ff88;
+    background: #FFD700;
     border-radius: 50%;
     animation: pulse 1.5s infinite;
   }
@@ -5972,7 +5972,7 @@ const handleIframeError = () => {
   
   .index-card.live {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 136, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.2);
     border-radius: 12px;
     padding: 1.5rem;
     transition: all 0.3s ease;
@@ -5987,7 +5987,7 @@ const handleIframeError = () => {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, #00ff88, #00d4aa);
+    background: linear-gradient(90deg, #FFD700, #FFE55C);
     animation: shimmer 2s infinite;
   }
   
@@ -5998,8 +5998,8 @@ const handleIframeError = () => {
   
   .index-card.live:hover {
     transform: translateY(-5px);
-    border-color: rgba(0, 255, 136, 0.4);
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.15);
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
   }
   
   .live-status {
@@ -6033,13 +6033,13 @@ const handleIframeError = () => {
   
   .tab-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(0, 255, 136, 0.3);
+    border-color: rgba(255, 215, 0, 0.3);
   }
   
   .tab-btn.active {
-    background: rgba(0, 255, 136, 0.2);
-    border-color: #00ff88;
-    color: #00ff88;
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
+    color: #FFD700;
   }
   
   .stocks-grid {
@@ -6050,7 +6050,7 @@ const handleIframeError = () => {
   
   .stock-card.live {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(0, 255, 136, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.15);
     border-radius: 8px;
     padding: 1.5rem;
     transition: all 0.3s ease;
@@ -6059,7 +6059,7 @@ const handleIframeError = () => {
   
   .stock-card.live:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 136, 0.3);
+    border-color: rgba(255, 215, 0, 0.3);
     transform: translateY(-2px);
   }
   
@@ -6111,7 +6111,7 @@ const handleIframeError = () => {
   
   .sentiment-card:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 136, 0.2);
+    border-color: rgba(255, 215, 0, 0.2);
     transform: translateY(-2px);
   }
   
@@ -6127,7 +6127,7 @@ const handleIframeError = () => {
   }
   
   .sentiment-value {
-    color: #00ff88;
+    color: #FFD700;
     font-size: 1.5rem;
     font-weight: bold;
     display: block;
@@ -6150,10 +6150,10 @@ const handleIframeError = () => {
   }
   
   .custom-markets-dashboard h4 {
-    color: #00ff88;
+    color: #FFD700;
     font-size: 1.3rem;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
     padding-bottom: 0.5rem;
   }
   
@@ -6178,8 +6178,8 @@ const handleIframeError = () => {
   
   .index-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(0, 255, 136, 0.3);
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+    border-color: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
   }
   
   .index-header {
@@ -6192,8 +6192,8 @@ const handleIframeError = () => {
   .index-logo {
     font-size: 2rem;
     font-weight: bold;
-    color: #00ff88;
-    background: rgba(0, 255, 136, 0.1);
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
     width: 60px;
     height: 60px;
     display: flex;
@@ -6231,7 +6231,7 @@ const handleIframeError = () => {
   }
   
   .price-change.up {
-    color: #00ff88;
+    color: #FFD700;
   }
   
   .price-change.down {
@@ -6247,14 +6247,14 @@ const handleIframeError = () => {
   
   .chart-bar {
     flex: 1;
-    background: rgba(0, 255, 136, 0.3);
+    background: rgba(255, 215, 0, 0.3);
     border-radius: 2px;
     min-height: 5px;
     transition: all 0.2s ease;
   }
   
   .chart-bar.up {
-    background: rgba(0, 255, 136, 0.6);
+    background: rgba(255, 215, 0, 0.6);
   }
   
   .chart-bar.down {
@@ -6282,7 +6282,7 @@ const handleIframeError = () => {
   
   .stock-card:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 136, 0.2);
+    border-color: rgba(255, 215, 0, 0.2);
   }
   
   .stock-header {
@@ -6291,7 +6291,7 @@ const handleIframeError = () => {
   
   .stock-symbol {
     font-weight: bold;
-    color: #00ff88;
+    color: #FFD700;
     font-size: 1.1rem;
   }
   
@@ -6331,13 +6331,13 @@ const handleIframeError = () => {
   
   .news-card:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 136, 0.2);
+    border-color: rgba(255, 215, 0, 0.2);
     transform: translateY(-2px);
   }
   
   .news-category {
-    background: rgba(0, 255, 136, 0.2);
-    color: #00ff88;
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -6394,15 +6394,15 @@ const handleIframeError = () => {
   }
   
   .link-card:hover {
-    background: rgba(0, 255, 136, 0.1);
-    border-color: rgba(0, 255, 136, 0.3);
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.3);
     transform: translateY(-3px);
-    color: #00ff88;
+    color: #FFD700;
   }
   
   .link-card i {
     font-size: 2rem;
-    color: #00ff88;
+    color: #FFD700;
   }
   
   .link-card span {
@@ -6456,7 +6456,7 @@ const handleIframeError = () => {
   
   .fallback-content i {
     font-size: 3rem;
-    color: #00ff88;
+    color: #FFD700;
     margin-bottom: 1rem;
   }
   
@@ -6473,7 +6473,7 @@ const handleIframeError = () => {
   
   .fallback-btn {
     display: inline-block;
-    background: #00ff88;
+    background: #FFD700;
     color: #0a0a1a;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
@@ -6483,7 +6483,7 @@ const handleIframeError = () => {
   }
   
   .fallback-btn:hover {
-    background: #00d4aa;
+    background: #FFE55C;
     transform: translateY(-2px);
   }
   
@@ -6730,13 +6730,13 @@ const handleIframeError = () => {
 }
 
 .nav-menu.mobile-open .nav-link:hover {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
 }
 
 .nav-menu.mobile-open .nav-link.active {
-  background: rgba(0, 255, 136, 0.15);
-  color: #00ff88;
-  border-left: 4px solid #00ff88;
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFD700;
+  border-left: 4px solid #FFD700;
 }
 </style>

@@ -813,9 +813,9 @@ export default {
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 20% 80%, rgba(0, 255, 128, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 255, 128, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(0, 255, 128, 0.02) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -835,10 +835,10 @@ export default {
   position: absolute;
   width: 3px;
   height: 3px;
-  background: rgba(0, 255, 128, 0.5);
+  background: rgba(255, 215, 0, 0.5);
   border-radius: 50%;
   animation: float linear infinite;
-  box-shadow: 0 0 8px rgba(0, 255, 128, 0.4);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
 }
 
 @keyframes float {
@@ -866,8 +866,8 @@ export default {
 }
 
 .header-content {
-  background: linear-gradient(145deg, rgba(0, 255, 128, 0.05), rgba(0, 255, 128, 0.02));
-  border: 1px solid rgba(0, 255, 128, 0.1);
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.05), rgba(255, 215, 0, 0.02));
+  border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 20px;
   padding: 24px;
   backdrop-filter: blur(10px);
@@ -879,11 +879,11 @@ export default {
 }
 
 .back-button {
-  background: rgba(0, 255, 128, 0.1);
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 12px;
   padding: 12px 16px;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -893,7 +893,7 @@ export default {
 }
 
 .back-button:hover {
-  background: rgba(0, 255, 128, 0.2);
+  background: rgba(255, 215, 0, 0.2);
   transform: translateX(-2px);
 }
 
@@ -910,9 +910,9 @@ export default {
 .dashboard-title {
   font-size: 24px;
   font-weight: 800;
-  color: #00ff80;
+  color: #FFD700;
   margin: 0 0 8px 0;
-  text-shadow: 0 0 20px rgba(0, 255, 128, 0.3);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 .dashboard-subtitle {
@@ -939,8 +939,8 @@ export default {
 }
 
 .market-status.open .status-dot {
-  background: #00ff80;
-  box-shadow: 0 0 8px rgba(0, 255, 128, 0.5);
+  background: #FFD700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
 .market-status.closed .status-dot {
@@ -977,7 +977,7 @@ export default {
   width: 100%;
   padding: 16px 50px 16px 50px;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
   color: white;
   font-size: 16px;
@@ -986,8 +986,8 @@ export default {
 }
 
 .search-input:focus {
-  border-color: #00ff80;
-  box-shadow: 0 0 20px rgba(0, 255, 128, 0.2);
+  border-color: #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
 .clear-button {
@@ -1014,7 +1014,7 @@ export default {
   left: 0;
   right: 0;
   background: rgba(13, 13, 26, 0.95);
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   margin-top: 8px;
   backdrop-filter: blur(20px);
@@ -1030,7 +1030,7 @@ export default {
 }
 
 .search-result-item:hover {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .search-result-item:last-child {
@@ -1039,7 +1039,7 @@ export default {
 
 .result-symbol {
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 16px;
 }
 
@@ -1075,14 +1075,14 @@ export default {
 }
 
 .tab-button:hover {
-  background: rgba(0, 255, 128, 0.05);
+  background: rgba(255, 215, 0, 0.05);
   color: white;
 }
 
 .tab-button.active {
-  background: rgba(0, 255, 128, 0.1);
-  border-color: rgba(0, 255, 128, 0.3);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #FFD700;
 }
 
 .tab-icon {
@@ -1096,12 +1096,12 @@ export default {
   flex-wrap: wrap;
   padding: 20px 0;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(0, 255, 128, 0.1);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
 }
 
 .category-button {
   background: linear-gradient(145deg, rgba(13, 13, 26, 0.8), rgba(16, 16, 34, 0.6));
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   color: #b0b0b0;
   padding: 8px 16px;
   border-radius: 20px;
@@ -1113,14 +1113,14 @@ export default {
 }
 
 .category-button:hover {
-  color: #00ff80;
-  border-color: rgba(0, 255, 128, 0.6);
+  color: #FFD700;
+  border-color: rgba(255, 215, 0, 0.6);
   transform: translateY(-1px);
 }
 
 .category-button.active {
-  background: linear-gradient(145deg, rgba(0, 255, 128, 0.2), rgba(0, 255, 128, 0.1));
-  border-color: #00ff80;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border-color: #FFD700;
   color: #ffffff;
   font-weight: 600;
 }
@@ -1139,8 +1139,8 @@ export default {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 255, 128, 0.1);
-  border-top: 3px solid #00ff80;
+  border: 3px solid rgba(255, 215, 0, 0.1);
+  border-top: 3px solid #FFD700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -1170,7 +1170,7 @@ export default {
 
 .stock-card {
   background: linear-gradient(145deg, rgba(16, 16, 34, 0.8), rgba(13, 13, 26, 0.9));
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
   padding: 20px;
   cursor: pointer;
@@ -1182,8 +1182,8 @@ export default {
 
 .stock-card:hover {
   transform: translateY(-4px) scale(1.02);
-  border-color: #00ff80;
-  box-shadow: 0 20px 40px rgba(0, 255, 128, 0.2);
+  border-color: #FFD700;
+  box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
 }
 
 .stock-card::before {
@@ -1193,7 +1193,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.05), transparent);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -1204,11 +1204,11 @@ export default {
 }
 
 .stock-card.gainer {
-  border-color: rgba(0, 255, 128, 0.4);
+  border-color: rgba(255, 215, 0, 0.4);
 }
 
 .stock-card.gainer::before {
-  background: linear-gradient(135deg, rgba(0, 255, 128, 0.1), transparent);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
 }
 
 .stock-card.loser {
@@ -1245,8 +1245,8 @@ export default {
 .stock-symbol {
   font-size: 20px;
   font-weight: 700;
-  color: #00ff80;
-  text-shadow: 0 0 10px rgba(0, 255, 128, 0.3);
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .stock-price {
@@ -1274,8 +1274,8 @@ export default {
 
 .stock-category {
   font-size: 12px;
-  color: #00ff80;
-  background: rgba(0, 255, 128, 0.1);
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
   padding: 2px 8px;
   border-radius: 12px;
   display: inline-block;
@@ -1307,7 +1307,7 @@ export default {
 }
 
 .stat-value.positive {
-  color: #00ff80;
+  color: #FFD700;
 }
 
 .stat-value.negative {
@@ -1332,9 +1332,9 @@ export default {
 .options-label {
   text-align: center;
   padding: 8px;
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   border-radius: 8px;
-  color: #00ff80;
+  color: #FFD700;
   font-size: 12px;
   font-weight: 500;
   margin-top: 12px;
@@ -1348,13 +1348,13 @@ export default {
   gap: 6px;
   margin-top: 8px;
   font-size: 11px;
-  color: #00ff80;
+  color: #FFD700;
 }
 
 .live-dot {
   width: 6px;
   height: 6px;
-  background: #00ff80;
+  background: #FFD700;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -1383,9 +1383,9 @@ export default {
 }
 
 .retry-button, .load-price-button {
-  background: linear-gradient(145deg, rgba(0, 255, 128, 0.2), rgba(0, 255, 128, 0.1));
-  border: 1px solid rgba(0, 255, 128, 0.4);
-  color: #00ff80;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #FFD700;
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 11px;
@@ -1395,8 +1395,8 @@ export default {
 }
 
 .retry-button:hover, .load-price-button:hover {
-  background: linear-gradient(145deg, rgba(0, 255, 128, 0.3), rgba(0, 255, 128, 0.2));
-  border-color: #00ff80;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.2));
+  border-color: #FFD700;
   transform: translateY(-1px);
 }
 
@@ -1471,7 +1471,7 @@ export default {
 
 .options-modal {
   background: linear-gradient(145deg, rgba(16, 16, 34, 0.95), rgba(13, 13, 26, 0.98));
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 20px;
   width: 100%;
   max-width: 800px;
@@ -1498,8 +1498,8 @@ export default {
 .stock-symbol-large {
   font-size: 24px;
   font-weight: 700;
-  color: #00ff80;
-  text-shadow: 0 0 15px rgba(0, 255, 128, 0.3);
+  color: #FFD700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .modal-subtitle {
@@ -1591,9 +1591,9 @@ export default {
 }
 
 .options-tab.active {
-  background: rgba(0, 255, 128, 0.1);
-  border-color: rgba(0, 255, 128, 0.3);
-  color: #00ff80;
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #FFD700;
 }
 
 .options-table {
@@ -1612,7 +1612,7 @@ export default {
 .header-cell {
   padding: 0 16px;
   font-weight: 600;
-  color: #00ff80;
+  color: #FFD700;
   text-align: center;
   font-size: 14px;
 }
@@ -1631,7 +1631,7 @@ export default {
 }
 
 .options-row:hover {
-  background: rgba(0, 255, 128, 0.05);
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .table-cell {

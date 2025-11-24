@@ -211,16 +211,29 @@ import { getBrandConfig } from '@/config/brand';
 // Create reactive brand config
 const brandConfigRef = ref(getBrandConfig());
 
-// Listen for brand config updates
+// Listen for brand config updates and template changes
 onMounted(() => {
   const handleUpdate = () => {
     // Reload config and update reactive ref
     brandConfigRef.value = getBrandConfig();
   };
+  
+  const handleTemplateChange = () => {
+    // Force re-render to apply new template colors
+    // The CSS variables are already applied globally, just need to trigger reactivity
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('resize'));
+    }
+  };
+  
   window.addEventListener('brandConfigUpdated', handleUpdate);
+  window.addEventListener('templateChanged', handleTemplateChange);
+  window.addEventListener('forceTemplateUpdate', handleTemplateChange);
   
   onBeforeUnmount(() => {
     window.removeEventListener('brandConfigUpdated', handleUpdate);
+    window.removeEventListener('templateChanged', handleTemplateChange);
+    window.removeEventListener('forceTemplateUpdate', handleTemplateChange);
   });
 });
 
@@ -358,10 +371,10 @@ const login = () => {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 25% 25%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.05) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.05) 50%, transparent 51%);
+    radial-gradient(circle at 25% 25%, rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.05) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.05) 50%, transparent 51%);
   background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
   animation: float 6s ease-in-out infinite;
 }
@@ -375,7 +388,7 @@ const login = () => {
   width: 100%;
   max-width: 450px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid var(--color-border-primary, rgba(0, 255, 136, 0.2)) !important;
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2)) !important;
   position: relative;
   z-index: 2;
   animation: slideUp 0.6s ease-out;
@@ -404,8 +417,8 @@ const login = () => {
   justify-content: center;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-  background: white;
+  box-shadow: 0 8px 20px rgba(var(--color-primary-rgb, 255, 229, 92), 0.2);
+  background: var(--color-bg-secondary, white) !important;
   padding: 8px;
 }
 
@@ -419,13 +432,13 @@ const login = () => {
 .logo-text {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   margin: 0;
-  text-shadow: 0 0 10px rgba(var(--color-primary-rgb, 0, 212, 170), 0.3);
+  text-shadow: 0 0 10px rgba(var(--color-primary-rgb, 255, 229, 92), 0.3);
 }
 
 .tagline {
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   font-size: 14px;
   font-weight: 500;
   margin: 5px 0 0 0;
@@ -435,9 +448,9 @@ const login = () => {
 .welcome-text {
   font-size: 24px;
   font-weight: 600;
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   margin: 0 0 8px 0;
-  text-shadow: 0 0 8px rgba(var(--color-primary-rgb, 0, 212, 170), 0.2);
+  text-shadow: 0 0 8px rgba(var(--color-primary-rgb, 255, 229, 92), 0.2);
 }
 
 .subtitle {
@@ -460,13 +473,13 @@ const login = () => {
   align-items: center;
   font-size: 14px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-text-primary, #4a5568) !important;
   margin-bottom: 8px;
 }
 
 .form-label i {
   margin-right: 8px;
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
 }
 
 .input-container {
@@ -476,18 +489,19 @@ const login = () => {
 .form-input {
   width: 100%;
   padding: 16px 20px 16px 50px;
-  border: 2px solid var(--color-border-secondary, #e2e8f0) !important;
+  border: 2px solid var(--color-border-secondary, rgba(255, 255, 255, 0.2)) !important;
   border-radius: 12px;
   font-size: 16px;
-  background: var(--color-bg-tertiary, white) !important;
+  background: var(--color-bg-secondary, rgba(255, 255, 255, 0.95)) !important;
   color: var(--color-text-primary, #000) !important;
   transition: all 0.3s ease;
   outline: none;
 }
 
 .form-input:focus {
-  border-color: var(--color-primary, #00d4aa) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 212, 170), 0.1) !important;
+  border-color: var(--color-primary, #FFE55C) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 229, 92), 0.1) !important;
+  background: var(--color-bg-secondary, rgba(255, 255, 255, 1)) !important;
 }
 
 .form-input.error {
@@ -519,11 +533,11 @@ const login = () => {
 }
 
 .password-toggle:hover {
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
 }
 
 .password-toggle.active {
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
 }
 
 /* Form options */
@@ -556,8 +570,8 @@ const login = () => {
 .checkmark {
   height: 18px;
   width: 18px;
-  background-color: white;
-  border: 2px solid #e2e8f0;
+  background-color: var(--color-bg-secondary, white) !important;
+  border: 2px solid var(--color-border-secondary, #e2e8f0) !important;
   border-radius: 4px;
   margin-right: 8px;
   position: relative;
@@ -565,8 +579,8 @@ const login = () => {
 }
 
 .checkbox-input:checked ~ .checkmark {
-  background-color: var(--color-primary, #00d4aa) !important;
-  border-color: var(--color-primary, #00d4aa) !important;
+  background-color: var(--color-primary, #FFE55C) !important;
+  border-color: var(--color-primary, #FFE55C) !important;
 }
 
 .checkmark:after {
@@ -587,7 +601,7 @@ const login = () => {
 }
 
 .forgot-link {
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -620,7 +634,7 @@ const login = () => {
 .login-button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, var(--color-primary, #00d4aa), var(--color-primary-dark, #00b894)) !important;
+  background: linear-gradient(135deg, var(--color-primary, #FFE55C), var(--color-primary-dark, #00b894)) !important;
   color: var(--color-bg-primary, white) !important;
   border: none;
   border-radius: 12px;
@@ -649,7 +663,7 @@ const login = () => {
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 0, 212, 170), 0.4) !important;
+  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 255, 229, 92), 0.4) !important;
 }
 
 .login-button:hover:not(:disabled)::before {
@@ -675,7 +689,7 @@ const login = () => {
 }
 
 .signup-link {
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   text-decoration: none;
   font-weight: 600;
 }
@@ -725,13 +739,13 @@ const login = () => {
 
 .candlestick {
   width: 4px;
-  background: var(--color-primary, #00d4aa) !important;
+  background: var(--color-primary, #FFE55C) !important;
   border-radius: 1px;
   position: relative;
 }
 
 .candlestick.up {
-  background: var(--color-success, #00d4aa) !important;
+  background: var(--color-success, #FFE55C) !important;
   height: 20px;
 }
 
@@ -786,14 +800,14 @@ const login = () => {
 .indicator .line {
   width: 40px;
   height: 2px;
-  background: var(--color-primary, #00d4aa) !important;
+  background: var(--color-primary, #FFE55C) !important;
   border-radius: 1px;
 }
 
 .indicator .dot {
   width: 6px;
   height: 6px;
-  background: var(--color-primary, #00d4aa) !important;
+  background: var(--color-primary, #FFE55C) !important;
   border-radius: 50%;
   position: absolute;
   right: 0;
@@ -838,7 +852,7 @@ const login = () => {
 }
 
 .ticker .price.up {
-  color: var(--color-success, #00d4aa) !important;
+  color: var(--color-success, #FFE55C) !important;
 }
 
 .ticker .price.down {
@@ -861,7 +875,7 @@ const login = () => {
 .ticker .change:contains('+')::before {
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-bottom: 5px solid var(--color-success, #00d4aa);
+  border-bottom: 5px solid var(--color-success, #FFE55C);
 }
 
 .ticker .change:contains('-')::before {
@@ -881,7 +895,7 @@ const login = () => {
 
 .number {
   position: absolute;
-  color: var(--color-primary, #00d4aa) !important;
+  color: var(--color-primary, #FFE55C) !important;
   font-size: 14px;
   font-weight: 600;
   opacity: 0.7;

@@ -11,18 +11,18 @@
     <!-- Fallback for browsers that require .ico -->
     <link rel="icon" type="image/x-icon" href="/logo.png" id="favicon-ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title id="page-title">Macxgain - Best Trading App – Trade Smarter, Faster, Safer</title>
-    <meta name="description" content="Macxgain - The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
-    <meta name="keywords" content="trading, futures, options, forex, stocks, cryptocurrency, trading platform, Macxgain" />
-    <meta name="application-name" content="Macxgain" id="app-name" />
-    <meta name="apple-mobile-web-app-title" content="Macxgain" id="apple-app-title" />
-    <meta name="theme-color" content="#00ff88" />
-    <meta property="og:title" content="Macxgain - Best Trading App – Trade Smarter, Faster, Safer" id="og-title" />
+    <title id="page-title">ProfitMaxo - Best Trading App – Trade Smarter, Faster, Safer</title>
+    <meta name="description" content="ProfitMaxo - The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
+    <meta name="keywords" content="trading, futures, options, forex, stocks, cryptocurrency, trading platform, ProfitMaxo" />
+    <meta name="application-name" content="ProfitMaxo" id="app-name" />
+    <meta name="apple-mobile-web-app-title" content="ProfitMaxo" id="apple-app-title" />
+    <meta name="theme-color" content="#FFD700" />
+    <meta property="og:title" content="ProfitMaxo - Best Trading App – Trade Smarter, Faster, Safer" id="og-title" />
     <meta property="og:description" content="The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/logo.png" id="og-image" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Macxgain - Best Trading App – Trade Smarter, Faster, Safer" id="twitter-title" />
+    <meta name="twitter:title" content="ProfitMaxo - Best Trading App – Trade Smarter, Faster, Safer" id="twitter-title" />
     <meta name="twitter:description" content="The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
     <meta name="twitter:image" content="/logo.png" id="twitter-image" />
     <script>

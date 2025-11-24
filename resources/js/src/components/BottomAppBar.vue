@@ -96,9 +96,9 @@ const navigateToPage = (path) => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(17, 24, 39, 0.95);
+  background: var(--color-bg-secondary, rgba(17, 24, 39, 0.95));
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 255, 128, 0.2);
+  border-top: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   z-index: 1000;
   padding: 8px 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
@@ -127,22 +127,22 @@ const navigateToPage = (path) => {
 }
 
 .app-bar-item:hover {
-  background: rgba(0, 255, 128, 0.1);
+  background: rgba(var(--color-primary-rgb, 0, 255, 128), 0.1);
   transform: translateY(-2px);
 }
 
 .app-bar-item.active {
-  background: rgba(0, 255, 128, 0.15);
-  color: #00ff80;
+  background: rgba(var(--color-primary-rgb, 0, 255, 128), 0.15);
+  color: var(--color-primary, #FFD700);
 }
 
 .app-bar-item.active .app-bar-icon {
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   transform: scale(1.1);
 }
 
 .app-bar-icon {
-  color: #9ca3af;
+  color: var(--color-text-muted, #9ca3af);
   transition: all 0.3s ease;
   margin-bottom: 4px;
 }
@@ -150,7 +150,7 @@ const navigateToPage = (path) => {
 .app-bar-label {
   font-size: 9px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--color-text-muted, #9ca3af);
   transition: color 0.3s ease;
   text-align: center;
   white-space: nowrap;
@@ -159,7 +159,7 @@ const navigateToPage = (path) => {
 }
 
 .app-bar-item.active .app-bar-label {
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   font-weight: 600;
 }
 
@@ -210,9 +210,9 @@ const navigateToPage = (path) => {
 /* Desktop styles - keep app bar visible on all screen sizes */
 @media (min-width: 1200px) {
   .bottom-app-bar {
-    background: rgba(17, 24, 39, 0.98);
+    background: var(--color-bg-secondary, rgba(17, 24, 39, 0.98));
     backdrop-filter: blur(25px);
-    border-top: 1px solid rgba(0, 255, 128, 0.3);
+    border-top: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.3));
   }
   
   .app-bar-container {
@@ -230,7 +230,7 @@ const navigateToPage = (path) => {
   }
   
   .app-bar-item:hover {
-    background: rgba(0, 255, 128, 0.15);
+    background: rgba(var(--color-primary-rgb, 0, 255, 128), 0.15);
     transform: translateY(-3px);
   }
 }

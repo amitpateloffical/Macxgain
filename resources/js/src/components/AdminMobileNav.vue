@@ -119,7 +119,7 @@ export default {
   right: 0;
   background: rgba(13, 13, 26, 0.95);
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 255, 136, 0.2);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
   padding: 12px 0;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -149,7 +149,7 @@ export default {
 }
 
 .mobile-bottom-nav .nav-item:active {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(255, 215, 0, 0.1);
   transform: scale(0.95);
 }
 
@@ -248,7 +248,7 @@ export default {
   }
   
   .mobile-bottom-nav .nav-item:active {
-    background: rgba(0, 255, 136, 0.15);
+    background: rgba(255, 215, 0, 0.15);
     transform: scale(0.9);
   }
 }
@@ -261,7 +261,7 @@ export default {
   right: 16px;
   background: rgba(13, 13, 26, 0.98);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 16px;
   z-index: 1002;
   max-height: 400px;
@@ -286,7 +286,7 @@ export default {
 .profile-avatar {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;

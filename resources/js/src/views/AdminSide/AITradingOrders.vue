@@ -587,7 +587,7 @@ export default {
   margin-bottom: 24px;
   padding: 20px;
   background: linear-gradient(145deg, #101022, #0d0d1a);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 16px;
 }
 
@@ -599,8 +599,8 @@ export default {
 
 .back-btn {
   background: linear-gradient(145deg, #1a1a2e, #16213e);
-  color: #00ff88;
-  border: 1px solid #00ff88;
+  color: #FFD700;
+  border: 1px solid #FFD700;
   padding: 12px 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -613,7 +613,7 @@ export default {
 }
 
 .back-btn:hover {
-  background: #00ff88;
+  background: #FFD700;
   color: #0d0d1a;
   transform: translateY(-2px);
 }
@@ -621,7 +621,7 @@ export default {
 .page-title {
   font-size: 28px;
   font-weight: bold;
-  color: #00ff88;
+  color: #FFD700;
   margin: 0 0 8px 0;
 }
 
@@ -641,9 +641,9 @@ export default {
 }
 
 .balance-update.profit {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .balance-update.loss {
@@ -674,8 +674,8 @@ export default {
 
 .refresh-btn:hover:not(:disabled) {
   background: linear-gradient(145deg, #16213e, #1a1a2e);
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #FFD700;
+  color: #FFD700;
 }
 
 .refresh-btn:disabled {
@@ -710,8 +710,8 @@ export default {
 }
 
 .status-indicator.open .status-dot {
-  background: #00ff88;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  background: #FFD700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .market-time {
@@ -749,7 +749,7 @@ export default {
 
 .analysis-header h2 {
   margin: 0;
-  color: #00ff88;
+  color: #FFD700;
   font-size: 20px;
 }
 
@@ -770,14 +770,14 @@ export default {
 
 .toggle-btn:hover {
   background: linear-gradient(145deg, #16213e, #1a1a2e);
-  border-color: #00ff88;
-  color: #00ff88;
+  border-color: #FFD700;
+  color: #FFD700;
 }
 
 .toggle-btn.active {
-  background: linear-gradient(145deg, #00ff88, #00cc6a);
+  background: linear-gradient(145deg, #FFD700, #00cc6a);
   color: #0d0d1a;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .pnl-summary {
@@ -799,8 +799,8 @@ export default {
 }
 
 .pnl-card.profit {
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.1);
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .pnl-card.loss {
@@ -819,7 +819,7 @@ export default {
 }
 
 .pnl-card.profit .pnl-icon {
-  background: #00ff88;
+  background: #FFD700;
   color: #0d0d1a;
 }
 
@@ -846,7 +846,7 @@ export default {
 }
 
 .pnl-card.profit .pnl-value {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .pnl-card.loss .pnl-value {
@@ -887,7 +887,7 @@ export default {
 }
 
 .stat-value.profit {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .stat-value.loss {
@@ -915,7 +915,7 @@ export default {
 }
 
 .profit-section {
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 .loss-section {
@@ -940,7 +940,7 @@ export default {
 }
 
 .profit-section .section-header i {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .loss-section .section-header i {
@@ -977,8 +977,8 @@ export default {
 }
 
 .trade-item.profit {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.05);
 }
 
 .trade-item.loss {
@@ -1021,7 +1021,7 @@ export default {
 }
 
 .trade-item.profit .pnl-amount {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .trade-item.loss .pnl-amount {
@@ -1047,7 +1047,7 @@ export default {
 }
 
 .profit-section .section-total {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .loss-section .section-total {
@@ -1089,7 +1089,7 @@ export default {
 }
 
 .summary-value.completed {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .summary-value.pending {
@@ -1118,7 +1118,7 @@ export default {
 
 .orders-header h2 {
   margin: 0;
-  color: #00ff88;
+  color: #FFD700;
   font-size: 20px;
 }
 
@@ -1138,7 +1138,7 @@ export default {
 
 .filter-select:focus {
   outline: none;
-  border-color: #00ff88;
+  border-color: #FFD700;
 }
 
 /* Loading State */
@@ -1155,7 +1155,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 3px solid #333;
-  border-top: 3px solid #00ff88;
+  border-top: 3px solid #FFD700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -1210,12 +1210,12 @@ export default {
 }
 
 .order-card:hover {
-  border-color: #00ff88;
+  border-color: #FFD700;
   transform: translateY(-2px);
 }
 
 .order-card.completed {
-  border-left: 4px solid #00ff88;
+  border-left: 4px solid #FFD700;
 }
 
 .order-card.pending {
@@ -1239,7 +1239,7 @@ export default {
 
 .order-info h3 {
   margin: 0;
-  color: #00ff88;
+  color: #FFD700;
   font-size: 18px;
 }
 
@@ -1291,7 +1291,7 @@ export default {
 }
 
 .detail-value.amount {
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
 }
 
@@ -1306,7 +1306,7 @@ export default {
 }
 
 .detail-value.pnl.profit {
-  color: #00ff88;
+  color: #FFD700;
   font-weight: bold;
 }
 
@@ -1316,7 +1316,7 @@ export default {
 }
 
 .option-type.call {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .option-type.put {
@@ -1324,7 +1324,7 @@ export default {
 }
 
 .action-type.buy {
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .action-type.sell {
@@ -2005,8 +2005,8 @@ export default {
 
 /* Enhanced Live P&L Row Styling */
 .live-pnl-row {
-  background: rgba(0, 255, 136, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 8px;
   padding: 12px !important;
   margin: 8px 0;
@@ -2021,7 +2021,7 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
   animation: shimmer 3s infinite;
 }
 
@@ -2141,7 +2141,7 @@ export default {
 
   .exit-modal {
     background: #1a1a2e;
-    border: 1px solid rgba(0, 255, 128, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: 12px;
     width: 90%;
     max-width: 600px;
@@ -2159,7 +2159,7 @@ export default {
 
   .modal-title {
     margin: 0;
-    color: #00ff80;
+    color: #FFD700;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2186,7 +2186,7 @@ export default {
   }
 
   .info-section h4 {
-    color: #00ff80;
+    color: #FFD700;
     margin: 0 0 15px 0;
     font-size: 18px;
   }
@@ -2216,7 +2216,7 @@ export default {
   }
 
   .exit-price-section h4 {
-    color: #00ff80;
+    color: #FFD700;
     margin: 0 0 15px 0;
     font-size: 18px;
   }
@@ -2243,8 +2243,8 @@ export default {
 
   .input-prefix {
     padding: 12px 15px;
-    background: rgba(0, 255, 128, 0.1);
-    color: #00ff80;
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
     font-weight: 600;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -2270,8 +2270,8 @@ export default {
   }
 
   .calculated-price {
-    background: rgba(0, 255, 128, 0.05);
-    border: 1px solid rgba(0, 255, 128, 0.2);
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
     border-radius: 8px;
     padding: 15px;
   }
@@ -2298,7 +2298,7 @@ export default {
   }
 
   .price-value.total {
-    color: #00ff80;
+    color: #FFD700;
     font-size: 18px;
     font-weight: bold;
   }

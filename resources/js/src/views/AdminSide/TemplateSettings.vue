@@ -27,28 +27,28 @@
       <p class="section-description">Click on any template to preview and apply it</p>
       
       <div class="templates-grid">
-        <!-- Template 1: Green Tech -->
+        <!-- Template 1: Golden Luxury -->
         <div 
           class="template-card" 
           :class="{ active: selectedTemplate === 'template1' }"
           @click="selectTemplate('template1')"
         >
           <div class="template-preview" style="background: linear-gradient(135deg, #0d0d1a 0%, #101022 50%, #16213e 100%);">
-            <div class="preview-header" style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.2);">
-              <div class="preview-logo" style="background: #00ff88; color: #0d0d1a;">LG</div>
-              <div class="preview-title" style="color: #00ff88;">Green Tech</div>
+            <div class="preview-header" style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.2);">
+              <div class="preview-logo" style="background: #FFD700; color: #0d0d1a;">LG</div>
+              <div class="preview-title" style="color: #FFD700;">Golden Luxury</div>
             </div>
             <div class="preview-content">
-              <div class="preview-card" style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.2);">
-                <div class="preview-text" style="color: #00ff88;">Sample Card</div>
+              <div class="preview-card" style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.2);">
+                <div class="preview-text" style="color: #FFD700;">Sample Card</div>
               </div>
             </div>
           </div>
           <div class="template-info">
-            <h3 class="template-name">Green Tech (Default)</h3>
-            <p class="template-desc">Modern green tech theme</p>
+            <h3 class="template-name">Golden Luxury (Default)</h3>
+            <p class="template-desc">Premium golden luxury theme</p>
             <div class="template-colors">
-              <span class="color-dot" style="background: #00ff88;"></span>
+              <span class="color-dot" style="background: #FFD700;"></span>
               <span class="color-dot" style="background: #0d0d1a;"></span>
               <span class="color-dot" style="background: #101022;"></span>
             </div>
@@ -368,7 +368,7 @@
               <label>Primary Color *</label>
               <div class="color-input-group">
                 <input v-model="newTemplate.colors.primary" type="color" />
-                <input v-model="newTemplate.colors.primary" type="text" placeholder="#00ff88" />
+                <input v-model="newTemplate.colors.primary" type="text" placeholder="#FFD700" />
               </div>
             </div>
 
@@ -376,7 +376,7 @@
               <label>Primary Dark</label>
               <div class="color-input-group">
                 <input v-model="newTemplate.colors.primaryDark" type="color" />
-                <input v-model="newTemplate.colors.primaryDark" type="text" placeholder="#00cc66" />
+                <input v-model="newTemplate.colors.primaryDark" type="text" placeholder="#DAA520" />
               </div>
             </div>
 
@@ -384,7 +384,7 @@
               <label>Primary Light</label>
               <div class="color-input-group">
                 <input v-model="newTemplate.colors.primaryLight" type="color" />
-                <input v-model="newTemplate.colors.primaryLight" type="text" placeholder="#00d4aa" />
+                <input v-model="newTemplate.colors.primaryLight" type="text" placeholder="#FFE55C" />
               </div>
             </div>
 
@@ -447,7 +447,7 @@
               <label>Success Color</label>
               <div class="color-input-group">
                 <input v-model="newTemplate.colors.success" type="color" />
-                <input v-model="newTemplate.colors.success" type="text" placeholder="#00ff88" />
+                <input v-model="newTemplate.colors.success" type="text" placeholder="#FFD700" />
               </div>
             </div>
 
@@ -529,8 +529,9 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-import { templates, getCurrentTemplate, applyTemplate, getAllTemplates, getCustomTemplates, saveCustomTemplate as saveTemplate, deleteCustomTemplate as deleteTemplate } from '@/config/templates';
+import { templates, getCurrentTemplate, getCurrentTemplateSync, applyTemplate, getAllTemplates, getCustomTemplates, saveCustomTemplate as saveTemplate, deleteCustomTemplate as deleteTemplate } from '@/config/templates';
 import { toast } from 'vue3-toastify';
+import axios from '@axios';
 
 const selectedTemplate = ref('template1');
 const currentTemplate = ref('template1');
@@ -546,9 +547,9 @@ const newTemplate = ref({
   name: '',
   description: '',
   colors: {
-    primary: '#00ff88',
-    primaryDark: '#00cc66',
-    primaryLight: '#00d4aa',
+    primary: '#FFD700',
+    primaryDark: '#DAA520',
+    primaryLight: '#FFE55C',
     bgPrimary: '#0d0d1a',
     bgSecondary: '#101022',
     bgTertiary: '#1a1a2e',
@@ -556,20 +557,30 @@ const newTemplate = ref({
     textPrimary: '#ffffff',
     textSecondary: 'rgba(255, 255, 255, 0.7)',
     textMuted: '#9ca3af',
-    success: '#00ff88',
+    success: '#FFD700',
     error: '#ff4444',
     warning: '#ffaa00',
-    borderPrimary: 'rgba(0, 255, 136, 0.2)',
+    borderPrimary: 'rgba(255, 215, 0, 0.2)',
     borderSecondary: 'rgba(255, 255, 255, 0.1)',
   }
 });
 
 // Load current template
-onMounted(() => {
-  const current = getCurrentTemplate();
-  currentTemplate.value = current.id;
-  originalTemplate.value = current.id;
-  selectedTemplate.value = current.id;
+onMounted(async () => {
+  try {
+    // Try to fetch from backend first
+    const current = await getCurrentTemplate();
+    currentTemplate.value = current.id;
+    originalTemplate.value = current.id;
+    selectedTemplate.value = current.id;
+  } catch (error) {
+    // Fallback to sync version
+    const current = getCurrentTemplateSync();
+    currentTemplate.value = current.id;
+    originalTemplate.value = current.id;
+    selectedTemplate.value = current.id;
+  }
+  
   customTemplates.value = getCustomTemplates();
   
   // Listen for template changes
@@ -580,10 +591,15 @@ onBeforeUnmount(() => {
   window.removeEventListener('templateChanged', handleTemplateChange);
 });
 
-const handleTemplateChange = () => {
+const handleTemplateChange = async () => {
   // Update current template reference
-  const current = getCurrentTemplate();
-  currentTemplate.value = current.id;
+  try {
+    const current = await getCurrentTemplate();
+    currentTemplate.value = current.id;
+  } catch (error) {
+    const current = getCurrentTemplateSync();
+    currentTemplate.value = current.id;
+  }
 };
 
 // Helper function to convert hex to RGB (defined once at top level)
@@ -607,16 +623,16 @@ const getTemplatePreviewStyle = (template) => {
 const getTemplateHeaderStyle = (template) => {
   const primaryRgb = hexToRgb(template.colors.primary);
   return {
-    background: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)` : 'rgba(0, 255, 136, 0.1)',
-    borderColor: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.2)` : 'rgba(0, 255, 136, 0.2)'
+    background: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)` : 'rgba(255, 215, 0, 0.1)',
+    borderColor: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.2)` : 'rgba(255, 215, 0, 0.2)'
   };
 };
 
 const getTemplateCardStyle = (template) => {
   const primaryRgb = hexToRgb(template.colors.primary);
   return {
-    background: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)` : 'rgba(0, 255, 136, 0.1)',
-    borderColor: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.2)` : 'rgba(0, 255, 136, 0.2)'
+    background: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)` : 'rgba(255, 215, 0, 0.1)',
+    borderColor: primaryRgb ? `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.2)` : 'rgba(255, 215, 0, 0.2)'
   };
 };
 
@@ -650,9 +666,9 @@ const saveCustomTemplate = () => {
       name: '',
       description: '',
       colors: {
-        primary: '#00ff88',
-        primaryDark: '#00cc66',
-        primaryLight: '#00d4aa',
+        primary: '#FFD700',
+        primaryDark: '#DAA520',
+        primaryLight: '#FFE55C',
         bgPrimary: '#0d0d1a',
         bgSecondary: '#101022',
         bgTertiary: '#1a1a2e',
@@ -660,10 +676,10 @@ const saveCustomTemplate = () => {
         textPrimary: '#ffffff',
         textSecondary: 'rgba(255, 255, 255, 0.7)',
         textMuted: '#9ca3af',
-        success: '#00ff88',
+        success: '#FFD700',
         error: '#ff4444',
         warning: '#ffaa00',
-        borderPrimary: 'rgba(0, 255, 136, 0.2)',
+        borderPrimary: 'rgba(255, 215, 0, 0.2)',
         borderSecondary: 'rgba(255, 255, 255, 0.1)',
       }
     };
@@ -764,9 +780,9 @@ const applyTemplatePreview = (template) => {
   const borderPrimaryRgb = primaryRgb || { r: 0, g: 255, b: 136 };
 
   // Apply CSS variables with fallbacks
-  root.style.setProperty('--color-primary', colors.primary || '#00ff88');
-  root.style.setProperty('--color-primary-dark', colors.primaryDark || colors.primary || '#00cc66');
-  root.style.setProperty('--color-primary-light', colors.primaryLight || colors.primary || '#00d4aa');
+  root.style.setProperty('--color-primary', colors.primary || '#FFD700');
+  root.style.setProperty('--color-primary-dark', colors.primaryDark || colors.primary || '#DAA520');
+  root.style.setProperty('--color-primary-light', colors.primaryLight || colors.primary || '#FFE55C');
   root.style.setProperty('--color-bg-primary', colors.bgPrimary || '#0d0d1a');
   root.style.setProperty('--color-bg-secondary', colors.bgSecondary || '#101022');
   root.style.setProperty('--color-bg-tertiary', colors.bgTertiary || colors.bgSecondary || '#1a1a2e');
@@ -774,7 +790,7 @@ const applyTemplatePreview = (template) => {
   root.style.setProperty('--color-text-primary', colors.textPrimary || '#ffffff');
   root.style.setProperty('--color-text-secondary', colors.textSecondary || 'rgba(255, 255, 255, 0.7)');
   root.style.setProperty('--color-text-muted', colors.textMuted || '#9ca3af');
-  root.style.setProperty('--color-success', colors.success || colors.primary || '#00ff88');
+  root.style.setProperty('--color-success', colors.success || colors.primary || '#FFD700');
   root.style.setProperty('--color-error', colors.error || '#ff4444');
   root.style.setProperty('--color-warning', colors.warning || '#ffaa00');
   root.style.setProperty('--color-border-primary', colors.borderPrimary || `rgba(${borderPrimaryRgb.r}, ${borderPrimaryRgb.g}, ${borderPrimaryRgb.b}, 0.2)`);
@@ -882,7 +898,19 @@ const applyTemplatePermanently = async () => {
   isPreviewing.value = false;
   
   try {
-    // Apply template using the imported function (saves to localStorage)
+    // Save to backend first
+    try {
+      await axios.put('/app-settings/template', { template_id: selectedTemplate.value });
+      console.log('Template saved to backend successfully');
+    } catch (apiError) {
+      console.warn('Failed to save template to backend:', apiError);
+      toast.warning('Template saved locally but failed to sync with server. Changes may not appear for other users.', {
+        autoClose: 3000,
+        position: "top-right"
+      });
+    }
+    
+    // Apply template using the imported function (saves to localStorage and backend)
     // This will work with both predefined and custom templates
     applyTemplate(selectedTemplate.value);
     
@@ -896,10 +924,24 @@ const applyTemplatePermanently = async () => {
       position: "top-right"
     });
     
-    // Reload page to apply template everywhere
+    // Broadcast to all tabs/windows
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('template-updates');
+      channel.postMessage({ templateId: selectedTemplate.value, action: 'templateChanged' });
+      // Don't close immediately - let other tabs receive the message
+      setTimeout(() => channel.close(), 1000);
+    }
+    
+    // Also update localStorage for immediate sync
+    localStorage.setItem('selectedTemplate', selectedTemplate.value);
+    
+    // Force update event
+    window.dispatchEvent(new CustomEvent('forceTemplateUpdate'));
+    
+    // Reload page to apply template everywhere (reduced delay for faster response)
     setTimeout(() => {
       window.location.reload();
-    }, 2000);
+    }, 1000); // Reduced from 2000ms to 1000ms
     
   } catch (error) {
     console.error('Error applying template:', error);
@@ -930,14 +972,14 @@ const applyTemplatePermanently = async () => {
   margin-bottom: 24px;
   padding: 20px;
   background: linear-gradient(145deg, var(--color-bg-secondary, #101022), var(--color-bg-primary, #0d0d1a));
-  border: 1px solid var(--color-border-primary, rgba(0, 255, 136, 0.2));
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   border-radius: 16px;
 }
 
 .page-title {
   font-size: 28px;
   font-weight: bold;
-  color: var(--color-primary, #00ff88);
+  color: var(--color-primary, #FFD700);
   margin: 0 0 8px 0;
 }
 
@@ -949,9 +991,9 @@ const applyTemplatePermanently = async () => {
 
 /* Success Alert */
 .success-alert {
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  color: #00ff88;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -969,7 +1011,7 @@ const applyTemplatePermanently = async () => {
 .section-title {
   font-size: 22px;
   font-weight: 600;
-  color: var(--color-primary, #00ff88);
+  color: var(--color-primary, #FFD700);
   margin: 0 0 8px 0;
 }
 
@@ -999,13 +1041,13 @@ const applyTemplatePermanently = async () => {
 .template-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  border-color: var(--color-primary, #00ff88);
+  border-color: var(--color-primary, #FFD700);
 }
 
 .template-card.active {
-  border-color: var(--color-primary, #00ff88);
+  border-color: var(--color-primary, #FFD700);
   border-width: 3px;
-  box-shadow: 0 0 20px var(--color-primary, #00ff88);
+  box-shadow: 0 0 20px var(--color-primary, #FFD700);
 }
 
 .template-preview {
@@ -1113,13 +1155,13 @@ const applyTemplatePermanently = async () => {
 }
 
 .apply-btn {
-  background: linear-gradient(145deg, var(--color-primary, #00ff88), var(--color-primary-dark, #00cc66));
+  background: linear-gradient(145deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520));
   color: var(--color-bg-primary, #0d0d1a);
 }
 
 .apply-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--color-primary, #00ff88);
+  box-shadow: 0 8px 25px var(--color-primary, #FFD700);
 }
 
 .apply-btn:disabled {
@@ -1135,13 +1177,13 @@ const applyTemplatePermanently = async () => {
 
 .preview-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
-  border-color: var(--color-primary, #00ff88);
+  border-color: var(--color-primary, #FFD700);
 }
 
 /* Info Card */
 .info-card {
   background: linear-gradient(145deg, var(--color-bg-secondary, #101022), var(--color-bg-primary, #0d0d1a));
-  border: 1px solid var(--color-border-primary, rgba(0, 255, 136, 0.2));
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   border-radius: 16px;
   padding: 24px;
 }
@@ -1149,7 +1191,7 @@ const applyTemplatePermanently = async () => {
 .info-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-primary, #00ff88);
+  color: var(--color-primary, #FFD700);
   margin: 0 0 16px 0;
   display: flex;
   align-items: center;
@@ -1176,7 +1218,7 @@ const applyTemplatePermanently = async () => {
 
 .add-template-btn {
   padding: 14px 32px;
-  background: linear-gradient(145deg, var(--color-primary, #00ff88), var(--color-primary-dark, #00cc66));
+  background: linear-gradient(145deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520));
   color: var(--color-bg-primary, #0d0d1a);
   border: none;
   border-radius: 8px;
@@ -1191,7 +1233,7 @@ const applyTemplatePermanently = async () => {
 
 .add-template-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--color-primary, #00ff88);
+  box-shadow: 0 8px 25px var(--color-primary, #FFD700);
 }
 
 /* Custom Template Styles */
@@ -1239,7 +1281,7 @@ const applyTemplatePermanently = async () => {
 
 .modal-content {
   background: var(--color-bg-secondary, #101022);
-  border: 1px solid var(--color-border-primary, rgba(0, 255, 136, 0.2));
+  border: 1px solid var(--color-border-primary, rgba(255, 215, 0, 0.2));
   border-radius: 16px;
   max-width: 900px;
   width: 100%;
@@ -1258,7 +1300,7 @@ const applyTemplatePermanently = async () => {
 
 .modal-header h2 {
   margin: 0;
-  color: var(--color-primary, #00ff88);
+  color: var(--color-primary, #FFD700);
   font-size: 24px;
 }
 
@@ -1313,8 +1355,8 @@ const applyTemplatePermanently = async () => {
 .form-group input[type="text"]:focus,
 .form-group input[type="color"]:focus {
   outline: none;
-  border-color: var(--color-primary, #00ff88);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 255, 136), 0.1);
+  border-color: var(--color-primary, #FFD700);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
 }
 
 .color-input-group {
@@ -1351,7 +1393,7 @@ const applyTemplatePermanently = async () => {
 
 .template-preview-box h4 {
   margin: 0 0 16px 0;
-  color: var(--color-primary, #00ff88);
+  color: var(--color-primary, #FFD700);
   font-size: 18px;
 }
 
@@ -1393,13 +1435,13 @@ const applyTemplatePermanently = async () => {
 }
 
 .save-btn {
-  background: linear-gradient(145deg, var(--color-primary, #00ff88), var(--color-primary-dark, #00cc66));
+  background: linear-gradient(145deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520));
   color: var(--color-bg-primary, #0d0d1a);
 }
 
 .save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--color-primary, #00ff88);
+  box-shadow: 0 8px 25px var(--color-primary, #FFD700);
 }
 
 /* Responsive */

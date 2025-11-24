@@ -1406,8 +1406,8 @@ export default {
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d0d1a 0%, #101022 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-bg-primary, #0d0d1a) 0%, var(--color-bg-secondary, #101022) 100%);
+  color: var(--color-text-primary, white);
 }
 
 .refresh-indicator {
@@ -1436,7 +1436,7 @@ export default {
   padding: 24px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  border: 1px solid rgba(0, 255, 128, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .header-content {
@@ -1472,13 +1472,13 @@ export default {
 .page-title {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #00ff80;
+  color: var(--color-primary, #FFD700);
   margin: 0 0 8px 0;
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #a1a1a1;
+  color: var(--color-text-secondary, #a1a1a1);
   margin: 0;
 }
 
@@ -1504,15 +1504,15 @@ export default {
 }
 
 .market-status.open {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
+  color: var(--color-primary, #FFD700);
+  border: 1px solid rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .market-status.closed {
-  background: rgba(255, 68, 68, 0.2);
-  color: #ff4444;
-  border: 1px solid rgba(255, 68, 68, 0.3);
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.2);
+  color: var(--color-error, #ff4444);
+  border: 1px solid rgba(var(--color-error-rgb, 255, 68, 68), 0.3);
 }
 
 .status-indicator {
@@ -1558,8 +1558,8 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
-  color: #000000;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
+  color: var(--color-bg-primary, #000000);
   border: none;
   border-radius: 25px;
   align-self: flex-end;
@@ -1573,7 +1573,7 @@ export default {
 
 .refresh-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.4);
 }
 
 .refresh-btn:disabled {
@@ -1611,20 +1611,20 @@ export default {
 }
 
 .connection-status.connected {
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  border-color: rgba(0, 255, 136, 0.2);
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
+  color: var(--color-primary, #FFD700);
+  border-color: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2);
 }
 
 .connection-status.disconnected {
-  background: rgba(255, 68, 68, 0.1);
-  color: #ff4444;
-  border-color: rgba(255, 68, 68, 0.2);
+  background: rgba(var(--color-error-rgb, 255, 68, 68), 0.1);
+  color: var(--color-error, #ff4444);
+  border-color: rgba(var(--color-error-rgb, 255, 68, 68), 0.2);
 }
 
 .reconnect-btn {
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
-  color: #000000;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
+  color: var(--color-bg-primary, #000000);
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -1636,7 +1636,7 @@ export default {
 
 .reconnect-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 .reconnect-btn:disabled {
@@ -1684,7 +1684,7 @@ export default {
 }
 
 .index-card.positive {
-  border-left: 4px solid #00ff88;
+  border-left: 4px solid #FFD700;
 }
 
 .index-card.negative {
@@ -1711,12 +1711,12 @@ export default {
 
 .positive .change-value,
 .positive .change-percent {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
 }
 
 .negative .change-value,
 .negative .change-percent {
-  color: #ff4444;
+  color: var(--color-error, #ff4444);
 }
 
 /* Main Content - Matching Withdrawal Request Style */
@@ -1762,7 +1762,7 @@ export default {
 }
 
 .section-title i {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
   font-size: 1.2rem;
 }
 
@@ -1836,10 +1836,10 @@ export default {
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
-  border-color: #00ff88 !important;
-  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  border-color: var(--color-primary, #FFD700) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1);
   background: rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
+  color: var(--color-text-primary, #ffffff) !important;
 }
 
 .filter-input::placeholder {
@@ -1852,8 +1852,8 @@ export default {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #00ff88, #00d4ff);
-  color: #000000;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-light, #00d4ff));
+  color: var(--color-bg-primary, #000000);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -1864,7 +1864,7 @@ export default {
 
 .search-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.4);
 }
 
 .search-btn:disabled {
@@ -1898,11 +1898,11 @@ export default {
 .stock-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 255, 128, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .stock-card.positive {
-  border-left: 4px solid #00ff88;
+  border-left: 4px solid #FFD700;
 }
 
 .stock-card.negative {
@@ -1955,11 +1955,11 @@ export default {
 }
 
 .positive .stock-change {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
 }
 
 .negative .stock-change {
-  color: #ff4444;
+  color: var(--color-error, #ff4444);
 }
 
 .stock-ohlc {
@@ -1990,7 +1990,7 @@ export default {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #a1a1a1;
+  color: var(--color-text-secondary, #a1a1a1);
 }
 
 .empty-state-icon {
@@ -2011,7 +2011,7 @@ export default {
 }
 
 .empty-state-message strong {
-  color: #00ff88 !important;
+  color: var(--color-primary, #FFD700) !important;
   font-weight: 600;
 }
 
@@ -2021,8 +2021,8 @@ export default {
 }
 
 .retry-btn {
-  background: linear-gradient(135deg, #00ff80, #00cc66);
-  color: #0d0d1a;
+  background: linear-gradient(135deg, var(--color-primary, #FFD700), var(--color-primary-dark, #DAA520));
+  color: var(--color-bg-primary, #0d0d1a);
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
@@ -2037,7 +2037,7 @@ export default {
 
 .retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3);
 }
 
 /* Market Info */
@@ -2069,8 +2069,8 @@ export default {
 }
 
 .status-dot.live {
-  background: #00ff88;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  background: #FFD700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   animation: pulse-live 2s infinite;
 }
 
@@ -2102,7 +2102,7 @@ export default {
 
 .trading-hours {
   font-weight: 600;
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
   text-align: right;
   width: 100%;
 }
@@ -2162,19 +2162,19 @@ export default {
 }
 
 .toast.success {
-  border-left-color: #00ff88;
+  border-left-color: var(--color-primary, #FFD700);
 }
 
 .toast.error {
-  border-left-color: #ff4444;
+  border-left-color: var(--color-error, #ff4444);
 }
 
 .toast.warning {
-  border-left-color: #ffaa00;
+  border-left-color: var(--color-warning, #ffaa00);
 }
 
 .toast.info {
-  border-left-color: #00d4ff;
+  border-left-color: var(--color-primary-light, #00d4ff);
 }
 
 .toast-icon {
@@ -2183,19 +2183,19 @@ export default {
 }
 
 .toast.success .toast-icon {
-  color: #00ff88;
+  color: var(--color-primary, #FFD700);
 }
 
 .toast.error .toast-icon {
-  color: #ff4444;
+  color: var(--color-error, #ff4444);
 }
 
 .toast.warning .toast-icon {
-  color: #ffaa00;
+  color: var(--color-warning, #ffaa00);
 }
 
 .toast.info .toast-icon {
-  color: #00d4ff;
+  color: var(--color-primary-light, #00d4ff);
 }
 
 .toast-content {
@@ -2709,7 +2709,7 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: #00ff88;
+  color: #FFD700;
 }
 
 .loading-spinner {
@@ -2798,7 +2798,7 @@ export default {
 
 .expiry-dropdown {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 255, 128, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 6px;
   color: #fff;
   padding: 6px 10px;
@@ -2808,14 +2808,14 @@ export default {
 }
 
 .expiry-dropdown:hover {
-  border-color: rgba(0, 255, 128, 0.5);
+  border-color: rgba(255, 215, 0, 0.5);
   background: rgba(255, 255, 255, 0.15);
 }
 
 .expiry-dropdown:focus {
   outline: none;
-  border-color: #00ff80;
-  box-shadow: 0 0 8px rgba(0, 255, 128, 0.3);
+  border-color: #FFD700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 .expiry-dropdown option {
@@ -2847,7 +2847,7 @@ export default {
 }
 
 .data-source-badge {
-  background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
   color: #000;
   padding: 4px 10px;
   border-radius: 12px;
@@ -2855,7 +2855,7 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .close-btn {
@@ -2916,12 +2916,12 @@ export default {
 }
 
 .option-row.call-option {
-  border-left: 3px solid #00ff88;
+  border-left: 3px solid #FFD700;
 }
 
 .option-row.call-option:hover {
-  border-color: #00ff88;
-  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+  border-color: #FFD700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
 }
 
 .option-row.put-option {
@@ -2974,9 +2974,9 @@ export default {
 }
 
 .strike-indicator.itm {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .strike-indicator.otm {
@@ -3013,8 +3013,8 @@ export default {
 }
 
 .call-title {
-  color: #00ff88;
-  border-color: #00ff88;
+  color: #FFD700;
+  border-color: #FFD700;
 }
 
 .put-title {
@@ -3043,12 +3043,12 @@ export default {
 }
 
 .call-option {
-  border-left: 4px solid #00ff88;
+  border-left: 4px solid #FFD700;
 }
 
 .call-option:hover {
-  border-color: #00ff88;
-  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
+  border-color: #FFD700;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
 }
 
 .put-option {

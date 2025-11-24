@@ -5,7 +5,7 @@
 
 /* Force override all hardcoded primary colors */
 * {
-  /* Override #00ff88 and #00ff80 with template primary */
+  /* Override #FFD700 and #FFD700 with template primary */
 }
 
 /* Background overrides */
@@ -63,14 +63,14 @@ button.btn-primary:hover,
 
 .btn-secondary,
 .preview-btn {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   color: var(--color-primary) !important;
   border-color: var(--color-border-primary) !important;
 }
 
 .btn-secondary:hover,
 .preview-btn:hover {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
   border-color: var(--color-primary) !important;
 }
 
@@ -89,7 +89,7 @@ button.btn-primary:hover,
 }
 
 .stat-icon {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   border-color: var(--color-border-primary) !important;
   color: var(--color-primary) !important;
 }
@@ -106,7 +106,7 @@ button.btn-primary:hover,
 
 /* Success alerts */
 .success-alert {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   border-color: var(--color-primary) !important;
   color: var(--color-primary) !important;
 }
@@ -227,16 +227,16 @@ textarea:focus {
 }
 
 /* Force border colors */
-[style*="border-color: rgba(0, 255, 136"],
-[style*="border-color:rgba(0, 255, 136"],
-[style*="border-color: rgba(0, 255, 128"],
-[style*="border-color:rgba(0, 255, 128"] {
+[style*="border-color: rgba(255, 215, 0"],
+[style*="border-color:rgba(255, 215, 0"],
+[style*="border-color: rgba(255, 215, 0"],
+[style*="border-color:rgba(255, 215, 0"] {
   border-color: var(--color-border-primary) !important;
 }
 
 /* Override specific rgba values */
-[style*="rgba(0, 255, 136"],
-[style*="rgba(0, 255, 128"] {
+[style*="rgba(255, 215, 0"],
+[style*="rgba(255, 215, 0"] {
   /* Use CSS variables instead */
 }
 
@@ -339,7 +339,7 @@ textarea:focus {
 
 .header .btn-primary:hover,
 .main-header .btn-primary:hover {
-  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+  box-shadow: 0 8px 25px rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) !important;
 }
 
 .header .mobile-menu-toggle span,
@@ -365,7 +365,7 @@ textarea:focus {
 }
 
 .login-button:hover:not(:disabled) {
-  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 0, 212, 170), 0.4) !important;
+  box-shadow: 0 10px 25px rgba(var(--color-primary-rgb, 255, 229, 92), 0.4) !important;
 }
 
 /* Login Form Elements */
@@ -377,7 +377,7 @@ textarea:focus {
 
 .login-card .form-input:focus {
   border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 212, 170), 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 229, 92), 0.1) !important;
 }
 
 .login-card .form-label,
@@ -469,7 +469,7 @@ textarea:focus {
 
 .search-input:focus {
   border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
 }
 
 .search-icon {
@@ -503,7 +503,7 @@ textarea:focus {
 
 /* Table Rows */
 .header-row {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   color: var(--color-primary) !important;
 }
 
@@ -515,14 +515,14 @@ textarea:focus {
 /* Action Buttons */
 .btn-refresh,
 .btn-export {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
   color: var(--color-primary) !important;
   border-color: var(--color-border-primary) !important;
 }
 
 .btn-refresh:hover,
 .btn-export:hover {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.3) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.3) !important;
   border-color: var(--color-primary) !important;
 }
 
@@ -551,14 +551,14 @@ textarea:focus {
 }
 
 .role-badge.user {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.2) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.2) !important;
   color: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
 }
 
 /* Status Badges in User Management */
 .status-badge.active {
-  background: rgba(var(--color-success-rgb, 0, 255, 136), 0.2) !important;
+  background: rgba(var(--color-success-rgb, 255, 215, 0), 0.2) !important;
   color: var(--color-success) !important;
   border-color: var(--color-success) !important;
 }
@@ -612,7 +612,7 @@ textarea:focus {
 
 .status-badge.approved,
 .badge-success {
-  background: rgba(var(--color-success-rgb, 0, 255, 136), 0.2) !important;
+  background: rgba(var(--color-success-rgb, 255, 215, 0), 0.2) !important;
   color: var(--color-success) !important;
   border-color: var(--color-success) !important;
 }
@@ -657,7 +657,7 @@ textarea:focus {
 
 /* Tables */
 .staticTable th {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   border-color: var(--color-border-primary) !important;
   color: var(--color-primary) !important;
 }
@@ -668,7 +668,7 @@ textarea:focus {
 }
 
 .staticTable tbody tr:hover {
-  background: rgba(var(--color-primary-rgb, 0, 255, 136), 0.05) !important;
+  background: rgba(var(--color-primary-rgb, 255, 215, 0), 0.05) !important;
 }
 
 .staticTable tbody tr:nth-child(even) {
@@ -690,7 +690,7 @@ textarea:focus {
 .form-input-modern:focus,
 .form-textarea-modern:focus {
   border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 0, 255, 136), 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 215, 0), 0.1) !important;
   background: var(--color-bg-tertiary) !important;
 }
 
@@ -713,7 +713,7 @@ textarea:focus {
 
 .modal-header,
 .modal-header-content {
-  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 0, 255, 136), 0.1), rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1)) !important;
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 255, 215, 0), 0.1), rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.1)) !important;
   border-bottom-color: var(--color-border-primary) !important;
 }
 
@@ -752,7 +752,7 @@ textarea:focus {
 
 /* Balance Display */
 .balance-display-card {
-  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 0, 255, 136), 0.1), rgba(var(--color-primary-light-rgb, 0, 212, 170), 0.1)) !important;
+  background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 255, 215, 0), 0.1), rgba(var(--color-primary-light-rgb, 255, 229, 92), 0.1)) !important;
   border-color: var(--color-border-primary) !important;
 }
 
@@ -836,4 +836,56 @@ textarea:focus {
 
 /* Override any remaining hardcoded colors with CSS variables */
 /* This is a catch-all for any missed hardcoded values */
+
+/* Force override inline styles using attribute selectors */
+[style*="background-color: #0d0d1a"],
+[style*="background-color:#0d0d1a"],
+[style*="background: #0d0d1a"],
+[style*="background:#0d0d1a"] {
+  background-color: var(--color-bg-primary) !important;
+  background: var(--color-bg-primary) !important;
+}
+
+[style*="background-color: #101022"],
+[style*="background-color:#101022"],
+[style*="background: #101022"],
+[style*="background:#101022"] {
+  background-color: var(--color-bg-secondary) !important;
+  background: var(--color-bg-secondary) !important;
+}
+
+[style*="color: #FFD700"],
+[style*="color:#FFD700"],
+[style*="color: #FFD700"],
+[style*="color:#FFD700"] {
+  color: var(--color-primary) !important;
+}
+
+[style*="border-color: #FFD700"],
+[style*="border-color:#FFD700"],
+[style*="border-color: #FFD700"],
+[style*="border-color:#FFD700"] {
+  border-color: var(--color-primary) !important;
+}
+
+/* Force body and html to use template colors */
+body,
+html {
+  background-color: var(--color-bg-primary) !important;
+  background: var(--color-bg-primary) !important;
+}
+
+/* Force #app root element */
+#app {
+  background-color: var(--color-bg-primary) !important;
+  background: var(--color-bg-primary) !important;
+}
+
+/* Force all main content areas */
+.main_content_screen,
+.main_screen_sidebar_devider,
+.app {
+  background-color: var(--color-bg-primary) !important;
+  background: var(--color-bg-primary) !important;
+}
 
