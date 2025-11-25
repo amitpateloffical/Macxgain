@@ -76,7 +76,7 @@
     <header class="header">
       <div class="header-container">
         <div class="logo-section">
-          <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+          <img :src="brandConfig.logoPathFrontend || '/logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
           <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
         </div>
         
@@ -1342,7 +1342,7 @@
         <div class="footer-content">
           <div class="footer-section">
             <div class="footer-logo">
-              <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+              <img :src="brandConfig.logoPathFrontend || '/logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
               <h3>Macxgain</h3>
             </div>
             <p>Your trusted partner for futures and options trading. Start your trading journey with us today.</p>

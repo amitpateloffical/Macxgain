@@ -40,7 +40,7 @@
     <header class="main-header">
       <div class="header-container">
         <div class="logo-section">
-          <img :src="brandConfig.logoPathFrontend || '../logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
+          <img :src="brandConfig.logoPathFrontend || '/logo.png'" :alt="brandConfig.companyName + ' Logo'" class="logo" />
           <h1 class="brand-name">{{ brandConfig.companyName }}</h1>
         </div>
         

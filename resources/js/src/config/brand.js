@@ -12,11 +12,11 @@ const defaultBrandConfig = {
   welcomeText: 'Welcome Back',
   subtitle: 'Sign in to your account to continue',
   
-  // Logo Paths
-  logoPath: '../assest/img/logo.png',           // Login/Register pages
+  // Logo Paths (using absolute paths from public directory)
+  logoPath: '/logo.png',                        // Login/Register pages
   logoPathPublic: '/logo.png',                  // Public pages
-  logoPathFrontend: '../FrontEndSide/logo.png', // Frontend/Header pages (admin dashboard)
-  logoPathHeader: '../FrontEndSide/logo.png',   // Header component (same as frontend)
+  logoPathFrontend: '/logo.png',                // Frontend/Header pages (admin dashboard)
+  logoPathHeader: '/logo.png',                  // Header component (same as frontend)
   
   // Page Titles
   pageTitle: 'ProfitMaxo - Trading with AI and Gain Profit',
