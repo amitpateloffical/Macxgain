@@ -16,9 +16,9 @@ class UserSeeder extends Seeder
         // Check if users already exist before creating
         $this->createUserIfNotExists([
             'name' => 'Admin',
-            'email' => 'admin@macxgain.com',
+            'email' => 'admin@profitmaxo.com',
             'mobile_code' => '91',
-            'phone' => '9876543211',
+            'phone' => '1234567890',
             'is_admin' => true,
             'password' => '1234567890',
             'bank_name' => 'HDFC Bank',
