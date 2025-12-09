@@ -337,30 +337,60 @@ class FreeMarketDataService
     private function getOptionChainFromNSE(string $symbol): array
     {
         try {
-            $url = "https://www.nseindia.com/api/option-chain-indices?symbol=" . strtoupper($symbol);
+            // Map symbol to NSE format
+            $mappedSymbol = strtoupper($symbol);
+            if ($mappedSymbol === 'NIFTY 50') {
+                $mappedSymbol = 'NIFTY';
+            } elseif ($mappedSymbol === 'NIFTY BANK' || $mappedSymbol === 'BANK NIFTY') {
+                $mappedSymbol = 'BANKNIFTY';
+            }
             
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                'Accept' => 'application/json',
+            // Only try NSE for supported symbols
+            if (!in_array($mappedSymbol, ['NIFTY', 'BANKNIFTY'])) {
+                return ['success' => false, 'message' => 'Unsupported symbol for NSE'];
+            }
+            
+            $url = "https://www.nseindia.com/api/option-chain-indices?symbol=" . $mappedSymbol;
+            
+            $headers = [
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                'Accept' => 'application/json, text/plain, */*',
                 'Accept-Language' => 'en-US,en;q=0.9',
-                'Referer' => 'https://www.nseindia.com/',
-            ])->timeout(15)->get($url);
+                'Referer' => 'https://www.nseindia.com/option-chain',
+                'Origin' => 'https://www.nseindia.com',
+                'Connection' => 'keep-alive',
+            ];
+            
+            // Warm-up call to set cookies (required by NSE)
+            try {
+                Http::withHeaders($headers)->timeout(8)->get('https://www.nseindia.com');
+            } catch (\Throwable $e) {
+                // Ignore warm-up errors, but log for debugging
+                Log::debug('NSE warm-up call failed: ' . $e->getMessage());
+            }
+            
+            $response = Http::withHeaders($headers)->timeout(15)->get($url);
             
             if ($response->successful()) {
                 $data = $response->json();
                 if (isset($data['records']['data']) && !empty($data['records']['data'])) {
-                    $processed = $this->processNSEData($data['records']['data'], $symbol);
-                    return [
-                        'success' => true,
-                        'data' => $processed,
-                        'source' => 'NSE India Free API (1-2 min delayed)'
-                    ];
+                    $processed = $this->processNSEData($data['records']['data'], $mappedSymbol);
+                    if (!empty($processed)) {
+                        return [
+                            'success' => true,
+                            'data' => $processed,
+                            'source' => 'NSE India Free API (1-2 min delayed)'
+                        ];
+                    }
                 }
             }
             
-            return ['success' => false, 'message' => 'NSE India options API failed'];
+            // If we get here, NSE API failed or returned empty data (likely market closed)
+            Log::info("NSE India options API failed or returned empty data for {$mappedSymbol} - likely market closed");
+            return ['success' => false, 'message' => 'NSE India options API failed or market closed'];
             
         } catch (\Exception $e) {
+            Log::warning('NSE India options error: ' . $e->getMessage());
             return ['success' => false, 'message' => 'NSE India options error: ' . $e->getMessage()];
         }
     }
@@ -459,7 +489,12 @@ class FreeMarketDataService
      */
     private function getMockRealisticOptions(string $symbol): array
     {
-        $underlyingPrice = $this->getUnderlyingPrice($symbol);
+        // Try to get live underlying price first
+        $underlyingPrice = $this->getLiveUnderlyingPrice($symbol);
+        if ($underlyingPrice <= 0) {
+            $underlyingPrice = $this->getUnderlyingPrice($symbol);
+        }
+        
         $strikes = $this->generateStrikes($underlyingPrice);
         $options = [];
         
@@ -506,13 +541,48 @@ class FreeMarketDataService
     }
     
     /**
-     * Get underlying price for option calculations
+     * Try to get live underlying price from market data
+     */
+    private function getLiveUnderlyingPrice(string $symbol): float
+    {
+        try {
+            // Map symbol to market data symbol
+            $marketSymbol = $symbol;
+            if ($symbol === 'NIFTY') {
+                $marketSymbol = 'NIFTY 50';
+            } elseif ($symbol === 'BANKNIFTY') {
+                $marketSymbol = 'NIFTY BANK';
+            }
+            
+            // Try to get from cache first
+            $cacheKey = "free_market_data_" . md5($marketSymbol);
+            $cachedData = Cache::get($cacheKey);
+            if ($cachedData && isset($cachedData['data'][$marketSymbol]['ltp'])) {
+                return (float) $cachedData['data'][$marketSymbol]['ltp'];
+            }
+            
+            // Try to get from database
+            $marketDataModel = new \App\Models\MarketData();
+            $data = $marketDataModel::getMarketDataForSymbols([$marketSymbol], true);
+            if (isset($data[$marketSymbol]['ltp']) && $data[$marketSymbol]['ltp'] > 0) {
+                return (float) $data[$marketSymbol]['ltp'];
+            }
+            
+        } catch (\Exception $e) {
+            Log::debug('Could not get live underlying price: ' . $e->getMessage());
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Get underlying price for option calculations (fallback)
      */
     private function getUnderlyingPrice(string $symbol): float
     {
         $prices = [
-            'NIFTY' => 19500,
-            'BANKNIFTY' => 45000,
+            'NIFTY' => 26000,  // Updated to current approximate price
+            'BANKNIFTY' => 52000,  // Updated to current approximate price
             'FINNIFTY' => 21000,
             'SENSEX' => 65000
         ];
@@ -526,13 +596,21 @@ class FreeMarketDataService
     private function generateStrikes(float $underlyingPrice): array
     {
         $strikes = [];
-        $range = $underlyingPrice * 0.1; // ±10% range
-        $step = $underlyingPrice * 0.01; // 1% step
         
-        for ($i = -10; $i <= 10; $i++) {
-            $strike = $underlyingPrice + ($i * $step);
+        // Use proper strike steps for different symbols
+        $strikeStep = 50; // NIFTY uses 50-point steps
+        if ($underlyingPrice > 40000) {
+            $strikeStep = 100; // BANKNIFTY uses 100-point steps
+        }
+        
+        // Round underlying price to nearest strike
+        $baseStrike = round($underlyingPrice / $strikeStep) * $strikeStep;
+        
+        // Generate strikes ±20 strikes around current price
+        for ($i = -20; $i <= 20; $i++) {
+            $strike = $baseStrike + ($i * $strikeStep);
             if ($strike > 0) {
-                $strikes[] = round($strike, 0);
+                $strikes[] = (int) $strike;
             }
         }
         
