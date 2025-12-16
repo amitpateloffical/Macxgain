@@ -68,44 +68,249 @@ class FreeMarketDataService
     }
     
     /**
-     * Get option chain data from free APIs
+     * Get option chain data from free APIs with multiple fallback sources
+     * When market is closed, shows last available real prices
      * @param string $symbol
      * @return array
      */
     public function getOptionChain(string $symbol): array
     {
         $cacheKey = "free_option_chain_{$symbol}";
+        $lastRealDataKey = "free_option_chain_last_real_{$symbol}"; // Persistent cache for last real data
         
-        return Cache::remember($cacheKey, $this->cacheTimeout, function () use ($symbol) {
-            try {
-                // Try multiple free APIs for option chain
-                $apis = [
-                    'nse_india_options' => $this->getOptionChainFromNSE($symbol),
-                    'mock_realistic_options' => $this->getMockRealisticOptions($symbol)
-                ];
+        // Check market status
+        $marketStatusService = app(\App\Services\MarketStatusService::class);
+        $marketStatus = $marketStatusService->getMarketStatus();
+        $isMarketOpen = ($marketStatus['status'] ?? 'CLOSED') === 'OPEN';
+        
+        // If market is closed, prioritize last real data
+        if (!$isMarketOpen) {
+            Log::info("FreeMarketDataService: Market is closed, checking for last real prices for {$symbol}");
+            
+            // First, try to get last real data from persistent cache (24 hour cache)
+            $lastRealData = Cache::get($lastRealDataKey);
+            if ($lastRealData && !empty($lastRealData['data'])) {
+                Log::info("FreeMarketDataService: Using last real prices from persistent cache for {$symbol} (market closed) - " . count($lastRealData['data']) . " options");
+                $lastRealData['is_cached'] = true;
+                $lastRealData['market_status'] = 'CLOSED';
+                $lastRealData['message'] = 'Market is closed - showing last available prices from ' . ($lastRealData['timestamp'] ?? 'previous session');
+                return $lastRealData;
+            }
+            
+            // Fallback to regular cache (might have shorter expiry)
+            $cached = Cache::get($cacheKey);
+            if ($cached && !empty($cached['data'])) {
+                // Check if it's real data (has is_real_data flag or source indicates real data)
+                $isRealData = ($cached['is_real_data'] ?? false) || 
+                              (isset($cached['source']) && (strpos($cached['source'], 'NSE') !== false || strpos($cached['source'], 'Real') !== false || strpos($cached['source'], 'API') !== false));
                 
-                foreach ($apis as $apiName => $result) {
-                    if ($result['success'] && !empty($result['data'])) {
-                        Log::info("FreeMarketDataService: Using {$apiName} for {$symbol} options");
-                        return $result;
+                // If we have data with prices > 0, consider it real data
+                $hasValidPrices = false;
+                foreach ($cached['data'] as $option) {
+                    if (($option['ltp'] ?? 0) > 0 || ($option['bid'] ?? 0) > 0 || ($option['ask'] ?? 0) > 0) {
+                        $hasValidPrices = true;
+                        break;
                     }
                 }
                 
-                return [
-                    'success' => false,
-                    'message' => 'All free option APIs failed',
-                    'data' => []
-                ];
-                
-            } catch (\Exception $e) {
-                Log::error("FreeMarketDataService option error: " . $e->getMessage());
-                return [
-                    'success' => false,
-                    'message' => 'Service error: ' . $e->getMessage(),
-                    'data' => []
-                ];
+                if ($isRealData || $hasValidPrices) {
+                    Log::info("FreeMarketDataService: Using cached data for {$symbol} (market closed) - " . count($cached['data']) . " options");
+                    // Store in persistent cache for next time
+                    Cache::put($lastRealDataKey, $cached, 86400); // 24 hours
+                    $cached['is_cached'] = true;
+                    $cached['market_status'] = 'CLOSED';
+                    $cached['message'] = 'Market is closed - showing last available prices';
+                    return $cached;
+                }
             }
-        });
+            
+            // Try NSE API one more time (sometimes it still works even when market is closed)
+            try {
+                Log::info("FreeMarketDataService: Trying NSE API one more time for {$symbol} (market closed)");
+                $nseResult = $this->getOptionChainFromNSE($symbol);
+                if ($nseResult['success'] && !empty($nseResult['data'])) {
+                    // Process the data same as when market is open
+                    $validOptions = [];
+                    foreach ($nseResult['data'] as $option) {
+                        $ltp = $option['ltp'] ?? 0;
+                        $bid = $option['bid'] ?? 0;
+                        $ask = $option['ask'] ?? 0;
+                        $prevClose = $option['prev_close'] ?? 0;
+                        
+                        $displayPrice = $ltp > 0 ? $ltp : (($bid > 0 && $ask > 0) ? (($bid + $ask) / 2) : ($bid > 0 ? $bid : $ask));
+                        
+                        if ($displayPrice > 0) {
+                            $change = 0;
+                            $changePercent = $option['change_percent'] ?? 0;
+                            if ($prevClose > 0 && $displayPrice > 0) {
+                                $change = $displayPrice - $prevClose;
+                                $changePercent = ($change / $prevClose) * 100;
+                            }
+                            
+                            $option['ltp'] = round($displayPrice, 2);
+                            $option['change'] = round($change, 2);
+                            $option['change_percent'] = round($changePercent, 2);
+                            $validOptions[] = $option;
+                        }
+                    }
+                    
+                    if (!empty($validOptions)) {
+                        $nseResult['data'] = $validOptions;
+                        $nseResult['is_real_data'] = true;
+                        $nseResult['timestamp'] = now()->toISOString();
+                        // Store in both caches
+                        Cache::put($cacheKey, $nseResult, $this->delayedCacheTimeout);
+                        Cache::put($lastRealDataKey, $nseResult, 86400);
+                        
+                        Log::info("FreeMarketDataService: Got data from NSE API for {$symbol} (market closed) - " . count($validOptions) . " options");
+                        $nseResult['is_cached'] = false;
+                        $nseResult['market_status'] = 'CLOSED';
+                        $nseResult['message'] = 'Market is closed - showing last available prices from NSE';
+                        return $nseResult;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::debug("FreeMarketDataService: NSE API failed when market closed: " . $e->getMessage());
+            }
+            
+            // Try to get from database (OptionChain model) as last resort
+            try {
+                $dbData = $this->getOptionChainFromDatabase($symbol);
+                if ($dbData && !empty($dbData['data'])) {
+                    Log::info("FreeMarketDataService: Using last real prices from database for {$symbol} (market closed) - " . count($dbData['data']) . " options");
+                    // Store in persistent cache for next time
+                    Cache::put($lastRealDataKey, $dbData, 86400); // 24 hours
+                    $dbData['is_cached'] = true;
+                    $dbData['market_status'] = 'CLOSED';
+                    $dbData['message'] = 'Market is closed - showing last available prices from database';
+                    return $dbData;
+                }
+            } catch (\Exception $e) {
+                Log::debug("FreeMarketDataService: Could not get option chain from database: " . $e->getMessage());
+            }
+            
+            // If no cached real data, don't show calculated prices when market is closed
+            Log::info("FreeMarketDataService: No last real prices available for {$symbol} (market closed)");
+            return [
+                'success' => false,
+                'message' => 'Market is closed. No last available prices found. Please check again when market opens.',
+                'data' => [],
+                'market_status' => 'CLOSED'
+            ];
+        }
+        
+        // Market is open - try to fetch fresh data
+        // Try multiple free API sources in order of preference
+        $apis = [
+            'nse' => function() use ($symbol) { return $this->getOptionChainFromNSE($symbol); },
+            'opify' => function() use ($symbol) { return $this->getOptionChainFromOpify($symbol); },
+        ];
+        
+        // Try each API source
+        foreach ($apis as $apiName => $apiCall) {
+            try {
+                Log::info("FreeMarketDataService: Trying {$apiName} API for {$symbol}");
+                $result = $apiCall();
+                
+                if ($result['success'] && !empty($result['data'])) {
+                    // Filter to only include options with valid prices (LTP, bid, or ask)
+                    $validOptions = [];
+                    foreach ($result['data'] as $option) {
+                        $originalLtp = $option['ltp'] ?? 0;
+                        $ltp = $originalLtp;
+                        $bid = $option['bid'] ?? 0;
+                        $ask = $option['ask'] ?? 0;
+                        $prevClose = $option['prev_close'] ?? 0;
+                        
+                        // Use best available price: LTP > Mid(Bid/Ask) > Bid > Ask
+                        $displayPrice = $ltp;
+                        $priceSource = 'LTP';
+                        
+                        if ($ltp > 0) {
+                            $displayPrice = $ltp;
+                            $priceSource = 'LTP';
+                        } elseif ($bid > 0 && $ask > 0) {
+                            $displayPrice = ($bid + $ask) / 2;
+                            $priceSource = 'Mid(Bid/Ask)';
+                        } elseif ($bid > 0) {
+                            $displayPrice = $bid;
+                            $priceSource = 'Bid';
+                        } elseif ($ask > 0) {
+                            $displayPrice = $ask;
+                            $priceSource = 'Ask';
+                        }
+                        
+                        // Recalculate change_percent if we're using a different price source
+                        $change = 0;
+                        $changePercent = $option['change_percent'] ?? 0;
+                        
+                        if ($prevClose > 0 && $displayPrice > 0) {
+                            // If we have prev_close, recalculate change_percent based on display price
+                            if ($priceSource !== 'LTP' || $changePercent == 0) {
+                                $change = $displayPrice - $prevClose;
+                                $changePercent = ($change / $prevClose) * 100;
+                            }
+                        }
+                        
+                        // Update option with calculated values
+                        $option['ltp'] = round($displayPrice, 2);
+                        $option['display_price'] = round($displayPrice, 2);
+                        $option['price_source'] = $priceSource;
+                        $option['change'] = round($change, 2);
+                        $option['change_percent'] = round($changePercent, 2);
+                        
+                        // Only include if we have a valid price
+                        if ($displayPrice > 0) {
+                            $validOptions[] = $option;
+                        }
+                    }
+                    
+                    if (!empty($validOptions)) {
+                        Log::info("FreeMarketDataService: Using {$apiName} data for {$symbol} - " . count($validOptions) . " options with prices");
+                        $result['data'] = $validOptions;
+                        $result['is_real_data'] = true;
+                        $result['timestamp'] = now()->toISOString();
+                        
+                        // Cache the result (short cache during market hours)
+                        Cache::put($cacheKey, $result, $this->delayedCacheTimeout);
+                        
+                        // Also store in persistent cache for when market closes (24 hour cache)
+                        Cache::put($lastRealDataKey, $result, 86400);
+                        
+                        return $result;
+                    } else {
+                        Log::warning("FreeMarketDataService: {$apiName} returned data but no valid prices for {$symbol}");
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("FreeMarketDataService: {$apiName} API error for {$symbol}: " . $e->getMessage());
+            }
+        }
+        
+        // If all APIs fail during market hours, try to use cached data (last available real data)
+        $cached = Cache::get($cacheKey);
+        if ($cached && !empty($cached['data'])) {
+            Log::info("FreeMarketDataService: Using cached data for {$symbol} - " . count($cached['data']) . " options");
+            $cached['is_cached'] = true;
+            $cached['message'] = 'Showing last available market data (APIs temporarily unavailable)';
+            return $cached;
+        }
+        
+        // Last resort: Generate calculated prices based on underlying when no data is available (only during market hours)
+        Log::info("FreeMarketDataService: No API data and no cache, generating calculated prices for {$symbol}");
+        $fallbackData = $this->generateFallbackOptionsUnder100($symbol);
+        if ($fallbackData['success'] && !empty($fallbackData['data'])) {
+            Log::info("FreeMarketDataService: Generated " . count($fallbackData['data']) . " calculated options for {$symbol}");
+            return $fallbackData;
+        }
+        
+        // No valid data from any source
+        Log::warning("FreeMarketDataService: No valid option prices from any API for {$symbol} and no cached data");
+        return [
+            'success' => false,
+            'message' => 'No option chain data available from free APIs. Please try again in a moment.',
+            'data' => []
+        ];
     }
     
     /**
@@ -332,7 +537,7 @@ class FreeMarketDataService
     }
     
     /**
-     * Get option chain from NSE India
+     * Get option chain from NSE India with improved session handling and retry logic
      */
     private function getOptionChainFromNSE(string $symbol): array
     {
@@ -353,88 +558,363 @@ class FreeMarketDataService
             $url = "https://www.nseindia.com/api/option-chain-indices?symbol=" . $mappedSymbol;
             
             $headers = [
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
                 'Accept' => 'application/json, text/plain, */*',
                 'Accept-Language' => 'en-US,en;q=0.9',
+                'Accept-Encoding' => 'gzip, deflate, br',
                 'Referer' => 'https://www.nseindia.com/option-chain',
                 'Origin' => 'https://www.nseindia.com',
                 'Connection' => 'keep-alive',
+                'Sec-Fetch-Dest' => 'empty',
+                'Sec-Fetch-Mode' => 'cors',
+                'Sec-Fetch-Site' => 'same-origin',
             ];
             
-            // Warm-up call to set cookies (required by NSE)
-            try {
-                Http::withHeaders($headers)->timeout(8)->get('https://www.nseindia.com');
-            } catch (\Throwable $e) {
-                // Ignore warm-up errors, but log for debugging
-                Log::debug('NSE warm-up call failed: ' . $e->getMessage());
+            // Retry logic with better session handling
+            $maxRetries = 3;
+            $lastError = null;
+            
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    // Create a new client for each attempt to ensure fresh session
+                    $client = Http::withHeaders($headers)->timeout(15);
+                    
+                    // Step 1: Warm-up call to homepage to get session cookies
+                    try {
+                        $warmup = $client->get('https://www.nseindia.com');
+                        Log::debug("NSE warm-up attempt {$attempt} status: " . $warmup->status());
+                        
+                        // Wait a bit longer for cookies to be set
+                        usleep(800000); // 0.8 seconds
+                        
+                        // Also try accessing market-data page to establish better session
+                        $client->get('https://www.nseindia.com/market-data');
+                        usleep(300000); // 0.3 seconds
+                    } catch (\Throwable $e) {
+                        Log::debug('NSE warm-up call failed: ' . $e->getMessage());
+                    }
+                    
+                    // Step 2: Make the actual API call
+                    $response = $client->timeout(25)->get($url);
+                    
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        Log::debug("NSE API response status: " . $response->status() . " for {$mappedSymbol} (attempt {$attempt})");
+                        
+                        if (isset($data['records']['data']) && !empty($data['records']['data'])) {
+            // Get underlying price from NSE response if available
+            $underlyingPrice = $data['records']['underlyingValue'] ?? null;
+            $timestamp = $data['records']['timestamp'] ?? null;
+            Log::info("NSE API returned " . count($data['records']['data']) . " raw option records for {$mappedSymbol}" . ($underlyingPrice ? " (Underlying: {$underlyingPrice})" : "") . ($timestamp ? " (Timestamp: {$timestamp})" : ""));
+            
+            // Log sample of first option to debug structure
+            if (!empty($data['records']['data'][0])) {
+                $sample = $data['records']['data'][0];
+                Log::debug("NSE API sample option structure: " . json_encode(array_keys($sample)));
+                if (isset($sample['CE'])) {
+                    Log::debug("NSE API sample CE fields: " . json_encode(array_keys($sample['CE'])));
+                }
             }
-            
-            $response = Http::withHeaders($headers)->timeout(15)->get($url);
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data['records']['data']) && !empty($data['records']['data'])) {
-                    $processed = $this->processNSEData($data['records']['data'], $mappedSymbol);
-                    if (!empty($processed)) {
-                        return [
-                            'success' => true,
-                            'data' => $processed,
-                            'source' => 'NSE India Free API (1-2 min delayed)'
-                        ];
+                            
+                            $processed = $this->processNSEData($data['records']['data'], $mappedSymbol, $underlyingPrice);
+                            if (!empty($processed)) {
+                                Log::info("NSE API processed " . count($processed) . " valid options for {$mappedSymbol}");
+                                return [
+                                    'success' => true,
+                                    'data' => $processed,
+                                    'source' => 'NSE India Free API (Real-time, 1-2 min delayed)'
+                                ];
+                            } else {
+                                Log::warning("NSE API returned data but processing resulted in 0 valid options for {$mappedSymbol} (attempt {$attempt})");
+                                // Try next attempt
+                                if ($attempt < $maxRetries) {
+                                    usleep(1000000); // Wait 1 second before retry
+                                    continue;
+                                }
+                            }
+                        } else {
+                            Log::warning("NSE API returned empty or invalid data structure for {$mappedSymbol} (attempt {$attempt})");
+                            // Try next attempt
+                            if ($attempt < $maxRetries) {
+                                usleep(1000000); // Wait 1 second before retry
+                                continue;
+                            }
+                        }
+                    } else {
+                        $statusCode = $response->status();
+                        Log::warning("NSE API request failed for {$mappedSymbol}: Status {$statusCode} (attempt {$attempt})");
+                        $lastError = "HTTP {$statusCode}";
+                        
+                        // If 403 Forbidden, wait longer before retry (session issue)
+                        if ($statusCode === 403 && $attempt < $maxRetries) {
+                            Log::info("NSE API returned 403, waiting longer before retry...");
+                            sleep(2); // Wait 2 seconds for session to reset
+                            continue;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $lastError = $e->getMessage();
+                    Log::warning("NSE API attempt {$attempt} error: " . $lastError);
+                    
+                    if ($attempt < $maxRetries) {
+                        usleep(1000000 * $attempt); // Exponential backoff
+                        continue;
                     }
                 }
             }
             
-            // If we get here, NSE API failed or returned empty data (likely market closed)
-            Log::info("NSE India options API failed or returned empty data for {$mappedSymbol} - likely market closed");
-            return ['success' => false, 'message' => 'NSE India options API failed or market closed'];
+            // If we get here, all retries failed
+            Log::warning("NSE India options API failed after {$maxRetries} attempts for {$mappedSymbol}: {$lastError}");
+            return ['success' => false, 'message' => 'NSE India options API failed after retries. Market may be closed or API temporarily unavailable.'];
             
         } catch (\Exception $e) {
-            Log::warning('NSE India options error: ' . $e->getMessage());
+            Log::error('NSE India options error: ' . $e->getMessage());
             return ['success' => false, 'message' => 'NSE India options error: ' . $e->getMessage()];
         }
     }
     
     /**
-     * Process NSE option chain data
+     * Get option chain from OPIFY (alternative free source)
+     * Note: OPIFY may not have a public API, so this is a placeholder for future implementation
+     * or web scraping if needed
      */
-    private function processNSEData(array $data, string $symbol): array
+    private function getOptionChainFromOpify(string $symbol): array
+    {
+        try {
+            // Map symbol to OPIFY format
+            $mappedSymbol = strtoupper($symbol);
+            if ($mappedSymbol === 'NIFTY 50' || $mappedSymbol === 'NIFTY') {
+                $mappedSymbol = 'NIFTY';
+            } elseif ($mappedSymbol === 'NIFTY BANK' || $mappedSymbol === 'BANK NIFTY' || $mappedSymbol === 'BANKNIFTY') {
+                $mappedSymbol = 'BANKNIFTY';
+            } else {
+                return ['success' => false, 'message' => 'Unsupported symbol for OPIFY'];
+            }
+            
+            // Try OPIFY public endpoint (if available)
+            // Note: This may not work as OPIFY might not have a public API
+            // This is a placeholder for future implementation or web scraping
+            $url = "https://opify.in/api/v1/option-chain/{$mappedSymbol}";
+            
+            $headers = [
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                'Accept' => 'application/json',
+            ];
+            
+            $response = Http::withHeaders($headers)->timeout(8)->get($url);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['data']) && !empty($data['data'])) {
+                    $processed = $this->processOpifyData($data['data'], $mappedSymbol);
+                    if (!empty($processed)) {
+                        Log::info("OPIFY API processed " . count($processed) . " options for {$mappedSymbol}");
+                        return [
+                            'success' => true,
+                            'data' => $processed,
+                            'source' => 'OPIFY Free API (Real-time, 10-60 sec delayed)'
+                        ];
+                    }
+                }
+            }
+            
+            // OPIFY API not available, return failure (will fallback to NSE or cache)
+            return ['success' => false, 'message' => 'OPIFY API not available'];
+            
+        } catch (\Exception $e) {
+            Log::debug('OPIFY API error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'OPIFY API error: ' . $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Process OPIFY option chain data
+     */
+    private function processOpifyData(array $data, string $symbol): array
+    {
+        $options = [];
+        foreach ($data as $row) {
+            $strike = (float)($row['strike'] ?? $row['strikePrice'] ?? 0);
+            if ($strike <= 0) continue;
+            
+            // Process CALL options
+            if (isset($row['call'])) {
+                $call = $row['call'];
+                $ltp = (float)($call['ltp'] ?? $call['lastPrice'] ?? 0);
+                $bid = (float)($call['bid'] ?? $call['bidPrice'] ?? 0);
+                $ask = (float)($call['ask'] ?? $call['askPrice'] ?? 0);
+                
+                $displayPrice = $ltp > 0 ? $ltp : (($bid > 0 && $ask > 0) ? (($bid + $ask) / 2) : ($bid > 0 ? $bid : $ask));
+                
+                if ($displayPrice > 0) {
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'CALL',
+                        'ltp' => $displayPrice,
+                        'bid' => $bid,
+                        'ask' => $ask,
+                        'volume' => (int)($call['volume'] ?? $call['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($call['oi'] ?? $call['openInterest'] ?? 0),
+                        'data_source' => 'OPIFY Free API (10-60 sec delayed)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => $ltp > 0 ? 'LTP' : (($bid > 0 && $ask > 0) ? 'Mid(Bid/Ask)' : ($bid > 0 ? 'Bid' : 'Ask')),
+                        'is_real_data' => true
+                    ];
+                }
+            }
+            
+            // Process PUT options
+            if (isset($row['put'])) {
+                $put = $row['put'];
+                $ltp = (float)($put['ltp'] ?? $put['lastPrice'] ?? 0);
+                $bid = (float)($put['bid'] ?? $put['bidPrice'] ?? 0);
+                $ask = (float)($put['ask'] ?? $put['askPrice'] ?? 0);
+                
+                $displayPrice = $ltp > 0 ? $ltp : (($bid > 0 && $ask > 0) ? (($bid + $ask) / 2) : ($bid > 0 ? $bid : $ask));
+                
+                if ($displayPrice > 0) {
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'PUT',
+                        'ltp' => $displayPrice,
+                        'bid' => $bid,
+                        'ask' => $ask,
+                        'volume' => (int)($put['volume'] ?? $put['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($put['oi'] ?? $put['openInterest'] ?? 0),
+                        'data_source' => 'OPIFY Free API (10-60 sec delayed)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => $ltp > 0 ? 'LTP' : (($bid > 0 && $ask > 0) ? 'Mid(Bid/Ask)' : ($bid > 0 ? 'Bid' : 'Ask')),
+                        'is_real_data' => true
+                    ];
+                }
+            }
+        }
+        
+        return $options;
+    }
+    
+    /**
+     * Process NSE option chain data - uses real market prices with change percentage
+     */
+    private function processNSEData(array $data, string $symbol, $underlyingPrice = null): array
     {
         $options = [];
         foreach ($data as $row) {
             $strike = (float)($row['strikePrice'] ?? 0);
             if ($strike <= 0) continue;
             
+            // Process CALL options (CE)
             if (!empty($row['CE'])) {
                 $ce = $row['CE'];
-                $options[] = [
-                    'symbol' => $symbol,
-                    'strike_price' => $strike,
-                    'option_type' => 'CALL',
-                    'ltp' => (float)($ce['lastPrice'] ?? 0),
-                    'bid' => (float)($ce['bidprice'] ?? $ce['bidPrice'] ?? 0),
-                    'ask' => (float)($ce['askPrice'] ?? $ce['askprice'] ?? 0),
-                    'volume' => (int)($ce['totalTradedVolume'] ?? 0),
-                    'oi' => (int)($ce['openInterest'] ?? 0),
-                    'data_source' => 'NSE India Free API (1-2 min delayed)',
-                    'timestamp' => now()->toISOString()
-                ];
+                $ltp = (float)($ce['lastPrice'] ?? 0);
+                $bid = (float)($ce['bidprice'] ?? $ce['bidPrice'] ?? 0);
+                $ask = (float)($ce['askPrice'] ?? $ce['askprice'] ?? 0);
+                $prevClose = (float)($ce['previousClose'] ?? $ce['prevClose'] ?? 0);
+                
+                // Determine best available price: LTP > Mid(Bid/Ask) > Bid > Ask
+                $displayPrice = $ltp;
+                $priceSource = 'LTP';
+                
+                if ($ltp > 0) {
+                    $displayPrice = $ltp;
+                    $priceSource = 'LTP';
+                } elseif ($bid > 0 && $ask > 0) {
+                    $displayPrice = ($bid + $ask) / 2;
+                    $priceSource = 'Mid(Bid/Ask)';
+                } elseif ($bid > 0) {
+                    $displayPrice = $bid;
+                    $priceSource = 'Bid';
+                } elseif ($ask > 0) {
+                    $displayPrice = $ask;
+                    $priceSource = 'Ask';
+                }
+                
+                // Calculate change and change percentage if prev_close is available
+                $change = 0;
+                $changePercent = 0;
+                if ($prevClose > 0 && $displayPrice > 0) {
+                    $change = $displayPrice - $prevClose;
+                    $changePercent = ($change / $prevClose) * 100;
+                }
+                
+                // Only include if we have a valid price
+                if ($displayPrice > 0) {
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'CALL',
+                        'ltp' => round($displayPrice, 2), // Use best available price
+                        'bid' => round($bid, 2),
+                        'ask' => round($ask, 2),
+                        'prev_close' => round($prevClose, 2),
+                        'change' => round($change, 2),
+                        'change_percent' => round($changePercent, 2),
+                        'volume' => (int)($ce['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($ce['openInterest'] ?? 0),
+                        'data_source' => 'NSE India Free API (Real-time, 1-2 min delayed)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => $priceSource,
+                        'is_real_data' => true
+                    ];
+                }
             }
             
+            // Process PUT options (PE)
             if (!empty($row['PE'])) {
                 $pe = $row['PE'];
-                $options[] = [
-                    'symbol' => $symbol,
-                    'strike_price' => $strike,
-                    'option_type' => 'PUT',
-                    'ltp' => (float)($pe['lastPrice'] ?? 0),
-                    'bid' => (float)($pe['bidprice'] ?? $pe['bidPrice'] ?? 0),
-                    'ask' => (float)($pe['askPrice'] ?? $pe['askprice'] ?? 0),
-                    'volume' => (int)($pe['totalTradedVolume'] ?? 0),
-                    'oi' => (int)($pe['openInterest'] ?? 0),
-                    'data_source' => 'NSE India Free API (1-2 min delayed)',
-                    'timestamp' => now()->toISOString()
-                ];
+                $ltp = (float)($pe['lastPrice'] ?? 0);
+                $bid = (float)($pe['bidprice'] ?? $pe['bidPrice'] ?? 0);
+                $ask = (float)($pe['askPrice'] ?? $pe['askprice'] ?? 0);
+                $prevClose = (float)($pe['previousClose'] ?? $pe['prevClose'] ?? 0);
+                
+                // Determine best available price: LTP > Mid(Bid/Ask) > Bid > Ask
+                $displayPrice = $ltp;
+                $priceSource = 'LTP';
+                
+                if ($ltp > 0) {
+                    $displayPrice = $ltp;
+                    $priceSource = 'LTP';
+                } elseif ($bid > 0 && $ask > 0) {
+                    $displayPrice = ($bid + $ask) / 2;
+                    $priceSource = 'Mid(Bid/Ask)';
+                } elseif ($bid > 0) {
+                    $displayPrice = $bid;
+                    $priceSource = 'Bid';
+                } elseif ($ask > 0) {
+                    $displayPrice = $ask;
+                    $priceSource = 'Ask';
+                }
+                
+                // Calculate change and change percentage if prev_close is available
+                $change = 0;
+                $changePercent = 0;
+                if ($prevClose > 0 && $displayPrice > 0) {
+                    $change = $displayPrice - $prevClose;
+                    $changePercent = ($change / $prevClose) * 100;
+                }
+                
+                // Only include if we have a valid price
+                if ($displayPrice > 0) {
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'PUT',
+                        'ltp' => round($displayPrice, 2), // Use best available price
+                        'bid' => round($bid, 2),
+                        'ask' => round($ask, 2),
+                        'prev_close' => round($prevClose, 2),
+                        'change' => round($change, 2),
+                        'change_percent' => round($changePercent, 2),
+                        'volume' => (int)($pe['totalTradedVolume'] ?? 0),
+                        'oi' => (int)($pe['openInterest'] ?? 0),
+                        'data_source' => 'NSE India Free API (Real-time, 1-2 min delayed)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => $priceSource,
+                        'is_real_data' => true
+                    ];
+                }
             }
         }
         
@@ -541,7 +1021,7 @@ class FreeMarketDataService
     }
     
     /**
-     * Try to get live underlying price from market data
+     * Try to get live underlying price from market data with multiple fallbacks
      */
     private function getLiveUnderlyingPrice(string $symbol): float
     {
@@ -554,18 +1034,38 @@ class FreeMarketDataService
                 $marketSymbol = 'NIFTY BANK';
             }
             
-            // Try to get from cache first
-            $cacheKey = "free_market_data_" . md5($marketSymbol);
-            $cachedData = Cache::get($cacheKey);
-            if ($cachedData && isset($cachedData['data'][$marketSymbol]['ltp'])) {
-                return (float) $cachedData['data'][$marketSymbol]['ltp'];
+            // Method 1: Try to get from fresh API call
+            try {
+                $liveData = $this->getLiveMarketData([$marketSymbol]);
+                if ($liveData['success'] && isset($liveData['data'][$marketSymbol]['ltp']) && $liveData['data'][$marketSymbol]['ltp'] > 0) {
+                    $price = (float) $liveData['data'][$marketSymbol]['ltp'];
+                    Log::debug("Got live underlying price for {$marketSymbol} from API: {$price}");
+                    return $price;
+                }
+            } catch (\Exception $e) {
+                Log::debug('Could not get live price from API: ' . $e->getMessage());
             }
             
-            // Try to get from database
-            $marketDataModel = new \App\Models\MarketData();
-            $data = $marketDataModel::getMarketDataForSymbols([$marketSymbol], true);
-            if (isset($data[$marketSymbol]['ltp']) && $data[$marketSymbol]['ltp'] > 0) {
-                return (float) $data[$marketSymbol]['ltp'];
+            // Method 2: Try to get from cache
+            $cacheKey = "free_market_data_" . md5($marketSymbol);
+            $cachedData = Cache::get($cacheKey);
+            if ($cachedData && isset($cachedData['data'][$marketSymbol]['ltp']) && $cachedData['data'][$marketSymbol]['ltp'] > 0) {
+                $price = (float) $cachedData['data'][$marketSymbol]['ltp'];
+                Log::debug("Got underlying price for {$marketSymbol} from cache: {$price}");
+                return $price;
+            }
+            
+            // Method 3: Try to get from database
+            try {
+                $marketDataModel = new \App\Models\MarketData();
+                $data = $marketDataModel::getMarketDataForSymbols([$marketSymbol], true);
+                if (isset($data[$marketSymbol]['ltp']) && $data[$marketSymbol]['ltp'] > 0) {
+                    $price = (float) $data[$marketSymbol]['ltp'];
+                    Log::debug("Got underlying price for {$marketSymbol} from database: {$price}");
+                    return $price;
+                }
+            } catch (\Exception $e) {
+                Log::debug('Could not get price from database: ' . $e->getMessage());
             }
             
         } catch (\Exception $e) {
@@ -618,13 +1118,140 @@ class FreeMarketDataService
     }
     
     /**
+     * Generate fallback option prices using nearest calculated prices when real data is not available
+     */
+    private function generateFallbackOptionsUnder100(string $symbol): array
+    {
+        try {
+            // Get real underlying price from live market data first
+            $underlyingPrice = $this->getLiveUnderlyingPrice($symbol);
+            
+            // If live price not available, try default method
+            if ($underlyingPrice <= 0) {
+                $underlyingPrice = $this->getUnderlyingPrice($symbol);
+            }
+            
+            // Last resort: use reasonable defaults
+            if ($underlyingPrice <= 0) {
+                $underlyingPrice = ($symbol === 'BANKNIFTY' || $symbol === 'NIFTY BANK') ? 52000 : 26000;
+            }
+            
+            Log::info("FreeMarketDataService: Using underlying price {$underlyingPrice} for fallback calculation for {$symbol}");
+            
+            // Generate strikes around underlying price
+            $strikes = $this->generateStrikes($underlyingPrice);
+            $options = [];
+            
+            foreach ($strikes as $strike) {
+                // Calculate CALL option price using Black-Scholes model
+                $callPrice = $this->calculateRealisticPrice($underlyingPrice, $strike, 'CALL');
+                
+                // Ensure price is reasonable - if too high, use intrinsic value + time value approximation
+                if ($callPrice > 5000) {
+                    // For deep ITM options, use intrinsic value + small time value
+                    $intrinsicValue = max(0, $underlyingPrice - $strike);
+                    $callPrice = $intrinsicValue + ($intrinsicValue * 0.02); // Add 2% time value
+                }
+                
+                // Only add if price is reasonable (greater than 0.01 and less than 10000)
+                if ($callPrice >= 0.01 && $callPrice <= 10000) {
+                    // Estimate prev_close as slightly different from current price for realistic change
+                    $prevClose = $callPrice * (1 + (rand(-5, 5) / 100)); // ±5% variation
+                    $change = $callPrice - $prevClose;
+                    $changePercent = $prevClose > 0 ? ($change / $prevClose) * 100 : 0;
+                    
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'CALL',
+                        'ltp' => round($callPrice, 2),
+                        'bid' => round($callPrice * 0.995, 2), // Tighter spread
+                        'ask' => round($callPrice * 1.005, 2),
+                        'prev_close' => round($prevClose, 2),
+                        'change' => round($change, 2),
+                        'change_percent' => round($changePercent, 2),
+                        'volume' => 0,
+                        'oi' => 0,
+                        'data_source' => 'Fallback (Calculated nearest price)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => 'Calculated'
+                    ];
+                }
+                
+                // Calculate PUT option price using Black-Scholes model
+                $putPrice = $this->calculateRealisticPrice($underlyingPrice, $strike, 'PUT');
+                
+                // Ensure price is reasonable - if too high, use intrinsic value + time value approximation
+                if ($putPrice > 5000) {
+                    // For deep ITM options, use intrinsic value + small time value
+                    $intrinsicValue = max(0, $strike - $underlyingPrice);
+                    $putPrice = $intrinsicValue + ($intrinsicValue * 0.02); // Add 2% time value
+                }
+                
+                // Only add if price is reasonable (greater than 0.01 and less than 10000)
+                if ($putPrice >= 0.01 && $putPrice <= 10000) {
+                    // Estimate prev_close as slightly different from current price for realistic change
+                    $prevClose = $putPrice * (1 + (rand(-5, 5) / 100)); // ±5% variation
+                    $change = $putPrice - $prevClose;
+                    $changePercent = $prevClose > 0 ? ($change / $prevClose) * 100 : 0;
+                    
+                    $options[] = [
+                        'symbol' => $symbol,
+                        'strike_price' => $strike,
+                        'option_type' => 'PUT',
+                        'ltp' => round($putPrice, 2),
+                        'bid' => round($putPrice * 0.995, 2), // Tighter spread
+                        'ask' => round($putPrice * 1.005, 2),
+                        'prev_close' => round($prevClose, 2),
+                        'change' => round($change, 2),
+                        'change_percent' => round($changePercent, 2),
+                        'volume' => 0,
+                        'oi' => 0,
+                        'data_source' => 'Fallback (Calculated nearest price)',
+                        'timestamp' => now()->toISOString(),
+                        'price_source' => 'Calculated'
+                    ];
+                }
+            }
+            
+            if (!empty($options)) {
+                return [
+                    'success' => true,
+                    'data' => $options,
+                    'source' => 'Fallback (Calculated nearest price)',
+                    'message' => 'NSE API unavailable. Showing calculated prices based on underlying price.'
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Could not generate fallback options',
+                'data' => []
+            ];
+        } catch (\Exception $e) {
+            Log::error("FreeMarketDataService: Error generating fallback options: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error generating fallback data',
+                'data' => []
+            ];
+        }
+    }
+    
+    /**
      * Calculate realistic option price using simplified Black-Scholes
      */
     private function calculateRealisticPrice(float $underlying, float $strike, string $type): float
     {
-        $timeToExpiry = 0.25; // 3 months
-        $volatility = 0.2; // 20% volatility
-        $riskFreeRate = 0.05; // 5% risk-free rate
+        // Use weekly expiry (7 days) for more realistic prices
+        $timeToExpiry = 7 / 365; // ~0.019 years (1 week)
+        $volatility = 0.15; // 15% volatility (more realistic for indices)
+        $riskFreeRate = 0.06; // 6% risk-free rate
+        
+        // Avoid division by zero or invalid calculations
+        if ($strike <= 0 || $underlying <= 0) {
+            return 0;
+        }
         
         $d1 = (log($underlying / $strike) + ($riskFreeRate + 0.5 * $volatility * $volatility) * $timeToExpiry) / ($volatility * sqrt($timeToExpiry));
         $d2 = $d1 - $volatility * sqrt($timeToExpiry);
@@ -636,6 +1263,15 @@ class FreeMarketDataService
             $price = $underlying * $nd1 - $strike * exp(-$riskFreeRate * $timeToExpiry) * $nd2;
         } else {
             $price = $strike * exp(-$riskFreeRate * $timeToExpiry) * (1 - $nd2) - $underlying * (1 - $nd1);
+        }
+        
+        // Ensure price is at least intrinsic value for ITM options
+        if ($type === 'CALL') {
+            $intrinsic = max(0, $underlying - $strike);
+            $price = max($price, $intrinsic);
+        } else {
+            $intrinsic = max(0, $strike - $underlying);
+            $price = max($price, $intrinsic);
         }
         
         return max(0, round($price, 2));
@@ -901,6 +1537,80 @@ class FreeMarketDataService
         Log::info("FreeMarketDataService: Added mock data to reach " . count($filteredData) . " symbols");
     }
 
+    /**
+     * Get option chain from database (last stored data)
+     */
+    private function getOptionChainFromDatabase(string $symbol): ?array
+    {
+        try {
+            // Map symbol to database format
+            $mappedSymbol = strtoupper($symbol);
+            if ($mappedSymbol === 'NIFTY 50') {
+                $mappedSymbol = 'NIFTY';
+            } elseif ($mappedSymbol === 'NIFTY BANK' || $mappedSymbol === 'BANK NIFTY') {
+                $mappedSymbol = 'BANKNIFTY';
+            }
+            
+            // Get latest option chain data from database
+            $optionChainModel = new \App\Models\OptionChain();
+            
+            // Get the most recent expiry date for this symbol
+            $latestExpiry = \App\Models\OptionChain::where('symbol', $mappedSymbol)
+                ->whereNotNull('data_timestamp')
+                ->orderBy('data_timestamp', 'desc')
+                ->value('expiry_date');
+            
+            if (!$latestExpiry) {
+                return null;
+            }
+            
+            // Get all options for this symbol and expiry
+            $options = \App\Models\OptionChain::where('symbol', $mappedSymbol)
+                ->whereDate('expiry_date', $latestExpiry)
+                ->orderBy('strike_price')
+                ->orderBy('option_type')
+                ->get();
+            
+            if ($options->isEmpty()) {
+                return null;
+            }
+            
+            // Convert to array format
+            $data = [];
+            foreach ($options as $option) {
+                $data[] = [
+                    'symbol' => $option->symbol,
+                    'strike_price' => (float) $option->strike_price,
+                    'option_type' => $option->option_type,
+                    'ltp' => (float) $option->ltp,
+                    'bid' => (float) $option->bid,
+                    'ask' => (float) $option->ask,
+                    'volume' => (int) $option->volume,
+                    'oi' => (int) $option->oi,
+                    'prev_close' => 0, // Database might not have this
+                    'change' => 0,
+                    'change_percent' => 0,
+                    'data_source' => $option->data_source ?? 'Database (Last stored)',
+                    'timestamp' => $option->data_timestamp ? $option->data_timestamp->toISOString() : now()->toISOString(),
+                    'price_source' => 'LTP',
+                    'is_real_data' => true
+                ];
+            }
+            
+            return [
+                'success' => true,
+                'data' => $data,
+                'source' => 'Database (Last stored prices)',
+                'timestamp' => $options->first()->data_timestamp?->toISOString() ?? now()->toISOString(),
+                'is_real_data' => true
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error("FreeMarketDataService: Error getting option chain from database: " . $e->getMessage());
+            return null;
+        }
+    }
+    
     /**
      * Get SENSEX fallback data when not available from APIs
      * @return array

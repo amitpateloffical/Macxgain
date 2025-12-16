@@ -1168,12 +1168,34 @@ export default {
         console.log('📊 Response data:', response.data);
         console.log('✅ Response status:', response.status);
         
-        if (response.data.success && response.data.data) {
+        if (response.data.success && response.data.data && response.data.data.length > 0) {
           console.log('🎯 Processing real API data...');
+          console.log(`📊 Data source: ${response.data.data_source || 'Unknown'}`);
+          console.log(`📊 Total options: ${response.data.data.length}`);
+          console.log(`📊 Market status: ${response.data.market_status || 'UNKNOWN'}`);
+          
+          // Show appropriate message based on market status
+          if (response.data.market_status === 'CLOSED' || (!response.data.is_market_open && response.data.is_cached)) {
+            console.log('📊 Market is closed - showing last available prices');
+            // Show info message instead of error
+            if (response.data.message) {
+              this.showInfo(response.data.message);
+            }
+          } else if (response.data.is_cached) {
+            console.log('⚠️ Using cached data (NSE API temporarily unavailable)');
+          }
+          
           this.processOptionsData(response.data.data);
         } else {
-          console.log('⚠️ API response not successful');
-          this.showError('No options data available for this symbol. Please try another stock.');
+          console.log('⚠️ API response not successful or empty data');
+          const errorMessage = response.data?.message || 'No options data available for this symbol. The market may be closed or NSE API is temporarily unavailable. Please try again in a moment.';
+          
+          // If market is closed, show info instead of error
+          if (response.data?.market_status === 'CLOSED' || !response.data?.is_market_open) {
+            this.showInfo(errorMessage);
+          } else {
+            this.showError(errorMessage);
+          }
           this.closeStockOptions();
           return;
         }
@@ -1223,20 +1245,45 @@ export default {
         const currentPrice = this.selectedStock?.ltp || this.selectedStock?.last || 24000;
         console.log('💰 Current stock price:', currentPrice);
         
-        // Process all real options data
-        const allOptions = data.map(option => ({
-          symbol: option.symbol_id || option.symbol,
-          strike_price: option.strike_price || 0,
-          ltp: option.ltp || 0,
-          prev_close: option.prev_close || 0,
-          bid: option.bid || 0,
-          ask: option.ask || 0,
-          volume: option.volume || 0,
-          open_interest: option.oi || option.open_interest || 0,
-          option_type: option.option_type,
-          implied_volatility: option.implied_volatility || 0,
-          change_percent: this.calculateChangePercent(option.ltp, option.prev_close)
-        }));
+        // Process all real options data - use best available price
+        const allOptions = data.map(option => {
+          const ltp = parseFloat(option.ltp) || 0;
+          const bid = parseFloat(option.bid) || 0;
+          const ask = parseFloat(option.ask) || 0;
+          
+          // Use best available price: LTP > Mid(Bid/Ask) > Bid > Ask
+          let displayPrice = ltp;
+          let priceSource = 'LTP';
+          
+          if (ltp > 0) {
+            displayPrice = ltp;
+            priceSource = 'LTP';
+          } else if (bid > 0 && ask > 0) {
+            displayPrice = (bid + ask) / 2;
+            priceSource = 'Mid(Bid/Ask)';
+          } else if (bid > 0) {
+            displayPrice = bid;
+            priceSource = 'Bid';
+          } else if (ask > 0) {
+            displayPrice = ask;
+            priceSource = 'Ask';
+          }
+          
+          return {
+            symbol: option.symbol_id || option.symbol,
+            strike_price: option.strike_price || 0,
+            ltp: displayPrice, // Use best available price
+            prev_close: option.prev_close || 0,
+            bid: bid,
+            ask: ask,
+            volume: option.volume || 0,
+            open_interest: option.oi || option.open_interest || 0,
+            option_type: option.option_type,
+            implied_volatility: option.implied_volatility || 0,
+            change_percent: this.calculateChangePercent(displayPrice, option.prev_close),
+            price_source: priceSource
+          };
+        }).filter(option => option.ltp > 0); // Only include options with valid prices
         
         // Get all available strikes and sort them
         const allStrikes = [...new Set(allOptions.map(option => option.strike_price))].sort((a, b) => a - b);
@@ -1392,12 +1439,46 @@ export default {
 
     getCallChange(strike) {
       const option = this.callOptions.find(opt => opt.strike_price === strike);
-      return option ? option.change_percent : '--';
+      if (!option) return '--';
+      
+      // If change_percent is already a formatted string, return it
+      if (typeof option.change_percent === 'string') {
+        return option.change_percent;
+      }
+      
+      // If change_percent is a number, format it
+      const changePercent = parseFloat(option.change_percent);
+      if (isNaN(changePercent) || changePercent === 0) {
+        // Try to calculate from prev_close if available
+        if (option.prev_close && option.prev_close > 0 && option.ltp) {
+          return this.calculateChangePercent(option.ltp, option.prev_close);
+        }
+        return '--';
+      }
+      
+      return changePercent.toFixed(2) + '%';
     },
 
     getPutChange(strike) {
       const option = this.putOptions.find(opt => opt.strike_price === strike);
-      return option ? option.change_percent : '--';
+      if (!option) return '--';
+      
+      // If change_percent is already a formatted string, return it
+      if (typeof option.change_percent === 'string') {
+        return option.change_percent;
+      }
+      
+      // If change_percent is a number, format it
+      const changePercent = parseFloat(option.change_percent);
+      if (isNaN(changePercent) || changePercent === 0) {
+        // Try to calculate from prev_close if available
+        if (option.prev_close && option.prev_close > 0 && option.ltp) {
+          return this.calculateChangePercent(option.ltp, option.prev_close);
+        }
+        return '--';
+      }
+      
+      return changePercent.toFixed(2) + '%';
     },
 
     getChangeClass(change) {
@@ -1754,6 +1835,23 @@ export default {
       } else {
         console.log('Success:', message);
         alert('Success: ' + message);
+      }
+    },
+    showInfo(message) {
+      // Use SweetAlert2 for info notifications
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Info',
+          text: message,
+          icon: 'info',
+          timer: 5000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+      } else {
+        console.log('Info:', message);
+        alert('Info: ' + message);
       }
     },
     getStatusIcon(status) {
