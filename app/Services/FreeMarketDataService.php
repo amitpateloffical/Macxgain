@@ -202,6 +202,7 @@ class FreeMarketDataService
         // Market is open - try to fetch fresh data
         // Try multiple free API sources in order of preference
         $apis = [
+            'groww' => function() use ($symbol) { return $this->getOptionChainFromGroww($symbol); },
             'nse' => function() use ($symbol) { return $this->getOptionChainFromNSE($symbol); },
             'opify' => function() use ($symbol) { return $this->getOptionChainFromOpify($symbol); },
         ];
@@ -296,14 +297,7 @@ class FreeMarketDataService
             return $cached;
         }
         
-        // Last resort: Generate calculated prices based on underlying when no data is available (only during market hours)
-        Log::info("FreeMarketDataService: No API data and no cache, generating calculated prices for {$symbol}");
-        $fallbackData = $this->generateFallbackOptionsUnder100($symbol);
-        if ($fallbackData['success'] && !empty($fallbackData['data'])) {
-            Log::info("FreeMarketDataService: Generated " . count($fallbackData['data']) . " calculated options for {$symbol}");
-            return $fallbackData;
-        }
-        
+        // No mock/calculated data - only show real live data
         // No valid data from any source
         Log::warning("FreeMarketDataService: No valid option prices from any API for {$symbol} and no cached data");
         return [
@@ -537,7 +531,115 @@ class FreeMarketDataService
     }
     
     /**
-     * Get option chain from NSE India with improved session handling and retry logic
+     * Get option chain from Groww API (free, real-time data)
+     */
+    private function getOptionChainFromGroww(string $symbol): array
+    {
+        try {
+            // Map symbol to Groww format
+            $mappedSymbol = strtolower($symbol);
+            if ($mappedSymbol === 'nifty 50' || $mappedSymbol === 'nifty') {
+                $mappedSymbol = 'nifty';
+            } elseif ($mappedSymbol === 'nifty bank' || $mappedSymbol === 'bank nifty' || $mappedSymbol === 'banknifty') {
+                $mappedSymbol = 'nifty-bank'; // Groww uses nifty-bank for BANKNIFTY
+            } else {
+                return ['success' => false, 'message' => 'Unsupported symbol for Groww API'];
+            }
+            
+            $url = "https://groww.in/v1/api/option_chain_service/v1/option_chain/{$mappedSymbol}";
+            
+            Log::info("FreeMarketDataService: Fetching from Groww API for {$mappedSymbol}");
+            
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept' => 'application/json',
+            ])->timeout(15)->get($url);
+            
+            if (!$response->successful()) {
+                Log::warning("Groww API failed: HTTP " . $response->status());
+                return ['success' => false, 'message' => 'Groww API HTTP error: ' . $response->status()];
+            }
+            
+            $data = $response->json();
+            
+            if (!isset($data['optionChain']['optionChains']) || empty($data['optionChain']['optionChains'])) {
+                Log::warning("Groww API returned empty data");
+                return ['success' => false, 'message' => 'Groww API returned no data'];
+            }
+            
+            $optionChains = $data['optionChain']['optionChains'];
+            Log::info("Groww API returned " . count($optionChains) . " option chains");
+            
+            // Process Groww data to standard format
+            $processed = [];
+            foreach ($optionChains as $chain) {
+                // Strike price is in paise (multiply by 100), convert to rupees
+                $strikePrice = ($chain['strikePrice'] ?? 0) / 100;
+                
+                // Process Call Option
+                if (isset($chain['callOption'])) {
+                    $call = $chain['callOption'];
+                    $processed[] = [
+                        'symbol' => strtoupper($symbol),
+                        'strike_price' => $strikePrice,
+                        'option_type' => 'CE',
+                        'ltp' => (float)($call['ltp'] ?? 0),
+                        'bid' => 0, // Groww doesn't provide bid/ask
+                        'ask' => 0,
+                        'prev_close' => (float)($call['close'] ?? 0),
+                        'change' => (float)($call['dayChange'] ?? 0),
+                        'change_percent' => (float)($call['dayChangePerc'] ?? 0),
+                        'volume' => (int)($call['volume'] ?? 0),
+                        'oi' => (int)($call['openInterest'] ?? 0),
+                        'high' => (float)($call['high'] ?? 0),
+                        'low' => (float)($call['low'] ?? 0),
+                        'open' => (float)($call['open'] ?? 0),
+                        'data_source' => 'Groww API (Real-time)',
+                        'timestamp' => now()->toISOString(),
+                    ];
+                }
+                
+                // Process Put Option
+                if (isset($chain['putOption'])) {
+                    $put = $chain['putOption'];
+                    $processed[] = [
+                        'symbol' => strtoupper($symbol),
+                        'strike_price' => $strikePrice,
+                        'option_type' => 'PE',
+                        'ltp' => (float)($put['ltp'] ?? 0),
+                        'bid' => 0,
+                        'ask' => 0,
+                        'prev_close' => (float)($put['close'] ?? 0),
+                        'change' => (float)($put['dayChange'] ?? 0),
+                        'change_percent' => (float)($put['dayChangePerc'] ?? 0),
+                        'volume' => (int)($put['volume'] ?? 0),
+                        'oi' => (int)($put['openInterest'] ?? 0),
+                        'high' => (float)($put['high'] ?? 0),
+                        'low' => (float)($put['low'] ?? 0),
+                        'open' => (float)($put['open'] ?? 0),
+                        'data_source' => 'Groww API (Real-time)',
+                        'timestamp' => now()->toISOString(),
+                    ];
+                }
+            }
+            
+            Log::info("Groww API processed " . count($processed) . " options for {$symbol}");
+            
+            return [
+                'success' => true,
+                'data' => $processed,
+                'source' => 'Groww API (Real-time)',
+                'timestamp' => now()->toISOString()
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Groww API error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Groww API error: ' . $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Get option chain from NSE India with proper cookie/session handling using Guzzle
      */
     private function getOptionChainFromNSE(string $symbol): array
     {
@@ -551,114 +653,133 @@ class FreeMarketDataService
             }
             
             // Only try NSE for supported symbols
-            if (!in_array($mappedSymbol, ['NIFTY', 'BANKNIFTY'])) {
+            if (!in_array($mappedSymbol, ['NIFTY', 'BANKNIFTY', 'FINNIFTY', 'MIDCPNIFTY', 'NIFTYNXT50'])) {
                 return ['success' => false, 'message' => 'Unsupported symbol for NSE'];
             }
             
             $url = "https://www.nseindia.com/api/option-chain-indices?symbol=" . $mappedSymbol;
             
-            $headers = [
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                'Accept' => 'application/json, text/plain, */*',
-                'Accept-Language' => 'en-US,en;q=0.9',
-                'Accept-Encoding' => 'gzip, deflate, br',
-                'Referer' => 'https://www.nseindia.com/option-chain',
-                'Origin' => 'https://www.nseindia.com',
-                'Connection' => 'keep-alive',
-                'Sec-Fetch-Dest' => 'empty',
-                'Sec-Fetch-Mode' => 'cors',
-                'Sec-Fetch-Site' => 'same-origin',
-            ];
+            // Use Guzzle with CookieJar for proper session handling
+            $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
             
-            // Retry logic with better session handling
+            $guzzleClient = new \GuzzleHttp\Client([
+                'cookies' => $cookieJar,
+                'timeout' => 30,
+                'connect_timeout' => 15,
+                'verify' => false, // Skip SSL verification for NSE
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language' => 'en-US,en;q=0.9,hi;q=0.8',
+                    'Accept-Encoding' => 'gzip, deflate, br',
+                    'Connection' => 'keep-alive',
+                    'Cache-Control' => 'max-age=0',
+                    'Upgrade-Insecure-Requests' => '1',
+                ]
+            ]);
+            
             $maxRetries = 3;
             $lastError = null;
             
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
-                    // Create a new client for each attempt to ensure fresh session
-                    $client = Http::withHeaders($headers)->timeout(15);
+                    Log::info("NSE API attempt {$attempt} for {$mappedSymbol}");
                     
-                    // Step 1: Warm-up call to homepage to get session cookies
-                    try {
-                        $warmup = $client->get('https://www.nseindia.com');
-                        Log::debug("NSE warm-up attempt {$attempt} status: " . $warmup->status());
-                        
-                        // Wait a bit longer for cookies to be set
-                        usleep(800000); // 0.8 seconds
-                        
-                        // Also try accessing market-data page to establish better session
-                        $client->get('https://www.nseindia.com/market-data');
-                        usleep(300000); // 0.3 seconds
-                    } catch (\Throwable $e) {
-                        Log::debug('NSE warm-up call failed: ' . $e->getMessage());
-                    }
+                    // Step 1: Visit homepage to get session cookies
+                    $guzzleClient->get('https://www.nseindia.com/', [
+                        'headers' => [
+                            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        ]
+                    ]);
+                    Log::debug("NSE homepage visited, cookies obtained");
                     
-                    // Step 2: Make the actual API call
-                    $response = $client->timeout(25)->get($url);
+                    // Wait for session to be established
+                    usleep(500000); // 0.5 seconds
                     
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        Log::debug("NSE API response status: " . $response->status() . " for {$mappedSymbol} (attempt {$attempt})");
+                    // Step 2: Visit option-chain page to establish proper session context
+                    $guzzleClient->get('https://www.nseindia.com/option-chain', [
+                        'headers' => [
+                            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            'Referer' => 'https://www.nseindia.com/',
+                        ]
+                    ]);
+                    Log::debug("NSE option-chain page visited");
+                    
+                    usleep(300000); // 0.3 seconds
+                    
+                    // Step 3: Make the actual API call with proper headers
+                    $response = $guzzleClient->get($url, [
+                        'headers' => [
+                            'Accept' => 'application/json, text/plain, */*',
+                            'Referer' => 'https://www.nseindia.com/option-chain',
+                            'X-Requested-With' => 'XMLHttpRequest',
+                            'Sec-Fetch-Dest' => 'empty',
+                            'Sec-Fetch-Mode' => 'cors',
+                            'Sec-Fetch-Site' => 'same-origin',
+                        ]
+                    ]);
+                    
+                    $statusCode = $response->getStatusCode();
+                    $body = $response->getBody()->getContents();
+                    $data = json_decode($body, true);
+                    
+                    Log::debug("NSE API response status: {$statusCode} for {$mappedSymbol} (attempt {$attempt})");
+                    
+                    if ($statusCode === 200 && isset($data['records']['data']) && !empty($data['records']['data'])) {
+                        // Get underlying price from NSE response if available
+                        $underlyingPrice = $data['records']['underlyingValue'] ?? null;
+                        $timestamp = $data['records']['timestamp'] ?? null;
+                        Log::info("NSE API returned " . count($data['records']['data']) . " raw option records for {$mappedSymbol}" . ($underlyingPrice ? " (Underlying: {$underlyingPrice})" : "") . ($timestamp ? " (Timestamp: {$timestamp})" : ""));
                         
-                        if (isset($data['records']['data']) && !empty($data['records']['data'])) {
-            // Get underlying price from NSE response if available
-            $underlyingPrice = $data['records']['underlyingValue'] ?? null;
-            $timestamp = $data['records']['timestamp'] ?? null;
-            Log::info("NSE API returned " . count($data['records']['data']) . " raw option records for {$mappedSymbol}" . ($underlyingPrice ? " (Underlying: {$underlyingPrice})" : "") . ($timestamp ? " (Timestamp: {$timestamp})" : ""));
-            
-            // Log sample of first option to debug structure
-            if (!empty($data['records']['data'][0])) {
-                $sample = $data['records']['data'][0];
-                Log::debug("NSE API sample option structure: " . json_encode(array_keys($sample)));
-                if (isset($sample['CE'])) {
-                    Log::debug("NSE API sample CE fields: " . json_encode(array_keys($sample['CE'])));
-                }
-            }
-                            
-                            $processed = $this->processNSEData($data['records']['data'], $mappedSymbol, $underlyingPrice);
-                            if (!empty($processed)) {
-                                Log::info("NSE API processed " . count($processed) . " valid options for {$mappedSymbol}");
-                                return [
-                                    'success' => true,
-                                    'data' => $processed,
-                                    'source' => 'NSE India Free API (Real-time, 1-2 min delayed)'
-                                ];
-                            } else {
-                                Log::warning("NSE API returned data but processing resulted in 0 valid options for {$mappedSymbol} (attempt {$attempt})");
-                                // Try next attempt
-                                if ($attempt < $maxRetries) {
-                                    usleep(1000000); // Wait 1 second before retry
-                                    continue;
-                                }
+                        // Log sample of first option to debug structure
+                        if (!empty($data['records']['data'][0])) {
+                            $sample = $data['records']['data'][0];
+                            Log::debug("NSE API sample option structure: " . json_encode(array_keys($sample)));
+                            if (isset($sample['CE'])) {
+                                Log::debug("NSE API sample CE fields: " . json_encode(array_keys($sample['CE'])));
                             }
+                        }
+                        
+                        $processed = $this->processNSEData($data['records']['data'], $mappedSymbol, $underlyingPrice);
+                        if (!empty($processed)) {
+                            Log::info("NSE API processed " . count($processed) . " valid options for {$mappedSymbol}");
+                            return [
+                                'success' => true,
+                                'data' => $processed,
+                                'source' => 'NSE India Free API (Real-time, 1-2 min delayed)',
+                                'underlying_price' => $underlyingPrice,
+                                'timestamp' => $timestamp
+                            ];
                         } else {
-                            Log::warning("NSE API returned empty or invalid data structure for {$mappedSymbol} (attempt {$attempt})");
-                            // Try next attempt
-                            if ($attempt < $maxRetries) {
-                                usleep(1000000); // Wait 1 second before retry
-                                continue;
-                            }
+                            Log::warning("NSE API returned data but processing resulted in 0 valid options for {$mappedSymbol} (attempt {$attempt})");
+                            $lastError = "No valid options after processing";
                         }
                     } else {
-                        $statusCode = $response->status();
-                        Log::warning("NSE API request failed for {$mappedSymbol}: Status {$statusCode} (attempt {$attempt})");
-                        $lastError = "HTTP {$statusCode}";
-                        
-                        // If 403 Forbidden, wait longer before retry (session issue)
-                        if ($statusCode === 403 && $attempt < $maxRetries) {
-                            Log::info("NSE API returned 403, waiting longer before retry...");
-                            sleep(2); // Wait 2 seconds for session to reset
-                            continue;
-                        }
+                        Log::warning("NSE API returned empty or invalid data structure for {$mappedSymbol} (attempt {$attempt})");
+                        $lastError = "Empty or invalid data structure";
+                    }
+                    
+                    // Wait before retry
+                    if ($attempt < $maxRetries) {
+                        sleep(1);
+                    }
+                    
+                } catch (\GuzzleHttp\Exception\ClientException $e) {
+                    $statusCode = $e->getResponse()->getStatusCode();
+                    $lastError = "HTTP {$statusCode}";
+                    Log::warning("NSE API client error for {$mappedSymbol}: {$lastError} (attempt {$attempt})");
+                    
+                    // If 403 Forbidden, wait longer before retry
+                    if ($statusCode === 403 && $attempt < $maxRetries) {
+                        Log::info("NSE API returned 403, waiting 3 seconds before retry...");
+                        sleep(3);
                     }
                 } catch (\Exception $e) {
                     $lastError = $e->getMessage();
                     Log::warning("NSE API attempt {$attempt} error: " . $lastError);
                     
                     if ($attempt < $maxRetries) {
-                        usleep(1000000 * $attempt); // Exponential backoff
-                        continue;
+                        sleep($attempt); // Exponential backoff
                     }
                 }
             }
