@@ -718,13 +718,33 @@ class MarketDataController extends Controller
             // Get expiry from query parameter or use default
             $expiry = request()->query('expiry', '20250916');
             
+            // Get market status
+            $marketStatus = $this->marketStatusService->getMarketStatus();
+            $isMarketOpen = ($marketStatus['status'] ?? 'CLOSED') === 'OPEN';
+            
             // Use fixed underlying price for now (will be made dynamic later)
             $underlyingPrice = 25000;
 
             // Try free market data service for option chain first
             $freeResp = $this->freeMarketDataService->getOptionChain($symbol);
             if ($freeResp['success'] && !empty($freeResp['data'])) {
-                Log::info("Using free market data service for option chain");
+                $isCached = $freeResp['is_cached'] ?? false;
+                $marketStatusFromResponse = $freeResp['market_status'] ?? ($isMarketOpen ? 'OPEN' : 'CLOSED');
+                
+                Log::info("Using free market data service for option chain" . ($isCached ? " (cached)" : "") . " - Market: {$marketStatusFromResponse}");
+                
+                // Determine message based on market status
+                $message = $freeResp['message'] ?? '';
+                if (empty($message)) {
+                    if ($marketStatusFromResponse === 'CLOSED') {
+                        $message = 'Market is closed - showing last available prices';
+                    } elseif ($isCached) {
+                        $message = 'Showing last available market data';
+                    } else {
+                        $message = 'Real option prices from free API';
+                    }
+                }
+                
                 return response()->json([
                     'success' => true,
                     'data' => $freeResp['data'],
@@ -732,18 +752,25 @@ class MarketDataController extends Controller
                     'expiry' => $expiry,
                     'underlying_price' => $underlyingPrice,
                     'data_source' => $freeResp['source'] ?? 'Free API (1-2 min delayed)',
-                    'message' => 'Real option prices from free API',
-                    'total_options' => count($freeResp['data'])
+                    'message' => $message,
+                    'total_options' => count($freeResp['data']),
+                    'is_cached' => $isCached,
+                    'market_status' => $marketStatusFromResponse,
+                    'is_market_open' => $isMarketOpen,
+                    'timestamp' => $freeResp['timestamp'] ?? now()->toISOString()
                 ]);
             }
 
-            // No fallback needed - free APIs should handle all cases
-            Log::info("Free APIs failed, returning empty data");
+            // Return error with helpful message
+            $errorMessage = $freeResp['message'] ?? 'No option chain data available from free APIs. The market may be closed or NSE API is temporarily unavailable.';
+            Log::warning("Free APIs failed for {$symbol}: " . $errorMessage);
             return response()->json([
                 'success' => false,
-                'message' => 'No option chain data available from free APIs',
-                'data' => []
-            ], 404);
+                'message' => $errorMessage,
+                'data' => [],
+                'market_status' => $isMarketOpen ? 'OPEN' : 'CLOSED',
+                'is_market_open' => $isMarketOpen
+            ], 200); // Return 200 to avoid frontend errors
         } catch (\Exception $e) {
             Log::error('Options Chain Error: ' . $e->getMessage());
             return response()->json([
@@ -1132,14 +1159,45 @@ class MarketDataController extends Controller
     }
 
     /**
-     * Test method for debugging
+     * Test method for debugging option chain data
      */
     public function testOptionChain($symbol): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'message' => 'Test method working',
-            'symbol' => $symbol
-        ]);
+        try {
+            Log::info("Testing option chain for symbol: {$symbol}");
+            
+            // Get option chain data
+            $result = $this->freeMarketDataService->getOptionChain($symbol);
+            
+            // Log detailed information
+            if ($result['success'] && !empty($result['data'])) {
+                $sampleOption = $result['data'][0] ?? null;
+                Log::info("Sample option data: " . json_encode($sampleOption));
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Option chain data retrieved',
+                    'symbol' => $symbol,
+                    'total_options' => count($result['data']),
+                    'data_source' => $result['source'] ?? 'Unknown',
+                    'sample_option' => $sampleOption,
+                    'first_5_options' => array_slice($result['data'], 0, 5)
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'] ?? 'No data available',
+                    'symbol' => $symbol,
+                    'error' => $result['message'] ?? 'Unknown error'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("Test option chain error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'symbol' => $symbol
+            ]);
+        }
     }
 }
