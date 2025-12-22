@@ -143,7 +143,8 @@
       <button 
         v-if="request.status === 'pending'"
         class="btn-action btn-approve"
-        @click="updateStatus(request.id, 'approved')"
+        @click="confirmApprove(request.id, request.amount)"
+        :disabled="loading"
       >
         <i class="fa-solid fa-check"></i> Approve
       </button>
@@ -153,6 +154,7 @@
         v-if="request.status === 'pending'"
         class="btn-action btn-reject"
         @click="showRejectDialog(request.id)"
+        :disabled="loading"
       >
         <i class="fa-solid fa-times"></i> Reject
       </button>
@@ -352,14 +354,21 @@ const fetchRequests = async () => {
 
 const updateStatus = async (requestId, newStatus) => {
   try {
+    loading.value = true
     const payload = newStatus === 'rejected'
       ? { reject_reason: rejectReason.value }
       : {}
 
-    await axios.patch(`/withdrawal-request/${requestId}/status`, {
+    const response = await axios.patch(`/withdrawal-request/${requestId}/status`, {
       status: newStatus,
       ...payload
     })
+
+    // Check if response contains an error message
+    if (response.data && response.data.error) {
+      alert(response.data.message || "Failed to update request status")
+      return
+    }
 
     await fetchRequests()
 
@@ -372,7 +381,17 @@ const updateStatus = async (requestId, newStatus) => {
     alert(`Request has been ${newStatus} successfully!`)
   } catch (error) {
     console.error("Error updating request status:", error)
-    alert("Failed to update request status")
+    const errorMessage = error.response?.data?.message || error.message || "Failed to update request status"
+    alert(errorMessage)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Confirm approve
+const confirmApprove = (requestId, amount) => {
+  if (confirm(`Are you sure you want to approve this withdrawal request of ₹${parseFloat(amount).toLocaleString()}?`)) {
+    updateStatus(requestId, 'approved')
   }
 }
 
