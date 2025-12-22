@@ -153,8 +153,9 @@ class WithdrawalRequestController extends Controller
 
         if ($request->status === 'approved' && $withdrawal->amount > $availableBalance) {
             return response()->json([
-                'message' => 'Insufficient available balance. Available: ₹' . number_format($availableBalance, 2) . ' (Total: ₹' . number_format($totalBalance, 2) . ', Blocked: ₹' . number_format($blockedAmount, 2) . ')'
-            ], 200);
+                'message' => 'Insufficient available balance. Available: ₹' . number_format($availableBalance, 2) . ' (Total: ₹' . number_format($totalBalance, 2) . ', Blocked: ₹' . number_format($blockedAmount, 2) . ')',
+                'error' => true
+            ], 400);
         }
 
         $withdrawal->status = $request->status;
