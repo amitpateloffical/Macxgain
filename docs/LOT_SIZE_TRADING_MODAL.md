@@ -12,7 +12,7 @@
 ## 📊 **Lot Sizes Implemented**
 
 ### **Major Indices**
-- **NIFTY 50**: 75 shares per lot
+- **NIFTY 50**: 65 shares per lot
 - **NIFTY BANK**: 25 shares per lot
 - **NIFTY IT**: 25 shares per lot
 - **SENSEX**: 10 shares per lot
@@ -87,7 +87,7 @@
 // Lot Size Calculation
 getLotSize(symbol) {
   const lotSizes = {
-    'NIFTY 50': 75,
+    'NIFTY 50': 65,
     'AXISBANK': 1200,
     'RELIANCE': 250,
     // ... more stocks
@@ -152,11 +152,11 @@ updateQuantityFromLots() {
 ### **Example Test - NIFTY 50**
 - **Stock**: NIFTY 50
 - **Option**: CALL 24700
-- **Lot Size**: 75 shares per lot
+- **Lot Size**: 65 shares per lot
 - **Lots**: 1 lot
-- **Total Shares**: 75 shares (1 × 75)
+- **Total Shares**: 65 shares (1 × 65)
 - **Option Price**: ₹150.50 (LTP)
-- **Total Amount**: ₹11,287.50 (75 × ₹150.50)
+- **Total Amount**: ₹9,782.50 (65 × ₹150.50)
 
 ### **Example Test - AXISBANK**
 - **Stock**: AXISBANK
