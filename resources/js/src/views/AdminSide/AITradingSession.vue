@@ -1641,8 +1641,8 @@ export default {
     getLotSize(symbol) {
       // Standard lot sizes for different stocks (like Angel One)
       const lotSizes = {
-        'NIFTY 50': 75,
-        'NIFTY BANK': 35,
+        'NIFTY 50': 65,
+        'NIFTY BANK': 30,
         'NIFTY IT': 25,
         'SENSEX': 20,
         'FINNIFTY': 40,
@@ -2177,8 +2177,8 @@ export default {
     },
     getLotSizeForSymbol(symbol) {
       const lots = {
-        'NIFTY 50': 75,
-        'NIFTY BANK': 35,
+        'NIFTY 50': 65,
+        'NIFTY BANK': 30,
         'NIFTY IT': 25,
         'SENSEX': 20,
         'FINNIFTY': 40,
