@@ -87,19 +87,18 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">QR Code/UPI ID *</label>
+              <label class="form-label">QR Code/UPI ID</label>
               <input 
                 v-model="formData.qr_code" 
                 type="text" 
                 class="form-input"
                 placeholder="e.g., macxgain@paytm or UPI QR code data"
-                required
               >
             </div>
           </div>
 
           <div class="form-group full-width">
-            <label class="form-label">Barcode/QR Image *</label>
+            <label class="form-label">Barcode/QR Image</label>
             <div class="file-upload-area">
               <input 
                 type="file" 
@@ -107,7 +106,6 @@
                 @change="handleFileUpload"
                 accept="image/*"
                 class="file-input"
-                required
               >
               <div class="upload-placeholder" v-if="!formData.barcode_image">
                 <i class="fas fa-cloud-upload-alt"></i>
@@ -342,17 +340,6 @@ export default {
     },
 
     async submitForm() {
-      // Custom validation for required fields
-      if (!this.formData.qr_code || !this.formData.qr_code.trim()) {
-        this.$toast?.error('QR Code/UPI ID is required');
-        return;
-      }
-      
-      if (!this.formData.barcode_image) {
-        this.$toast?.error('Barcode/QR Image is required');
-        return;
-      }
-
       try {
         this.loading = true;
         const token = localStorage.getItem('access_token');
