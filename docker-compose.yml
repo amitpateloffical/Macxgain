@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: macxgain-app
+    container_name: GainTradeX-app
     restart: unless-stopped
     ports:
       - "80:80"
@@ -21,11 +21,11 @@ services:
       - truedata_logs:/var/log/truedata
       - scheduler_logs:/var/log/scheduler
       # User uploads and trading media (host volumes for persistence)
-      - /var/macxgain-data/trading:/var/www/html/public/trading
-      - /var/macxgain-data/uploads:/var/www/html/public/uploads
-      - /var/macxgain-data/profiles:/var/www/html/public/profiles
-      - /var/macxgain-data/screenshots:/var/www/html/public/screenshots
-      - /var/macxgain-data/documents:/var/www/html/public/documents
+      - /var/GainTradeX-data/trading:/var/www/html/public/trading
+      - /var/GainTradeX-data/uploads:/var/www/html/public/uploads
+      - /var/GainTradeX-data/profiles:/var/www/html/public/profiles
+      - /var/GainTradeX-data/screenshots:/var/www/html/public/screenshots
+      - /var/GainTradeX-data/documents:/var/www/html/public/documents
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
@@ -34,15 +34,15 @@ services:
       - DB_HOST=host.docker.internal
       - DB_PORT=3306
       - DB_DATABASE=trading
-      - DB_USERNAME=macxgain
-      - DB_PASSWORD=macxgain123
+      - DB_USERNAME=GainTradeX
+      - DB_PASSWORD=GainTradeX123
       - REDIS_HOST=redis
       - REDIS_PASSWORD=null
       - REDIS_PORT=6379
     depends_on:
       - redis
     networks:
-      - macxgain-network
+      - GainTradeX-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
@@ -52,18 +52,18 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: macxgain-redis
+    container_name: GainTradeX-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - macxgain-network
+      - GainTradeX-network
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: macxgain-phpmyadmin
+    container_name: GainTradeX-phpmyadmin
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -72,7 +72,7 @@ services:
       PMA_USER: root
       PMA_PASSWORD: Kabirisgod@7354$
     networks:
-      - macxgain-network
+      - GainTradeX-network
 
 volumes:
   redis_data:
@@ -90,5 +90,5 @@ volumes:
   # Host volumes used for user data - no need to define here
 
 networks:
-  macxgain-network:
+  GainTradeX-network:
     driver: bridge

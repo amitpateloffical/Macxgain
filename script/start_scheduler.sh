@@ -6,7 +6,7 @@
 echo "🚀 Starting Laravel Scheduler for TrueData WebSocket Management..."
 
 # Navigate to project directory
-cd /Users/amitpatel/Documents/GitHub/Macxgain
+cd /Users/amitpatel/Documents/GitHub/GainTradeX
 
 # Start Laravel scheduler
 echo "📅 Starting Laravel scheduler..."

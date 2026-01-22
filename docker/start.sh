@@ -8,7 +8,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
-log "Starting Macxgain application..."
+log "Starting GainTradeX application..."
 
 # Wait for database to be ready (if using external database)
 # Uncomment and modify if needed:

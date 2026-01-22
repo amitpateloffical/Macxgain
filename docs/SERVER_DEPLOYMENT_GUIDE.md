@@ -1,4 +1,4 @@
-# 🚀 Server Deployment Guide - Macxgain Trading Platform
+# 🚀 Server Deployment Guide - GainTradeX Trading Platform
 
 ## 📋 Prerequisites
 - Ubuntu/CentOS server with root access
@@ -12,7 +12,7 @@
 
 ```bash
 # Upload your project to server
-scp -r /Users/amitpatel/Documents/GitHub/Macxgain user@your-server-ip:/var/www/
+scp -r /Users/amitpatel/Documents/GitHub/GainTradeX user@your-server-ip:/var/www/
 ```
 
 ## 🐍 Step 2: Install Python Dependencies
@@ -22,7 +22,7 @@ scp -r /Users/amitpatel/Documents/GitHub/Macxgain user@your-server-ip:/var/www/
 ssh user@your-server-ip
 
 # Install Python dependencies
-cd /var/www/Macxgain
+cd /var/www/GainTradeX
 pip3 install websocket-client requests
 
 # Make scripts executable
@@ -38,42 +38,42 @@ sudo apt update
 sudo apt install supervisor
 
 # Create supervisor config
-sudo nano /etc/supervisor/conf.d/macxgain.conf
+sudo nano /etc/supervisor/conf.d/GainTradeX.conf
 ```
 
 **Add this configuration:**
 
 ```ini
-[program:macxgain-websocket]
-command=/var/www/Macxgain/start_websocket_daemon.sh
-directory=/var/www/Macxgain
+[program:GainTradeX-websocket]
+command=/var/www/GainTradeX/start_websocket_daemon.sh
+directory=/var/www/GainTradeX
 autostart=true
 autorestart=true
 user=www-data
 redirect_stderr=true
-stdout_logfile=/var/www/Macxgain/logs/websocket.log
+stdout_logfile=/var/www/GainTradeX/logs/websocket.log
 stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=5
 
-[program:macxgain-laravel]
+[program:GainTradeX-laravel]
 command=php artisan serve --host=0.0.0.0 --port=8000
-directory=/var/www/Macxgain
+directory=/var/www/GainTradeX
 autostart=true
 autorestart=true
 user=www-data
 redirect_stderr=true
-stdout_logfile=/var/www/Macxgain/logs/laravel.log
+stdout_logfile=/var/www/GainTradeX/logs/laravel.log
 stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=5
 
-[program:macxgain-queue]
+[program:GainTradeX-queue]
 command=php artisan queue:work --sleep=3 --tries=3
-directory=/var/www/Macxgain
+directory=/var/www/GainTradeX
 autostart=true
 autorestart=true
 user=www-data
 redirect_stderr=true
-stdout_logfile=/var/www/Macxgain/logs/queue.log
+stdout_logfile=/var/www/GainTradeX/logs/queue.log
 stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=5
 ```
@@ -82,16 +82,16 @@ stdout_logfile_backups=5
 
 ```bash
 # Create logs directory
-mkdir -p /var/www/Macxgain/logs
+mkdir -p /var/www/GainTradeX/logs
 
 # Reload supervisor
 sudo supervisorctl reread
 sudo supervisorctl update
 
 # Start all services
-sudo supervisorctl start macxgain-websocket
-sudo supervisorctl start macxgain-laravel
-sudo supervisorctl start macxgain-queue
+sudo supervisorctl start GainTradeX-websocket
+sudo supervisorctl start GainTradeX-laravel
+sudo supervisorctl start GainTradeX-queue
 
 # Check status
 sudo supervisorctl status
@@ -101,7 +101,7 @@ sudo supervisorctl status
 
 ```bash
 # Create nginx config
-sudo nano /etc/nginx/sites-available/macxgain
+sudo nano /etc/nginx/sites-available/GainTradeX
 ```
 
 **Add this configuration:**
@@ -110,7 +110,7 @@ sudo nano /etc/nginx/sites-available/macxgain
 server {
     listen 80;
     server_name your-domain.com;
-    root /var/www/Macxgain/public;
+    root /var/www/GainTradeX/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -142,7 +142,7 @@ server {
 
 ```bash
 # Enable site
-sudo ln -s /etc/nginx/sites-available/macxgain /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/GainTradeX /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -151,17 +151,17 @@ sudo systemctl reload nginx
 
 ```bash
 # Check WebSocket daemon status
-sudo supervisorctl status macxgain-websocket
+sudo supervisorctl status GainTradeX-websocket
 
 # View logs
-tail -f /var/www/Macxgain/logs/websocket.log
-tail -f /var/www/Macxgain/logs/laravel.log
-tail -f /var/www/Macxgain/logs/queue.log
+tail -f /var/www/GainTradeX/logs/websocket.log
+tail -f /var/www/GainTradeX/logs/laravel.log
+tail -f /var/www/GainTradeX/logs/queue.log
 
 # Restart services if needed
-sudo supervisorctl restart macxgain-websocket
-sudo supervisorctl restart macxgain-laravel
-sudo supervisorctl restart macxgain-queue
+sudo supervisorctl restart GainTradeX-websocket
+sudo supervisorctl restart GainTradeX-laravel
+sudo supervisorctl restart GainTradeX-queue
 ```
 
 ## 🔧 Step 7: Environment Configuration
@@ -188,7 +188,7 @@ php artisan config:clear
 
 ```bash
 # Start everything manually (for testing)
-cd /var/www/Macxgain
+cd /var/www/GainTradeX
 
 # Start WebSocket daemon
 ./start_websocket_daemon.sh &
@@ -216,8 +216,8 @@ ps aux | grep -E "(websocket|artisan|python)"
 curl http://your-server-ip:8000/api/truedata/live-data
 
 # Check supervisor logs
-sudo supervisorctl tail -f macxgain-websocket
-sudo supervisorctl tail -f macxgain-laravel
+sudo supervisorctl tail -f GainTradeX-websocket
+sudo supervisorctl tail -f GainTradeX-laravel
 
 # Restart all services
 sudo supervisorctl restart all
@@ -231,7 +231,7 @@ Create a monitoring script to check if everything is working:
 #!/bin/bash
 # monitor.sh
 
-echo "🔍 Checking Macxgain Services..."
+echo "🔍 Checking GainTradeX Services..."
 
 # Check WebSocket
 if curl -s http://localhost:8000/api/truedata/live-data | grep -q "success"; then
@@ -287,4 +287,4 @@ sudo supervisorctl status
 
 ---
 
-**🎉 Your Macxgain trading platform is now live on the server with continuous WebSocket data flow!**
+**🎉 Your GainTradeX trading platform is now live on the server with continuous WebSocket data flow!**

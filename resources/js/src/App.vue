@@ -80,7 +80,7 @@ const checkDeviceType = () => {
 
 // Set default title
 onMounted(() => {
-  document.title = 'Macxgain - Trading with AI and Gain Profit';
+  document.title = 'GainTradeX - Trading with AI and Gain Profit';
   checkDeviceType();
   window.addEventListener('resize', checkDeviceType);
 })

@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-The Macxgain Trading Platform now includes automatic WebSocket management that starts the TrueData WebSocket script during market hours without manual intervention.
+The GainTradeX Trading Platform now includes automatic WebSocket management that starts the TrueData WebSocket script during market hours without manual intervention.
 
 ## ⏰ Automatic Schedule
 

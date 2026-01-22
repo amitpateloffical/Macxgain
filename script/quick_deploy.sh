@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Quick Deploy Script for Macxgain
+# Quick Deploy Script for GainTradeX
 # Simple one-command deployment
 
-echo "🚀 Macxgain Quick Deploy"
+echo "🚀 GainTradeX Quick Deploy"
 echo "========================"
 
 # Check if deploy.sh exists

@@ -6,10 +6,10 @@ echo "📊 Creating Trading Database..."
 # Create database and user
 mysql -u root -p"Kabirisgod@7354$" << 'EOF'
 CREATE DATABASE IF NOT EXISTS trading;
-CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';
-GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'%';
-CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';
-GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'localhost';
+CREATE USER IF NOT EXISTS 'GainTradeX'@'%' IDENTIFIED BY 'GainTradeX123';
+GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'%';
+CREATE USER IF NOT EXISTS 'GainTradeX'@'localhost' IDENTIFIED BY 'GainTradeX123';
+GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 
@@ -25,9 +25,9 @@ if [ $? -eq 0 ]; then
     
     # Create media directories
     echo "📁 Creating media directories..."
-    sudo mkdir -p /var/macxgain-data/{trading,uploads,profiles,screenshots,documents}
-    sudo chown -R 33:33 /var/macxgain-data  # www-data user ID
-    sudo chmod -R 755 /var/macxgain-data
+    sudo mkdir -p /var/GainTradeX-data/{trading,uploads,profiles,screenshots,documents}
+    sudo chown -R 33:33 /var/GainTradeX-data  # www-data user ID
+    sudo chmod -R 755 /var/GainTradeX-data
     
     echo ""
     echo "✅ Setup complete! Now you can run:"

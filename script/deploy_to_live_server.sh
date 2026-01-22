@@ -77,4 +77,4 @@ echo "   - WebSocket: $(if [ -f websocket.pid ] && kill -0 $(cat websocket.pid) 
 echo "   - Queue Worker: $(if [ -f queue.pid ] && kill -0 $(cat queue.pid) 2>/dev/null; then echo '✅ Running'; else echo '❌ Not running'; fi)"
 echo ""
 echo "🌐 Test your API: curl -s http://localhost:8000/api/truedata/live-data | jq '.success, .data_count'"
-echo "📱 Your admin/stock-market page should now work at: https://macxgain.com/admin/stock-market"
+echo "📱 Your admin/stock-market page should now work at: https://GainTradeX.com/admin/stock-market"

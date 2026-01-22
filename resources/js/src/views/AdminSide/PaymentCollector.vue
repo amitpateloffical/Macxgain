@@ -52,7 +52,7 @@
                 v-model="formData.account_holder_name" 
                 type="text" 
                 class="form-input"
-                placeholder="e.g., Macxgain Technologies"
+                placeholder="e.g., GainTradeX Technologies"
               >
             </div>
 
@@ -92,7 +92,7 @@
                 v-model="formData.qr_code" 
                 type="text" 
                 class="form-input"
-                placeholder="e.g., macxgain@paytm or UPI QR code data"
+                placeholder="e.g., GainTradeX@paytm or UPI QR code data"
                 required
               >
             </div>

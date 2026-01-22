@@ -10,11 +10,11 @@ if [ -f .env ]; then
     # Update APP_URL to HTTPS
     if grep -q "APP_URL=" .env; then
         sed -i 's|APP_URL=http://|APP_URL=https://|g' .env
-        sed -i 's|APP_URL=https://localhost|APP_URL=https://www.macxgain.com|g' .env
-        sed -i 's|APP_URL=https://127.0.0.1|APP_URL=https://www.macxgain.com|g' .env
+        sed -i 's|APP_URL=https://localhost|APP_URL=https://www.GainTradeX.com|g' .env
+        sed -i 's|APP_URL=https://127.0.0.1|APP_URL=https://www.GainTradeX.com|g' .env
         echo "✅ APP_URL updated to HTTPS"
     else
-        echo "APP_URL=https://www.macxgain.com" >> .env
+        echo "APP_URL=https://www.GainTradeX.com" >> .env
         echo "✅ APP_URL added with HTTPS"
     fi
     
@@ -63,7 +63,7 @@ echo "🎉 HTTPS Fix Complete!"
 echo "📋 Next steps:"
 echo "1. Make sure your web server (Apache/Nginx) is configured for HTTPS"
 echo "2. Ensure SSL certificate is properly installed"
-echo "3. Test your website: https://www.macxgain.com"
+echo "3. Test your website: https://www.GainTradeX.com"
 echo ""
 echo "🌐 If still having issues, check:"
 echo "   - Web server HTTPS configuration"

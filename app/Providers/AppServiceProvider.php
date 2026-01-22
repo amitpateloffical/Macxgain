@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS for production domain or if running on HTTPS
         $isHttpsRequest = request()->isSecure() || request()->header('x-forwarded-proto') === 'https';
-        $isProductionDomain = in_array(request()->getHost(), ['macxgain.com', 'www.macxgain.com']);
+        $isProductionDomain = in_array(request()->getHost(), ['GainTradeX.com', 'www.GainTradeX.com']);
         
         if (env('APP_ENV') === 'production' && ($isHttpsRequest || $isProductionDomain)) {
             URL::forceScheme('https');

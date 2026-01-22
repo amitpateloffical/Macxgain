@@ -1,7 +1,7 @@
 # Production API Setup Guide
 
 ## 🚨 Current Issue
-Production server (`https://macxgain.com`) पर backup API routes properly configured नहीं हैं। API calls HTML response return कर रहे हैं instead of JSON।
+Production server (`https://GainTradeX.com`) पर backup API routes properly configured नहीं हैं। API calls HTML response return कर रहे हैं instead of JSON।
 
 ## 🔧 Solution Steps
 
@@ -36,7 +36,7 @@ php artisan view:cache
 php artisan route:list | grep -i backup
 
 # Test API endpoint
-curl https://macxgain.com/api/backups
+curl https://GainTradeX.com/api/backups
 ```
 
 ### 4. Check Web Server Configuration
@@ -61,7 +61,7 @@ location /api/ {
 
 ```bash
 # Test backup API
-curl -X GET "https://macxgain.com/api/backups" \
+curl -X GET "https://GainTradeX.com/api/backups" \
   -H "Accept: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
@@ -132,7 +132,7 @@ curl -X GET "https://macxgain.com/api/backups" \
 # 1. Upload files to production
 # 2. Run these commands:
 
-cd /path/to/macxgain
+cd /path/to/GainTradeX
 php artisan config:clear
 php artisan route:clear
 php artisan cache:clear
@@ -140,13 +140,13 @@ php artisan config:cache
 php artisan route:cache
 
 # 3. Test
-curl https://macxgain.com/api/backups
+curl https://GainTradeX.com/api/backups
 ```
 
 ## 🎉 After Fix
 
 Once API is working, backup functionality will be available at:
-- `https://macxgain.com/admin/backup`
+- `https://GainTradeX.com/admin/backup`
 - All backup operations (create, download, restore, delete) will work
 - No more "API not configured" errors
 

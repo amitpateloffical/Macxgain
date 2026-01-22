@@ -1,9 +1,9 @@
 // vite.config.js
-import { defineConfig } from "file:///Users/amitpatel/Documents/GitHub/Macxgain/node_modules/vite/dist/node/index.js";
-import laravel from "file:///Users/amitpatel/Documents/GitHub/Macxgain/node_modules/laravel-vite-plugin/dist/index.js";
-import vue from "file:///Users/amitpatel/Documents/GitHub/Macxgain/node_modules/@vitejs/plugin-vue/dist/index.mjs";
+import { defineConfig } from "file:///Users/amitpatel/Documents/GitHub/GainTradeX/node_modules/vite/dist/node/index.js";
+import laravel from "file:///Users/amitpatel/Documents/GitHub/GainTradeX/node_modules/laravel-vite-plugin/dist/index.js";
+import vue from "file:///Users/amitpatel/Documents/GitHub/GainTradeX/node_modules/@vitejs/plugin-vue/dist/index.mjs";
 import path from "path";
-var __vite_injected_original_dirname = "/Users/amitpatel/Documents/GitHub/Macxgain";
+var __vite_injected_original_dirname = "/Users/amitpatel/Documents/GitHub/GainTradeX";
 var vite_config_default = defineConfig({
   transpileDependencies: true,
   server: {

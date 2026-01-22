@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: macxgain-app-prod
+    container_name: GainTradeX-app-prod
     restart: always
     ports:
       - "8000:80"
@@ -31,7 +31,7 @@ services:
       - mysql
       - redis
     networks:
-      - macxgain-network
+      - GainTradeX-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
@@ -49,7 +49,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: macxgain-mysql-prod
+    container_name: GainTradeX-mysql-prod
     restart: always
     ports:
       - "3306:3306"
@@ -63,7 +63,7 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d
     command: --default-authentication-plugin=mysql_native_password
     networks:
-      - macxgain-network
+      - GainTradeX-network
     deploy:
       resources:
         limits:
@@ -72,14 +72,14 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: macxgain-redis-prod
+    container_name: GainTradeX-redis-prod
     restart: always
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - macxgain-network
+      - GainTradeX-network
     command: redis-server --requirepass ${REDIS_PASSWORD}
     deploy:
       resources:
@@ -89,7 +89,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: macxgain-nginx-prod
+    container_name: GainTradeX-nginx-prod
     restart: always
     ports:
       - "8000:80"
@@ -101,7 +101,7 @@ services:
     depends_on:
       - app
     networks:
-      - macxgain-network
+      - GainTradeX-network
 
 volumes:
   mysql_data:
@@ -110,5 +110,5 @@ volumes:
     driver: local
 
 networks:
-  macxgain-network:
+  GainTradeX-network:
     driver: bridge

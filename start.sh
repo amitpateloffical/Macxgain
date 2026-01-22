@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Macxgain Project Startup Script
+# GainTradeX Project Startup Script
 # This script starts both the Laravel backend and Vite frontend servers
 
-echo "🚀 Starting Macxgain Project..."
+echo "🚀 Starting GainTradeX Project..."
 echo "=================================="
 
 # Check if we're in the correct directory
 if [ ! -f "artisan" ]; then
-    echo "❌ Error: Please run this script from the Macxgain project root directory"
+    echo "❌ Error: Please run this script from the GainTradeX project root directory"
     exit 1
 fi
 

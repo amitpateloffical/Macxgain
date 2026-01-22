@@ -15,12 +15,12 @@ class UserSeeder extends Seeder
     {
         // Check if users already exist before creating
         $this->createUserIfNotExists([
-            'name' => 'MacXgain Admin',
-            'email' => 'admin@macxgain.com',
+            'name' => 'GainTradeX Admin',
+            'email' => 'admin@GainTradeX.com',
             'mobile_code' => '91',
             'phone' => '9876543211',
             'is_admin' => true,
-            'password' => '1234567890',
+            'password' => '0987654321',
             'bank_name' => 'HDFC Bank',
             'account_no' => '9876543210987654',
             'ifsc_code' => 'HDFC0001234',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
         
         $this->createUserIfNotExists([
             'name' => 'Master Admin',
-            'email' => 'master@macxgain.com',
+            'email' => 'master@GainTradeX.com',
             'mobile_code' => '91',
             'phone' => '9876543212',
             'is_admin' => true,

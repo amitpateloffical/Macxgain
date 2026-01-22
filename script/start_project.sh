@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Macxgain Project Startup Script
+# GainTradeX Project Startup Script
 # This script starts the entire project with automatic WebSocket management
 
-echo "🚀 Starting Macxgain Trading Platform..."
+echo "🚀 Starting GainTradeX Trading Platform..."
 
 # Navigate to project directory
-cd /Users/amitpatel/Documents/GitHub/Macxgain
+cd /Users/amitpatel/Documents/GitHub/GainTradeX
 
 # Check if Laravel is installed
 if [ ! -f "artisan" ]; then
@@ -74,7 +74,7 @@ else
 fi
 
 echo ""
-echo "✅ Macxgain Trading Platform started successfully!"
+echo "✅ GainTradeX Trading Platform started successfully!"
 echo ""
 echo "📊 Services Running:"
 echo "   🌐 Laravel Server: http://127.0.0.1:8000 (PID: $LARAVEL_PID)"

@@ -1,7 +1,7 @@
-# Macxgain AI Trading System - Complete Project Documentation
+# GainTradeX AI Trading System - Complete Project Documentation
 
 ## 📋 Project Overview
-**Macxgain AI Trading System** is a comprehensive web-based trading platform that provides real-time market data, AI-powered trading interface, and complete order management system. The system integrates with TrueData for live market feeds and offers a modern, responsive interface for both administrators and users.
+**GainTradeX AI Trading System** is a comprehensive web-based trading platform that provides real-time market data, AI-powered trading interface, and complete order management system. The system integrates with TrueData for live market feeds and offers a modern, responsive interface for both administrators and users.
 
 ### 🎯 Key Features:
 - **Real-time Market Data** from TrueData WebSocket
@@ -527,8 +527,8 @@ User Registration → Wallet Funding → Admin Trading → Order Execution → P
 
 ## 📞 Support & Contact
 
-**Development Team:** Macxgain Development Team
-**Email:** support@macxgain.com
+**Development Team:** GainTradeX Development Team
+**Email:** support@GainTradeX.com
 **Documentation:** This README file
 **Version:** 1.0.0
 **Status:** Production Ready ✅

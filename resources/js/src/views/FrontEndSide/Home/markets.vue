@@ -40,8 +40,8 @@
     <header class="main-header">
       <div class="header-container">
         <div class="logo-section">
-          <img src="../logo.png" alt="Macxgain Logo" class="logo" />
-          <h1 class="brand-name">Macxgain</h1>
+          <img src="../logo.png" alt="GainTradeX Logo" class="logo" />
+          <h1 class="brand-name">GainTradeX</h1>
         </div>
         
         <!-- Mobile Menu Toggle -->

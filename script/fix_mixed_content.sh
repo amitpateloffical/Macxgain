@@ -17,7 +17,7 @@ fi
 echo "🌐 Setting APP_URL to HTTP..."
 if grep -q "APP_URL=" .env; then
     sed -i 's|APP_URL=https://.*|APP_URL=http://localhost|g' .env
-    sed -i 's|APP_URL=https://macxgain.com|APP_URL=http://localhost|g' .env
+    sed -i 's|APP_URL=https://GainTradeX.com|APP_URL=http://localhost|g' .env
     echo "✅ APP_URL updated to HTTP"
 else
     echo "APP_URL=http://localhost" >> .env
@@ -45,8 +45,8 @@ if ! grep -q "DB_CONNECTION=" .env; then
     echo "DB_HOST=127.0.0.1" >> .env
     echo "DB_PORT=3306" >> .env
     echo "DB_DATABASE=trading" >> .env
-    echo "DB_USERNAME=macxgain" >> .env
-    echo "DB_PASSWORD=macxgain123" >> .env
+    echo "DB_USERNAME=GainTradeX" >> .env
+    echo "DB_PASSWORD=GainTradeX123" >> .env
 fi
 
 # Generate app key if needed

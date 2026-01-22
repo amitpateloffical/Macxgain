@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Quick Host Setup for Macxgain with External MySQL
-echo "🚀 Macxgain Host Setup with External MySQL"
+# Quick Host Setup for GainTradeX with External MySQL
+echo "🚀 GainTradeX Host Setup with External MySQL"
 echo "=========================================="
 
 # Check if MySQL is already installed
@@ -14,10 +14,10 @@ if command -v mysql >/dev/null 2>&1; then
     else
         echo "📊 Creating Trading database..."
         mysql -u root -p"Kabirisgod@7354$" -e "CREATE DATABASE IF NOT EXISTS trading;"
-        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'%';"
-        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'localhost';"
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'%' IDENTIFIED BY 'GainTradeX123';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'%';"
+        mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'localhost' IDENTIFIED BY 'GainTradeX123';"
+        mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'localhost';"
         mysql -u root -p"Kabirisgod@7354$" -e "FLUSH PRIVILEGES;"
     fi
 else
@@ -28,9 +28,9 @@ fi
 
 # Create media directories if they don't exist
 echo "📁 Setting up media directories..."
-sudo mkdir -p /var/macxgain-data/{trading,uploads,profiles,screenshots,documents}
-sudo chown -R 33:33 /var/macxgain-data  # www-data user ID
-sudo chmod -R 755 /var/macxgain-data
+sudo mkdir -p /var/GainTradeX-data/{trading,uploads,profiles,screenshots,documents}
+sudo chown -R 33:33 /var/GainTradeX-data  # www-data user ID
+sudo chmod -R 755 /var/GainTradeX-data
 
 # Configure MySQL for Docker access
 echo "🔧 Configuring MySQL for Docker containers..."
@@ -52,7 +52,7 @@ echo "   - Application: http://localhost"
 echo "   - Database: http://localhost:8080 (PHPMyAdmin)"
 echo ""
 echo "📁 User Data Storage:"
-echo "   - Host Path: /var/macxgain-data/"
+echo "   - Host Path: /var/GainTradeX-data/"
 echo "   - Container will automatically sync with this directory"
 echo ""
 echo "💡 Benefits:"

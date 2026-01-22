@@ -11,9 +11,9 @@
       <div class="register-header">
         <div class="logo-container">
           <div class="logo-image">
-            <img src="../assest/img/logo.png" alt="Macxgain Logo" class="logo" />
+            <img src="../assest/img/logo.png" alt="GainTradeX Logo" class="logo" />
           </div>
-          <h1 class="brand-name">Macxgain</h1>
+          <h1 class="brand-name">GainTradeX</h1>
           <p class="tagline">Smart Trading Solutions</p>
         </div>
         <h2 class="welcome-text">Create Account</h2>
@@ -320,7 +320,7 @@ const handleRegister = async () => {
   try {
     const response = await axios.post('/register', form.value)
     
-    toast.success('Account created successfully! Welcome to Macxgain.', {
+    toast.success('Account created successfully! Welcome to GainTradeX.', {
       autoClose: 2000,
       position: "top-right"
     })

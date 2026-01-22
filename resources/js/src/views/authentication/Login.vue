@@ -11,9 +11,9 @@
       <div class="login-header">
         <div class="logo-container">
           <div class="logo-image">
-            <img src="../assest/img/logo.png" alt="Macxgain Logo" />
+            <img src="../assest/img/logo.png" alt="GainTradeX Logo" />
           </div>
-          <h1 class="logo-text">Macxgain</h1>
+          <h1 class="logo-text">GainTradeX</h1>
           <p class="tagline">Smart Trading Solutions</p>
         </div>
         <h2 class="welcome-text">Welcome Back</h2>

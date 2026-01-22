@@ -1,6 +1,6 @@
-# Macxgain Docker Setup
+# GainTradeX Docker Setup
 
-This document provides comprehensive instructions for running the Macxgain application using Docker.
+This document provides comprehensive instructions for running the GainTradeX application using Docker.
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ This will automatically:
 1. **Clone the repository and navigate to the project directory:**
    ```bash
    git clone <repository-url>
-   cd Macxgain
+   cd GainTradeX
    ```
 
 2. **Create environment file:**
@@ -44,9 +44,9 @@ This will automatically:
    DB_CONNECTION=mysql
    DB_HOST=mysql
    DB_PORT=3306
-   DB_DATABASE=macxgain
-   DB_USERNAME=macxgain
-   DB_PASSWORD=macxgain123
+   DB_DATABASE=GainTradeX
+   DB_USERNAME=GainTradeX
+   DB_PASSWORD=GainTradeX123
    
    REDIS_HOST=redis
    REDIS_PASSWORD=null
@@ -188,10 +188,10 @@ docker-compose pull
 docker-compose up -d
 
 # Backup database
-docker-compose exec mysql mysqldump -u root -p macxgain > backup.sql
+docker-compose exec mysql mysqldump -u root -p GainTradeX > backup.sql
 
 # Restore database
-docker-compose exec -T mysql mysql -u root -p macxgain < backup.sql
+docker-compose exec -T mysql mysql -u root -p GainTradeX < backup.sql
 ```
 
 ## Environment Variables
@@ -300,10 +300,10 @@ curl http://localhost/health
 ### Database Backup
 ```bash
 # Create backup
-docker-compose exec mysql mysqldump -u root -p macxgain > backup_$(date +%Y%m%d_%H%M%S).sql
+docker-compose exec mysql mysqldump -u root -p GainTradeX > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Restore backup
-docker-compose exec -T mysql mysql -u root -p macxgain < backup_file.sql
+docker-compose exec -T mysql mysql -u root -p GainTradeX < backup_file.sql
 ```
 
 ### Application Backup

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Macxgain Server Status Check Script
+# GainTradeX Server Status Check Script
 # This script checks the status of all services on your server
 
-echo "🔍 Macxgain Server Status Check - $(date)"
+echo "🔍 GainTradeX Server Status Check - $(date)"
 echo "=================================================="
 
 # Check if we're in the right directory

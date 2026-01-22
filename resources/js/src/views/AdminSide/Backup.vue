@@ -269,7 +269,7 @@ export default {
       // since API routes might not be properly configured on production server
       return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? '' 
-        : 'https://macxgain.com';
+        : 'https://GainTradeX.com';
     },
     
     async makeApiCall(endpoint, options = {}) {

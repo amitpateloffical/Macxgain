@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Macxgain Auto Deploy Script
+# GainTradeX Auto Deploy Script
 # This script handles automatic deployment with zero downtime
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_NAME="macxgain"
+PROJECT_NAME="GainTradeX"
 DOCKER_COMPOSE_FILE="docker-compose.yml"
 DOCKER_COMPOSE_PROD_FILE="docker-compose.prod.yml"
 BACKUP_DIR="./backups"
@@ -89,9 +89,9 @@ create_backup() {
     fi
     
     # Backup user media from host volume
-    if [ -d "/var/macxgain-data" ]; then
+    if [ -d "/var/GainTradeX-data" ]; then
         print_status $YELLOW "📸 Backing up user media and trading data..."
-        cp -r /var/macxgain-data "$backup_path/"
+        cp -r /var/GainTradeX-data "$backup_path/"
     fi
     
     # Backup environment file
@@ -342,11 +342,11 @@ rollback() {
     fi
     
     # Restore user media to host volume
-    if [ -d "$backup_path/macxgain-data" ]; then
+    if [ -d "$backup_path/GainTradeX-data" ]; then
         print_status $YELLOW "📸 Restoring user media and trading data..."
-        sudo rm -rf /var/macxgain-data
-        sudo cp -r "$backup_path/macxgain-data" /var/
-        sudo chown -R 33:33 /var/macxgain-data
+        sudo rm -rf /var/GainTradeX-data
+        sudo cp -r "$backup_path/GainTradeX-data" /var/
+        sudo chown -R 33:33 /var/GainTradeX-data
     fi
     
     # Restore environment

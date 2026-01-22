@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 🛑 Stop All Macxgain Services Script
+# 🛑 Stop All GainTradeX Services Script
 
-echo "🛑 Stopping all Macxgain services..."
+echo "🛑 Stopping all GainTradeX services..."
 
 # Stop WebSocket daemon
 echo "📡 Stopping WebSocket daemon..."
@@ -46,5 +46,5 @@ else
 fi
 
 echo ""
-echo "🎯 All Macxgain services have been stopped!"
+echo "🎯 All GainTradeX services have been stopped!"
 echo "🚀 To start again, run: ./quick_server_start.sh"

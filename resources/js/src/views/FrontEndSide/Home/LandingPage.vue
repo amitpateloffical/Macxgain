@@ -76,8 +76,8 @@
     <header class="header">
       <div class="header-container">
         <div class="logo-section">
-          <img src="../logo.png" alt="Macxgain Logo" class="logo" />
-          <h1 class="brand-name">Macxgain</h1>
+          <img src="../logo.png" alt="GainTradeX Logo" class="logo" />
+          <h1 class="brand-name">GainTradeX</h1>
         </div>
         
         <!-- Mobile Menu Toggle -->
@@ -115,7 +115,7 @@
           </h1>
           
           <p class="hero-subtitle fade-in-left">
-            Experience next-generation trading with Macxgain's revolutionary AI algorithms. 
+            Experience next-generation trading with GainTradeX's revolutionary AI algorithms. 
             Our machine learning models analyze 10,000+ data points per second to deliver 
             <span class="ai-highlight">95.8% accuracy</span> in market predictions.
           </p>
@@ -784,7 +784,7 @@
       <div class="container">
         <div class="section-header fade-in-up">
           <h2>Success Stories</h2>
-          <p>Real traders, real results with Macxgain</p>
+          <p>Real traders, real results with GainTradeX</p>
         </div>
         
         <div class="stories-grid">
@@ -1009,7 +1009,7 @@
                 <div class="screen">
                   <div class="app-header">
                     <div class="app-logo">M</div>
-                    <div class="app-title">Macxgain</div>
+                    <div class="app-title">GainTradeX</div>
                   </div>
                   <div class="app-content">
                     <div class="market-card">
@@ -1054,7 +1054,7 @@
                 <div class="screen">
                   <div class="app-header">
                     <div class="app-logo">M</div>
-                    <div class="app-title">Macxgain</div>
+                    <div class="app-title">GainTradeX</div>
                   </div>
                   <div class="app-content">
                     <div class="trading-panel">
@@ -1152,7 +1152,7 @@
             <div class="testimonial-rating">
               ⭐⭐⭐⭐⭐
             </div>
-            <p class="testimonial-text">"Macxgain has transformed my trading experience. The real-time data and advanced tools have helped me make better decisions."</p>
+            <p class="testimonial-text">"GainTradeX has transformed my trading experience. The real-time data and advanced tools have helped me make better decisions."</p>
             <div class="testimonial-author">
               <div class="author-avatar">RK</div>
               <div class="author-info">
@@ -1222,7 +1222,7 @@
       <div class="container">
         <div class="section-header">
           <h2>Reason For Choose Us</h2>
-          <p>Why traders trust Macxgain for their trading needs</p>
+          <p>Why traders trust GainTradeX for their trading needs</p>
         </div>
         
         <div class="features-grid">
@@ -1259,8 +1259,8 @@
         <div class="footer-content">
           <div class="footer-section">
             <div class="footer-logo">
-              <img src="../logo.png" alt="Macxgain Logo" class="logo" />
-              <h3>Macxgain</h3>
+              <img src="../logo.png" alt="GainTradeX Logo" class="logo" />
+              <h3>GainTradeX</h3>
             </div>
             <p>Your trusted partner for futures and options trading. Start your trading journey with us today.</p>
           </div>
@@ -1287,12 +1287,12 @@
           <div class="footer-section">
             <h4>Contact Info</h4>
             <p>F11 19th Floor, GYS Vision Tower<br>Sainik Road, Gurugram Haryana 120015</p>
-            <p>info@macxgain.com</p>
+            <p>info@GainTradeX.com</p>
           </div>
         </div>
         
         <div class="footer-bottom">
-          <p>&copy; 2025 Macxgain. All Rights Reserved.</p>
+          <p>&copy; 2025 GainTradeX. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
@@ -1301,7 +1301,7 @@
 
 <script>
 export default {
-  name: "MacxgainLandingPage",
+  name: "GainTradeXLandingPage",
   data() {
     return {
       // Component data

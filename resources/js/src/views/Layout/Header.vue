@@ -5,8 +5,8 @@
   class="logo-section"
   @click="storedUser.is_admin ? router.push('/admin/dashboard') : router.push('/user/dashboard')"
 >
-  <img src="../FrontEndSide/logo.png" alt="Macxgain Logo" class="logo" />
-  <h1 class="brand-name">Macxgain</h1>
+  <img src="../FrontEndSide/logo.png" alt="GainTradeX Logo" class="logo" />
+  <h1 class="brand-name">GainTradeX</h1>
 </div>
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Quick MySQL Root Password Fix for Macxgain
+# Quick MySQL Root Password Fix for GainTradeX
 echo "🔒 MySQL Root Password Fix"
 echo "=========================="
 
@@ -20,13 +20,13 @@ fi
 if mysql -u root -proot123 -e "SELECT 1;" 2>/dev/null; then
     echo "✅ Root password is working!"
     
-    # Create macxgain database if it doesn't exist
-    echo "📊 Creating macxgain database and user..."
-    mysql -u root -proot123 -e "CREATE DATABASE IF NOT EXISTS macxgain;"
-    mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-    mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'%';"
-    mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-    mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON macxgain.* TO 'macxgain'@'localhost';"
+    # Create GainTradeX database if it doesn't exist
+    echo "📊 Creating GainTradeX database and user..."
+    mysql -u root -proot123 -e "CREATE DATABASE IF NOT EXISTS GainTradeX;"
+    mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'%' IDENTIFIED BY 'GainTradeX123';"
+    mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON GainTradeX.* TO 'GainTradeX'@'%';"
+    mysql -u root -proot123 -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'localhost' IDENTIFIED BY 'GainTradeX123';"
+    mysql -u root -proot123 -e "GRANT ALL PRIVILEGES ON GainTradeX.* TO 'GainTradeX'@'localhost';"
     mysql -u root -proot123 -e "FLUSH PRIVILEGES;"
     
     echo "✅ Database setup complete!"

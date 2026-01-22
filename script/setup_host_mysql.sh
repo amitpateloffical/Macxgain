@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Setup Host MySQL for Macxgain
+# Setup Host MySQL for GainTradeX
 # This script installs MySQL on host machine instead of container
 
-echo "🗄️ Setting up Host MySQL for Macxgain..."
+echo "🗄️ Setting up Host MySQL for GainTradeX..."
 
 # Install MySQL 8.0
 echo "📦 Installing MySQL 8.0..."
@@ -27,10 +27,10 @@ echo "Note: Root password is already set to 'root123'"
 # Create database and user for Trading
 echo "👤 Creating Trading database and user..."
 mysql -u root -p"Kabirisgod@7354$" -e "CREATE DATABASE IF NOT EXISTS trading;"
-mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'%' IDENTIFIED BY 'macxgain123';"
-mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'%';"
-mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'macxgain'@'localhost' IDENTIFIED BY 'macxgain123';"
-mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'macxgain'@'localhost';"
+mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'%' IDENTIFIED BY 'GainTradeX123';"
+mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'%';"
+mysql -u root -p"Kabirisgod@7354$" -e "CREATE USER IF NOT EXISTS 'GainTradeX'@'localhost' IDENTIFIED BY 'GainTradeX123';"
+mysql -u root -p"Kabirisgod@7354$" -e "GRANT ALL PRIVILEGES ON trading.* TO 'GainTradeX'@'localhost';"
 mysql -u root -p"Kabirisgod@7354$" -e "FLUSH PRIVILEGES;"
 
 # Configure MySQL to accept connections from Docker containers
@@ -43,24 +43,24 @@ sudo systemctl restart mysql
 
 # Create media directories on host
 echo "📁 Creating media directories..."
-sudo mkdir -p /var/macxgain-data/{trading,uploads,profiles,screenshots,documents}
-sudo chown -R 33:33 /var/macxgain-data  # www-data user ID in container
-sudo chmod -R 755 /var/macxgain-data
+sudo mkdir -p /var/GainTradeX-data/{trading,uploads,profiles,screenshots,documents}
+sudo chown -R 33:33 /var/GainTradeX-data  # www-data user ID in container
+sudo chmod -R 755 /var/GainTradeX-data
 
 echo "✅ Host MySQL setup complete!"
 echo ""
 echo "📊 Database Details:"
 echo "   Host: localhost (or host.docker.internal from container)"
 echo "   Database: trading"  
-echo "   Username: macxgain"
-echo "   Password: macxgain123"
+echo "   Username: GainTradeX"
+echo "   Password: GainTradeX123"
 echo ""
 echo "📁 Media Storage:"
-echo "   Path: /var/macxgain-data/"
+echo "   Path: /var/GainTradeX-data/"
 echo "   Directories: trading, uploads, profiles, screenshots, documents"
 echo ""
 echo "🔍 Test connections:"
 echo "   mysql -u root -p\"Kabirisgod@7354$\" trading        # Root user"
-echo "   mysql -h localhost -u macxgain -p trading  # App user"
+echo "   mysql -h localhost -u GainTradeX -p trading  # App user"
 echo ""
 echo "🚀 Now run: docker-compose up --build"

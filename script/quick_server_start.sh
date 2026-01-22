@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# 🚀 Quick Server Start Script for Macxgain
+# 🚀 Quick Server Start Script for GainTradeX
 # Run this script on your server to start everything
 
-echo "🚀 Starting Macxgain Trading Platform..."
+echo "🚀 Starting GainTradeX Trading Platform..."
 
 # Create logs directory
 mkdir -p logs
@@ -67,7 +67,7 @@ else
 fi
 
 echo ""
-echo "🎉 Macxgain Trading Platform is now running!"
+echo "🎉 GainTradeX Trading Platform is now running!"
 echo "📱 Access your application at: http://your-server-ip:8000"
 echo "📊 Admin panel: http://your-server-ip:8000/admin/stock-market"
 echo "🔗 API endpoint: http://your-server-ip:8000/api/truedata/live-data"

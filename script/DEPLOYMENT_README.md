@@ -1,4 +1,4 @@
-# 🚀 Macxgain Production Deployment Guide
+# 🚀 GainTradeX Production Deployment Guide
 
 ## 🏗️ Architecture Overview
 
@@ -22,7 +22,7 @@
 
 ### External Dependencies:
 - **MySQL Server** - On host machine
-- **User Media Storage** - Host filesystem (`/var/macxgain-data/`)
+- **User Media Storage** - Host filesystem (`/var/GainTradeX-data/`)
 
 ## 🚀 Quick Setup (New Server)
 
@@ -35,7 +35,7 @@ chmod +x quick_host_setup.sh
 
 This will:
 - Install MySQL on host machine
-- Create `macxgain` database and user
+- Create `GainTradeX` database and user
 - Setup media directories
 - Configure MySQL for Docker access
 
@@ -61,7 +61,7 @@ docker-compose up --build -d
 ## 📁 Directory Structure
 
 ```
-/var/macxgain-data/           # Host media storage
+/var/GainTradeX-data/           # Host media storage
 ├── trading/                  # Trading screenshots
 ├── uploads/                  # User file uploads  
 ├── profiles/                 # Profile photos
@@ -82,9 +82,9 @@ docker-compose up --build -d
 
 **Host MySQL Connection:**
 - **Host:** `localhost` (from host) / `host.docker.internal` (from container)
-- **Database:** `macxgain`
-- **Username:** `macxgain`
-- **Password:** `macxgain123`
+- **Database:** `GainTradeX`
+- **Username:** `GainTradeX`
+- **Password:** `GainTradeX123`
 - **Port:** `3306`
 
 ## 🌐 Access URLs
@@ -116,10 +116,10 @@ sh quick_deploy.sh
 docker-compose exec app php artisan migrate
 
 # Backup database manually
-mysqldump -h localhost -u macxgain -pmacxgain123 macxgain > backup.sql
+mysqldump -h localhost -u GainTradeX -pGainTradeX123 GainTradeX > backup.sql
 
 # Restore database
-mysql -h localhost -u macxgain -pmacxgain123 macxgain < backup.sql
+mysql -h localhost -u GainTradeX -pGainTradeX123 GainTradeX < backup.sql
 ```
 
 ### Service Management
@@ -165,7 +165,7 @@ docker-compose exec app tail -f /var/log/nginx/access.log
 **Automated Backups (via deploy.sh):**
 - Database backup from host MySQL
 - Application storage backup  
-- User media backup from `/var/macxgain-data/`
+- User media backup from `/var/GainTradeX-data/`
 - Environment configuration backup
 
 **Manual Backup:**
@@ -207,9 +207,9 @@ docker-compose up --build
 #### Media Files Not Saving
 ```bash
 # Check media directory permissions
-ls -la /var/macxgain-data/
-sudo chown -R 33:33 /var/macxgain-data/
-sudo chmod -R 755 /var/macxgain-data/
+ls -la /var/GainTradeX-data/
+sudo chown -R 33:33 /var/GainTradeX-data/
+sudo chmod -R 755 /var/GainTradeX-data/
 ```
 
 #### WebSocket Not Working
@@ -268,4 +268,4 @@ If you encounter issues:
 4. Check this documentation for troubleshooting steps
 
 ---
-**🎉 Your Macxgain trading platform is now ready for production with persistent data and high performance!**
+**🎉 Your GainTradeX trading platform is now ready for production with persistent data and high performance!**

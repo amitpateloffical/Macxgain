@@ -5,18 +5,18 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="shortcut icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Macxgain - Best Trading App – Trade Smarter, Faster, Safer</title>
-    <meta name="description" content="Macxgain - The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
-    <meta name="keywords" content="trading, futures, options, forex, stocks, cryptocurrency, trading platform, Macxgain" />
-    <meta name="application-name" content="Macxgain" />
-    <meta name="apple-mobile-web-app-title" content="Macxgain" />
+    <title>GainTradeX - Best Trading App – Trade Smarter, Faster, Safer</title>
+    <meta name="description" content="GainTradeX - The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
+    <meta name="keywords" content="trading, futures, options, forex, stocks, cryptocurrency, trading platform, GainTradeX" />
+    <meta name="application-name" content="GainTradeX" />
+    <meta name="apple-mobile-web-app-title" content="GainTradeX" />
     <meta name="theme-color" content="#00ff88" />
-    <meta property="og:title" content="Macxgain - Best Trading App – Trade Smarter, Faster, Safer" />
+    <meta property="og:title" content="GainTradeX - Best Trading App – Trade Smarter, Faster, Safer" />
     <meta property="og:description" content="The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/logo.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Macxgain - Best Trading App – Trade Smarter, Faster, Safer" />
+    <meta name="twitter:title" content="GainTradeX - Best Trading App – Trade Smarter, Faster, Safer" />
     <meta name="twitter:description" content="The best trading platform for futures and options. Trade smarter, faster, and safer with our advanced tools and 24/7 support." />
     <meta name="twitter:image" content="/logo.png" />
 	<link rel="preconnect" href="https://fonts.googleapis.com">
