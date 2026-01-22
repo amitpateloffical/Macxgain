@@ -1286,7 +1286,7 @@
           
           <div class="footer-section">
             <h4>Contact Info</h4>
-            <p>F11 19th Floor, GYS Vision Tower<br>Sainik Road, Gurugram Haryana 120015</p>
+            <p>Office No. 501, 5th Floor, Raheja Centre<br>Nariman Point, Mumbai, Maharashtra 400021</p>
             <p>info@GainTradeX.com</p>
           </div>
         </div>
@@ -1827,7 +1827,7 @@ export default {
 }
 
 .logo {
-  width: 40px;
+  width: 150px;
   height: auto;
 }
 
@@ -4098,7 +4098,7 @@ export default {
 }
 
 .footer-logo .logo {
-  width: 40px;
+  width: 120px;
   height: auto;
 }
 
